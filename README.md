@@ -1,2 +1,2 @@
 # spinning-jenny
-Forward models and workflow to be used with Ert and Everest
+Forward models and workflows to be used with Ert and Everest
