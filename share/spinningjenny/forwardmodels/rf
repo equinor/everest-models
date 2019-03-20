@@ -1,0 +1,4 @@
+EXECUTABLE fm_rf
+
+MIN_ARG    2
+MAX_ARG    6
