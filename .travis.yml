@@ -1,0 +1,74 @@
+language: python
+
+python:
+  - 2.7
+  - 3.6
+
+os:
+  - linux
+
+sudo: required
+services: docker
+
+env:
+  global:
+    - MB_PYTHON_VERSION=$TRAVIS_PYTHON_VERSION
+    - INSTALL_DIR="${TRAVIS_BUILD_DIR}/venv"
+    - LD_LIBRARY_PATH="${INSTALL_DIR}/lib:${INSTALL_DIR}/lib64:${LD_LIBRARY_PATH}"
+
+matrix:
+  fast_finish: true
+  include:
+  - os: osx
+    osx_image: xcode8.3
+    language: generic
+    python: 2.7
+    env:
+    - MB_PYTHON_VERSION=2.7
+    - INSTALL_DIR="${TRAVIS_BUILD_DIR}/venv"
+    - DYLD_LIBRARY_PATH=${INSTALL_DIR}/lib:${INSTALL_DIR}/lib64:${DYLD_LIBRARY_PATH}"
+
+  - os: osx
+    osx_image: xcode8.3
+    language: generic
+    python: 3.6
+    env:
+    - MB_PYTHON_VERSION=3.6
+    - INSTALL_DIR="${TRAVIS_BUILD_DIR}/venv"
+    - DYLD_LIBRARY_PATH=${INSTALL_DIR}/lib:${INSTALL_DIR}/lib64:${DYLD_LIBRARY_PATH}"
+
+before_install:
+  - source .libecl_version
+  - git clone https://github.com/equinor/libecl
+  - pushd libecl
+  - git fetch
+  - git checkout tags/$LIBECL_VERSION
+  - popd
+  - git clone https://github.com/matthew-brett/multibuild.git
+  - unset -f pushd
+  - unset -f popd
+  - source multibuild/common_utils.sh
+  - source multibuild/travis_steps.sh
+  - before_install # method in multibuild
+
+install:
+  # For now we have to make install libecl.
+  # Remove when it's possible to pip install
+  - pushd libecl
+  - pip install -r requirements.txt
+  - mkdir build
+  - pushd build
+  - cmake .. -DENABLE_PYTHON=ON
+             -DINSTALL_CWRAP=OFF
+             -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR
+             -DCMAKE_PREFIX_PATH=$INSTALL_DIR
+             -DCMAKE_C_FLAGS='-Werror=all'
+             -DCMAKE_INSTALL_NAME_DIR=$INSTALL_DIR/lib
+             -DCMAKE_CXX_FLAGS='-Werror -Wno-unused-result'
+  - make
+  - make install
+  - popd;popd
+
+script:
+  - export PYTHONPATH="$INSTALL_DIR/lib/python$MB_PYTHON_VERSION/dist-packages:$PYTHONPATH"
+  - python setup.py test
