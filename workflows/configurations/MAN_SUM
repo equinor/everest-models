@@ -1,0 +1,11 @@
+EXECUTABLE  ../scripts/stripsum.py
+STDOUT man_sum.stdout
+STDERR man_sum.stderr
+
+TARGET_FILE <ECLSUM>
+ARGLIST <ECLSUM> <SCH_DATES>
+
+MIN_ARG    2
+MAX_ARG    2
+ARG_TYPE 0 STRING
+ARG_TYPE 1 STRING
