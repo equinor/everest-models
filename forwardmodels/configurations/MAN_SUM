@@ -1,8 +1,5 @@
 EXECUTABLE  ../scripts/stripsum.py
-STDOUT man_sum.stdout
-STDERR man_sum.stderr
 
-TARGET_FILE <ECLSUM>
 ARGLIST <ECLSUM> <SCH_DATES>
 
 MIN_ARG    2
