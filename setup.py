@@ -7,7 +7,10 @@ setup(name='spinningjenny',
       author='Equinor ASA',
       url='https://github.com/equinor/spinningjenny',
       setup_requires=['pytest-runner'],
-      tests_require=['pytest'],
+      tests_require=[
+          'pytest',
+          'decorator',
+      ],
       classifisers=[
           'Programming language :: Python',
           'Programming language :: Python :: 2.7',

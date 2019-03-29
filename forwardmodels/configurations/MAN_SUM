@@ -1,6 +1,6 @@
 EXECUTABLE  ../scripts/stripsum.py
 
-ARGLIST <ECLSUM> <SCH_DATES>
+ARGLIST "--summary=<ECLSUM> --dates=<SCH_DATES>"
 
 MIN_ARG    2
 MAX_ARG    2
