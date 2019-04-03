@@ -2,7 +2,7 @@ from __future__ import absolute_import
 import unittest
 import filecmp
 from tests import tmpdir, relpath
-from forwardmodels.scripts.strip_sum import strip_sum
+from spinningjenny.bin.strip_sum_script import strip_sum
 
 TEST_DATA_PATH = relpath('tests', 'testdata', 'stripsum')
 
