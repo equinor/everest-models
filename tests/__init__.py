@@ -6,7 +6,6 @@ import logging
 import shutil
 import tempfile
 
-
 def relpath(*path):
     """Make a path relative to the project root folder"""
     project_root_folder = os.path.dirname(os.path.dirname(__file__))
