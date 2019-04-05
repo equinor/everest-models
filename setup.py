@@ -2,6 +2,7 @@
 
 from setuptools import setup
 
+
 setup(
     name="spinningjenny",
     packages=[
@@ -26,10 +27,11 @@ setup(
     ],
     entry_points={
         "console_scripts": [
+            "fm_drill_planner = spinningjenny.script.drill_planner:main_entry_point",
             "fm_npv = spinningjenny.script.npv:main_entry_point",
-            "fm_strip_dates = spinningjenny.script.strip_dates:main_entry_point",
             "fm_rf = spinningjenny.script.rf:main_entry_point",
             "fm_stea = spinningjenny.script.stea_fmu:stea_main",
+            "fm_strip_dates = spinningjenny.script.strip_dates:main_entry_point",
         ]
     },
 )

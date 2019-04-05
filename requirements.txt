@@ -1,2 +1,4 @@
 pyyaml
 configsuite>=0.3.1
+ortools
+protobuf<=3.6.1 # downgrade required on osx for ortools
