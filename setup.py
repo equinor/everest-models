@@ -30,7 +30,7 @@ setup(
         "mock",
         'black; python_version>="3.6"',
     ],
-    classifisers=[
+    classifiers=[
         "Programming language :: Python",
         "Programming language :: Python :: 2.7",
         "Programming language :: Python :: 3.5",

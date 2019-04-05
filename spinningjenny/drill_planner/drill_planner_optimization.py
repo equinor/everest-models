@@ -8,7 +8,7 @@ from spinningjenny import customized_logger
 logger = customized_logger.get_logger(__name__)
 
 TaskType = collections.namedtuple("TaskType", ("start", "end", "interval"))
-ScheduleType = collections.namedtuple(
+ScheduleEvent = collections.namedtuple(
     "schedule_event", ("rig", "slot", "well", "start_date", "end_date")
 )
 
@@ -486,7 +486,7 @@ def evaluate(config, max_solver_time=3600):
                     and solver.Value(model.slot_used[slot][well]) == 1
                 )
                 if valid_event:
-                    schedule_event = ScheduleType(
+                    schedule_event = ScheduleEvent(
                         rig=rig,
                         slot=slot,
                         well=well,

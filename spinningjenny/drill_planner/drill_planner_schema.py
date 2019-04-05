@@ -1,5 +1,3 @@
-import yaml
-import datetime
 import collections
 import configsuite
 from configsuite import MetaKeys as MK
@@ -37,23 +35,25 @@ def _is_within_time_period(elem, context):
 
 
 def extract_validation_context(configuration):
-    rigs = ()
-    if configuration.rigs is not None:
-        rigs = tuple([rig.name for rig in configuration.rigs])
+    rigs = tuple([rig.name for rig in configuration.rigs]) if configuration.rigs else ()
 
-    wells = ()
-    if configuration.wells is not None:
-        wells = tuple([well.name for well in configuration.wells])
+    wells = (
+        tuple([well.name for well in configuration.wells])
+        if configuration.wells
+        else ()
+    )
 
-    slots = ()
-    if configuration.slots is not None:
-        slots = tuple([slot.name for slot in configuration.slots])
+    slots = (
+        tuple([slot.name for slot in configuration.slots])
+        if configuration.slots
+        else ()
+    )
 
-    prioritized_wells = ()
-    if configuration.wells_priority is not None:
-        prioritized_wells = tuple(
-            [well_name for well_name, _ in configuration.wells_priority]
-        )
+    prioritized_wells = (
+        tuple([well_name for well_name, _ in configuration.wells_priority])
+        if configuration.wells_priority
+        else ()
+    )
 
     Context = collections.namedtuple(
         "Context",

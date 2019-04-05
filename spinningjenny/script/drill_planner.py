@@ -10,6 +10,8 @@ import json
 from spinningjenny import customized_logger
 from spinningjenny.drill_planner.drill_planner_optimization import evaluate
 from spinningjenny.drill_planner import drill_planner_schema
+from spinningjenny.drill_planner.greedy_drill_planner import get_greedy_drill_plan
+from copy import deepcopy
 
 logger = customized_logger.get_logger(__name__)
 
@@ -196,6 +198,11 @@ def _prepare_config(config_file, optimizer_file, input_file):
 
 def _run_drill_planner(config, time_limit):
     schedule = evaluate(config.snapshot, max_solver_time=time_limit)
+    if not schedule:
+        logger.info(
+            "Optimized drill plan was not found -    resolving using optimal localized decisions"
+        )
+        schedule = get_greedy_drill_plan(deepcopy(config))
     _verify_constraints(config.snapshot, schedule)
     return schedule
 
