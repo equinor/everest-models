@@ -16,5 +16,9 @@ setup(name='spinningjenny',
           'Programming language :: Python :: 2.7',
           'Programming language :: Python :: 3.5',
           'Programming language :: Python :: 3.6'
-          ])
-
+      ],
+      entry_points={
+          'console_scripts': [
+              'fm_npv = spinningjenny.script.npv:main_entry_point',
+          ],
+      })

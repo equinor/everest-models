@@ -1,0 +1,4 @@
+EXECUTABLE  fm_npv
+
+MIN_ARG    2
+MAX_ARG    10
