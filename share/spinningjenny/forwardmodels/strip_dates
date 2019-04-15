@@ -1,8 +1,6 @@
-EXECUTABLE  ../scripts/stripsum.py
+EXECUTABLE  fm_strip_dates
 
 ARGLIST "--summary=<ECLSUM> --dates=<SCH_DATES>"
 
 MIN_ARG    2
 MAX_ARG    2
-ARG_TYPE 0 STRING
-ARG_TYPE 1 STRING
