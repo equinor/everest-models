@@ -29,7 +29,7 @@ setup(name='spinningjenny',
       ],
       entry_points={
           'console_scripts': [
-              'fm_npv = spinningjenny.script.npv:main_entry_point',
+              'fm_npv = spinningjenny.script.npv.npv:main_entry_point',
               'fm_strip_dates = spinningjenny.script.strip_dates:main_entry_point',
               'fm_rf = spinningjenny.script.rf:main_entry_point',
               'fm_stea = spinningjenny.script.stea_fmu:stea_main'

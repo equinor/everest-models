@@ -7,7 +7,7 @@ import math
 import os.path
 import re
 import sys
-from itertools import compress
+from itertools import compress, chain
 
 from ecl.summary import EclSum
 
@@ -25,10 +25,10 @@ class CalculateNPV:
 
     """
 
-    def __init__(self, input_data):
-        self.ecl_sum = EclSum(input_data.get('files').get('summary_file'))
-        self.output_file = input_data.get('files').get('output_file')
-        self.multiplier = input_data.get('multiplier')
+    def __init__(self, input_data, summary_file):
+        self.ecl_sum = EclSum(summary_file)
+        self.output_file = input_data.files.output_file
+        self.multiplier = input_data.multiplier
         self._npv = 0.0
         self.exchange_rate = ExchangeRate(input_data)
         self.discount_rate = DiscountRate(input_data)
@@ -59,7 +59,7 @@ class CalculateNPV:
 
     def _extract_prices(self, blocked_production, time_range, ref_date):
         for idx, date in enumerate(time_range[1:]):
-            current_date = date.datetime()
+            current_date = date.date()
 
             total_npv = 0
             for keyword in self.keywords:
@@ -97,22 +97,22 @@ class Transaction:
 
     @classmethod
     def using_cost(cls, cost_entry):
-        date = _str2date(cost_entry['date'])
-        value = cost_entry['value']
-        currency = cost_entry.get('currency', None)
+        date = cost_entry.date
+        value = cost_entry.value
+        currency = cost_entry.currency
         return cls(date, value, currency)
 
     @classmethod
     def using_well_cost(cls, well_cost_entry, t2s_entries, well_name):
-        date = _str2date(t2s_entries[well_name])
-        value = well_cost_entry['value']
-        currency = well_cost_entry.get('currency', None)
+        date = t2s_entries[well_name]
+        value = well_cost_entry.value
+        currency = well_cost_entry.currency
         return cls(date, value, currency)
 
     @classmethod
     def using_price(cls, price_entry, date):
-        value = price_entry['value']
-        currency = price_entry.get('currency', None)
+        value = price_entry.value
+        currency = price_entry.currency
         return cls(date, value, currency)
 
     @classmethod
@@ -132,7 +132,7 @@ class Keywords:
     """
 
     def __init__(self, input_data, ecl_sum):
-        summary_keys = input_data.get('summary_keys', None)
+        summary_keys = input_data.summary_keys
 
         if summary_keys:
             keys_exists = [not ecl_sum.has_key(key) for key in summary_keys]
@@ -144,7 +144,7 @@ class Keywords:
             logger.info(
                 "using keywords from 'summary_keys' {}".format(self._keywords))
         else:
-            self._keywords = list(input_data['prices'].keys())
+            self._keywords = [k for k, _ in input_data.prices]
             logger.info("'summary_keys' not found, defaulting to keys from prices {}".format(
                 self._keywords))
 
@@ -160,16 +160,27 @@ class ExchangeRate:
     """
 
     def __init__(self, input_data):
-        self._exchange_rates = input_data.get('exchange_rates', [])
-        self.default_exchange_rate = input_data.get('default_exchange_rate')
+        self._exchange_rates = []
+        if input_data.exchange_rates:
+            self._exchange_rates = input_data.exchange_rates
+        self.default_exchange_rate = input_data.default_exchange_rate
 
     def get(self, date, currency):
-        if currency and currency in self._exchange_rates:
-            ordered_data = sorted(self._exchange_rates[currency], key=lambda entry: _str2date(
-                entry['date']), reverse=True)
-            for entry in ordered_data:
-                if _str2date(entry['date']) <= date:
-                    return entry['value']
+
+        data = []
+        for c, v in self._exchange_rates:
+            if c != currency:
+                continue
+            data.extend(v)
+
+        data = [v for c, v in self._exchange_rates if c == currency]
+        data = chain.from_iterable(data)
+        ordered_data = sorted(data, key=lambda entry: entry.date, reverse=True)
+
+        for entry in ordered_data:
+            if entry.date <= date:
+                return entry.value
+
         logger.warn("entry for exchange_rate {} {} does not exist, using default {}".format(
             date, currency, self.default_exchange_rate))
         return self.default_exchange_rate
@@ -182,15 +193,17 @@ class DiscountRate:
     """
 
     def __init__(self, input_data):
-        self._discount_rates = input_data.get('discount_rates', [])
-        self.default_discount_rate = input_data.get('default_discount_rate')
+        self._discount_rates = []
+        if input_data.discount_rates:
+            self._discount_rates = input_data.discount_rates
+        self.default_discount_rate = input_data.default_discount_rate
 
     def get(self, date):
-        ordered_data = sorted(self._discount_rates, key=lambda entry: _str2date(
-            entry['date']), reverse=True)
+        ordered_data = sorted(self._discount_rates,
+                              key=lambda entry: entry.date, reverse=True)
         for entry in ordered_data:
-            if _str2date(entry['date']) <= date:
-                return entry['value']
+            if entry.date <= date:
+                return entry.value
         logger.warn("entry for discount rate {} does not exist, using default {}".format(
             date, self.default_discount_rate))
         return self.default_discount_rate
@@ -207,26 +220,33 @@ class Price:
     """
 
     def __init__(self, input_data):
-        self._prices = []
-        if 'prices' not in input_data:
+        if len(input_data.prices) == 0:
             raise AttributeError(
-                'Price information is required to do an NPV calculation\n')
-        self._prices = input_data['prices']
+                'Price information is required to do an NPV calculation')
+
+        self._prices = []
+        self._prices = input_data.prices
 
     def get(self, date, keyword):
-        if keyword not in self._prices:
+        if not any(keyword in k for k, _ in self._prices):
             raise AttributeError(
-                'Price information missing for %s\n' % (keyword))
+                'Price information missing for {}'.format(keyword))
 
-        ordered_data = sorted(self._prices[keyword], key=lambda entry: _str2date(
-            entry['date']), reverse=True)
+        data = []
+        for k, v in self._prices:
+            if k != keyword:
+                continue
+            data.extend(v)
 
+        data = [v for k, v in self._prices if k == keyword]
+        data = chain.from_iterable(data)
+        ordered_data = sorted(data, key=lambda entry: entry.date, reverse=True)
         for entry in ordered_data:
-            if _str2date(entry['date']) <= date:
+            if entry.date <= date:
                 return Transaction.using_price(entry, date)
 
-        logger.warn('Price information missing at %s for %s. Using value 0.' % (
-            date.strftime('%d.%m.%Y'), keyword))
+        logger.warn(
+            'Price information missing at {} for {}. Using value 0.'.format(date, keyword))
         return Transaction.empty()
 
 
@@ -241,23 +261,26 @@ class Cost:
     """
 
     def __init__(self, input_data):
-        t2s_file_path = input_data['files']['t2s_file']
+        t2s_file_path = input_data.files.t2s_file
 
         self._costs = []
-        if 'costs' in input_data:
-            for cost_entry in input_data['costs']:
+        if input_data.costs:
+            for cost_entry in input_data.costs:
                 self._costs.append(Transaction.using_cost(cost_entry))
 
-        if 'well_costs' in input_data:
+        if input_data.well_costs:
             _t2s = {}
             logger.debug("open t2s-file from {}".format(t2s_file_path))
             with open(t2s_file_path, 'r') as t2s_file:
                 for line in t2s_file:
                     date, well = str.strip(line).split(" ")
-                    _t2s[well] = date
 
-            for well_cost_entry in input_data['well_costs']:
-                well_name = well_cost_entry['well']
+                    # Currently the date-format in t2s is dd.mm.YYYY - we should move to ISO
+                    _t2s[well] = datetime.datetime.strptime(
+                        date, '%d.%m.%Y').date()
+
+            for well_cost_entry in input_data.well_costs:
+                well_name = well_cost_entry.well
                 if well_name in _t2s:
                     self._costs.append(Transaction.using_well_cost(
                         well_cost_entry, _t2s, well_name))
@@ -281,56 +304,50 @@ class DateHandler:
 
     def __init__(self, input_data, ecl_summary):
         self._ecl_summary = ecl_summary
-        self.start_date = ecl_summary.start_time
-        self.end_date = ecl_summary.end_time
+        self.start_date = ecl_summary.start_date
+        self.end_date = ecl_summary.end_date
         self.ref_date = self.start_date
 
-        if 'dates' in input_data:
-            dates = input_data.get('dates')
-            if 'start_date' in dates:
-                configured_start = dates.get('start_date')
-                self.start_date = _str2date(configured_start)
-                logger.info(
-                    "simulation start_date set {}".format(configured_start))
-            else:
-                logger.info("Simulation start date defaults to summary start date: {}".format(
-                    self.start_date))
+        dates = input_data.dates
+        if dates and dates.start_date:
+            self.start_date = dates.start_date
+            # Also move ref_date if start_date is provided and not before sim start.
+            # If ref_date also has been configured, it will be overridden in that section
+            if dates.start_date > self._ecl_summary.start_date:
+                self.ref_date = dates.start_date
 
-            if 'end_date' in dates:
-                configured_end = dates.get('end_date')
-                self.end_date = _str2date(configured_end)
-                logger.info(
-                    "simulation end_date set {}".format(configured_end))
-            else:
-                logger.info(
-                    "Simulation end date defaults to summary end date: {}".format(self.end_date))
+            logger.info(
+                "simulation start_date set {}".format(dates.start_date))
+        else:
+            logger.info("simulation start date defaults to summary start date: {}".format(
+                self.start_date))
 
-            if 'ref_date' in dates:
-                configured_ref = dates.get('ref_date')
-                self.ref_date = _str2date(configured_ref)
-                logger.info(
-                    "simulation ref_date set {}".format(configured_ref))
-            else:
-                logger.info(
-                    "Simulation ref date defaults to summary start date: {}".format(self.ref_date))
+        if dates and dates.end_date:
+            self.end_date = dates.end_date
+            logger.info(
+                "simulation end_date set {}".format(dates.end_date))
         else:
             logger.info(
-                "no dates provided, defaulting to simulation start and end dates {} - {}. ref date is {}".format(self.start_date, self.end_date, self.ref_date))
+                "simulation end date defaults to summary end date: {}".format(self.end_date))
 
-        self.time_range = self._ecl_summary.timeRange(
+        if dates and dates.ref_date:
+            self.ref_date = dates.ref_date
+            logger.info(
+                "simulation ref_date set {}".format(dates.ref_date))
+        else:
+            logger.info(
+                "simulation ref date defaults to start date: {}".format(self.ref_date))
+
+        self.time_range = self._ecl_summary.time_range(
             start=self.start_date, end=self.end_date, interval='1d')
 
-        if (self._ecl_summary.start_time > self.start_date) \
-                or (self._ecl_summary.end_time < self.end_date):
+        if (self._ecl_summary.start_date > self.start_date) \
+                or (self._ecl_summary.end_date < self.end_date):
             logger.warn("""The date range ({} - {}) is not during the simulation time ({} - {}).\n
                             Effective date range defaults to simulation start and end dates {} - {}""".format(
-                        self.start_date.strftime('%d.%m.%Y'),
-                        self.end_date.strftime('%d.%m.%Y'),
-                        self._ecl_summary.start_time.strftime('%d.%m.%Y'),
-                        self._ecl_summary.end_time.strftime('%d.%m.%Y'),
-                        self._ecl_summary.start_time.strftime('%d.%m.%Y'),
-                        self._ecl_summary.end_time.strftime('%d.%m.%Y')))
-
-
-def _str2date(datestr):
-    return datetime.datetime.strptime(datestr, '%d.%m.%Y')
+                        self.start_date,
+                        self.end_date,
+                        self._ecl_summary.start_date,
+                        self._ecl_summary.end_date,
+                        self._ecl_summary.start_date,
+                        self._ecl_summary.end_date))
