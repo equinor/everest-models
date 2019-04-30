@@ -160,18 +160,10 @@ class ExchangeRate:
     """
 
     def __init__(self, input_data):
-        self._exchange_rates = []
-        if input_data.exchange_rates:
-            self._exchange_rates = input_data.exchange_rates
+        self._exchange_rates = input_data.exchange_rates or []
         self.default_exchange_rate = input_data.default_exchange_rate
 
     def get(self, date, currency):
-
-        data = []
-        for c, v in self._exchange_rates:
-            if c != currency:
-                continue
-            data.extend(v)
 
         data = [v for c, v in self._exchange_rates if c == currency]
         data = chain.from_iterable(data)
@@ -181,7 +173,7 @@ class ExchangeRate:
             if entry.date <= date:
                 return entry.value
 
-        logger.warn("entry for exchange_rate {} {} does not exist, using default {}".format(
+        logger.warning("entry for exchange_rate {} {} does not exist, using default {}".format(
             date, currency, self.default_exchange_rate))
         return self.default_exchange_rate
 
@@ -193,9 +185,7 @@ class DiscountRate:
     """
 
     def __init__(self, input_data):
-        self._discount_rates = []
-        if input_data.discount_rates:
-            self._discount_rates = input_data.discount_rates
+        self._discount_rates = input_data.discount_rates or []
         self.default_discount_rate = input_data.default_discount_rate
 
     def get(self, date):
@@ -204,7 +194,7 @@ class DiscountRate:
         for entry in ordered_data:
             if entry.date <= date:
                 return entry.value
-        logger.warn("entry for discount rate {} does not exist, using default {}".format(
+        logger.warning("entry for discount rate {} does not exist, using default {}".format(
             date, self.default_discount_rate))
         return self.default_discount_rate
 
@@ -232,12 +222,6 @@ class Price:
             raise AttributeError(
                 'Price information missing for {}'.format(keyword))
 
-        data = []
-        for k, v in self._prices:
-            if k != keyword:
-                continue
-            data.extend(v)
-
         data = [v for k, v in self._prices if k == keyword]
         data = chain.from_iterable(data)
         ordered_data = sorted(data, key=lambda entry: entry.date, reverse=True)
@@ -245,7 +229,7 @@ class Price:
             if entry.date <= date:
                 return Transaction.using_price(entry, date)
 
-        logger.warn(
+        logger.warning(
             'Price information missing at {} for {}. Using value 0.'.format(date, keyword))
         return Transaction.empty()
 
@@ -285,7 +269,7 @@ class Cost:
                     self._costs.append(Transaction.using_well_cost(
                         well_cost_entry, _t2s, well_name))
                 else:
-                    logger.warn(
+                    logger.warning(
                         'Well cost for well {} skipped due to lacking reference in t2s'.format(well_name))
 
     def get(self):
@@ -311,9 +295,8 @@ class DateHandler:
         dates = input_data.dates
         if dates and dates.start_date:
             self.start_date = dates.start_date
-            # Also move ref_date if start_date is provided and not before sim start.
-            # If ref_date also has been configured, it will be overridden in that section
-            if dates.start_date > self._ecl_summary.start_date:
+            # If ref_date not provided - move to specified start_date if not before sim_start.
+            if not dates.ref_date and dates.start_date > self._ecl_summary.start_date:
                 self.ref_date = dates.start_date
 
             logger.info(
@@ -343,7 +326,7 @@ class DateHandler:
 
         if (self._ecl_summary.start_date > self.start_date) \
                 or (self._ecl_summary.end_date < self.end_date):
-            logger.warn("""The date range ({} - {}) is not during the simulation time ({} - {}).\n
+            logger.warning("""The date range ({} - {}) is not during the simulation time ({} - {}).\n
                             Effective date range defaults to simulation start and end dates {} - {}""".format(
                         self.start_date,
                         self.end_date,

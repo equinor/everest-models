@@ -43,7 +43,7 @@ def main(args):
 def _extract_options(args):
     description = (
         'Module to calculate the NPV based on an eclipse simulation. '
-        'All none required args is also configurable through the config file'
+        'All optional args is also configurable through the config file'
     )
     arg_parser = argparse.ArgumentParser(description=description)
     arg_parser.add_argument('--summary-file',

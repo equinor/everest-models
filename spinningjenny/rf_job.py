@@ -53,7 +53,7 @@ def recovery_factor(ecl_sum, production_key='FOPT', total_volume_key='FOIP', sta
     if start_date < ecl_sum.start_time or end_date > ecl_sum.end_time:
         msg = 'The date range {} - {} exceeds the simulation time clamping'\
               'to simulation time: {} - {}'
-        logger.warn(msg.format(start_date, end_date, ecl_sum.start_time,
+        logger.warning(msg.format(start_date, end_date, ecl_sum.start_time,
                                ecl_sum.end_time))
 
     total_volume = ecl_sum.numpy_vector(total_volume_key)[0]
