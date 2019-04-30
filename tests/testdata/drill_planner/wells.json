@@ -1,0 +1,22 @@
+[
+ {
+   "name": "w1",
+   "drilltime": 20
+ },
+ {
+   "name": "w2",
+   "drilltime": 25
+ },
+ {
+   "name": "w3",
+   "drilltime": 43
+ },
+ {
+   "name": "w4",
+   "drilltime": 23
+ },
+ {
+   "name": "w5",
+   "drilltime": 36
+ }
+]

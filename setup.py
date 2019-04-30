@@ -12,6 +12,7 @@ setup(
         "spinningjenny",
         "spinningjenny/script",
         "spinningjenny/npv",
+        "spinningjenny/drill_planner",
     ],
     description="Module containing a collection of jobs for ERT",
     author="Equinor ASA",

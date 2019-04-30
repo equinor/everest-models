@@ -14,21 +14,7 @@ ScheduleType = collections.namedtuple(
 
 
 class WellDrillScheduleModel(cp_model.CpModel):
-    def __init__(
-        self,
-        wells,
-        rigs,
-        slots,
-        drill_time,
-        wells_at_rig,
-        slots_at_rig,
-        wells_at_slot,
-        rig_unavailability,
-        slot_unavailability,
-        wells_priority,
-        start_date,
-        end_date,
-    ):
+    def __init__(self, config):
         super(WellDrillScheduleModel, self).__init__()
         self._tasks = collections.defaultdict(dict)
         self._unavailable_intervals = collections.defaultdict(dict)
@@ -37,9 +23,9 @@ class WellDrillScheduleModel(cp_model.CpModel):
         self._task_before = collections.defaultdict(dict)
         self._task_after = collections.defaultdict(dict)
         self._not_drills = collections.defaultdict(dict)
-        self.wells = wells
-        self.rigs = rigs
-        self.slots = slots
+        self.wells = [well.name for well in config.wells]
+        self.rigs = [rig.name for rig in config.rigs]
+        self.slots = [slot.name for slot in config.slots]
         self.slot_used = {
             slot: {
                 well: self.NewBoolVar("slot_used_{}_{}".format(slot, well))
@@ -47,18 +33,19 @@ class WellDrillScheduleModel(cp_model.CpModel):
             }
             for slot in self.slots
         }
-        self._drill_time = drill_time
-        self._horizon = (end_date - start_date).days
-        self.start_date = start_date
-        self.end_date = end_date
+        self._drill_time = {well.name: well.drilltime for well in config.wells}
+        self._horizon = (config.end_date - config.start_date).days
+        self.start_date = config.start_date
+        self.end_date = config.end_date
         self._objective_variable = self.NewIntVar(0, self._horizon, "makespan")
-        self._rig_unavailability = rig_unavailability
-        self._slot_unavailability = slot_unavailability
-        self._wells_at_rig = wells_at_rig
-        self._wells_at_slot = wells_at_slot
-        self._slots_at_rig = slots_at_rig
-        self._wells_priority = wells_priority
-
+        self._rig_unavailability = {rig.name: rig.unavailability for rig in config.rigs}
+        self._slot_unavailability = {
+            slot.name: slot.unavailability for slot in config.slots
+        }
+        self._wells_at_rig = {rig.name: rig.wells for rig in config.rigs}
+        self._wells_at_slot = {slot.name: slot.wells for slot in config.slots}
+        self._slots_at_rig = {rig.name: rig.slots for rig in config.rigs}
+        self._wells_priority = dict(config.wells_priority)
         self._setup_all_tasks()
         self._setup_unavailable_intervals()
         self._setup_well_ends()
@@ -104,6 +91,8 @@ class WellDrillScheduleModel(cp_model.CpModel):
         be added to a NoOverlap condition together with a task interval
         """
         for rig, ranges in self._rig_unavailability.items():
+            if ranges is None:
+                continue
             result = []
             for start, stop in ranges:
                 interval = self.NewIntervalVar(
@@ -165,6 +154,8 @@ class WellDrillScheduleModel(cp_model.CpModel):
         the task is before the range, or a task is after the range.
         """
         for _, ranges in self._slot_unavailability.items():
+            if ranges is None:
+                continue
             for start, end in ranges:
                 start_index = (start - self.start_date).days
                 task_before = self.NewBoolVar(
@@ -414,6 +405,8 @@ class WellDrillScheduleModel(cp_model.CpModel):
         for any time period in slot_unavailability
         """
         for slot, ranges in self._slot_unavailability.items():
+            if ranges is None:
+                continue
             for start, stop in ranges:
                 for well, rig in self.well_rig_pairs():
                     task = self.task(well, rig)
@@ -453,8 +446,8 @@ class WellDrillScheduleModel(cp_model.CpModel):
             self.Add(sum(self.slot_used[slot].values()) <= 1)
 
 
-def evaluate(max_solver_time=3600, *args, **kwargs):
-    model = WellDrillScheduleModel(*args, **kwargs)
+def evaluate(config, max_solver_time=3600):
+    model = WellDrillScheduleModel(config)
     logger.debug(model.ModelStats())
 
     solver = cp_model.CpSolver()

@@ -1,10 +1,24 @@
 from collections import namedtuple
+import configsuite
 import copy
 from datetime import datetime, timedelta
 import math
+import pytest
+import yaml
 
-from spinningjenny.drill_planner_optimization import evaluate
-from spinningjenny.script.drill_planner import _verify_constraints, _verify_priority
+from spinningjenny.drill_planner import drill_planner_schema
+from spinningjenny.drill_planner.drill_planner_optimization import evaluate
+from spinningjenny.script.drill_planner import (
+    _verify_constraints,
+    _verify_priority,
+    _prepare_config,
+    main_entry_point,
+    _append_data,
+)
+
+from tests import tmpdir, relpath
+
+TEST_DATA_PATH = relpath("tests", "testdata", "drill_planner")
 
 
 def _simple_setup():
@@ -14,17 +28,61 @@ def _simple_setup():
     rigs = ["A"]
     slots = ["S1", "S2"]
     config = {
-        "rig_unavailability": {rig: [] for rig in rigs},
-        "slot_unavailability": {slot: [] for slot in slots},
-        "drill_time": {"W1": 5, "W2": 10},
-        "wells": wells,
         "start_date": start_date,
         "end_date": end_date,
-        "rigs": rigs,
-        "slots": slots,
-        "wells_at_rig": {"A": wells},
-        "wells_at_slot": {"S1": wells, "S2": wells},
-        "slots_at_rig": {"A": slots},
+        "wells": [{"name": "W1", "drilltime": 5}, {"name": "W2", "drilltime": 10}],
+        "rigs": [{"name": rig, "wells": wells, "slots": slots} for rig in rigs],
+        "slots": [{"name": slot, "wells": wells} for slot in slots],
+        "wells_priority": {"W1": 1, "W2": 0.5},
+    }
+    config_suite = configsuite.ConfigSuite(
+        config,
+        drill_planner_schema.build(),
+        extract_validation_context=drill_planner_schema.extract_validation_context,
+    )
+
+    assert config_suite.valid
+
+    return config_suite
+
+
+def _simple_config_setup():
+    start_date = datetime(2000, 1, 1)
+    end_date = datetime(2001, 1, 1)
+    wells = ["W1", "W2"]
+    slots = ["S1", "S2"]
+    config = {
+        "start_date": start_date,
+        "end_date": end_date,
+        "rigs": [
+            {
+                "name": "A",
+                "wells": wells,
+                "slots": slots,
+                "unavailability": [
+                    {"start": datetime(2000, 1, 3), "stop": datetime(2000, 1, 5)}
+                ],
+            },
+            {
+                "name": "B",
+                "wells": wells,
+                "slots": slots,
+                "unavailability": [
+                    {"start": datetime(2000, 2, 4), "stop": datetime(2000, 2, 7)}
+                ],
+            },
+        ],
+        "slots": [
+            {"name": "S1", "wells": wells},
+            {
+                "name": "S2",
+                "wells": wells,
+                "unavailability": [
+                    {"start": datetime(2000, 2, 4), "stop": datetime(2000, 2, 7)}
+                ],
+            },
+        ],
+        "wells": [{"name": "W1", "drilltime": 5}, {"name": "W2", "drilltime": 10}],
         "wells_priority": {"W1": 1, "W2": 0.5},
     }
     return config
@@ -48,25 +106,28 @@ def _advanced_setup():
     end_date = datetime(2001, 1, 1)
     wells = ["W1", "W2", "W3", "W4", "W5"]
     slots = ["S1", "S2", "S3", "S4", "S5"]
-    rigs = ["A", "B", "C"]
     config = {
-        "rig_unavailability": {rig: [] for rig in rigs},
-        "slot_unavailability": {slot: [] for slot in slots},
-        "drill_time": {"W1": 10, "W2": 30, "W3": 25, "W4": 20, "W5": 40},
-        "wells": wells,
         "start_date": start_date,
         "end_date": end_date,
-        "rigs": rigs,
-        "slots": slots,
-        "wells_at_rig": {"A": wells[:3], "B": wells[:4], "C": wells[2:]},
-        "wells_at_slot": {
-            "S1": wells[:4],
-            "S2": wells[:4],
-            "S3": wells,
-            "S4": wells[:4],
-            "S5": wells[:4],
-        },
-        "slots_at_rig": {"A": slots, "B": slots, "C": slots},
+        "wells": [
+            {"name": "W1", "drilltime": 10},
+            {"name": "W2", "drilltime": 30},
+            {"name": "W3", "drilltime": 25},
+            {"name": "W4", "drilltime": 20},
+            {"name": "W5", "drilltime": 40},
+        ],
+        "rigs": [
+            {"name": "A", "wells": wells[:3], "slots": slots},
+            {"name": "B", "wells": wells[:4], "slots": slots},
+            {"name": "C", "wells": wells[2:], "slots": slots},
+        ],
+        "slots": [
+            {"name": "S1", "wells": wells[:4]},
+            {"name": "S2", "wells": wells[:4]},
+            {"name": "S3", "wells": wells},
+            {"name": "S4", "wells": wells[:4]},
+            {"name": "S5", "wells": wells[:4]},
+        ],
         "wells_priority": {"W1": 5, "W2": 4, "W3": 3, "W4": 2, "W5": 1},
     }
 
@@ -87,26 +148,30 @@ def _large_setup():
     drill_times = [30, 20, 40, 25, 35, 75, 33, 90, 23, 32, 10, 42, 38, 47, 53]
     wells_priority = zip(wells, range(len(wells), 0, -1))
     config = {
-        "rig_unavailability": {rig: [] for rig in rigs},
-        "slot_unavailability": {slot: [] for slot in slots},
-        "drill_time": {w: drill_times[i] for i, w in enumerate(wells)},
-        "wells": wells,
         "start_date": start_date,
         "end_date": end_date,
-        "rigs": rigs,
-        "slots": slots,
-        "wells_at_rig": {r: wells for r in rigs},
-        "wells_at_slot": {s: wells for s in slots},
-        "slots_at_rig": {r: slots for r in rigs},
+        "wells": [
+            {"name": w, "drilltime": drill_times[i]} for i, w in enumerate(wells)
+        ],
+        "rigs": [{"name": rig, "wells": wells, "slots": slots} for rig in rigs],
+        "slots": [{"name": slot, "wells": wells} for slot in slots],
         "wells_priority": {w: p for w, p in wells_priority},
     }
-    return config
+    config_suite = configsuite.ConfigSuite(
+        config,
+        drill_planner_schema.build(),
+        extract_validation_context=drill_planner_schema.extract_validation_context,
+    )
+
+    assert config_suite.valid
+
+    return config_suite
 
 
 def test_simple_well_order():
-    config = _simple_setup()
+    config = _simple_setup().snapshot
     well_order = [("W1", datetime(2000, 1, 1)), ("W2", datetime(2000, 1, 6))]
-    schedule = evaluate(**config)
+    schedule = evaluate(config)
 
     schedule_well_order = [(event.well, event.start_date) for event in schedule]
 
@@ -136,7 +201,16 @@ def test_rig_slot_reservation():
     (well='W4', rig='B', slot='S5')
     (well='W5', rig='C', slot='S3')
     """
-    config = _advanced_setup()
+
+    config_suite = configsuite.ConfigSuite(
+        _advanced_setup(),
+        drill_planner_schema.build(),
+        extract_validation_context=drill_planner_schema.extract_validation_context,
+    )
+
+    assert config_suite.valid
+
+    config = config_suite.snapshot
     well_order = [
         ("W1", datetime(2000, 1, 1), datetime(2000, 1, 11)),
         ("W2", datetime(2000, 1, 1), datetime(2000, 1, 31)),
@@ -145,7 +219,7 @@ def test_rig_slot_reservation():
         ("W5", datetime(2000, 1, 26), datetime(2000, 3, 6)),
     ]
 
-    schedule = evaluate(**config)
+    schedule = evaluate(config)
 
     schedule_well_order = [
         (event.well, event.start_date, event.end_date) for event in schedule
@@ -185,15 +259,13 @@ def test_rig_slot_inlude_delay():
     # days after start each rig is unavailable
     unavailable = {"A": (0, 35), "B": (25, 43), "C": (32, 54)}
 
-    config["rig_unavailability"] = {
-        r: [
-            [
-                start_date + timedelta(days=unavailable[r][0]),
-                start_date + timedelta(days=unavailable[r][1]),
-            ]
+    for rig in config["rigs"]:
+        rig["unavailability"] = [
+            {
+                "start": start_date + timedelta(days=unavailable[rig["name"]][0]),
+                "stop": start_date + timedelta(days=unavailable[rig["name"]][1]),
+            }
         ]
-        for r in config["rigs"]
-    }
 
     # days after start each slot is unavailable
     unavailable = {
@@ -204,15 +276,22 @@ def test_rig_slot_inlude_delay():
         "S5": (15, 18),
     }
 
-    config["slot_unavailability"] = {
-        s: [
-            [
-                start_date + timedelta(days=unavailable[s][0]),
-                start_date + timedelta(days=unavailable[s][1]),
-            ]
+    for slot in config["slots"]:
+        slot["unavailability"] = [
+            {
+                "start": start_date + timedelta(days=unavailable[slot["name"]][0]),
+                "stop": start_date + timedelta(days=unavailable[slot["name"]][1]),
+            }
         ]
-        for s in config["slots"]
-    }
+
+    config = configsuite.ConfigSuite(
+        config,
+        drill_planner_schema.build(),
+        extract_validation_context=drill_planner_schema.extract_validation_context,
+    )
+
+    assert config.valid
+
     # WARNING: THIS IS RESULT OF A RUN
     # The results here show that the well priority constraint is given for start date, while it should
     # be for end date.
@@ -245,20 +324,21 @@ def test_rig_slot_inlude_delay():
         for (_, well, _, start_date, end_date) in detailed_well_order
     ]
 
-    schedule = evaluate(**config)
+    schedule = evaluate(config.snapshot)
 
     schedule_well_order = [
         (event.well, event.start_date, event.end_date) for event in schedule
     ]
-    _verify_priority(schedule, config)
+    _verify_priority(schedule, config.snapshot)
 
     assert len(schedule) == len(well_order)
     assert all(test_task in schedule_well_order for test_task in well_order)
     assert all(schedule_task in well_order for schedule_task in schedule_well_order)
 
-    _verify_constraints(config, schedule)
+    _verify_constraints(config.snapshot, schedule)
 
 
+@pytest.mark.slow
 def test_default_large_setup():
     """
     Test that a larger setup without restrictions works
@@ -268,8 +348,164 @@ def test_default_large_setup():
     and there may be multiple local minimums.
     """
     config = _large_setup()
+    assert config.valid
 
-    schedule = evaluate(**config)
+    schedule = evaluate(config.snapshot)
 
-    _verify_priority(schedule, config)
-    _verify_constraints(config, schedule)
+    _verify_priority(schedule, config.snapshot)
+    _verify_constraints(config.snapshot, schedule)
+
+
+def test_config_schema():
+    raw_config = _simple_config_setup()
+    config_suite = configsuite.ConfigSuite(
+        raw_config,
+        drill_planner_schema.build(),
+        extract_validation_context=drill_planner_schema.extract_validation_context,
+    )
+
+    assert config_suite.valid
+
+
+def test_invalid_config_schema():
+    raw_config = _simple_config_setup()
+    raw_config["rigs"][0]["wells"].append("UNKNOWN_WELL")
+    config_suite = configsuite.ConfigSuite(
+        raw_config,
+        drill_planner_schema.build(),
+        extract_validation_context=drill_planner_schema.extract_validation_context,
+    )
+
+    assert not config_suite.valid
+
+    raw_config = _simple_config_setup()
+    raw_config["rigs"][0]["unavailability"].append(
+        {
+            "start": raw_config["start_date"] - timedelta(days=10),
+            "stop": raw_config["start_date"] + timedelta(days=10),
+        }
+    )
+    config_suite = configsuite.ConfigSuite(
+        raw_config,
+        drill_planner_schema.build(),
+        extract_validation_context=drill_planner_schema.extract_validation_context,
+    )
+
+    assert not config_suite.valid
+
+    raw_config = _simple_config_setup()
+    raw_config["rigs"][0]["slots"].append("UNKNOWN_SLOT")
+    config_suite = configsuite.ConfigSuite(
+        raw_config,
+        drill_planner_schema.build(),
+        extract_validation_context=drill_planner_schema.extract_validation_context,
+    )
+
+    assert not config_suite.valid
+
+    raw_config = _simple_config_setup()
+    raw_config["wells_priority"]["UNKNOWN_WELL"] = 10
+    config_suite = configsuite.ConfigSuite(
+        raw_config,
+        drill_planner_schema.build(),
+        extract_validation_context=drill_planner_schema.extract_validation_context,
+    )
+
+    assert not config_suite.valid
+
+    raw_config = _simple_config_setup()
+    raw_config["slots"][0]["wells"].append("UNKNOWN_WELL")
+    config_suite = configsuite.ConfigSuite(
+        raw_config,
+        drill_planner_schema.build(),
+        extract_validation_context=drill_planner_schema.extract_validation_context,
+    )
+
+    assert not config_suite.valid
+
+    raw_config = _simple_config_setup()
+    raw_config["slots"][1]["unavailability"].append(
+        {
+            "start": raw_config["start_date"] - timedelta(days=10),
+            "stop": raw_config["start_date"] + timedelta(days=10),
+        }
+    )
+    config_suite = configsuite.ConfigSuite(
+        raw_config,
+        drill_planner_schema.build(),
+        extract_validation_context=drill_planner_schema.extract_validation_context,
+    )
+
+    assert not config_suite.valid
+
+    raw_config = _simple_config_setup()
+    raw_config["slots"][1]["unavailability"].append(
+        {
+            "start": raw_config["start_date"] + timedelta(days=10),
+            "stop": raw_config["end_date"] + timedelta(days=10),
+        }
+    )
+    config_suite = configsuite.ConfigSuite(
+        raw_config,
+        drill_planner_schema.build(),
+        extract_validation_context=drill_planner_schema.extract_validation_context,
+    )
+
+    assert not config_suite.valid
+
+
+@tmpdir(TEST_DATA_PATH)
+def test_config_file():
+    with open("config.yml") as f:
+        raw_config = yaml.safe_load(f)
+
+    with open("optimizer_values.yml") as f:
+        optimizer_values = yaml.safe_load(f)
+
+    with open("wells.json") as f:
+        input_values = yaml.safe_load(f)
+
+    raw_config["wells_priority"] = optimizer_values
+    raw_config["wells"] = input_values
+
+    config_suite = configsuite.ConfigSuite(
+        raw_config,
+        drill_planner_schema.build(),
+        extract_validation_context=drill_planner_schema.extract_validation_context,
+    )
+
+    assert config_suite.valid
+
+
+@tmpdir(TEST_DATA_PATH)
+def test_script_prepare_config():
+    config = _prepare_config(
+        config_file="config.yml",
+        optimizer_file="optimizer_values.yml",
+        input_file="wells.json",
+    )
+    assert config.valid
+
+
+@tmpdir(TEST_DATA_PATH)
+def test_main_entry_point():
+    arguments = [
+        "--input-file",
+        "wells.json",
+        "--config-file",
+        "config.yml",
+        "--optimizer-file",
+        "optimizer_values.yml",
+        "--output-file",
+        "out.json",
+    ]
+
+    main_entry_point(arguments)
+
+    with open("out.json") as f:
+        test_output = yaml.safe_load(f)
+
+    with open("correct_out.json") as f:
+        expected_output = yaml.safe_load(f)
+
+    assert test_output == expected_output

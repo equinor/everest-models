@@ -75,3 +75,4 @@ script:
   - pip install --upgrade -r requirements.txt
   - export PYTHONPATH="$INSTALL_DIR/lib/python$MB_PYTHON_VERSION/dist-packages:$PYTHONPATH"
   - python setup.py test
+  - python setup.py slowtest
