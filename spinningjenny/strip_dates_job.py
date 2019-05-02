@@ -10,9 +10,7 @@ def process_dates(dates):
     :param dates: list of dates (ex: ['2000-01-01', '2001-02-31', ]
     :return: a list of dates with format [[year, month, day], ..]
     """
-    return [
-        [date.year, date.month, date.day] for date in dates
-    ]
+    return [[date.year, date.month, date.day] for date in dates]
 
 
 def strip_dates(summary_file, dates):
@@ -41,4 +39,3 @@ def strip_dates(summary_file, dates):
 
     ecl_file.close()
     fort_io.close()
-

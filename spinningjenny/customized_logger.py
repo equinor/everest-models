@@ -5,7 +5,7 @@ import sys
 def get_logger(name):
     # Setting up logger
     logger = logging.getLogger(name)
-    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
     # All levels should pass root logger
     logger.setLevel(logging.DEBUG)
 
@@ -13,8 +13,13 @@ def get_logger(name):
     out = logging.StreamHandler(sys.stdout)
     out.setFormatter(formatter)
     out.setLevel(logging.DEBUG)
-    out.addFilter(type('', (logging.Filter,),
-                       {'filter': staticmethod(lambda r: r.levelno <= logging.WARN)}))
+    out.addFilter(
+        type(
+            "",
+            (logging.Filter,),
+            {"filter": staticmethod(lambda r: r.levelno <= logging.WARN)},
+        )
+    )
 
     # Creating handler for stderr logging levels ERROR <
     err = logging.StreamHandler()

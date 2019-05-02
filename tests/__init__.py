@@ -6,6 +6,7 @@ import logging
 import shutil
 import tempfile
 
+
 def relpath(*path):
     """Make a path relative to the project root folder"""
     project_root_folder = os.path.dirname(os.path.dirname(__file__))
@@ -14,11 +15,14 @@ def relpath(*path):
 
 def tmpdir(path, teardown=True):
     """ Decorator based on the  `tmp` context """
+
     def real_decorator(function):
         def wrapper(function, *args, **kwargs):
             with tmp(path, teardown=teardown):
                 return function(*args, **kwargs)
+
         return decorator.decorator(wrapper, function)
+
     return real_decorator
 
 
@@ -42,8 +46,8 @@ def tmp(path=None, teardown=True):
 
     if path:
         if not os.path.isdir(path):
-            logging.debug('tmp:raise no such path')
-            raise IOError('No such directory: %s' % path)
+            logging.debug("tmp:raise no such path")
+            raise IOError("No such directory: %s" % path)
         shutil.copytree(path, fname)
     else:
         # no path to copy, create empty dir
@@ -59,5 +63,5 @@ def tmp(path=None, teardown=True):
         try:
             shutil.rmtree(fname)
         except OSError as oserr:
-            logging.debug('tmp:rmtree failed %s (%s)' % (fname, oserr))
+            logging.debug("tmp:rmtree failed %s (%s)" % (fname, oserr))
             shutil.rmtree(fname, ignore_errors=True)

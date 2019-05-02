@@ -1,7 +1,7 @@
 from datetime import datetime
 from spinningjenny import customized_logger
 
-DATE_FORMAT = '%Y-%m-%d'
+DATE_FORMAT = "%Y-%m-%d"
 
 
 def date2str(date):

@@ -14,8 +14,9 @@ from spinningjenny.script import npv
 
 _SUMMARY_FILE = "REEK-0.UNSMRY"
 _CONFIG_FILE = "input_data.yml"
-_TEST_DIR = os.path.join(os.path.dirname(
-    os.path.dirname(__file__)), '../tests/testdata/npv/')
+_TEST_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "../tests/testdata/npv/"
+)
 
 
 @pytest.fixture
@@ -26,7 +27,7 @@ def input_data(tmpdir):
     cwd = os.getcwd()
     tmpdir.chdir()
 
-    with open('input_data.yml', 'r') as default_input_data:
+    with open("input_data.yml", "r") as default_input_data:
         data = yaml.safe_load(default_input_data)
 
     yield data
@@ -36,19 +37,19 @@ def input_data(tmpdir):
 
 @pytest.fixture
 def options():
-    sys.argv.extend(['--summary-file', _SUMMARY_FILE])
-    sys.argv.extend(['--config-file', _CONFIG_FILE])
+    sys.argv.extend(["--summary-file", _SUMMARY_FILE])
+    sys.argv.extend(["--config-file", _CONFIG_FILE])
 
     return npv._extract_options(sys.argv)
 
 
 def test_minimal_input_case_npv(tmpdir, input_data, options):
-    input_data.pop('exchange_rates')
-    input_data.pop('discount_rates')
-    input_data.pop('costs')
-    input_data.pop('well_costs')
-    input_data.pop('summary_keys')
-    input_data.pop('dates')
+    input_data.pop("exchange_rates")
+    input_data.pop("discount_rates")
+    input_data.pop("costs")
+    input_data.pop("well_costs")
+    input_data.pop("summary_keys")
+    input_data.pop("dates")
 
     config = npv._prepare_config(input_data, options)
     assert config.valid
@@ -61,16 +62,17 @@ def test_minimal_input_case_npv(tmpdir, input_data, options):
     assert calculate.npv == expected_npv
     assert calculate.multiplier == 1
     assert sorted(calculate.keywords) == sorted(
-        ['FOPT', 'FWPT', 'FGPT', 'FWIT', 'FGIT', 'GOPT:OP'])
+        ["FOPT", "FWPT", "FGPT", "FWIT", "FGIT", "GOPT:OP"]
+    )
 
     assert_written_npv(tmpdir, expected_npv, config.snapshot)
 
 
 def test_base_case_npv(tmpdir, input_data, options):
-    input_data.pop('discount_rates')
-    input_data.pop('costs')
-    input_data.pop('summary_keys')
-    input_data.pop('dates')
+    input_data.pop("discount_rates")
+    input_data.pop("costs")
+    input_data.pop("summary_keys")
+    input_data.pop("dates")
 
     config = npv._prepare_config(input_data, options)
     assert config.valid
@@ -83,14 +85,15 @@ def test_base_case_npv(tmpdir, input_data, options):
     assert calculate.npv == expected_npv
     assert calculate.multiplier == 1
     assert sorted(calculate.keywords) == sorted(
-        ['FOPT', 'FWPT', 'FGPT', 'FWIT', 'FGIT', 'GOPT:OP'])
+        ["FOPT", "FWPT", "FGPT", "FWIT", "FGIT", "GOPT:OP"]
+    )
 
     assert_written_npv(tmpdir, expected_npv, config.snapshot)
 
 
 def test_extended_case_npv(tmpdir, input_data, options):
-    input_data.pop('dates')
-    input_data.pop('summary_keys')
+    input_data.pop("dates")
+    input_data.pop("summary_keys")
 
     config = npv._prepare_config(input_data, options)
     assert config.valid
@@ -103,16 +106,17 @@ def test_extended_case_npv(tmpdir, input_data, options):
     assert calculate.npv == expected_npv
     assert calculate.multiplier == 1
     assert sorted(calculate.keywords) == sorted(
-        ['FOPT', 'FWPT', 'FGPT', 'FWIT', 'FGIT', 'GOPT:OP'])
+        ["FOPT", "FWPT", "FGPT", "FWIT", "FGIT", "GOPT:OP"]
+    )
 
     assert_written_npv(tmpdir, expected_npv, config.snapshot)
 
 
 def test_alter_mult(tmpdir, input_data, options):
-    input_data.pop('dates')
-    input_data.pop('summary_keys')
+    input_data.pop("dates")
+    input_data.pop("summary_keys")
     multiplier = 2
-    input_data['multiplier'] = multiplier
+    input_data["multiplier"] = multiplier
 
     config = npv._prepare_config(input_data, options)
     assert config.valid
@@ -125,16 +129,17 @@ def test_alter_mult(tmpdir, input_data, options):
     assert calculate.npv == expected_npv
     assert calculate.multiplier == multiplier
     assert sorted(calculate.keywords) == sorted(
-        ['FOPT', 'FWPT', 'FGPT', 'FWIT', 'FGIT', 'GOPT:OP'])
+        ["FOPT", "FWPT", "FGPT", "FWIT", "FGIT", "GOPT:OP"]
+    )
 
     assert_written_npv(tmpdir, expected_npv, config.snapshot)
 
 
 def test_extended_case_mutated_ref_date_npv(tmpdir, input_data, options):
-    input_data['dates'].pop('start_date')
-    input_data['dates'].pop('end_date')
-    input_data['dates']['ref_date'] = datetime.date(2000, 5, 6)
-    input_data.pop('summary_keys')
+    input_data["dates"].pop("start_date")
+    input_data["dates"].pop("end_date")
+    input_data["dates"]["ref_date"] = datetime.date(2000, 5, 6)
+    input_data.pop("summary_keys")
 
     config = npv._prepare_config(input_data, options)
     assert config.valid
@@ -146,15 +151,16 @@ def test_extended_case_mutated_ref_date_npv(tmpdir, input_data, options):
     expected_npv = 2841341281.17
     assert calculate.npv == expected_npv
     assert sorted(calculate.keywords) == sorted(
-        ['FOPT', 'FWPT', 'FGPT', 'FWIT', 'FGIT', 'GOPT:OP'])
+        ["FOPT", "FWPT", "FGPT", "FWIT", "FGIT", "GOPT:OP"]
+    )
 
     assert_written_npv(tmpdir, expected_npv, config.snapshot)
 
 
 def test_extended_case_date_mutated_npv(tmpdir, input_data, options):
-    input_data['dates'].pop('ref_date')
-    input_data['dates']['start_date'] = datetime.date(2000, 6, 12)
-    input_data['dates']['end_date'] = datetime.date(2002, 12, 23)
+    input_data["dates"].pop("ref_date")
+    input_data["dates"]["start_date"] = datetime.date(2000, 6, 12)
+    input_data["dates"]["end_date"] = datetime.date(2002, 12, 23)
 
     config = npv._prepare_config(input_data, options)
     assert config.valid
@@ -165,16 +171,16 @@ def test_extended_case_date_mutated_npv(tmpdir, input_data, options):
 
     expected_npv = 908267869.83
     assert calculate.npv == expected_npv
-    assert sorted(calculate.keywords) == sorted(['FWIT', 'FOPT'])
+    assert sorted(calculate.keywords) == sorted(["FWIT", "FOPT"])
 
     assert_written_npv(tmpdir, expected_npv, config.snapshot)
 
 
 def test_extended_case_big_date_range_npv(tmpdir, input_data, options):
-    input_data['dates'].pop('ref_date')
-    input_data['dates']['start_date'] = datetime.date(1999, 12, 1)
-    input_data['dates']['end_date'] = datetime.date(2003, 1, 1)
-    input_data.pop('summary_keys')
+    input_data["dates"].pop("ref_date")
+    input_data["dates"]["start_date"] = datetime.date(1999, 12, 1)
+    input_data["dates"]["end_date"] = datetime.date(2003, 1, 1)
+    input_data.pop("summary_keys")
 
     config = npv._prepare_config(input_data, options)
     assert config.valid
@@ -186,16 +192,17 @@ def test_extended_case_big_date_range_npv(tmpdir, input_data, options):
     expected_npv = 2787975581.67
     assert calculate.npv == expected_npv
     assert sorted(calculate.keywords) == sorted(
-        ['FOPT', 'FWPT', 'FGPT', 'FWIT', 'FGIT', 'GOPT:OP'])
+        ["FOPT", "FWPT", "FGPT", "FWIT", "FGIT", "GOPT:OP"]
+    )
 
     assert_written_npv(tmpdir, expected_npv, config.snapshot)
 
 
 def test_extended_case_small_date_range_npv(tmpdir, input_data, options):
-    input_data['dates'].pop('ref_date')
-    input_data['dates']['start_date'] = datetime.date(1999, 12, 1)
-    input_data['dates']['end_date'] = datetime.date(1999, 12, 2)
-    input_data.pop('summary_keys')
+    input_data["dates"].pop("ref_date")
+    input_data["dates"]["start_date"] = datetime.date(1999, 12, 1)
+    input_data["dates"]["end_date"] = datetime.date(1999, 12, 2)
+    input_data.pop("summary_keys")
 
     config = npv._prepare_config(input_data, options)
     assert config.valid
@@ -207,30 +214,31 @@ def test_extended_case_small_date_range_npv(tmpdir, input_data, options):
     expected_npv = -370456890.60
     assert calculate.npv == expected_npv
     assert sorted(calculate.keywords) == sorted(
-        ['FOPT', 'FWPT', 'FGPT', 'FWIT', 'FGIT', 'GOPT:OP'])
+        ["FOPT", "FWPT", "FGPT", "FWIT", "FGIT", "GOPT:OP"]
+    )
 
     assert_written_npv(tmpdir, expected_npv, config.snapshot)
 
 
 def test_dates_outside_simulation_dates(tmpdir, input_data, options):
-    input_data['dates'].pop('ref_date')
-    input_data['dates']['start_date'] = datetime.date(1998, 11, 30)
-    input_data['dates']['end_date'] = datetime.date(2005, 1, 2)
+    input_data["dates"].pop("ref_date")
+    input_data["dates"]["start_date"] = datetime.date(1998, 11, 30)
+    input_data["dates"]["end_date"] = datetime.date(2005, 1, 2)
 
     config = npv._prepare_config(input_data, options)
     assert config.valid
 
     calculate_outside_sim_dates = npv.CalculateNPV(
-        config.snapshot, options.summary_file)
+        config.snapshot, options.summary_file
+    )
     calculate_outside_sim_dates.run()
     outside_sim_dates_npv = calculate_outside_sim_dates.npv
 
-    input_data.pop('dates')
+    input_data.pop("dates")
 
     config = npv._prepare_config(input_data, options)
 
-    calculate_inside_sim_dates = npv.CalculateNPV(
-        config.snapshot, options.summary_file)
+    calculate_inside_sim_dates = npv.CalculateNPV(config.snapshot, options.summary_file)
     calculate_inside_sim_dates.run()
     default_sim_dates_npv = calculate_inside_sim_dates.npv
 
@@ -238,7 +246,7 @@ def test_dates_outside_simulation_dates(tmpdir, input_data, options):
 
 
 def test_keys_not_available(tmpdir, input_data, options):
-    input_data['summary_keys'] = ["NOT_EXISTING", "FAULTY_KEY"]
+    input_data["summary_keys"] = ["NOT_EXISTING", "FAULTY_KEY"]
 
     config = npv._prepare_config(input_data, options)
 
@@ -246,12 +254,14 @@ def test_keys_not_available(tmpdir, input_data, options):
         calculate = npv.CalculateNPV(config.snapshot, options.summary_file)
         calculate.keywords
 
-    assert "Missing required data (['NOT_EXISTING', 'FAULTY_KEY']) in summary file." in str(
-        excinfo.value)
+    assert (
+        "Missing required data (['NOT_EXISTING', 'FAULTY_KEY']) in summary file."
+        in str(excinfo.value)
+    )
 
 
 def test_no_date_input(tmpdir, input_data, options):
-    input_data.pop('dates')
+    input_data.pop("dates")
 
     config = npv._prepare_config(input_data, options)
     assert config.valid
@@ -267,9 +277,9 @@ def test_date_input(tmpdir, input_data, options):
     _start_date = datetime.date(2000, 2, 1)
     _end_date = datetime.date(2001, 1, 1)
     _ref_date = datetime.date(2000, 2, 2)
-    input_data['dates']['start_date'] = _start_date
-    input_data['dates']['end_date'] = _end_date
-    input_data['dates']['ref_date'] = _ref_date
+    input_data["dates"]["start_date"] = _start_date
+    input_data["dates"]["end_date"] = _end_date
+    input_data["dates"]["ref_date"] = _ref_date
 
     config = npv._prepare_config(input_data, options)
     assert config.valid
@@ -284,8 +294,8 @@ def test_date_input(tmpdir, input_data, options):
 def test_start_date_after_end_date(tmpdir, input_data, options):
     _start_date = datetime.date(2001, 2, 1)
     _end_date = datetime.date(2001, 1, 1)
-    input_data['dates']['start_date'] = _start_date
-    input_data['dates']['end_date'] = _end_date
+    input_data["dates"]["start_date"] = _start_date
+    input_data["dates"]["end_date"] = _end_date
 
     config = npv._prepare_config(input_data, options)
     assert config.valid
@@ -293,8 +303,7 @@ def test_start_date_after_end_date(tmpdir, input_data, options):
     with pytest.raises(ValueError) as excinfo:
         npv.CalculateNPV(config.snapshot, options.summary_file)
 
-    assert "Invalid time interval start after end" in str(
-        excinfo.value)
+    assert "Invalid time interval start after end" in str(excinfo.value)
 
 
 def test_find_discount_value_lower_extreme(tmpdir, input_data, options):
@@ -349,7 +358,7 @@ def test_find_discount_value_upper_extreme(tmpdir, input_data, options):
 
 def test_find_exhange_rate_lower_extreme(tmpdir, input_data, options):
     date = datetime.date(1990, 1, 1)
-    currency = 'USD'
+    currency = "USD"
 
     config = npv._prepare_config(input_data, options)
     assert config.valid
@@ -360,7 +369,7 @@ def test_find_exhange_rate_lower_extreme(tmpdir, input_data, options):
 
 def test_find_exhange_rate_lower_limit(tmpdir, input_data, options):
     date = datetime.date(1997, 1, 1)
-    currency = 'USD'
+    currency = "USD"
 
     config = npv._prepare_config(input_data, options)
     assert config.valid
@@ -371,7 +380,7 @@ def test_find_exhange_rate_lower_limit(tmpdir, input_data, options):
 
 def test_find_exhange_rate_base_case(tmpdir, input_data, options):
     date = datetime.date(1999, 12, 2)
-    currency = 'USD'
+    currency = "USD"
 
     config = npv._prepare_config(input_data, options)
     assert config.valid
@@ -382,7 +391,7 @@ def test_find_exhange_rate_base_case(tmpdir, input_data, options):
 
 def test_find_exhange_rate_upper_limit(tmpdir, input_data, options):
     date = datetime.date(2002, 2, 1)
-    currency = 'USD'
+    currency = "USD"
 
     config = npv._prepare_config(input_data, options)
     assert config.valid
@@ -393,7 +402,7 @@ def test_find_exhange_rate_upper_limit(tmpdir, input_data, options):
 
 def test_find_exhange_rate_upper_extreme(tmpdir, input_data, options):
     date = datetime.date(2010, 1, 1)
-    currency = 'USD'
+    currency = "USD"
 
     config = npv._prepare_config(input_data, options)
     exchange_rate = npv_job.ExchangeRate(config.snapshot)
@@ -402,7 +411,7 @@ def test_find_exhange_rate_upper_extreme(tmpdir, input_data, options):
 
 def test_find_price_lower_extreme(tmpdir, input_data, options):
     date = datetime.date(1990, 1, 1)
-    keyword = 'FWPT'
+    keyword = "FWPT"
 
     config = npv._prepare_config(input_data, options)
     assert config.valid
@@ -417,7 +426,7 @@ def test_find_price_lower_extreme(tmpdir, input_data, options):
 
 def test_find_price_lower_limit(tmpdir, input_data, options):
     date = datetime.date(1999, 1, 1)
-    keyword = 'FWPT'
+    keyword = "FWPT"
 
     config = npv._prepare_config(input_data, options)
     assert config.valid
@@ -425,14 +434,14 @@ def test_find_price_lower_limit(tmpdir, input_data, options):
     price = npv_job.Price(config.snapshot)
     exchange_rate = npv_job.ExchangeRate(config.snapshot)
     transaction = price.get(date, keyword)
-    assert transaction.currency == 'USD'
+    assert transaction.currency == "USD"
     assert transaction._value == -5
     assert transaction.value(exchange_rate) == -25
 
 
 def test_find_price_base_case(tmpdir, input_data, options):
     date = datetime.date(1999, 12, 2)
-    keyword = 'FWPT'
+    keyword = "FWPT"
 
     config = npv._prepare_config(input_data, options)
     assert config.valid
@@ -440,13 +449,13 @@ def test_find_price_base_case(tmpdir, input_data, options):
     price = npv_job.Price(config.snapshot)
     exchange_rate = npv_job.ExchangeRate(config.snapshot)
     transaction = price.get(date, keyword)
-    assert transaction.currency == 'USD'
+    assert transaction.currency == "USD"
     assert transaction.value(exchange_rate) == -25
 
 
 def test_find_price_upper_limit(tmpdir, input_data, options):
     date = datetime.date(2002, 2, 1)
-    keyword = 'FWPT'
+    keyword = "FWPT"
 
     config = npv._prepare_config(input_data, options)
     assert config.valid
@@ -461,7 +470,7 @@ def test_find_price_upper_limit(tmpdir, input_data, options):
 
 def test_find_price_upper_extreme(tmpdir, input_data, options):
     date = datetime.date(2010, 1, 1)
-    keyword = 'FWPT'
+    keyword = "FWPT"
 
     config = npv._prepare_config(input_data, options)
     assert config.valid
@@ -476,7 +485,7 @@ def test_find_price_upper_extreme(tmpdir, input_data, options):
 
 def test_find_price_keyword_not_exists(tmpdir, input_data, options):
     date = datetime.date(2010, 1, 1)
-    keyword = 'NOT_A_KEY'
+    keyword = "NOT_A_KEY"
 
     config = npv._prepare_config(input_data, options)
     assert config.valid
@@ -485,12 +494,12 @@ def test_find_price_keyword_not_exists(tmpdir, input_data, options):
     with pytest.raises(AttributeError) as excinfo:
         price.get(date, keyword)
 
-    assert 'Price information missing for NOT_A_KEY' in str(excinfo.value)
+    assert "Price information missing for NOT_A_KEY" in str(excinfo.value)
 
 
 def test_argparser(tmpdir, input_data):
-    output_file = 'test'
-    t2s_file = 't2s_npv_info'
+    output_file = "test"
+    t2s_file = "t2s_npv_info"
     start_date = datetime.date(2018, 1, 31)
     end_date = datetime.date(2019, 6, 22)
     ref_date = datetime.date(2018, 4, 5)
@@ -498,16 +507,16 @@ def test_argparser(tmpdir, input_data):
     default_exchange_rate = 5.0
     multiplier = 2
 
-    sys.argv.extend(['--summary-file', _SUMMARY_FILE])
-    sys.argv.extend(['--config-file', _CONFIG_FILE])
-    sys.argv.extend(['--output-file', output_file])
-    sys.argv.extend(['--t2s-file', t2s_file])
-    sys.argv.extend(['--start-date', str(start_date)])
-    sys.argv.extend(['--end-date', str(end_date)])
-    sys.argv.extend(['--ref-date', str(ref_date)])
-    sys.argv.extend(['--default-discount-rate', str(default_discount_rate)])
-    sys.argv.extend(['--default-exchange-rate', str(default_exchange_rate)])
-    sys.argv.extend(['--multiplier', str(multiplier)])
+    sys.argv.extend(["--summary-file", _SUMMARY_FILE])
+    sys.argv.extend(["--config-file", _CONFIG_FILE])
+    sys.argv.extend(["--output-file", output_file])
+    sys.argv.extend(["--t2s-file", t2s_file])
+    sys.argv.extend(["--start-date", str(start_date)])
+    sys.argv.extend(["--end-date", str(end_date)])
+    sys.argv.extend(["--ref-date", str(ref_date)])
+    sys.argv.extend(["--default-discount-rate", str(default_discount_rate)])
+    sys.argv.extend(["--default-exchange-rate", str(default_exchange_rate)])
+    sys.argv.extend(["--multiplier", str(multiplier)])
 
     options = spinningjenny.script.npv._extract_options(sys.argv)
     config = spinningjenny.script.npv._prepare_config(input_data, options)
@@ -523,8 +532,7 @@ def test_argparser(tmpdir, input_data):
 
 
 def assert_written_npv(tmpdir, expected_npv, input_data):
-    written_npv_output_file = tmpdir.strpath + "/" + \
-        input_data.files.output_file
+    written_npv_output_file = tmpdir.strpath + "/" + input_data.files.output_file
     assert os.path.isfile(written_npv_output_file)
-    with open(written_npv_output_file, 'r') as written_npv_output:
+    with open(written_npv_output_file, "r") as written_npv_output:
         assert float(written_npv_output.readline()) == expected_npv

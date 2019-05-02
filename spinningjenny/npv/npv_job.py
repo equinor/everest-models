@@ -40,13 +40,15 @@ class CalculateNPV:
     def run(self):
         time_range = self.date_handler.time_range
         ref_date = self.date_handler.ref_date
-        logger.info("running npv calculation with time_range {} - {} and ref_date {}".format(
-            self.date_handler.start_date, self.date_handler.end_date, ref_date))
+        logger.info(
+            "running npv calculation with time_range {} - {} and ref_date {}".format(
+                self.date_handler.start_date, self.date_handler.end_date, ref_date
+            )
+        )
         blocked_production = self._extract_blocked_production(time_range)
         self._extract_prices(blocked_production, time_range, ref_date)
         self._extract_costs(ref_date)
-        logger.info(
-            "done calculating, writing result {} to output".format(self.npv))
+        logger.info("done calculating, writing result {} to output".format(self.npv))
 
     @property
     def npv(self):
@@ -72,7 +74,8 @@ class CalculateNPV:
         blocked_production = {}
         for keyword in self.keywords:
             blocked_production[keyword] = self.ecl_sum.blocked_production(
-                keyword, time_range)
+                keyword, time_range
+            )
         return blocked_production
 
     def _npv_calc(self, value, date, ref_date):
@@ -80,8 +83,8 @@ class CalculateNPV:
         return value / (1.0 + discount_rate) ** ((date - ref_date).days / 365.25)
 
     def write(self):
-        with open(self.output_file, 'w') as f:
-            f.write('{0:.2f}'.format(self.npv))
+        with open(self.output_file, "w") as f:
+            f.write("{0:.2f}".format(self.npv))
 
 
 class Transaction:
@@ -139,14 +142,17 @@ class Keywords:
             if all(keys_exists):
                 missing_keys = list(compress(summary_keys, keys_exists))
                 raise AttributeError(
-                    'Missing required data ({}) in summary file.'.format(missing_keys))
+                    "Missing required data ({}) in summary file.".format(missing_keys)
+                )
             self._keywords = summary_keys
-            logger.info(
-                "using keywords from 'summary_keys' {}".format(self._keywords))
+            logger.info("using keywords from 'summary_keys' {}".format(self._keywords))
         else:
             self._keywords = [k for k, _ in input_data.prices]
-            logger.info("'summary_keys' not found, defaulting to keys from prices {}".format(
-                self._keywords))
+            logger.info(
+                "'summary_keys' not found, defaulting to keys from prices {}".format(
+                    self._keywords
+                )
+            )
 
     def get(self):
         return self._keywords
@@ -173,8 +179,11 @@ class ExchangeRate:
             if entry.date <= date:
                 return entry.value
 
-        logger.warning("entry for exchange_rate {} {} does not exist, using default {}".format(
-            date, currency, self.default_exchange_rate))
+        logger.warning(
+            "entry for exchange_rate {} {} does not exist, using default {}".format(
+                date, currency, self.default_exchange_rate
+            )
+        )
         return self.default_exchange_rate
 
 
@@ -189,13 +198,17 @@ class DiscountRate:
         self.default_discount_rate = input_data.default_discount_rate
 
     def get(self, date):
-        ordered_data = sorted(self._discount_rates,
-                              key=lambda entry: entry.date, reverse=True)
+        ordered_data = sorted(
+            self._discount_rates, key=lambda entry: entry.date, reverse=True
+        )
         for entry in ordered_data:
             if entry.date <= date:
                 return entry.value
-        logger.warning("entry for discount rate {} does not exist, using default {}".format(
-            date, self.default_discount_rate))
+        logger.warning(
+            "entry for discount rate {} does not exist, using default {}".format(
+                date, self.default_discount_rate
+            )
+        )
         return self.default_discount_rate
 
 
@@ -212,15 +225,15 @@ class Price:
     def __init__(self, input_data):
         if len(input_data.prices) == 0:
             raise AttributeError(
-                'Price information is required to do an NPV calculation')
+                "Price information is required to do an NPV calculation"
+            )
 
         self._prices = []
         self._prices = input_data.prices
 
     def get(self, date, keyword):
         if not any(keyword in k for k, _ in self._prices):
-            raise AttributeError(
-                'Price information missing for {}'.format(keyword))
+            raise AttributeError("Price information missing for {}".format(keyword))
 
         data = [v for k, v in self._prices if k == keyword]
         data = chain.from_iterable(data)
@@ -230,7 +243,10 @@ class Price:
                 return Transaction.using_price(entry, date)
 
         logger.warning(
-            'Price information missing at {} for {}. Using value 0.'.format(date, keyword))
+            "Price information missing at {} for {}. Using value 0.".format(
+                date, keyword
+            )
+        )
         return Transaction.empty()
 
 
@@ -255,22 +271,25 @@ class Cost:
         if input_data.well_costs:
             _t2s = {}
             logger.debug("open t2s-file from {}".format(t2s_file_path))
-            with open(t2s_file_path, 'r') as t2s_file:
+            with open(t2s_file_path, "r") as t2s_file:
                 for line in t2s_file:
                     date, well = str.strip(line).split(" ")
 
                     # Currently the date-format in t2s is dd.mm.YYYY - we should move to ISO
-                    _t2s[well] = datetime.datetime.strptime(
-                        date, '%d.%m.%Y').date()
+                    _t2s[well] = datetime.datetime.strptime(date, "%d.%m.%Y").date()
 
             for well_cost_entry in input_data.well_costs:
                 well_name = well_cost_entry.well
                 if well_name in _t2s:
-                    self._costs.append(Transaction.using_well_cost(
-                        well_cost_entry, _t2s, well_name))
+                    self._costs.append(
+                        Transaction.using_well_cost(well_cost_entry, _t2s, well_name)
+                    )
                 else:
                     logger.warning(
-                        'Well cost for well {} skipped due to lacking reference in t2s'.format(well_name))
+                        "Well cost for well {} skipped due to lacking reference in t2s".format(
+                            well_name
+                        )
+                    )
 
     def get(self):
         return self._costs
@@ -299,38 +318,47 @@ class DateHandler:
             if not dates.ref_date and dates.start_date > self._ecl_summary.start_date:
                 self.ref_date = dates.start_date
 
-            logger.info(
-                "simulation start_date set {}".format(dates.start_date))
+            logger.info("simulation start_date set {}".format(dates.start_date))
         else:
-            logger.info("simulation start date defaults to summary start date: {}".format(
-                self.start_date))
+            logger.info(
+                "simulation start date defaults to summary start date: {}".format(
+                    self.start_date
+                )
+            )
 
         if dates and dates.end_date:
             self.end_date = dates.end_date
-            logger.info(
-                "simulation end_date set {}".format(dates.end_date))
+            logger.info("simulation end_date set {}".format(dates.end_date))
         else:
             logger.info(
-                "simulation end date defaults to summary end date: {}".format(self.end_date))
+                "simulation end date defaults to summary end date: {}".format(
+                    self.end_date
+                )
+            )
 
         if dates and dates.ref_date:
             self.ref_date = dates.ref_date
-            logger.info(
-                "simulation ref_date set {}".format(dates.ref_date))
+            logger.info("simulation ref_date set {}".format(dates.ref_date))
         else:
             logger.info(
-                "simulation ref date defaults to start date: {}".format(self.ref_date))
+                "simulation ref date defaults to start date: {}".format(self.ref_date)
+            )
 
         self.time_range = self._ecl_summary.time_range(
-            start=self.start_date, end=self.end_date, interval='1d')
+            start=self.start_date, end=self.end_date, interval="1d"
+        )
 
-        if (self._ecl_summary.start_date > self.start_date) \
-                or (self._ecl_summary.end_date < self.end_date):
-            logger.warning("""The date range ({} - {}) is not during the simulation time ({} - {}).\n
+        if (self._ecl_summary.start_date > self.start_date) or (
+            self._ecl_summary.end_date < self.end_date
+        ):
+            logger.warning(
+                """The date range ({} - {}) is not during the simulation time ({} - {}).\n
                             Effective date range defaults to simulation start and end dates {} - {}""".format(
-                        self.start_date,
-                        self.end_date,
-                        self._ecl_summary.start_date,
-                        self._ecl_summary.end_date,
-                        self._ecl_summary.start_date,
-                        self._ecl_summary.end_date))
+                    self.start_date,
+                    self.end_date,
+                    self._ecl_summary.start_date,
+                    self._ecl_summary.end_date,
+                    self._ecl_summary.start_date,
+                    self._ecl_summary.end_date,
+                )
+            )

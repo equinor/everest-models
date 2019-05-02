@@ -21,10 +21,13 @@ def _build_schema():
                                 MK.Content: {
                                     "date": {
                                         MK.Type: types.Date,
-                                        MK.Description: "ISO8601 formatted date"
+                                        MK.Description: "ISO8601 formatted date",
                                     },
                                     "value": {MK.Type: types.Number},
-                                    "currency": {MK.Type: types.String, MK.Required: False},
+                                    "currency": {
+                                        MK.Type: types.String,
+                                        MK.Required: False,
+                                    },
                                 },
                             }
                         },
@@ -49,8 +52,8 @@ def _build_schema():
                         MK.Type: types.String,
                         MK.Description: "Path where to place the outputfile with the npv result.",
                         MK.Required: False,
-                    }
-                }
+                    },
+                },
             },
             "dates": {
                 MK.Type: types.NamedDict,
@@ -63,19 +66,19 @@ def _build_schema():
                     "start_date": {
                         MK.Type: types.Date,
                         MK.Description: "ISO8601 formatted date",
-                        MK.Required: False
+                        MK.Required: False,
                     },
                     "end_date": {
                         MK.Type: types.Date,
                         MK.Description: "ISO8601 formatted date",
-                        MK.Required: False
+                        MK.Required: False,
                     },
                     "ref_date": {
                         MK.Type: types.Date,
                         MK.Description: "ISO8601 formatted date",
-                        MK.Required: False
-                    }
-                }
+                        MK.Required: False,
+                    },
+                },
             },
             "summary_keys": {
                 MK.Type: types.List,
@@ -84,11 +87,7 @@ def _build_schema():
                     "A list of the Eclipse Summary keys to use as part of the NPV calculation."
                     "Defaults to all the vectors with prices supplied."
                 ),
-                MK.Content: {
-                    MK.Item: {
-                        MK.Type: types.String
-                    }
-                }
+                MK.Content: {MK.Item: {MK.Type: types.String}},
             },
             "default_exchange_rate": {
                 MK.Type: types.Number,
@@ -96,7 +95,7 @@ def _build_schema():
                 MK.Description: (
                     "Default exchange rate to use if no exchange rate is found at the "
                     "date of a price or cost when currency is specified. "
-                )
+                ),
             },
             "exchange_rates": {
                 MK.Type: types.Dict,
@@ -117,12 +116,12 @@ def _build_schema():
                                         MK.Type: types.Date,
                                         MK.Description: "ISO8601 formatted date",
                                     },
-                                    "value": {MK.Type: types.Number}
+                                    "value": {MK.Type: types.Number},
                                 },
                             }
                         },
                     },
-                }
+                },
             },
             "default_discount_rate": {
                 MK.Type: types.Number,
@@ -130,7 +129,7 @@ def _build_schema():
                 MK.Description: (
                     "Default discount rate to use if no discount rate is found at the "
                     "date of a price or cost."
-                )
+                ),
             },
             "discount_rates": {
                 MK.Type: types.List,
@@ -144,7 +143,7 @@ def _build_schema():
                                 MK.Type: types.Date,
                                 MK.Description: "ISO8601 formatted date",
                             },
-                            "value": {MK.Type: types.Number}
+                            "value": {MK.Type: types.Number},
                         },
                     }
                 },
@@ -162,7 +161,7 @@ def _build_schema():
                                 MK.Description: "ISO8601 formatted date",
                             },
                             "value": {MK.Type: types.Number},
-                            "currency": {MK.Type: types.String, MK.Required: False}
+                            "currency": {MK.Type: types.String, MK.Required: False},
                         },
                     }
                 },
@@ -181,7 +180,7 @@ def _build_schema():
                         MK.Content: {
                             "well": {MK.Type: types.String},
                             "value": {MK.Type: types.Number},
-                            "currency": {MK.Type: types.String, MK.Required: False}
+                            "currency": {MK.Type: types.String, MK.Required: False},
                         },
                     }
                 },

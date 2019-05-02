@@ -6,7 +6,14 @@ from spinningjenny import customized_logger
 
 logger = customized_logger.get_logger(__name__)
 
-def recovery_factor(ecl_sum, production_key='FOPT', total_volume_key='FOIP', start_date=None, end_date=None):
+
+def recovery_factor(
+    ecl_sum,
+    production_key="FOPT",
+    total_volume_key="FOIP",
+    start_date=None,
+    end_date=None,
+):
     """
     Calculates the recovery factor given summary keys and dates.
     Requires an EclSum instance to retrieve the volumes from. The summary
@@ -41,31 +48,36 @@ def recovery_factor(ecl_sum, production_key='FOPT', total_volume_key='FOIP', sta
     """
 
     if isinstance(start_date, str):
-        start_date = datetime.strptime(start_date, '%d.%m.%Y')
+        start_date = datetime.strptime(start_date, "%d.%m.%Y")
     else:
         start_date = start_date or ecl_sum.start_time
 
     if isinstance(end_date, str):
-        end_date = datetime.strptime(end_date, '%d.%m.%Y')
+        end_date = datetime.strptime(end_date, "%d.%m.%Y")
     else:
         end_date = end_date or ecl_sum.end_time
 
     if start_date < ecl_sum.start_time or end_date > ecl_sum.end_time:
-        msg = 'The date range {} - {} exceeds the simulation time clamping'\
-              'to simulation time: {} - {}'
-        logger.warning(msg.format(start_date, end_date, ecl_sum.start_time,
-                               ecl_sum.end_time))
+        msg = (
+            "The date range {} - {} exceeds the simulation time clamping"
+            "to simulation time: {} - {}"
+        )
+        logger.warning(
+            msg.format(start_date, end_date, ecl_sum.start_time, ecl_sum.end_time)
+        )
 
     total_volume = ecl_sum.numpy_vector(total_volume_key)[0]
     if total_volume <= 0:
         return 0
 
-    time_range = ecl_sum.time_range(start=start_date, end=end_date, interval='1d')
+    time_range = ecl_sum.time_range(start=start_date, end=end_date, interval="1d")
     produced_volume = ecl_sum.blocked_production(production_key, time_range)
     produced_volume = sum([x for x in produced_volume])
 
-    msg = 'Retrieving the recovery factor for production key: {} '\
-          'given a total volume key: {}, within the time range {} - {}'
+    msg = (
+        "Retrieving the recovery factor for production key: {} "
+        "given a total volume key: {}, within the time range {} - {}"
+    )
     logger.info(msg.format(production_key, total_volume_key, start_date, end_date))
 
-    return produced_volume/float(total_volume)
+    return produced_volume / float(total_volume)
