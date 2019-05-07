@@ -10,9 +10,18 @@ def test_code_style():
     import black
     from click.testing import CliRunner
 
-    root = Path(__file__).parent.parent
+    root = str(Path(__file__).parent.parent.parent)
+
     runner = CliRunner()
-    resp = runner.invoke(black.main, [str(root), "--check"])
+    resp = runner.invoke(
+        black.main,
+        [
+            "--check",
+            os.path.join(root, "tests"),
+            os.path.join(root, "spinningjenny"),
+            os.path.join(root, "setup.py"),
+        ],
+    )
 
     assert (
         resp.exit_code == 0
