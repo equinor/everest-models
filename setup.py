@@ -13,6 +13,7 @@ setup(
         "spinningjenny/script",
         "spinningjenny/npv",
         "spinningjenny/drill_planner",
+        "spinningjenny/well_constraints",
     ],
     description="Module containing a collection of jobs for ERT",
     author="Equinor ASA",
@@ -34,6 +35,7 @@ setup(
             "fm_rf = spinningjenny.script.rf:main_entry_point",
             "fm_stea = spinningjenny.script.stea_fmu:stea_main",
             "fm_strip_dates = spinningjenny.script.strip_dates:main_entry_point",
+            "fm_well_constraints = spinningjenny.script.well_constraints:main_entry_point",
         ]
     },
 )

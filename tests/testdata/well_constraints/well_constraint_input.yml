@@ -1,0 +1,50 @@
+INJECT1:
+    1:
+      phase:
+        options: [water, gas]
+      rate:
+        min: 0
+        max: 1000
+      duration:
+        value: 50
+    2:
+      phase:
+        options: [water, gas]
+      rate:
+        min: 0
+        max: 1000
+      duration:
+        value: 60
+    3:
+      phase:
+        options: [water, gas]
+      rate:
+        min: 0
+        max: 1000
+      duration:
+        value: 70
+    4:
+      phase:
+        value: water
+      rate:
+        value: 333
+      duration:
+        value: 100
+
+INJECT2:
+    1:
+      phase:
+        options: [water, gas]
+      rate:
+        min: 500
+        max: 1000
+      duration:
+        value: 50
+    2:
+      phase:
+        options: [water, gas]
+      rate:
+        min: 500
+        max: 1000
+      duration:
+        value: 60
