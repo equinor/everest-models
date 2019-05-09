@@ -21,7 +21,8 @@ def strip_dates(summary_file, dates):
     :param dates: list of dates that need to remain in the summary file.
     """
     filename, file_extension = os.path.splitext(summary_file)
-    tmp_file_path = filename + "_tmp." + file_extension
+    tmp_file_path = filename + "_tmp" + file_extension
+
     shutil.move(summary_file, tmp_file_path)
     shutil.copy(filename + ".SMSPEC", filename + "_tmp.SMSPEC")
 
