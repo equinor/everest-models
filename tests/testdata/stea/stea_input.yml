@@ -7,7 +7,7 @@ project-version: 1
 # All information in stea is versioned with a timestamp. When we request a
 # calculation we must specify wich date we wish to use to fetch configuration
 # information for assumptions like e.g. the oil price.
-config-date: 2018-07-01
+config-date: 2018-07-01 12:00:00
 
 
 # The stea web client works by *adjusting* the profiles in an existing
@@ -42,7 +42,7 @@ ecl-profiles:
 
   profile_comment_in_stea:
      ecl-key: FWPT
-     mult: 1.1
+     glob_mult: 1.1
 
   another_profile_comment_in_stea:
      ecl-key: FWPT
