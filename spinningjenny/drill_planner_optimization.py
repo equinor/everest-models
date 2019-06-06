@@ -357,7 +357,7 @@ class WellDrillScheduleModel(cp_model.CpModel):
         """
         for rig, rig_slots in self._slots_at_rig.items():
             for well, _ in self.well_rig_pairs(rigs=[rig]):
-                for invalid_slot in set(rig_slots) - set(self.slots):
+                for invalid_slot in set(self.slots) - set(rig_slots):
                     # Either the rig does not drill the well
                     # or the slot is not used for the well
                     self.AddBoolOr(
