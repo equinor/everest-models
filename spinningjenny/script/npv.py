@@ -64,9 +64,7 @@ def _extract_options(args):
         help="Path to output-file where the NPV result is written to.",
     )
     arg_parser.add_argument(
-        "--t2s-file",
-        type=_valid_file,
-        help="Path to t2s-file. If not specified in args or config.",
+        "--input-file", type=_valid_file, help="Path to input file."
     )
     arg_parser.add_argument(
         "--start-date",
@@ -156,9 +154,9 @@ def _prepare_config(input_data, options):
         logger.info("From args - 'output_file': {}".format(options.output_file))
         config = config.push({"files": {"output_file": options.output_file}})
 
-    if options.t2s_file:
-        logger.info("From args - 't2s_file': {}".format(options.t2s_file))
-        config = config.push({"files": {"t2s_file": options.t2s_file}})
+    if options.input_file:
+        logger.info("From args - 'input_file': {}".format(options.input_file))
+        config = config.push({"files": {"input_file": options.input_file}})
 
     if options.start_date:
         logger.info("From args - 'start_date': {}".format(options.start_date))
@@ -173,7 +171,8 @@ def _prepare_config(input_data, options):
         config = config.push({"dates": {"ref_date": options.ref_date}})
 
     if not config.valid:
-        logger.error(config.errors)
+        for error in config.errors:
+            logger.error(error)
         assert config.valid
 
     return config

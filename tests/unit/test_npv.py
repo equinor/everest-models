@@ -499,7 +499,7 @@ def test_find_price_keyword_not_exists(tmpdir, input_data, options):
 
 def test_argparser(tmpdir, input_data):
     output_file = "test"
-    t2s_file = "t2s_npv_info"
+    input_file = "wells.json"
     start_date = datetime.date(2018, 1, 31)
     end_date = datetime.date(2019, 6, 22)
     ref_date = datetime.date(2018, 4, 5)
@@ -510,7 +510,7 @@ def test_argparser(tmpdir, input_data):
     sys.argv.extend(["--summary-file", _SUMMARY_FILE])
     sys.argv.extend(["--config-file", _CONFIG_FILE])
     sys.argv.extend(["--output-file", output_file])
-    sys.argv.extend(["--t2s-file", t2s_file])
+    sys.argv.extend(["--input-file", input_file])
     sys.argv.extend(["--start-date", str(start_date)])
     sys.argv.extend(["--end-date", str(end_date)])
     sys.argv.extend(["--ref-date", str(ref_date)])
@@ -522,7 +522,7 @@ def test_argparser(tmpdir, input_data):
     config = spinningjenny.script.npv._prepare_config(input_data, options)
 
     assert config.snapshot.files.output_file == output_file
-    assert config.snapshot.files.t2s_file == t2s_file
+    assert config.snapshot.files.input_file == input_file
     assert config.snapshot.dates.start_date == start_date
     assert config.snapshot.dates.end_date == end_date
     assert config.snapshot.dates.ref_date == ref_date
