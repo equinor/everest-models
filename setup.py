@@ -11,6 +11,7 @@ setup(
         "share/spinningjenny/forwardmodels",
         "spinningjenny",
         "spinningjenny/script",
+        "spinningjenny/npv",
     ],
     description="Module containing a collection of jobs for ERT",
     author="Equinor ASA",
