@@ -21,9 +21,10 @@ logger = customized_logger.get_logger(__name__)
 
 def main_entry_point(args=None):
     if args is None:
-        args = sys.argv
+        args = sys.argv[1:]
 
-    options = _extract_options(args)
+    npv_parser = _build_parser()
+    options = npv_parser.parse_args(args=args)
 
     with open(options.config_file, "r") as config_file:
         input_data = yaml.safe_load(config_file)
@@ -40,7 +41,7 @@ def main(args):
     main_entry_point(args)
 
 
-def _extract_options(args):
+def _build_parser():
     description = (
         "Module to calculate the NPV based on an eclipse simulation. "
         "All optional args is also configurable through the config file"
@@ -95,8 +96,7 @@ def _extract_options(args):
         "--multiplier", type=int, help="Multiplier you want to use."
     )
 
-    options, _ = arg_parser.parse_known_args(args=args)
-    return options
+    return arg_parser
 
 
 def _valid_file(fname):

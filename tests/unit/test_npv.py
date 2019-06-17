@@ -37,10 +37,10 @@ def input_data(tmpdir):
 
 @pytest.fixture
 def options():
-    sys.argv.extend(["--summary-file", _SUMMARY_FILE])
-    sys.argv.extend(["--config-file", _CONFIG_FILE])
+    parser = npv._build_parser()
+    args = ["--summary-file", _SUMMARY_FILE, "--config-file", _CONFIG_FILE]
 
-    return npv._extract_options(sys.argv)
+    return parser.parse_args(args)
 
 
 def test_base_case_npv(tmpdir, input_data, options):
@@ -56,7 +56,7 @@ def test_base_case_npv(tmpdir, input_data, options):
     assert calculate.multiplier == 1
     assert sorted(calculate.keywords) == sorted(["FOPT", "FWIT"])
 
-    assert_written_npv(tmpdir, expected_npv, config.snapshot)
+    assert_written_npv(tmpdir, expected_npv, config.snapshot.files.output_file)
 
 
 def test_extended_case_npv(tmpdir, input_data, options):
@@ -77,7 +77,7 @@ def test_extended_case_npv(tmpdir, input_data, options):
         ["FOPT", "FWPT", "FGPT", "FWIT", "FGIT", "GOPT:OP"]
     )
 
-    assert_written_npv(tmpdir, expected_npv, config.snapshot)
+    assert_written_npv(tmpdir, expected_npv, config.snapshot.files.output_file)
 
 
 def test_alter_mult(tmpdir, input_data, options):
@@ -100,7 +100,7 @@ def test_alter_mult(tmpdir, input_data, options):
         ["FOPT", "FWPT", "FGPT", "FWIT", "FGIT", "GOPT:OP"]
     )
 
-    assert_written_npv(tmpdir, expected_npv, config.snapshot)
+    assert_written_npv(tmpdir, expected_npv, config.snapshot.files.output_file)
 
 
 def test_extended_case_mutated_ref_date_npv(tmpdir, input_data, options):
@@ -122,7 +122,7 @@ def test_extended_case_mutated_ref_date_npv(tmpdir, input_data, options):
         ["FOPT", "FWPT", "FGPT", "FWIT", "FGIT", "GOPT:OP"]
     )
 
-    assert_written_npv(tmpdir, expected_npv, config.snapshot)
+    assert_written_npv(tmpdir, expected_npv, config.snapshot.files.output_file)
 
 
 def test_extended_case_date_mutated_npv(tmpdir, input_data, options):
@@ -141,7 +141,7 @@ def test_extended_case_date_mutated_npv(tmpdir, input_data, options):
     assert calculate.npv == expected_npv
     assert sorted(calculate.keywords) == sorted(["FWIT", "FOPT"])
 
-    assert_written_npv(tmpdir, expected_npv, config.snapshot)
+    assert_written_npv(tmpdir, expected_npv, config.snapshot.files.output_file)
 
 
 def test_extended_case_big_date_range_npv(tmpdir, input_data, options):
@@ -163,7 +163,7 @@ def test_extended_case_big_date_range_npv(tmpdir, input_data, options):
         ["FOPT", "FWPT", "FGPT", "FWIT", "FGIT", "GOPT:OP"]
     )
 
-    assert_written_npv(tmpdir, expected_npv, config.snapshot)
+    assert_written_npv(tmpdir, expected_npv, config.snapshot.files.output_file)
 
 
 def test_extended_case_small_date_range_npv(tmpdir, input_data, options):
@@ -185,7 +185,7 @@ def test_extended_case_small_date_range_npv(tmpdir, input_data, options):
         ["FOPT", "FWPT", "FGPT", "FWIT", "FGIT", "GOPT:OP"]
     )
 
-    assert_written_npv(tmpdir, expected_npv, config.snapshot)
+    assert_written_npv(tmpdir, expected_npv, config.snapshot.files.output_file)
 
 
 def test_dates_outside_simulation_dates(tmpdir, input_data, options):
@@ -472,18 +472,31 @@ def test_argparser(tmpdir, input_data):
     default_exchange_rate = 5.0
     multiplier = 2
 
-    sys.argv.extend(["--summary-file", _SUMMARY_FILE])
-    sys.argv.extend(["--config-file", _CONFIG_FILE])
-    sys.argv.extend(["--output-file", output_file])
-    sys.argv.extend(["--input-file", input_file])
-    sys.argv.extend(["--start-date", str(start_date)])
-    sys.argv.extend(["--end-date", str(end_date)])
-    sys.argv.extend(["--ref-date", str(ref_date)])
-    sys.argv.extend(["--default-discount-rate", str(default_discount_rate)])
-    sys.argv.extend(["--default-exchange-rate", str(default_exchange_rate)])
-    sys.argv.extend(["--multiplier", str(multiplier)])
+    args = [
+        "--summary-file",
+        _SUMMARY_FILE,
+        "--config-file",
+        _CONFIG_FILE,
+        "--output-file",
+        output_file,
+        "--input-file",
+        input_file,
+        "--start-date",
+        str(start_date),
+        "--end-date",
+        str(end_date),
+        "--ref-date",
+        str(ref_date),
+        "--default-discount-rate",
+        str(default_discount_rate),
+        "--default-exchange-rate",
+        str(default_exchange_rate),
+        "--multiplier",
+        str(multiplier),
+    ]
 
-    options = spinningjenny.script.npv._extract_options(sys.argv)
+    parser = npv._build_parser()
+    options = parser.parse_args(args)
     config = spinningjenny.script.npv._prepare_config(input_data, options)
 
     assert config.snapshot.files.output_file == output_file
@@ -496,8 +509,25 @@ def test_argparser(tmpdir, input_data):
     assert config.snapshot.multiplier == multiplier
 
 
-def assert_written_npv(tmpdir, expected_npv, input_data):
-    written_npv_output_file = tmpdir.strpath + "/" + input_data.files.output_file
+def test_main_entry_point(tmpdir, input_data):
+
+    args = [
+        "--summary-file",
+        _SUMMARY_FILE,
+        "--config-file",
+        _CONFIG_FILE,
+        "--output-file",
+        "test",
+        "--input-file",
+        "wells.json",
+    ]
+
+    npv.main_entry_point(args)
+    assert_written_npv(tmpdir, expected_npv=939374969.82, out_path="test")
+
+
+def assert_written_npv(tmpdir, expected_npv, out_path):
+    written_npv_output_file = os.path.join(tmpdir.strpath, out_path)
     assert os.path.isfile(written_npv_output_file)
     with open(written_npv_output_file, "r") as written_npv_output:
         assert float(written_npv_output.readline()) == expected_npv
