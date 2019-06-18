@@ -217,10 +217,11 @@ def main_entry_point(args=None):
     )
 
     if not config.valid:
-        msg = "The configuration did not pass validation. Please review the errors: {}".format(
-            config.errors
+        logger.error(
+            "The configuration did not pass validation. Please review the errors:"
         )
-        logger.error(msg)
+        for error in config.errors:
+            logger.error(error)
         sys.exit(1)
 
     logger.info("Initializing drill planner")
