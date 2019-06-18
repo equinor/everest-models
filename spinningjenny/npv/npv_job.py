@@ -65,8 +65,9 @@ class CalculateNPV:
             total_npv = 0
             for keyword in self.keywords:
                 transaction = self.price.get(current_date, keyword)
-                price_exchanged = transaction.value(self.exchange_rate)
-                total_npv += blocked_production[keyword][idx] * price_exchanged
+                if transaction is not None:
+                    price_exchanged = transaction.value(self.exchange_rate)
+                    total_npv += blocked_production[keyword][idx] * price_exchanged
             self._npv += self._npv_calc(total_npv, current_date, ref_date)
 
     def _extract_blocked_production(self, time_range):
@@ -117,10 +118,6 @@ class Transaction:
         currency = price_entry.currency
         return cls(date, value, currency)
 
-    @classmethod
-    def empty(cls):
-        return cls(None, 0, None)
-
     def value(self, exchange_rate):
         return exchange_rate.get(self.date, self.currency) * self._value
 
@@ -169,6 +166,8 @@ class ExchangeRate:
         self.default_exchange_rate = input_data.default_exchange_rate
 
     def get(self, date, currency):
+        if currency == None:
+            return self.default_exchange_rate
 
         data = [v for c, v in self._exchange_rates if c == currency]
         data = chain.from_iterable(data)
@@ -241,12 +240,8 @@ class Price:
             if entry.date <= date:
                 return Transaction.using_price(entry, date)
 
-        logger.warning(
-            "Price information missing at {} for {}. Using value 0.".format(
-                date, keyword
-            )
-        )
-        return Transaction.empty()
+        logger.warning("Price information missing at {} for {}.".format(date, keyword))
+        return None
 
 
 class Cost:

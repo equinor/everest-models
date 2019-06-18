@@ -43,37 +43,7 @@ def options():
     return npv._extract_options(sys.argv)
 
 
-def test_minimal_input_case_npv(tmpdir, input_data, options):
-    input_data.pop("exchange_rates")
-    input_data.pop("discount_rates")
-    input_data.pop("costs")
-    input_data.pop("well_costs")
-    input_data.pop("summary_keys")
-    input_data.pop("dates")
-
-    config = npv._prepare_config(input_data, options)
-    assert config.valid
-
-    calculate = npv.CalculateNPV(config.snapshot, options.summary_file)
-    calculate.run()
-    calculate.write()
-
-    expected_npv = 1361320463.83
-    assert calculate.npv == expected_npv
-    assert calculate.multiplier == 1
-    assert sorted(calculate.keywords) == sorted(
-        ["FOPT", "FWPT", "FGPT", "FWIT", "FGIT", "GOPT:OP"]
-    )
-
-    assert_written_npv(tmpdir, expected_npv, config.snapshot)
-
-
 def test_base_case_npv(tmpdir, input_data, options):
-    input_data.pop("discount_rates")
-    input_data.pop("costs")
-    input_data.pop("summary_keys")
-    input_data.pop("dates")
-
     config = npv._prepare_config(input_data, options)
     assert config.valid
 
@@ -81,12 +51,10 @@ def test_base_case_npv(tmpdir, input_data, options):
     calculate.run()
     calculate.write()
 
-    expected_npv = 2746456461.88
+    expected_npv = 939374969.82
     assert calculate.npv == expected_npv
     assert calculate.multiplier == 1
-    assert sorted(calculate.keywords) == sorted(
-        ["FOPT", "FWPT", "FGPT", "FWIT", "FGIT", "GOPT:OP"]
-    )
+    assert sorted(calculate.keywords) == sorted(["FOPT", "FWIT"])
 
     assert_written_npv(tmpdir, expected_npv, config.snapshot)
 
@@ -102,7 +70,7 @@ def test_extended_case_npv(tmpdir, input_data, options):
     calculate.run()
     calculate.write()
 
-    expected_npv = 2787975581.67
+    expected_npv = 3115781347.26
     assert calculate.npv == expected_npv
     assert calculate.multiplier == 1
     assert sorted(calculate.keywords) == sorted(
@@ -125,7 +93,7 @@ def test_alter_mult(tmpdir, input_data, options):
     calculate.run()
     calculate.write()
 
-    expected_npv = multiplier * 2787975581.67
+    expected_npv = 6231562694.53
     assert calculate.npv == expected_npv
     assert calculate.multiplier == multiplier
     assert sorted(calculate.keywords) == sorted(
@@ -148,7 +116,7 @@ def test_extended_case_mutated_ref_date_npv(tmpdir, input_data, options):
     calculate.run()
     calculate.write()
 
-    expected_npv = 2841341281.17
+    expected_npv = 3171949242.71
     assert calculate.npv == expected_npv
     assert sorted(calculate.keywords) == sorted(
         ["FOPT", "FWPT", "FGPT", "FWIT", "FGIT", "GOPT:OP"]
@@ -189,7 +157,7 @@ def test_extended_case_big_date_range_npv(tmpdir, input_data, options):
     calculate.run()
     calculate.write()
 
-    expected_npv = 2787975581.67
+    expected_npv = 3115781347.26
     assert calculate.npv == expected_npv
     assert sorted(calculate.keywords) == sorted(
         ["FOPT", "FWPT", "FGPT", "FWIT", "FGIT", "GOPT:OP"]
@@ -417,11 +385,8 @@ def test_find_price_lower_extreme(tmpdir, input_data, options):
     assert config.valid
 
     price = npv_job.Price(config.snapshot)
-    exchange_rate = npv_job.ExchangeRate(config.snapshot)
     transaction = price.get(date, keyword)
-    assert transaction.currency == None
-    assert transaction._value == 0
-    assert transaction.value(exchange_rate) == 0
+    assert transaction == None
 
 
 def test_find_price_lower_limit(tmpdir, input_data, options):
