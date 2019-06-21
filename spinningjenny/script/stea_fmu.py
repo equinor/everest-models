@@ -1,24 +1,32 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+
 import sys
 import stea
-import os
+import argparse
+
+
+def _get_args_parser():
+    description = (
+        "STEA is a powerful economic analysis tool used for complex economic"
+        "analysis and portfolio optimization. STEA helps you analyze single"
+        "projects, large and small portfolios and complex decision trees."
+        "As output, for each of the entries in the result section of the"
+        "yaml config file, STEA will create result files"
+        "ex: Res1_0, Res2_0, .. Res#_0"
+    )
+    parser = argparse.ArgumentParser(description=description)
+
+    parser.add_argument("config", help="STEA config file, yaml format required")
+    return parser
 
 
 def stea_main(args=None):
     if args is None:
         args = sys.argv
 
-    if len(args) == 2:
-        fname = args[1]
-        if not os.path.isfile(fname):
-            raise AttributeError("yaml file was not found: {}".format(fname))
-    else:
-        raise AttributeError(
-            "Need yaml formatted configuration file as first commandline argument"
-        )
-
-    stea_input = stea.SteaInput([fname])
+    parser = _get_args_parser()
+    options = parser.parse_args(args[1:])
+    stea_input = stea.SteaInput([options.config])
     res = stea.calculate(stea_input)
     for res, value in res.results(stea.SteaKeys.CORPORATE).items():
         with open("{}_0".format(res), "w") as ofh:

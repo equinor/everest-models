@@ -1,6 +1,3 @@
-STDERR    STEA.stderr
-STDOUT    STEA.stdout
-
 EXECUTABLE     fm_stea
 ARGLIST        <CONFIG>
 
