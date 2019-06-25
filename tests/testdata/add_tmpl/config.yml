@@ -1,0 +1,27 @@
+templates:
+  -
+    file: './templates/notused.tmpl'
+    keys:
+        opname: close
+  -
+    file: './templates/template_open.tmpl'
+    keys:
+        opname: close
+  -
+    file: './templates/template_open.tmpl'
+    keys:
+        opname: open
+  -
+    file: './templates/template_water_inject.tmpl'
+    keys:
+        opname: rate
+        phase: water
+  -
+    file: './templates/template_rate_inject.tmpl'
+    keys:
+        opname: rate
+  -
+    file: './templates/template_oil_prod.tmpl'
+    keys:
+        opname: rate
+        phase: oil
