@@ -28,9 +28,12 @@ def _build_argument_parser():
     return parser
 
 
-def main_entry_point():
+def main_entry_point(args=None):
+    if args is None:
+        args = sys.argv[1:]
+
     arg_parser = _build_argument_parser()
-    args, _ = arg_parser.parse_known_args(sys.argv[1:])
+    args, _ = arg_parser.parse_known_args(args=args)
 
     if os.path.exists(args.summary):
         strip_dates(summary_file=args.summary, dates=process_dates(args.dates))
@@ -39,4 +42,4 @@ def main_entry_point():
 
 
 if __name__ == "__main__":
-    main_entry_point()
+    main_entry_point(sys.argv[1:])

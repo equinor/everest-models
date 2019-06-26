@@ -32,7 +32,7 @@ def test_strip_dates():
 
 @tmpdir(TEST_DATA_PATH)
 def test_strip_date_entry_point():
-    sys.argv = [
+    args = [
         "strip_sum",
         "--summary",
         "REEK-0.UNSMRY",
@@ -42,7 +42,7 @@ def test_strip_date_entry_point():
         "2003-01-01",
     ]
 
-    main_entry_point()
+    main_entry_point(args)
     # Check results
     assert filecmp.cmp("REEK-0.UNSMRY", "REEK-OUT.UNSMRY", shallow=False)
 
