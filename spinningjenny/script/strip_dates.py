@@ -10,8 +10,8 @@ logger = customized_logger.get_logger(__name__)
 
 def _build_argument_parser():
     description = (
-        "The strip_dates job makes sure the summary file contains only report"
-        " steps at the dates specified in the dates file"
+        "Makes sure a given summary file contains only report steps at the "
+        "list of dates given as an argument"
     )
     parser = argparse.ArgumentParser(description=description)
 
