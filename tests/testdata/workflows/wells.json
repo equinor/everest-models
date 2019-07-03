@@ -1,0 +1,22 @@
+[
+ {
+   "name": "PROD1",
+   "drilltime": 20
+ },
+ {
+   "name": "PROD2",
+   "drilltime": 25
+ },
+ {
+   "name": "INJ1",
+   "drilltime": 43
+ },
+ {
+   "name": "INJ2",
+   "drilltime": 23
+ },
+ {
+   "name": "PROD3",
+   "drilltime": 36
+ }
+]

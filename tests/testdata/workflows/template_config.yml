@@ -1,0 +1,20 @@
+templates:
+  -
+    file: './templates/template_welopen.tmpl'
+    keys:
+        opname: open
+  -
+    file: './templates/template_wconinje.tmpl'
+    keys:
+        opname: rate
+        phase: water
+  -
+    file: './templates/template_wconprod_oil.tmpl'
+    keys:
+        opname: rate
+        phase: oil
+  -
+    file: './templates/template_wconprod_gas.tmpl'
+    keys:
+        opname: rate
+        phase: gas

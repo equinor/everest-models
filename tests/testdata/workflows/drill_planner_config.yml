@@ -1,0 +1,45 @@
+start_date: 2000-01-01
+end_date: 2001-01-01
+rigs:
+  -
+    name: 'A'
+    wells: ['PROD1', 'PROD2', 'INJ1']
+    slots: ['S1', 'S2', 'S3']
+    unavailability:
+      -
+        start: 2000-01-01
+        stop: 2000-02-02
+      -
+        start: 2000-03-14
+        stop: 2000-03-19
+  -
+    name: 'B'
+    wells: ['INJ1', 'INJ2', 'PROD3']
+    slots: ['S3', 'S4', 'S5']
+    unavailability:
+      -
+        start: 2000-02-01
+        stop: 2000-02-02
+      -
+        start: 2000-02-14
+        stop: 2000-02-15
+slots:
+  -
+    name: 'S1'
+    wells: ['PROD1', 'PROD2', 'INJ1']
+    unavailability:
+      -
+        start: 2000-02-01
+        stop: 2000-02-03
+  -
+    name: 'S2'
+    wells: ['PROD1', 'PROD2', 'INJ1']
+  -
+    name: 'S3'
+    wells: ['PROD1', 'PROD2', 'INJ1']
+  -
+    name: 'S4'
+    wells: ['INJ1', 'INJ2', 'PROD3']
+  -
+    name: 'S5'
+    wells: ['INJ1', 'INJ2', 'PROD3']
