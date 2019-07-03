@@ -20,6 +20,8 @@ def test_code_style():
             os.path.join(root, "tests"),
             os.path.join(root, "spinningjenny"),
             os.path.join(root, "setup.py"),
+            "--exclude",
+            "spinningjenny/version.py",  # File written by setuptools_scm
         ],
     )
 
