@@ -40,6 +40,7 @@ setup(
             "fm_drill_planner = spinningjenny.script.drill_planner:main_entry_point",
             "fm_npv = spinningjenny.script.npv:main_entry_point",
             "fm_rf = spinningjenny.script.rf:main_entry_point",
+            "fm_schmerge = spinningjenny.script.schmerge:main_entry_point",
             "fm_stea = spinningjenny.script.stea_fmu:stea_main",
             "fm_strip_dates = spinningjenny.script.strip_dates:main_entry_point",
             "fm_well_constraints = spinningjenny.script.well_constraints:main_entry_point",
