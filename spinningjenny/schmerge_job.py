@@ -171,7 +171,7 @@ def _get_transformed_injections(injection_json):
         for op in well_dict["ops"]:
             op_copy = op.copy()
             date_string = op_copy.pop("date")
-            date = datetime.strptime(date_string, "%d.%m.%Y")
+            date = datetime.strptime(date_string, "%Y-%m-%d")
             template = op_copy.pop("template")
 
             del op_copy["opname"]

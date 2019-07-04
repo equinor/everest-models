@@ -22,9 +22,9 @@ def test__add_dates_to_schedule():
     with open(filename_expected_inserted_dates, "r") as f:
         expected_inserted_dates = f.read()
 
-    date_strings_to_add = ["01.01.2000", "16.08.2016", "24.04.2021"]
+    date_strings_to_add = ["2000-01-01", "2016-08-16", "2021-04-24"]
     dates_to_add = [
-        datetime.strptime(date_string, "%d.%m.%Y")
+        datetime.strptime(date_string, "%Y-%m-%d")
         for date_string in date_strings_to_add
     ]
     schedule_string, placeholder_dict = _extract_comments(schedule_string)
