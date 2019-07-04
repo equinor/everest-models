@@ -13,9 +13,7 @@ PLACEHOLDER_INDICATOR = "<<{}>>"
 INSERT_SCHEDULE_DATE = "DATES{l} {{}} / --ADDED{l}/{l}{l}".format(l=os.linesep)
 
 COMMENT_IGNORING_LINESEP = "{l}(?:--.*{l}|)*".format(l=os.linesep)
-FIND_DATE_REGEX = "DATES{c} {{}} /{c}/{c}{l}".format(
-    c=".*" + COMMENT_IGNORING_LINESEP, l=COMMENT_IGNORING_LINESEP
-)
+FIND_DATE_REGEX = "(DATES{c} ({{}}) /{c}/)".format(c=".*" + COMMENT_IGNORING_LINESEP)
 
 LOG_AFTER_END_NOTIFICATION = ", this occurs after the END keyword"
 
@@ -53,8 +51,10 @@ def _log_template_injection(schedule_string, index, template, params, date):
 
 
 def _get_dates_from_schedule(schedule_string):
-    dates_in_schedule = re.findall("([0-9]{2} [A-Z]{3} [0-9]{4})", schedule_string)
-    return [datetime.strptime(x, "%d %b %Y") for x in dates_in_schedule]
+    date_tuples_in_schedule = re.findall(
+        FIND_DATE_REGEX.format("[0-9]{2} [A-Z]{3} [0-9]{4}"), schedule_string
+    )
+    return [datetime.strptime(x[1], "%d %b %Y") for x in date_tuples_in_schedule]
 
 
 def _insert_in_schedule_string(schedule_string, insert_string, index):
@@ -66,9 +66,10 @@ def _find_date_index(schedule_string, date):
         index = len(schedule_string)
         return (index, 0)
 
-    date_string = re.findall(
+    date_tuple = re.findall(
         FIND_DATE_REGEX.format(date.strftime("%d %b %Y").upper()), schedule_string
     )[0]
+    date_string = date_tuple[0]
     index = schedule_string.index(date_string)
 
     return (index, len(date_string))
