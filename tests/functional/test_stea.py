@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from tests import tmpdir, relpath
-from spinningjenny.script.stea_fmu import stea_main
+from spinningjenny.script.stea_fmu import main_entry_point
 import importlib
 from mock import patch
 from stea import SteaResult, SteaKeys, SteaInput
@@ -30,7 +30,7 @@ def calculate_patch():
 @tmpdir(TEST_DATA_PATH)
 def test_stea(stea_calculate_mock):
     # run stea job
-    stea_main(["stea", "stea_input.yml"])
+    main_entry_point(["-c", "stea_input.yml"])
     stea_calculate_mock.assert_called_once()
     files = os.listdir(os.getcwd())
     assert "NPV_0" in files

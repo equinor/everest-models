@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 import argparse
 import json
-import yaml
 
 from functools import partial
-from configsuite import ConfigSuite
 
-from spinningjenny import customized_logger, valid_file
+from spinningjenny import (
+    customized_logger,
+    valid_file,
+    valid_config,
+    write_json_to_file,
+)
 from spinningjenny.add_templates.add_templates_job import (
     add_templates,
     find_template_duplicates,
@@ -14,21 +17,6 @@ from spinningjenny.add_templates.add_templates_job import (
 from spinningjenny.add_templates.add_tmpl_schema import build_schema
 
 logger = customized_logger.get_logger(__name__)
-
-
-def _valid_add_template_config(path, parser):
-    valid_file(path, parser)
-    with open(path, "r") as f:
-        dict_config = yaml.safe_load(f)
-
-    config = ConfigSuite(dict_config, build_schema())
-    if not config.valid:
-        parser.error(
-            "Invalid config file: {}\n{}".format(
-                path, "\n".join([err.msg for err in config.errors])
-            )
-        )
-    return config.snapshot.templates
 
 
 def _build_argument_parser():
@@ -42,18 +30,20 @@ def _build_argument_parser():
     parser = argparse.ArgumentParser(description=description)
 
     parser.add_argument(
+        "-c",
         "--config",
-        type=partial(_valid_add_template_config, parser=parser),
+        type=partial(valid_config, schema=build_schema(), parser=parser),
         required=True,
         help="Config file containing list of template file paths to be injected.",
     )
     parser.add_argument(
-        "--input-file",
+        "-i",
+        "--input",
         type=partial(valid_file, parser=parser),
         required=True,
         help="Input file that requires template paths. Json file expected ex: wells.json",
     )
-    parser.add_argument("--output-file", required=True, help="Output file")
+    parser.add_argument("-o", "--output", required=True, help="Output file")
 
     return parser
 
@@ -63,23 +53,22 @@ def main_entry_point(args=None):
     options = arg_parser.parse_args(args)
 
     # Load input well operations file
-    with open(options.input_file, "r") as f:
+    with open(options.input, "r") as f:
         wells = json.load(f)
 
-    for duplicate in find_template_duplicates(options.config):
+    for duplicate in find_template_duplicates(options.config.snapshot.templates):
         logger.warning(
             "Found duplicate template file path {} in config file!".format(duplicate)
         )
 
     # Insert template paths in the input well operations structure
-    output, warnings = add_templates(options.config, wells)
+    output, warnings = add_templates(options.config.snapshot.templates, wells)
 
     for warning in warnings:
         logger.warning(warning)
 
     # Write insertion result to file
-    with open(options.output_file, "w") as f:
-        json.dump(output, f, indent=2, separators=(",", ": "))
+    write_json_to_file(output, options.output)
 
 
 if __name__ == "__main__":

@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
-import sys
 import stea
 import argparse
+
+from functools import partial
+from spinningjenny import valid_file
 
 
 def _get_args_parser():
@@ -16,16 +18,18 @@ def _get_args_parser():
     )
     parser = argparse.ArgumentParser(description=description)
 
-    parser.add_argument("config", help="STEA config file, yaml format required")
+    parser.add_argument(
+        "-c",
+        "--config",
+        type=partial(valid_file, parser=parser),
+        help="STEA config file, yaml format required",
+    )
     return parser
 
 
-def stea_main(args=None):
-    if args is None:
-        args = sys.argv
-
+def main_entry_point(args=None):
     parser = _get_args_parser()
-    options = parser.parse_args(args[1:])
+    options = parser.parse_args(args)
     stea_input = stea.SteaInput([options.config])
     res = stea.calculate(stea_input)
     for res, value in res.results(stea.SteaKeys.CORPORATE).items():
@@ -34,4 +38,4 @@ def stea_main(args=None):
 
 
 if __name__ == "__main__":
-    stea_main(sys.argv)
+    main_entry_point()

@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 import argparse
-import os
-import sys
-import yaml
 from operator import attrgetter
 import configsuite
-import json
+from functools import partial
 
-from spinningjenny import customized_logger
+from spinningjenny import (
+    customized_logger,
+    valid_yaml_file,
+    write_json_to_file,
+    DATE_FORMAT,
+)
 from spinningjenny.drill_planner.drill_planner_optimization import evaluate
 from spinningjenny.drill_planner import drill_planner_schema
 from spinningjenny.drill_planner.greedy_drill_planner import get_greedy_drill_plan
@@ -28,9 +30,7 @@ def _verify_priority(schedule, config):
 def _overlaps(range_one, range_two):
     start_one, end_one = range_one
     start_two, end_two = range_two
-    return (start_one < end_two and end_one > end_two) or (
-        end_one > start_two and start_one < start_two
-    )
+    return (start_one < end_two < end_one) or (end_one > start_two > start_one)
 
 
 def _verify_constraints(config, schedule):
@@ -78,12 +78,6 @@ def _verify_constraints(config, schedule):
             assert task1.end_date <= task2.start_date
 
 
-def _valid_file(fname):
-    if not os.path.isfile(fname):
-        raise AttributeError("File was not found: {}".format(fname))
-    return fname
-
-
 def _log_detailed_result(schedule):
     logger.info("Scheduler result:")
     for task in schedule:
@@ -96,9 +90,7 @@ def _log_detailed_result(schedule):
         )
 
 
-def _append_data(input_file, schedule):
-    with open(input_file, "r") as input_file:
-        input_values = yaml.safe_load(input_file)
+def _append_data(input_values, schedule):
 
     for well_cfg in input_values:
         well_from_schedule = {
@@ -106,17 +98,12 @@ def _append_data(input_file, schedule):
             for (_, _, well, _, end_date) in schedule
             if well == well_cfg["name"]
         }
-        date = well_from_schedule["end_date"].strftime("%Y-%m-%d")
+        date = well_from_schedule["end_date"].strftime(DATE_FORMAT)
 
         well_cfg["readydate"] = date
         well_cfg["ops"] = [{"opname": "open", "date": date}]
 
     return input_values
-
-
-def _write_result(filename, data):
-    with open(filename, "w") as outfile:
-        json.dump(data, outfile, indent=4, separators=(",", ": "))
 
 
 def scheduler_parser():
@@ -131,30 +118,34 @@ def scheduler_parser():
     """
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
-        "--input-file",
+        "-i",
+        "--input",
         required=True,
-        type=_valid_file,
+        type=partial(valid_yaml_file, parser=parser),
         help="File containing information related to wells. The format is "
         "consistent with the wells.json file when running everest and can "
         "be used directly.",
     )
     parser.add_argument(
-        "--config-file",
+        "-c",
+        "--config",
         required=True,
-        type=_valid_file,
+        type=partial(valid_yaml_file, parser=parser),
         help="Configuration file describing the constraints of the field "
         "development. The file must contain information about rigs and slots "
         "that the wells can be drilled through. Additional information, such as "
         "when rigs and slots are available is also added here.",
     )
     parser.add_argument(
-        "--optimizer-file",
+        "-opt",
+        "--optimizer",
         required=True,
-        type=_valid_file,
+        type=partial(valid_yaml_file, parser=parser),
         help="The optimizer file is the file output from everest that contains "
         "the well priority values - a float for each well.",
     )
     parser.add_argument(
+        "-tl",
         "--time-limit",
         required=False,
         type=int,
@@ -164,7 +155,8 @@ def scheduler_parser():
         "approach will be used instead.",
     )
     parser.add_argument(
-        "--output-file",
+        "-o",
+        "--output",
         required=True,
         type=str,
         help="Name of the output-file. The output-file will contain the same "
@@ -176,16 +168,7 @@ def scheduler_parser():
     return parser
 
 
-def _prepare_config(config_file, optimizer_file, input_file):
-    with open(config_file, "r") as config_file:
-        config = yaml.safe_load(config_file)
-
-    with open(optimizer_file, "r") as optimizer_file:
-        optimizer_values = yaml.safe_load(optimizer_file)
-
-    with open(input_file, "r") as input_file:
-        input_values = yaml.safe_load(input_file)
-
+def _prepare_config(config, optimizer_values, input_values):
     config["wells_priority"] = optimizer_values
     config["wells"] = input_values
 
@@ -208,35 +191,28 @@ def _run_drill_planner(config, time_limit):
 
 
 def main_entry_point(args=None):
-
-    if args is None:
-        args = sys.argv[1:]
-
     parser = scheduler_parser()
     args = parser.parse_args(args)
 
     logger.info("Validating config file")
 
     config = _prepare_config(
-        config_file=args.config_file,
-        optimizer_file=args.optimizer_file,
-        input_file=args.input_file,
+        config=args.config, optimizer_values=args.optimizer, input_values=args.input
     )
 
     if not config.valid:
-        logger.error(
-            "The configuration did not pass validation. Please review the errors:"
+        parser.error(
+            "Invalid config file: {}\n{}".format(
+                args.config, "\n".join([err.msg for err in config.errors])
+            )
         )
-        for error in config.errors:
-            logger.error(error)
-        sys.exit(1)
 
     logger.info("Initializing drill planner")
     schedule = _run_drill_planner(config=config, time_limit=args.time_limit)
-    result = _append_data(input_file=args.input_file, schedule=schedule)
+    result = _append_data(input_values=args.input, schedule=schedule)
 
     _log_detailed_result(schedule)
-    _write_result(filename=args.output_file, data=result)
+    write_json_to_file(result, args.output)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-import json
-import yaml
 import datetime
 
 try:
@@ -8,7 +5,7 @@ try:
 except ImportError:
     from collections import Mapping
 
-from spinningjenny import customized_logger, date2str, str2date
+from spinningjenny import customized_logger, date2str, str2date, write_json_to_file
 from copy import deepcopy
 
 logger = customized_logger.get_logger(__name__)
@@ -20,7 +17,7 @@ def run_job(output_data, well_data, output_file):
 
     output_data = _add_dates(output_data, well_data)
 
-    _write_json_to_file(output_data, output_file)
+    write_json_to_file(output_data, output_file)
 
 
 def _find_index(val, options):
@@ -38,16 +35,6 @@ def _find_index(val, options):
     for idx, threshold in enumerate(thresholds):
         if val <= threshold:
             return idx
-
-
-def _write_yaml_to_file(dictionary, fname):
-    with open(fname, "w") as outfile:
-        yaml.safe_dump(dictionary, outfile, default_flow_style=False)
-
-
-def _write_json_to_file(dictionary, fname):
-    with open(fname, "w") as outfile:
-        json.dump(dictionary, outfile, indent=2, separators=(",", ": "))
 
 
 def _calc_list_value(options, value):
@@ -176,9 +163,3 @@ def merge_dicts(*dictionaries):
             _merge_recursively(merged_dictionary, dictionary)
 
     return merged_dictionary
-
-
-def load_yaml(file_path):
-    with open(file_path, "r") as input_file:
-        input_data = yaml.safe_load(input_file)
-    return input_data

@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 import argparse
-import sys
 import os
+
+from functools import partial
+
 from spinningjenny.strip_dates_job import strip_dates, process_dates
-from spinningjenny import customized_logger, str2date
+from spinningjenny import customized_logger, str2date, valid_file
 
 logger = customized_logger.get_logger(__name__)
 
@@ -15,9 +17,16 @@ def _build_argument_parser():
     )
     parser = argparse.ArgumentParser(description=description)
 
-    parser.add_argument("--summary", required=True, help="Ecl summary file")
+    parser.add_argument(
+        "-s",
+        "--summary",
+        type=partial(valid_file, parser=parser),
+        required=True,
+        help="Ecl summary file",
+    )
 
     parser.add_argument(
+        "-d",
         "--dates",
         nargs="*",  # 0 or more values expected => creates a list
         type=lambda d: str2date(d),
@@ -29,17 +38,14 @@ def _build_argument_parser():
 
 
 def main_entry_point(args=None):
-    if args is None:
-        args = sys.argv[1:]
-
     arg_parser = _build_argument_parser()
-    args, _ = arg_parser.parse_known_args(args=args)
+    options = arg_parser.parse_args(args)
 
-    if os.path.exists(args.summary):
-        strip_dates(summary_file=args.summary, dates=process_dates(args.dates))
+    if os.path.exists(options.summary):
+        strip_dates(summary_file=options.summary, dates=process_dates(options.dates))
     else:
-        logger.error("No such file or directory: {}".format(args.summary))
+        logger.error("No such file or directory: {}".format(options.summary))
 
 
 if __name__ == "__main__":
-    main_entry_point(sys.argv[1:])
+    main_entry_point()

@@ -14,54 +14,52 @@ TEST_DATA_PATH = relpath("tests", "testdata", "workflows")
 def test_workflow():
 
     arguments = [
-        "--input-file",
+        "-i",
         "wells.json",
-        "--config-file",
+        "-c",
         "drill_planner_config.yml",
-        "--optimizer-file",
+        "-opt",
         "optimizer_values.yml",
-        "--output-file",
+        "-o",
         "wells_dp_result.json",
     ]
 
     drill_planner_entry(arguments)
 
     arguments = [
-        "prog",
-        "--well-order-file",
+        "-i",
         "wells_dp_result.json",
-        "--user-config",
+        "-c",
         "well_constraint_config.yml",
-        "--rate-constraint",
+        "-rc",
         "rate_input.json",
-        "--phase-constraint",
+        "-pc",
         "phase_input.json",
-        "--duration-constraints",
+        "-dc",
         "duration_input.json",
-        "--output-file",
+        "-o",
         "wells_wc_result.json",
     ]
 
     well_constraints_entry(arguments)
 
     arguments = [
-        "--config",
+        "-c",
         "template_config.yml",
-        "--input-file",
+        "-i",
         "wells_wc_result.json",
-        "--output-file",
+        "-o",
         "wells_tmpl_result.json",
     ]
 
     add_templates_entry(arguments)
 
     arguments = [
-        "schmerge",
-        "--schedule-input",
+        "-i",
         "raw_schedule.sch",
-        "--config",
+        "-c",
         "wells_tmpl_result.json",
-        "--schedule-output",
+        "-o",
         "result_schedule.sch",
     ]
 

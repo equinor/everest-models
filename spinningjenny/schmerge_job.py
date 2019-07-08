@@ -4,7 +4,7 @@ import json
 from collections import defaultdict, OrderedDict
 from datetime import datetime
 from jinja2 import Template
-from spinningjenny import customized_logger
+from spinningjenny import customized_logger, str2date
 
 logger = customized_logger.get_logger(__name__)
 
@@ -172,7 +172,7 @@ def _get_transformed_injections(injection_json):
         for op in well_dict["ops"]:
             op_copy = op.copy()
             date_string = op_copy.pop("date")
-            date = datetime.strptime(date_string, "%Y-%m-%d")
+            date = str2date(date_string)
             template = op_copy.pop("template")
 
             del op_copy["opname"]

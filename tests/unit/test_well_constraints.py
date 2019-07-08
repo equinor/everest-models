@@ -1,16 +1,13 @@
-# -*- coding: utf-8 -*-
-
 import os
 import shutil
 import pytest
-import yaml
 import configsuite
 import itertools
 
 
 from copy import deepcopy
 
-
+from spinningjenny import write_yaml_to_file, load_yaml
 from spinningjenny.script import well_constraints
 from spinningjenny.well_constraints import well_constraint_job
 from spinningjenny.well_constraints import well_config
@@ -34,22 +31,18 @@ def input_data(tmpdir):
     cwd = os.getcwd()
     tmpdir.chdir()
 
-    with open("well_constraint_input.yml", "r") as default_input_data:
-        data = yaml.safe_load(default_input_data)
-
-    yield data
+    yield load_yaml("well_constraint_input.yml")
 
     os.chdir(cwd)
 
 
 def test_main_entry_point(tmpdir):
     arguments = [
-        "prog",
-        "--output-file",
+        "--output",
         "well_constraint_output.json",
-        "--well-order-file",
+        "--input",
         _WELL_ORDER,
-        "--user-config",
+        "--config",
         _USER_CONFIG,
         "--rate-constraint",
         _RATE_CONSTRAINT,
@@ -62,37 +55,35 @@ def test_main_entry_point(tmpdir):
     tmpdir.chdir()
 
     well_constraints.main_entry_point(arguments)
-    result_output = well_constraint_job.load_yaml(
+    result_output = load_yaml(
         os.path.join(tmpdir.strpath, "well_constraint_output.json")
     )
-    expected_output = well_constraint_job.load_yaml(
-        os.path.join(_TEST_DIR, "well_constraint_output.json")
-    )
+    expected_output = load_yaml(os.path.join(_TEST_DIR, "well_constraint_output.json"))
 
     assert result_output == expected_output
 
-    input_config = well_constraint_job.load_yaml(_USER_CONFIG)
+    input_config = load_yaml(_USER_CONFIG)
     invalid_input = {"INJECT1": {1: {"rate": {"value": 100}}}}
     invalid_config = well_constraint_job.merge_dicts(input_config, invalid_input)
     fpath = os.path.join(tmpdir.strpath, "invalid_user_config.yml")
-    well_constraint_job._write_yaml_to_file(invalid_config, fpath)
+    write_yaml_to_file(invalid_config, fpath)
 
     arguments[6] = fpath
 
     with pytest.raises(SystemExit) as wrapped_error:
         well_constraints.main_entry_point(arguments)
     assert wrapped_error.type == SystemExit
-    assert wrapped_error.value.code == 1
+    assert wrapped_error.value.code == 2
 
     invalid_input = {"INJECT1": {2: {"rate": {"value": 100}}}}
     invalid_config = well_constraint_job.merge_dicts(invalid_config, invalid_input)
     fpath = os.path.join(tmpdir.strpath, "invalid_user_config.yml")
-    well_constraint_job._write_yaml_to_file(invalid_config, fpath)
+    write_yaml_to_file(invalid_config, fpath)
 
     with pytest.raises(SystemExit) as wrapped_error:
         well_constraints.main_entry_point(arguments)
     assert wrapped_error.type == SystemExit
-    assert wrapped_error.value.code == 1
+    assert wrapped_error.value.code == 2
 
     os.chdir(cwd)
 

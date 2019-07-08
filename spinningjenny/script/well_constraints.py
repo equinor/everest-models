@@ -3,15 +3,12 @@
 import sys
 import argparse
 import os
+from functools import partial
 
-from spinningjenny import customized_logger
+from spinningjenny import customized_logger, load_yaml, valid_file, valid_yaml_file
 from spinningjenny.well_constraints import well_config
 from spinningjenny.well_constraints import controls_config
-from spinningjenny.well_constraints.well_constraint_job import (
-    run_job,
-    merge_dicts,
-    load_yaml,
-)
+from spinningjenny.well_constraints.well_constraint_job import run_job, merge_dicts
 from spinningjenny.well_constraints.well_constraint_validate import (
     valid_job,
     valid_configuration,
@@ -21,20 +18,15 @@ logger = customized_logger.get_logger(__name__)
 
 
 def main_entry_point(args=None):
-
-    if args is None:
-        args = sys.argv
-
     parser = well_constraint_parser()
-    args = parser.parse_args(args[1:])
+    options = parser.parse_args(args)
 
     logger.info("Initializing well constraints job")
 
-    constraints = load_yaml(args.user_config)
-    logger.info("Validating input file: {}".format(os.path.basename(args.user_config)))
+    constraints = options.config
     valid_user_config = valid_configuration(constraints, well_config._build_schema())
 
-    optional_files = _filter_optional_files(args)
+    optional_files = _filter_optional_files(options)
     optimizer_values, valid_control_files = _add_variable_files(optional_files)
 
     if not all([valid_user_config, valid_control_files]):
@@ -43,11 +35,11 @@ def main_entry_point(args=None):
     if optimizer_values:
         constraints = merge_dicts(constraints, optimizer_values)
 
-    well_dates = load_yaml(args.well_order_file)
+    well_dates = options.input
     if not valid_job(well_dates, constraints):
         sys.exit(1)
 
-    run_job(constraints, well_dates, args.output_file)
+    run_job(constraints, well_dates, options.output)
 
 
 def _filter_optional_files(args):
@@ -77,14 +69,7 @@ def _add_variable_files(optional_files):
     return variables, all(valid_files)
 
 
-def _valid_file(fname):
-    if not os.path.isfile(fname):
-        raise AttributeError("File was not found: {}".format(fname))
-    return fname
-
-
 def well_constraint_parser():
-
     description = """
     A module that given a list of boundaries and well constraints creates a list of 
     well events. Varying phase, rate and time of each event is supported. Rate and 
@@ -93,26 +78,29 @@ def well_constraint_parser():
     """
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
-        "--well-order-file",
+        "-i",
+        "--input",
         required=True,
-        type=_valid_file,
+        type=partial(valid_yaml_file, parser=parser),
         help="""
         File containing well names and well opening times, 
         should be specified in Everest config.
         """,
     )
     parser.add_argument(
-        "--user-config",
+        "-c",
+        "--config",
         required=True,
-        type=_valid_file,
+        type=partial(valid_yaml_file, parser=parser),
         help="""
         Configuration file with names, events and boundaries for constraints
         """,
     )
     parser.add_argument(
+        "-rc",
         "--rate-constraints",
         required=False,
-        type=_valid_file,
+        type=partial(valid_file, parser=parser),
         default=None,
         help="""
         Rate constraints file, from controls section of Everest config, 
@@ -120,9 +108,10 @@ def well_constraint_parser():
         """,
     )
     parser.add_argument(
+        "-pc",
         "--phase-constraints",
         required=False,
-        type=_valid_file,
+        type=partial(valid_file, parser=parser),
         default=None,
         help="""
         Phase constraints file, from controls section of Everest config, 
@@ -130,9 +119,10 @@ def well_constraint_parser():
         """,
     )
     parser.add_argument(
+        "-dc",
         "--duration-constraints",
         required=False,
-        type=_valid_file,
+        type=partial(valid_file, parser=parser),
         default=None,
         help="""
         Duration constraints file, from controls section of Everest config, 
@@ -140,7 +130,8 @@ def well_constraint_parser():
         """,
     )
     parser.add_argument(
-        "--output-file",
+        "-o",
+        "--output",
         required=True,
         type=str,
         help="Name of the outputfile. The format will be yaml.",
@@ -171,5 +162,4 @@ def _inject_key_in_dict(input_dict, new_key):
 
 
 if __name__ == "__main__":
-
     main_entry_point()

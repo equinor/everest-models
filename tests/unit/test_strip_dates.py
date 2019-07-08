@@ -1,7 +1,5 @@
 from __future__ import absolute_import
 import filecmp
-import sys
-
 from ecl.summary import EclSum
 
 from tests import tmpdir, relpath
@@ -33,7 +31,6 @@ def test_strip_dates():
 @tmpdir(TEST_DATA_PATH)
 def test_strip_date_entry_point():
     args = [
-        "strip_sum",
         "--summary",
         "REEK-0.UNSMRY",
         "--dates",

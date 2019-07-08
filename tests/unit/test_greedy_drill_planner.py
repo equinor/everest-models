@@ -1,19 +1,14 @@
-from collections import namedtuple
 from datetime import datetime, timedelta
 from itertools import product
-from copy import deepcopy
-import unittest
 import configsuite
 from tests.unit.test_drill_planner import _advanced_setup
 from spinningjenny.drill_planner import drill_planner_schema
 from spinningjenny.script.drill_planner import _verify_constraints, _verify_priority
-from spinningjenny.drill_planner.drill_planner_optimization import ScheduleEvent
 from spinningjenny.drill_planner.greedy_drill_planner import (
     _filter_events,
     _next_best_event,
     get_greedy_drill_plan,
     create_config_dictionary,
-    _first_valid_timebox,
     _combine_slot_rig_unavailability,
     event_tuple,
 )

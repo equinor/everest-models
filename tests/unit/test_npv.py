@@ -1,15 +1,11 @@
-import argparse
 import datetime
 import os
 import shutil
-import sys
 
 import pytest
-import yaml
-from ecl.summary import EclSum
 
-import spinningjenny
-from spinningjenny.npv import npv_config, npv_job
+from spinningjenny import load_yaml
+from spinningjenny.npv import npv_job
 from spinningjenny.script import npv
 
 _SUMMARY_FILE = "REEK-0.UNSMRY"
@@ -27,10 +23,7 @@ def input_data(tmpdir):
     cwd = os.getcwd()
     tmpdir.chdir()
 
-    with open("input_data.yml", "r") as default_input_data:
-        data = yaml.safe_load(default_input_data)
-
-    yield data
+    yield load_yaml("input_data.yml")
 
     os.chdir(cwd)
 
@@ -38,7 +31,7 @@ def input_data(tmpdir):
 @pytest.fixture
 def options():
     parser = npv._build_parser()
-    args = ["--summary-file", _SUMMARY_FILE, "--config-file", _CONFIG_FILE]
+    args = ["--summary", _SUMMARY_FILE, "--config", _CONFIG_FILE]
 
     return parser.parse_args(args)
 
@@ -47,7 +40,7 @@ def test_base_case_npv(tmpdir, input_data, options):
     config = npv._prepare_config(input_data, options)
     assert config.valid
 
-    calculate = npv.CalculateNPV(config.snapshot, options.summary_file)
+    calculate = npv.CalculateNPV(config.snapshot, options.summary)
     calculate.run()
     calculate.write()
 
@@ -66,7 +59,7 @@ def test_extended_case_npv(tmpdir, input_data, options):
     config = npv._prepare_config(input_data, options)
     assert config.valid
 
-    calculate = npv.CalculateNPV(config.snapshot, options.summary_file)
+    calculate = npv.CalculateNPV(config.snapshot, options.summary)
     calculate.run()
     calculate.write()
 
@@ -89,7 +82,7 @@ def test_alter_mult(tmpdir, input_data, options):
     config = npv._prepare_config(input_data, options)
     assert config.valid
 
-    calculate = npv.CalculateNPV(config.snapshot, options.summary_file)
+    calculate = npv.CalculateNPV(config.snapshot, options.summary)
     calculate.run()
     calculate.write()
 
@@ -112,7 +105,7 @@ def test_extended_case_mutated_ref_date_npv(tmpdir, input_data, options):
     config = npv._prepare_config(input_data, options)
     assert config.valid
 
-    calculate = npv.CalculateNPV(config.snapshot, options.summary_file)
+    calculate = npv.CalculateNPV(config.snapshot, options.summary)
     calculate.run()
     calculate.write()
 
@@ -133,7 +126,7 @@ def test_extended_case_date_mutated_npv(tmpdir, input_data, options):
     config = npv._prepare_config(input_data, options)
     assert config.valid
 
-    calculate = npv.CalculateNPV(config.snapshot, options.summary_file)
+    calculate = npv.CalculateNPV(config.snapshot, options.summary)
     calculate.run()
     calculate.write()
 
@@ -153,7 +146,7 @@ def test_extended_case_big_date_range_npv(tmpdir, input_data, options):
     config = npv._prepare_config(input_data, options)
     assert config.valid
 
-    calculate = npv.CalculateNPV(config.snapshot, options.summary_file)
+    calculate = npv.CalculateNPV(config.snapshot, options.summary)
     calculate.run()
     calculate.write()
 
@@ -175,7 +168,7 @@ def test_extended_case_small_date_range_npv(tmpdir, input_data, options):
     config = npv._prepare_config(input_data, options)
     assert config.valid
 
-    calculate = npv.CalculateNPV(config.snapshot, options.summary_file)
+    calculate = npv.CalculateNPV(config.snapshot, options.summary)
     calculate.run()
     calculate.write()
 
@@ -196,9 +189,7 @@ def test_dates_outside_simulation_dates(tmpdir, input_data, options):
     config = npv._prepare_config(input_data, options)
     assert config.valid
 
-    calculate_outside_sim_dates = npv.CalculateNPV(
-        config.snapshot, options.summary_file
-    )
+    calculate_outside_sim_dates = npv.CalculateNPV(config.snapshot, options.summary)
     calculate_outside_sim_dates.run()
     outside_sim_dates_npv = calculate_outside_sim_dates.npv
 
@@ -206,7 +197,7 @@ def test_dates_outside_simulation_dates(tmpdir, input_data, options):
 
     config = npv._prepare_config(input_data, options)
 
-    calculate_inside_sim_dates = npv.CalculateNPV(config.snapshot, options.summary_file)
+    calculate_inside_sim_dates = npv.CalculateNPV(config.snapshot, options.summary)
     calculate_inside_sim_dates.run()
     default_sim_dates_npv = calculate_inside_sim_dates.npv
 
@@ -219,7 +210,7 @@ def test_keys_not_available(tmpdir, input_data, options):
     config = npv._prepare_config(input_data, options)
 
     with pytest.raises(AttributeError) as excinfo:
-        calculate = npv.CalculateNPV(config.snapshot, options.summary_file)
+        calculate = npv.CalculateNPV(config.snapshot, options.summary)
         calculate.keywords
 
     assert (
@@ -234,7 +225,7 @@ def test_no_date_input(tmpdir, input_data, options):
     config = npv._prepare_config(input_data, options)
     assert config.valid
 
-    calculate = npv.CalculateNPV(config.snapshot, options.summary_file)
+    calculate = npv.CalculateNPV(config.snapshot, options.summary)
 
     assert calculate.date_handler.start_date == calculate.ecl_sum.start_date
     assert calculate.date_handler.end_date == calculate.ecl_sum.end_date
@@ -252,7 +243,7 @@ def test_date_input(tmpdir, input_data, options):
     config = npv._prepare_config(input_data, options)
     assert config.valid
 
-    calculate = npv.CalculateNPV(config.snapshot, options.summary_file)
+    calculate = npv.CalculateNPV(config.snapshot, options.summary)
 
     assert calculate.date_handler.start_date == _start_date
     assert calculate.date_handler.end_date == _end_date
@@ -269,7 +260,7 @@ def test_start_date_after_end_date(tmpdir, input_data, options):
     assert config.valid
 
     with pytest.raises(ValueError) as excinfo:
-        npv.CalculateNPV(config.snapshot, options.summary_file)
+        npv.CalculateNPV(config.snapshot, options.summary)
 
     assert "Invalid time interval start after end" in str(excinfo.value)
 
@@ -473,13 +464,13 @@ def test_argparser(tmpdir, input_data):
     multiplier = 2
 
     args = [
-        "--summary-file",
+        "--summary",
         _SUMMARY_FILE,
-        "--config-file",
+        "--config",
         _CONFIG_FILE,
-        "--output-file",
+        "--output",
         output_file,
-        "--input-file",
+        "--input",
         input_file,
         "--start-date",
         str(start_date),
@@ -497,7 +488,7 @@ def test_argparser(tmpdir, input_data):
 
     parser = npv._build_parser()
     options = parser.parse_args(args)
-    config = spinningjenny.script.npv._prepare_config(input_data, options)
+    config = npv._prepare_config(input_data, options)
 
     assert config.snapshot.files.output_file == output_file
     assert config.snapshot.files.input_file == input_file
@@ -512,13 +503,13 @@ def test_argparser(tmpdir, input_data):
 def test_main_entry_point(tmpdir, input_data):
 
     args = [
-        "--summary-file",
+        "--summary",
         _SUMMARY_FILE,
-        "--config-file",
+        "--config",
         _CONFIG_FILE,
-        "--output-file",
+        "--output",
         "test",
-        "--input-file",
+        "--input",
         "wells.json",
     ]
 

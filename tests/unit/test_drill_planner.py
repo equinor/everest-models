@@ -1,11 +1,9 @@
-from collections import namedtuple
 import configsuite
-import copy
 from datetime import datetime, timedelta
-import math
 import pytest
-import yaml
 
+
+from spinningjenny import load_yaml
 from spinningjenny.drill_planner import drill_planner_schema
 from spinningjenny.drill_planner.drill_planner_optimization import evaluate
 from spinningjenny.script.drill_planner import (
@@ -13,7 +11,6 @@ from spinningjenny.script.drill_planner import (
     _verify_priority,
     _prepare_config,
     main_entry_point,
-    _append_data,
 )
 
 from tests import tmpdir, relpath
@@ -456,14 +453,9 @@ def test_invalid_config_schema():
 
 @tmpdir(TEST_DATA_PATH)
 def test_config_file():
-    with open("config.yml") as f:
-        raw_config = yaml.safe_load(f)
-
-    with open("optimizer_values.yml") as f:
-        optimizer_values = yaml.safe_load(f)
-
-    with open("wells.json") as f:
-        input_values = yaml.safe_load(f)
+    raw_config = load_yaml("config.yml")
+    optimizer_values = load_yaml("optimizer_values.yml")
+    input_values = load_yaml("wells.json")
 
     raw_config["wells_priority"] = optimizer_values
     raw_config["wells"] = input_values
@@ -480,9 +472,9 @@ def test_config_file():
 @tmpdir(TEST_DATA_PATH)
 def test_script_prepare_config():
     config = _prepare_config(
-        config_file="config.yml",
-        optimizer_file="optimizer_values.yml",
-        input_file="wells.json",
+        config=load_yaml("config.yml"),
+        optimizer_values=load_yaml("optimizer_values.yml"),
+        input_values=load_yaml("wells.json"),
     )
     assert config.valid
 
@@ -490,22 +482,19 @@ def test_script_prepare_config():
 @tmpdir(TEST_DATA_PATH)
 def test_main_entry_point():
     arguments = [
-        "--input-file",
+        "--input",
         "wells.json",
-        "--config-file",
+        "--config",
         "config.yml",
-        "--optimizer-file",
+        "--optimizer",
         "optimizer_values.yml",
-        "--output-file",
+        "--output",
         "out.json",
     ]
 
     main_entry_point(arguments)
 
-    with open("out.json") as f:
-        test_output = yaml.safe_load(f)
-
-    with open("correct_out.json") as f:
-        expected_output = yaml.safe_load(f)
+    test_output = load_yaml("out.json")
+    expected_output = load_yaml("correct_out.json")
 
     assert test_output == expected_output

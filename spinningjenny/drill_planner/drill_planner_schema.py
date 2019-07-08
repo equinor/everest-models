@@ -93,7 +93,6 @@ _rig_schema = {
                             MK.ContextValidators: (_is_well,),
                         }
                     },
-                    MK.Description: "List of wells",
                 },
                 "slots": {
                     MK.Type: types.List,
@@ -104,7 +103,6 @@ _rig_schema = {
                             MK.ContextValidators: (_is_slot,),
                         }
                     },
-                    MK.Description: "List of slots",
                 },
                 "unavailability": {
                     MK.Type: types.List,
@@ -157,7 +155,6 @@ _slot_schema = {
                             MK.ContextValidators: (_is_well,),
                         }
                     },
-                    MK.Description: "List of wells",
                 },
                 "unavailability": {
                     MK.Type: types.List,

@@ -1,7 +1,5 @@
 from datetime import datetime
 
-from ecl.summary import EclSum
-
 from spinningjenny import customized_logger
 
 logger = customized_logger.get_logger(__name__)

@@ -1,18 +1,19 @@
 #!/usr/bin/env python
 
 import argparse
-import datetime
-import math
 import os
-import re
-import sys
-from itertools import compress
-
-import yaml
-from ecl.summary import EclSum
 
 import configsuite
-from spinningjenny import customized_logger
+
+from functools import partial
+
+from spinningjenny import (
+    customized_logger,
+    valid_file,
+    valid_date,
+    valid_yaml_file,
+    load_yaml,
+)
 from spinningjenny.npv import npv_config
 from spinningjenny.npv.npv_job import CalculateNPV
 
@@ -20,25 +21,15 @@ logger = customized_logger.get_logger(__name__)
 
 
 def main_entry_point(args=None):
-    if args is None:
-        args = sys.argv[1:]
-
     npv_parser = _build_parser()
     options = npv_parser.parse_args(args=args)
 
-    with open(options.config_file, "r") as config_file:
-        input_data = yaml.safe_load(config_file)
-
-    config = _prepare_config(input_data, options)
+    config = _prepare_config(options.config, options)
 
     logger.info("initializing npv calculation with options {}".format(options))
-    npv = CalculateNPV(config.snapshot, options.summary_file)
+    npv = CalculateNPV(config.snapshot, options.summary)
     npv.run()
     npv.write()
-
-
-def main(args):
-    main_entry_point(args)
 
 
 def _build_parser():
@@ -46,71 +37,66 @@ def _build_parser():
         "Module to calculate the NPV based on an eclipse simulation. "
         "All optional args is also configurable through the config file"
     )
-    arg_parser = argparse.ArgumentParser(description=description)
-    arg_parser.add_argument(
-        "--summary-file",
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument(
+        "-s",
+        "--summary",
         required=True,
-        type=_valid_file,
+        type=partial(valid_file, parser=parser),
         help="Path to eclipse summary file to base your NPV calculation towards",
     )
-    arg_parser.add_argument(
-        "--config-file",
+    parser.add_argument(
+        "-c",
+        "--config",
         required=True,
-        type=_valid_file,
+        type=partial(valid_yaml_file, parser=parser),
         help="Path to config file containing at least prices",
     )
-    arg_parser.add_argument(
-        "--output-file",
+    parser.add_argument(
+        "-o",
+        "--output",
         type=str,
         help="Path to output-file where the NPV result is written to.",
     )
-    arg_parser.add_argument(
-        "--input-file", type=_valid_file, help="Path to input file."
+    parser.add_argument(
+        "-i",
+        "--input",
+        type=partial(valid_file, parser=parser),
+        help="Path to input file.",
     )
-    arg_parser.add_argument(
+    parser.add_argument(
+        "-sd",
         "--start-date",
-        type=_valid_date,
+        type=partial(valid_date, parser=parser),
         help="Startpoint of NPV calculation as ISO8601 formatted date (YYYY-MM-DD).",
     )
-    arg_parser.add_argument(
+    parser.add_argument(
+        "-ed",
         "--end-date",
-        type=_valid_date,
+        type=partial(valid_date, parser=parser),
         help="Endpoint of NPV calculation as ISO8601 formatted date (YYYY-MM-DD).",
     )
-    arg_parser.add_argument(
+    parser.add_argument(
+        "-rd",
         "--ref-date",
-        type=_valid_date,
+        type=partial(valid_date, parser=parser),
         help="Ref point of NPV calculation as ISO8601 formatted date (YYYY-MM-DD).",
     )
-    arg_parser.add_argument(
+    parser.add_argument(
+        "-ddr",
         "--default-discount-rate",
         type=float,
         help="Default discount rate you want to use.",
     )
-    arg_parser.add_argument(
+    parser.add_argument(
+        "-der",
         "--default-exchange-rate",
         type=float,
         help="Default exchange rate you want to use.",
     )
-    arg_parser.add_argument(
-        "--multiplier", type=int, help="Multiplier you want to use."
-    )
+    parser.add_argument("--multiplier", type=int, help="Multiplier you want to use.")
 
-    return arg_parser
-
-
-def _valid_file(fname):
-    if not os.path.isfile(fname):
-        raise AttributeError("File was not found: {}".format(fname))
-    return fname
-
-
-def _valid_date(date):
-    try:
-        return datetime.datetime.strptime(date, "%Y-%m-%d").date()
-    except ValueError:
-        msg = "Not a valid ISO8601 formatted date (YYYY-MM-DD): '{}'.".format(date)
-        raise argparse.ArgumentTypeError(msg)
+    return parser
 
 
 def _prepare_config(input_data, options):
@@ -124,8 +110,7 @@ def _prepare_config(input_data, options):
     this_path = os.path.dirname(__file__)
     defaults_path = os.path.join(this_path, "..", "npv", "npv_defaults.yml")
 
-    with open(defaults_path, "r") as defaults_file:
-        defaults = yaml.safe_load(defaults_file)
+    defaults = load_yaml(defaults_path)
 
     schema = npv_config._build_schema()
     config = configsuite.ConfigSuite(input_data, schema, layers=(defaults,))
@@ -150,13 +135,13 @@ def _prepare_config(input_data, options):
         logger.info("From args - 'multiplier': {}".format(options.multiplier))
         config = config.push({"multiplier": options.multiplier})
 
-    if options.output_file:
-        logger.info("From args - 'output_file': {}".format(options.output_file))
-        config = config.push({"files": {"output_file": options.output_file}})
+    if options.output:
+        logger.info("From args - 'output': {}".format(options.output))
+        config = config.push({"files": {"output_file": options.output}})
 
-    if options.input_file:
-        logger.info("From args - 'input_file': {}".format(options.input_file))
-        config = config.push({"files": {"input_file": options.input_file}})
+    if options.input:
+        logger.info("From args - 'input': {}".format(options.input))
+        config = config.push({"files": {"input_file": options.input}})
 
     if options.start_date:
         logger.info("From args - 'start_date': {}".format(options.start_date))
@@ -179,4 +164,4 @@ def _prepare_config(input_data, options):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main_entry_point()

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import argparse
 from functools import partial
-import sys
 
 from spinningjenny import customized_logger, valid_ecl_file
 from spinningjenny.rf_job import recovery_factor

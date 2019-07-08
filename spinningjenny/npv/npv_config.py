@@ -1,7 +1,4 @@
-import yaml
-
-from configsuite import MetaKeys as MK
-from configsuite import types
+from configsuite import types, MetaKeys as MK
 
 
 def _build_schema():

@@ -1,17 +1,10 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-import argparse
+#!/usr/bin/env/python
 import datetime
 import json
-import logging
-import math
-import os.path
-import re
-import sys
 from itertools import chain, compress
 
 from ecl.summary import EclSum
-from spinningjenny import customized_logger
+from spinningjenny import customized_logger, DATE_FORMAT
 
 logger = customized_logger.get_logger(__name__)
 
@@ -166,7 +159,7 @@ class ExchangeRate:
         self.default_exchange_rate = input_data.default_exchange_rate
 
     def get(self, date, currency):
-        if currency == None:
+        if currency is None:
             return self.default_exchange_rate
 
         data = [v for c, v in self._exchange_rates if c == currency]
@@ -178,7 +171,7 @@ class ExchangeRate:
                 return entry.value
 
         logger.warning(
-            "entry for exchange_rate {} {} does not exist, using default {}".format(
+            "entry for exchange_rate {} {} does not exist, using default {}".format(
                 date, currency, self.default_exchange_rate
             )
         )
@@ -270,7 +263,7 @@ class Cost:
 
             for entry in wells:
                 _wells[entry["name"]] = datetime.datetime.strptime(
-                    entry["readydate"], "%Y-%m-%d"
+                    entry["readydate"], DATE_FORMAT
                 ).date()
 
             for well_cost_entry in input_data.well_costs:
@@ -313,7 +306,7 @@ class DateHandler:
             if not dates.ref_date and dates.start_date > self._ecl_summary.start_date:
                 self.ref_date = dates.start_date
 
-            logger.info("simulation start_date set {}".format(dates.start_date))
+            logger.info("simulation start_date set {}".format(dates.start_date))
         else:
             logger.info(
                 "simulation start date defaults to summary start date: {}".format(
@@ -323,7 +316,7 @@ class DateHandler:
 
         if dates and dates.end_date:
             self.end_date = dates.end_date
-            logger.info("simulation end_date set {}".format(dates.end_date))
+            logger.info("simulation end_date set {}".format(dates.end_date))
         else:
             logger.info(
                 "simulation end date defaults to summary end date: {}".format(

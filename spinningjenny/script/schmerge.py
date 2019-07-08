@@ -1,8 +1,10 @@
 import argparse
 import os
-import sys
+
+from functools import partial
+
 from spinningjenny.schmerge_job import merge_schedule
-from spinningjenny import customized_logger
+from spinningjenny import customized_logger, valid_file
 
 logger = customized_logger.get_logger(__name__)
 
@@ -17,9 +19,10 @@ def schmerge_argparser():
 
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
-        "--schedule-input",
+        "-i",
+        "--input",
         required=True,
-        type=_valid_file,
+        type=partial(valid_file, parser=parser),
         help="Input schedule file to inject templates into. The only currently"
         " accepted date format is the following: one line consisting of the"
         " DATES keyword, followed by a date in the format of '1 JAN 2000'"
@@ -27,9 +30,10 @@ def schmerge_argparser():
         " An empty line should be in between the date format and anything below.",
     )
     parser.add_argument(
+        "-c",
         "--config",
         required=True,
-        type=_valid_file,
+        type=partial(valid_file, parser=parser),
         help=(
             "Json file that specifies which templates to inject where."
             "The file is structured as a list of dictionaries, each containing"
@@ -40,19 +44,14 @@ def schmerge_argparser():
         ),
     )
     parser.add_argument(
-        "--schedule-output",
+        "-o",
+        "--output",
         required=True,
         type=_writable_location,
         help="File path to write the resulting schedule file to.",
     )
 
     return parser
-
-
-def _valid_file(fname):
-    if not os.path.isfile(fname):
-        raise AttributeError("File was not found: {}".format(fname))
-    return fname
 
 
 def _writable_location(fname):
@@ -63,15 +62,13 @@ def _writable_location(fname):
 
 
 def main_entry_point(args=None):
-    if args is None:
-        args = sys.argv[1:]
     arg_parser = schmerge_argparser()
-    args, _ = arg_parser.parse_known_args(args=args)
+    options = arg_parser.parse_args(args)
 
     merge_schedule(
-        schedule_file=args.schedule_input,
-        inject_file=args.config,
-        output_file=args.schedule_output,
+        schedule_file=options.input,
+        inject_file=options.config,
+        output_file=options.output,
     )
 
 

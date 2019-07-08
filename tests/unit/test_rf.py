@@ -1,4 +1,3 @@
-import unittest
 import datetime
 import pytest
 from collections import namedtuple

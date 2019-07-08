@@ -20,9 +20,9 @@ def test_main_entry_point(caplog):
     args = [
         "--config",
         "config.yml",
-        "--input-file",
+        "--input",
         "wells.json",
-        "--output-file",
+        "--output",
         "out_test.json",
     ]
 

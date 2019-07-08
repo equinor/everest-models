@@ -1,5 +1,4 @@
-import sys
-from datetime import datetime
+from spinningjenny import str2date
 from spinningjenny.schmerge_job import (
     merge_schedule,
     _extract_comments,
@@ -23,10 +22,7 @@ def test__add_dates_to_schedule():
         expected_inserted_dates = f.read()
 
     date_strings_to_add = ["2000-01-01", "2016-08-16", "2021-04-24"]
-    dates_to_add = [
-        datetime.strptime(date_string, "%Y-%m-%d")
-        for date_string in date_strings_to_add
-    ]
+    dates_to_add = [str2date(date_string) for date_string in date_strings_to_add]
     schedule_string, placeholder_dict = _extract_comments(schedule_string)
     schedule_inserted_dates = _add_dates_to_schedule(schedule_string, dates_to_add)
     schedule_inserted_dates = _insert_extracted_comments(
@@ -86,12 +82,11 @@ def test_schmerge_main_entry_point():
     filename_output = "out.tmpl"
 
     args = [
-        "schmerge",
-        "--schedule-input",
+        "--input",
         filename_input_schedule,
         "--config",
         filename_injection_list,
-        "--schedule-output",
+        "--output",
         filename_output,
     ]
 
