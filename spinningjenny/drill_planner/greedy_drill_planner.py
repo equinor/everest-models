@@ -48,7 +48,8 @@ def _valid_events(config):
 def _first_valid_timebox(config, well, slot, rig):
     event_unavailability = combine_slot_rig_unavailability(config, slot, rig)
     drilling_time = timedelta(days=config["wells"][well]["drill_time"])
-    available_start_date = config["start_date"]
+    drill_delay = timedelta(days=config["rigs"][rig]["delay"])
+    available_start_date = config["start_date"] + drill_delay
 
     for start, end in event_unavailability:
         if start > config["end_date"]:
@@ -57,7 +58,7 @@ def _first_valid_timebox(config, well, slot, rig):
         if available_start_date + drilling_time <= start:
             return [available_start_date, available_start_date + drilling_time]
         else:
-            available_start_date = end + timedelta(days=1)
+            available_start_date = end + drill_delay + timedelta(days=1)
     if available_start_date + drilling_time <= config["end_date"]:
         return [available_start_date, available_start_date + drilling_time]
     return None

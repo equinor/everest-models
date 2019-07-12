@@ -28,6 +28,7 @@ def create_config_dictionary(snapshot):
             ],
             "wells": list(rig_dict.wells),
             "slots": list(rig_dict.slots),
+            "delay": rig_dict.delay or 0,
         }
         for rig_dict in snapshot.rigs
     }

@@ -3,6 +3,7 @@ from copy import deepcopy
 
 from tests.unit.test_drill_planner import (
     _advanced_setup,
+    _delayed_advanced_setup,
     _simple_config_setup,
     verify_priority,
     get_drill_planner_config_snapshot,
@@ -116,40 +117,32 @@ def test_greedy_drill_plan():
     """
     Tests that the greedy drill planner gives a feasible schedule
     """
-    config = _advanced_setup()
-    start_date = config["start_date"]
-
-    # days after start each rig is unavailable
-    unavailable = {"A": (0, 35), "B": (25, 43), "C": (32, 54)}
-
-    for rig in config["rigs"]:
-        rig["unavailability"] = [
-            {
-                "start": start_date + timedelta(days=unavailable[rig["name"]][0]),
-                "stop": start_date + timedelta(days=unavailable[rig["name"]][1]),
-            }
-        ]
-
-    # days after start each slot is unavailable
-    unavailable = {
-        "S1": (0, 10),
-        "S2": (7, 14),
-        "S3": (34, 43),  # drilling W5 must now be delayed
-        "S4": (6, 18),
-        "S5": (15, 18),
-    }
-
-    for slot in config["slots"]:
-        slot["unavailability"] = [
-            {
-                "start": start_date + timedelta(days=unavailable[slot["name"]][0]),
-                "stop": start_date + timedelta(days=unavailable[slot["name"]][1]),
-            }
-        ]
+    config = _delayed_advanced_setup()
 
     config_snapshot = get_drill_planner_config_snapshot(config)
     config_dic = create_config_dictionary(config_snapshot)
     schedule = get_greedy_drill_plan(deepcopy(config_dic), [])
+    assert not verify_constraints(config_dic, schedule)
+    verify_priority(schedule, config_snapshot)
+
+
+def test_drill_delay():
+    config = _simple_config_setup()
+
+    # days after a drilling event the rig is unavailable
+    delay_dict = {"A": 5, "B": 4}
+    for rig in config["rigs"]:
+        rig["delay"] = delay_dict[rig["name"]]
+
+    config_snapshot = get_drill_planner_config_snapshot(config)
+    config_dic = create_config_dictionary(config_snapshot)
+    schedule = get_greedy_drill_plan(deepcopy(config_dic), [])
+    assert schedule[0].start_date == config_dic["start_date"] + timedelta(
+        days=delay_dict[schedule[0].rig]
+    )
+    assert schedule[1].start_date == combine_slot_rig_unavailability(
+        config_dic, schedule[1].slot, schedule[1].rig
+    )[0][1] + timedelta(days=delay_dict[schedule[1].rig] + 1)
     assert not verify_constraints(config_dic, schedule)
     verify_priority(schedule, config_snapshot)
 

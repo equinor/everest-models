@@ -167,6 +167,41 @@ def _large_setup():
     return config
 
 
+def _delayed_advanced_setup():
+    config = _advanced_setup()
+    start_date = config["start_date"]
+
+    # days after start each rig is unavailable
+    unavailable = {"A": (0, 35), "B": (25, 43), "C": (32, 54)}
+
+    for rig in config["rigs"]:
+        rig["unavailability"] = [
+            {
+                "start": start_date + timedelta(days=unavailable[rig["name"]][0]),
+                "stop": start_date + timedelta(days=unavailable[rig["name"]][1]),
+            }
+        ]
+
+    # days after start each slot is unavailable
+    unavailable = {
+        "S1": (0, 10),
+        "S2": (7, 14),
+        "S3": (34, 43),  # drilling W5 must now be delayed
+        "S4": (6, 18),
+        "S5": (15, 18),
+    }
+
+    for slot in config["slots"]:
+        slot["unavailability"] = [
+            {
+                "start": start_date + timedelta(days=unavailable[slot["name"]][0]),
+                "stop": start_date + timedelta(days=unavailable[slot["name"]][1]),
+            }
+        ]
+
+    return config
+
+
 def verify_priority(schedule, config):
     for task1 in schedule:
         for task2 in schedule:
@@ -312,36 +347,7 @@ def test_rig_slot_include_delay():
     (well='W5', rig='C', slot='S3')
     """
 
-    config = _advanced_setup()
-    start_date = config["start_date"]
-
-    # days after start each rig is unavailable
-    unavailable = {"A": (0, 35), "B": (25, 43), "C": (32, 54)}
-
-    for rig in config["rigs"]:
-        rig["unavailability"] = [
-            {
-                "start": start_date + timedelta(days=unavailable[rig["name"]][0]),
-                "stop": start_date + timedelta(days=unavailable[rig["name"]][1]),
-            }
-        ]
-
-    # days after start each slot is unavailable
-    unavailable = {
-        "S1": (0, 10),
-        "S2": (7, 14),
-        "S3": (34, 43),  # drilling W5 must now be delayed
-        "S4": (6, 18),
-        "S5": (15, 18),
-    }
-
-    for slot in config["slots"]:
-        slot["unavailability"] = [
-            {
-                "start": start_date + timedelta(days=unavailable[slot["name"]][0]),
-                "stop": start_date + timedelta(days=unavailable[slot["name"]][1]),
-            }
-        ]
+    config = _delayed_advanced_setup()
 
     config_snapshot = get_drill_planner_config_snapshot(config)
 

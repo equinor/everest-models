@@ -103,13 +103,18 @@ def _prepare_config(config, optimizer_values, input_values):
 
 
 def _run_drill_planner(config, time_limit):
-    schedule = evaluate(config.snapshot, max_solver_time=time_limit)
     config_dic = create_config_dictionary(config.snapshot)
-    if not schedule:
-        logger.info(
-            "Optimized drill plan was not found -    resolving using optimal localized decisions"
-        )
+    drill_delays = [rig["delay"] for rig in config_dic["rigs"].values()]
+
+    if any(drill_delays):
         schedule = get_greedy_drill_plan(deepcopy(config_dic), [])
+    else:
+        schedule = evaluate(config.snapshot, max_solver_time=time_limit)
+        if not schedule:
+            logger.info(
+                "Optimized drill plan was not found -    resolving using optimal localized decisions"
+            )
+            schedule = get_greedy_drill_plan(deepcopy(config_dic), [])
     error_msgs = verify_constraints(config_dic, schedule)
     if error_msgs:
         for err_msg in error_msgs:

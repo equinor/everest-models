@@ -30,6 +30,11 @@ def _is_positive(elem):
     return elem > 0
 
 
+@configsuite.validator_msg("Is x not negative")
+def _is_not_negative(elem):
+    return elem >= 0
+
+
 @configsuite.validator_msg("Date should be after defined start date")
 def _is_within_time_period(elem, context):
     return context.start_date <= elem <= context.end_date
@@ -128,6 +133,15 @@ _rig_schema = {
                             },
                         }
                     },
+                },
+                "delay": {
+                    MK.Type: types.Integer,
+                    MK.Required: False,
+                    MK.Description: (
+                        "The number of days of preparation needed before the rig can start drilling a well. "
+                        "This setting defaults to 0."
+                    ),
+                    MK.ElementValidators: (_is_not_negative,),
                 },
             },
         }
