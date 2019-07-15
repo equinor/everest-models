@@ -1,10 +1,15 @@
 import unittest
 import datetime
 import pytest
+from collections import namedtuple
 
 from ecl.summary import EclSum
 
 from spinningjenny.rf_job import recovery_factor
+from spinningjenny.script.rf import main_entry_point
+from spinningjenny import valid_ecl_file
+
+from tests import tmpdir, relpath, MockParser
 
 
 def _default_ecl_sum():
@@ -108,3 +113,45 @@ def test_exceptions(ecl_sum):
         recovery_factor(ecl_sum, total_volume_key="NON-EXISTING")
 
     assert "No such key:NON-EXISTING" in str(excinfo.value)
+
+
+@tmpdir(path=None)
+def test_entry_point():
+    ecl_sum = _default_ecl_sum()
+    EclSum.fwrite(ecl_sum)
+
+    arguments = ["-s", "TEST", "-o", "rf_result"]
+
+    main_entry_point(arguments)
+
+    with open("rf_result") as f:
+        rf_result = f.read()
+
+    assert float(rf_result) == 0.1
+
+    arguments = [
+        "-s",
+        "TEST",
+        "-pk",
+        "GOPT:G1",
+        "-tvk",
+        "ROIP:1",
+        "-sd",
+        "03.01.2000",
+        "-ed",
+        "07.01.2000",
+        "-o",
+        "rf_result",
+    ]
+
+    main_entry_point(arguments)
+
+    with open("rf_result") as f:
+        rf_result = f.read()
+
+    assert float(rf_result) == 0.04
+
+    mock_parser = MockParser()
+    _ = valid_ecl_file("non_existing", mock_parser)
+
+    assert "Could not load eclipse summary from file" in mock_parser.get_error()

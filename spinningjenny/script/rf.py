@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 import argparse
+from functools import partial
 import sys
 
-from spinningjenny import customized_logger
+from spinningjenny import customized_logger, valid_ecl_file
 from spinningjenny.rf_job import recovery_factor
 
 logger = customized_logger.get_logger(__name__)
@@ -18,38 +19,50 @@ def rf_parser():
         "It is up to the caller to use sane combinations of summary keys."
     )
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument("--summary", required=True, type=str, help="Ecl summary file")
     parser.add_argument(
+        "-s",
+        "--summary",
+        required=True,
+        type=partial(valid_ecl_file, parser=parser),
+        help="Ecl summary file",
+    )
+    parser.add_argument(
+        "-pk",
         "--production_key",
         default="FOPT",
         type=str,
         help="Production key - a valid summary key",
     )
     parser.add_argument(
+        "-tvk",
         "--total_volume_key",
         default="FOIP",
         type=str,
         help="Total volume key - a valid summary key",
     )
     parser.add_argument(
+        "-sd",
         "--start_date",
         default=None,
         type=str,
         help="Start date - A date string on the format DD.MM.YYYY",
     )
     parser.add_argument(
+        "-ed",
         "--end_date",
         default=None,
         type=str,
         help="Start date - A date string on the format DD.MM.YYYY",
     )
-    parser.add_argument("--output_file", type=str, help="Filename of the output file. ")
+    parser.add_argument(
+        "-o", "--output", type=str, help="Filename of the output file. "
+    )
     return parser
 
 
-def main_entry_point():
+def main_entry_point(args=None):
     parser = rf_parser()
-    args = parser.parse_args(sys.argv[1:])
+    args = parser.parse_args(args)
     logger.info("Initializing recovery factor calculation")
 
     rf = recovery_factor(
@@ -60,7 +73,7 @@ def main_entry_point():
         end_date=args.end_date,
     )
 
-    with open(args.output_file, "w") as f:
+    with open(args.output, "w") as f:
         f.write("{0:.6f}".format(rf))
 
 
