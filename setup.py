@@ -16,6 +16,7 @@ setup(
         "spinningjenny/well_constraints",
         "spinningjenny/add_templates",
     ],
+    package_data={"share": ["spinningjenny/forwardmodels/*"]},
     description="Module containing a collection of jobs for ERT",
     author="Equinor ASA",
     url="https://github.com/equinor/spinningjenny",
