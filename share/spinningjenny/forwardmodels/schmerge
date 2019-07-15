@@ -1,0 +1,4 @@
+EXECUTABLE fm_schmerge
+
+MIN_ARG    3
+MAX_ARG    3

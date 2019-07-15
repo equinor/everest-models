@@ -1,0 +1,4 @@
+EXECUTABLE fm_well_constraints
+
+MIN_ARG    3
+MAX_ARG    6
