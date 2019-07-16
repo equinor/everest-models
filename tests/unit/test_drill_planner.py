@@ -1,21 +1,37 @@
-import configsuite
-from datetime import datetime, timedelta
 import pytest
 
+from datetime import datetime, timedelta
+from configsuite import ConfigSuite
 
 from spinningjenny import load_yaml
-from spinningjenny.drill_planner import drill_planner_schema
-from spinningjenny.drill_planner.drill_planner_optimization import evaluate
-from spinningjenny.script.drill_planner import (
-    _verify_constraints,
-    _verify_priority,
-    _prepare_config,
-    main_entry_point,
+from spinningjenny.drill_planner import (
+    drill_planner_schema,
+    create_config_dictionary,
+    verify_constraints,
 )
+from spinningjenny.drill_planner.drill_planner_optimization import (
+    evaluate,
+    ScheduleEvent,
+)
+from spinningjenny.script.drill_planner import _prepare_config, main_entry_point
 
 from tests import tmpdir, relpath
 
 TEST_DATA_PATH = relpath("tests", "testdata", "drill_planner")
+
+
+def get_drill_planner_configsuite(config_dic):
+    config_suite = ConfigSuite(
+        config_dic,
+        drill_planner_schema.build(),
+        extract_validation_context=drill_planner_schema.extract_validation_context,
+    )
+    assert config_suite.valid
+    return config_suite
+
+
+def get_drill_planner_config_snapshot(config_dic):
+    return get_drill_planner_configsuite(config_dic).snapshot
 
 
 def _simple_setup():
@@ -32,13 +48,7 @@ def _simple_setup():
         "slots": [{"name": slot, "wells": wells} for slot in slots],
         "wells_priority": {"W1": 1, "W2": 0.5},
     }
-    config_suite = configsuite.ConfigSuite(
-        config,
-        drill_planner_schema.build(),
-        extract_validation_context=drill_planner_schema.extract_validation_context,
-    )
-
-    assert config_suite.valid
+    config_suite = get_drill_planner_configsuite(config)
 
     return config_suite
 
@@ -154,15 +164,16 @@ def _large_setup():
         "slots": [{"name": slot, "wells": wells} for slot in slots],
         "wells_priority": {w: p for w, p in wells_priority},
     }
-    config_suite = configsuite.ConfigSuite(
-        config,
-        drill_planner_schema.build(),
-        extract_validation_context=drill_planner_schema.extract_validation_context,
-    )
+    return config
 
-    assert config_suite.valid
 
-    return config_suite
+def verify_priority(schedule, config):
+    for task1 in schedule:
+        for task2 in schedule:
+            priority1 = dict(config.wells_priority)[task1.well]
+            priority2 = dict(config.wells_priority)[task2.well]
+            if task1.start_date > task2.start_date:
+                assert priority1 <= priority2
 
 
 def test_simple_well_order():
@@ -176,18 +187,12 @@ def test_simple_well_order():
     assert all(test_task in schedule_well_order for test_task in well_order)
     assert all(schedule_task in well_order for schedule_task in schedule_well_order)
 
-    _verify_constraints(config, schedule)
+    assert not verify_constraints(create_config_dictionary(config), schedule)
 
 
 def test_wrong_schedule():
-    config = _advanced_setup()
-
-    config_suite = configsuite.ConfigSuite(
-        config,
-        drill_planner_schema.build(),
-        extract_validation_context=drill_planner_schema.extract_validation_context,
-    )
-    schedule = evaluate(config_suite.snapshot)
+    config_snapshot = get_drill_planner_config_snapshot(_advanced_setup())
+    schedule = evaluate(config_snapshot)
 
     # mess with the schedule/config to induce constraint violations
     config = _advanced_setup()
@@ -204,11 +209,7 @@ def test_wrong_schedule():
                 {"start": config["start_date"], "stop": config["end_date"]}
             ]
 
-    config_suite = configsuite.ConfigSuite(
-        config,
-        drill_planner_schema.build(),
-        extract_validation_context=drill_planner_schema.extract_validation_context,
-    )
+    config_snapshot = get_drill_planner_config_snapshot(config)
 
     schedule[0] = schedule[0]._replace(
         slot="S1", start_date=datetime(1900, 1, 1), end_date=datetime(2100, 1, 1)
@@ -218,42 +219,34 @@ def test_wrong_schedule():
 
     expected_error_list = [
         (
-            "Task (rig=B, slot=S1, well=W1, start=1900-01-01, end=2100-01-01) "
+            "Task(rig=B, slot=S1, well=W1, start=1900-01-01, end=2100-01-01) "
             "starts before config start date."
         ),
         (
-            "Task (rig=B, slot=S1, well=W1, start=1900-01-01, end=2100-01-01) "
+            "Task(rig=B, slot=S1, well=W1, start=1900-01-01, end=2100-01-01) "
             "ends after config end date."
         ),
         (
-            "Well W1's drilling time does not line up with that of task "
-            "(rig=B, slot=S1, well=W1, start=1900-01-01, end=2100-01-01)."
+            "Well W1's drilling time does not line up with that of "
+            "Task(rig=B, slot=S1, well=W1, start=1900-01-01, end=2100-01-01)."
         ),
-        "Well W5 cannot be drilled on rig A.",
-        "Well W5 cannot be drilled through slot S5.",
+        "Task(rig=A, slot=S5, well=W5, start=2000-01-01, end=2000-01-31) represents an invalid drill combination",
+        "Rig A or Slot S5 is unavailable during Task(rig=A, slot=S5, well=W5, start=2000-01-01, end=2000-01-31).",
         (
-            "Rig A is unavailable during task "
-            "(rig=A, slot=S5, well=W5, start=2000-01-01, end=2000-01-31)."
+            "Well W5's drilling time does not line up with that of "
+            "Task(rig=A, slot=S5, well=W5, start=2000-01-01, end=2000-01-31)."
         ),
+        "Task(rig=C, slot=S1, well=W3, start=2000-01-01, end=2000-01-26) represents an invalid drill combination",
+        "Well W5 was already drilled",
         (
-            "Slot S5 is unavailable during task "
-            "(rig=A, slot=S5, well=W5, start=2000-01-01, end=2000-01-31)."
-        ),
-        (
-            "Well W5's drilling time does not line up with that of task "
-            "(rig=A, slot=S5, well=W5, start=2000-01-01, end=2000-01-31)."
-        ),
-        "Slot S1 cannot be drilled through with rig C.",
-        (
-            "Task (rig=B, slot=S1, well=W1, start=1900-01-01, end=2100-01-01) ends after "
-            "task (rig=B, slot=S4, well=W4, start=2000-01-11, end=2000-01-31) begins."
+            "Task(rig=B, slot=S1, well=W1, start=1900-01-01, end=2100-01-01) ends after "
+            "Task(rig=B, slot=S4, well=W4, start=2000-01-11, end=2000-01-31) begins."
         ),
         "A slot is drilled through multiple times.",
     ]
-    with pytest.raises(RuntimeError) as e:
-        _verify_constraints(config_suite.snapshot, schedule)
+    errors = verify_constraints(create_config_dictionary(config_snapshot), schedule)
 
-    assert e.value.args[0] == expected_error_list
+    assert errors == expected_error_list
 
 
 def test_rig_slot_reservation():
@@ -276,15 +269,7 @@ def test_rig_slot_reservation():
     (well='W5', rig='C', slot='S3')
     """
 
-    config_suite = configsuite.ConfigSuite(
-        _advanced_setup(),
-        drill_planner_schema.build(),
-        extract_validation_context=drill_planner_schema.extract_validation_context,
-    )
-
-    assert config_suite.valid
-
-    config = config_suite.snapshot
+    config_snapshot = get_drill_planner_config_snapshot(_advanced_setup())
     well_order = [
         ("W1", datetime(2000, 1, 1), datetime(2000, 1, 11)),
         ("W2", datetime(2000, 1, 1), datetime(2000, 1, 31)),
@@ -293,21 +278,21 @@ def test_rig_slot_reservation():
         ("W5", datetime(2000, 1, 26), datetime(2000, 3, 6)),
     ]
 
-    schedule = evaluate(config)
+    schedule = evaluate(config_snapshot)
 
     schedule_well_order = [
         (event.well, event.start_date, event.end_date) for event in schedule
     ]
-    _verify_priority(schedule, config)
+    verify_priority(schedule, config_snapshot)
 
     assert len(schedule) == len(well_order)
     assert all(test_task in schedule_well_order for test_task in well_order)
     assert all(schedule_task in well_order for schedule_task in schedule_well_order)
 
-    _verify_constraints(config, schedule)
+    assert not verify_constraints(create_config_dictionary(config_snapshot), schedule)
 
 
-def test_rig_slot_inlude_delay():
+def test_rig_slot_include_delay():
     """
     In order for all wells to be drilled, the wells can't be taken randomly
     from an instruction set of all possible combinations.
@@ -358,13 +343,7 @@ def test_rig_slot_inlude_delay():
             }
         ]
 
-    config = configsuite.ConfigSuite(
-        config,
-        drill_planner_schema.build(),
-        extract_validation_context=drill_planner_schema.extract_validation_context,
-    )
-
-    assert config.valid
+    config_snapshot = get_drill_planner_config_snapshot(config)
 
     # WARNING: THIS IS RESULT OF A RUN
     # The results here show that the well priority constraint is given for start date, while it should
@@ -398,18 +377,18 @@ def test_rig_slot_inlude_delay():
         for (_, well, _, start_date, end_date) in detailed_well_order
     ]
 
-    schedule = evaluate(config.snapshot)
+    schedule = evaluate(config_snapshot)
 
     schedule_well_order = [
         (event.well, event.start_date, event.end_date) for event in schedule
     ]
-    _verify_priority(schedule, config.snapshot)
+    verify_priority(schedule, config_snapshot)
 
     assert len(schedule) == len(well_order)
     assert all(test_task in schedule_well_order for test_task in well_order)
     assert all(schedule_task in well_order for schedule_task in schedule_well_order)
 
-    _verify_constraints(config.snapshot, schedule)
+    assert not verify_constraints(create_config_dictionary(config_snapshot), schedule)
 
 
 @pytest.mark.slow
@@ -421,30 +400,17 @@ def test_default_large_setup():
     given - the specific dates may change with versions of or-tools,
     and there may be multiple local minimums.
     """
-    config = _large_setup()
-    assert config.valid
+    config_snapshot = get_drill_planner_config_snapshot(_large_setup())
+    schedule = evaluate(config_snapshot)
 
-    schedule = evaluate(config.snapshot)
-
-    _verify_priority(schedule, config.snapshot)
-    _verify_constraints(config.snapshot, schedule)
-
-
-def test_config_schema():
-    raw_config = _simple_config_setup()
-    config_suite = configsuite.ConfigSuite(
-        raw_config,
-        drill_planner_schema.build(),
-        extract_validation_context=drill_planner_schema.extract_validation_context,
-    )
-
-    assert config_suite.valid
+    verify_priority(schedule, config_snapshot)
+    assert not verify_constraints(create_config_dictionary(config_snapshot), schedule)
 
 
 def test_invalid_config_schema():
     raw_config = _simple_config_setup()
     raw_config["rigs"][0]["wells"].append("UNKNOWN_WELL")
-    config_suite = configsuite.ConfigSuite(
+    config_suite = ConfigSuite(
         raw_config,
         drill_planner_schema.build(),
         extract_validation_context=drill_planner_schema.extract_validation_context,
@@ -459,7 +425,7 @@ def test_invalid_config_schema():
             "stop": raw_config["start_date"] + timedelta(days=10),
         }
     )
-    config_suite = configsuite.ConfigSuite(
+    config_suite = ConfigSuite(
         raw_config,
         drill_planner_schema.build(),
         extract_validation_context=drill_planner_schema.extract_validation_context,
@@ -469,7 +435,7 @@ def test_invalid_config_schema():
 
     raw_config = _simple_config_setup()
     raw_config["rigs"][0]["slots"].append("UNKNOWN_SLOT")
-    config_suite = configsuite.ConfigSuite(
+    config_suite = ConfigSuite(
         raw_config,
         drill_planner_schema.build(),
         extract_validation_context=drill_planner_schema.extract_validation_context,
@@ -479,7 +445,7 @@ def test_invalid_config_schema():
 
     raw_config = _simple_config_setup()
     raw_config["wells_priority"]["UNKNOWN_WELL"] = 10
-    config_suite = configsuite.ConfigSuite(
+    config_suite = ConfigSuite(
         raw_config,
         drill_planner_schema.build(),
         extract_validation_context=drill_planner_schema.extract_validation_context,
@@ -489,7 +455,7 @@ def test_invalid_config_schema():
 
     raw_config = _simple_config_setup()
     raw_config["slots"][0]["wells"].append("UNKNOWN_WELL")
-    config_suite = configsuite.ConfigSuite(
+    config_suite = ConfigSuite(
         raw_config,
         drill_planner_schema.build(),
         extract_validation_context=drill_planner_schema.extract_validation_context,
@@ -504,7 +470,7 @@ def test_invalid_config_schema():
             "stop": raw_config["start_date"] + timedelta(days=10),
         }
     )
-    config_suite = configsuite.ConfigSuite(
+    config_suite = ConfigSuite(
         raw_config,
         drill_planner_schema.build(),
         extract_validation_context=drill_planner_schema.extract_validation_context,
@@ -519,31 +485,13 @@ def test_invalid_config_schema():
             "stop": raw_config["end_date"] + timedelta(days=10),
         }
     )
-    config_suite = configsuite.ConfigSuite(
+    config_suite = ConfigSuite(
         raw_config,
         drill_planner_schema.build(),
         extract_validation_context=drill_planner_schema.extract_validation_context,
     )
 
     assert not config_suite.valid
-
-
-@tmpdir(TEST_DATA_PATH)
-def test_config_file():
-    raw_config = load_yaml("config.yml")
-    optimizer_values = load_yaml("optimizer_values.yml")
-    input_values = load_yaml("wells.json")
-
-    raw_config["wells_priority"] = optimizer_values
-    raw_config["wells"] = input_values
-
-    config_suite = configsuite.ConfigSuite(
-        raw_config,
-        drill_planner_schema.build(),
-        extract_validation_context=drill_planner_schema.extract_validation_context,
-    )
-
-    assert config_suite.valid
 
 
 @tmpdir(TEST_DATA_PATH)

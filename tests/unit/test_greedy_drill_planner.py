@@ -1,33 +1,30 @@
 from datetime import datetime, timedelta
-from itertools import product
-import configsuite
-from tests.unit.test_drill_planner import _advanced_setup
-from spinningjenny.drill_planner import drill_planner_schema
-from spinningjenny.script.drill_planner import _verify_constraints, _verify_priority
+from copy import deepcopy
+
+from tests.unit.test_drill_planner import (
+    _advanced_setup,
+    verify_priority,
+    get_drill_planner_config_snapshot,
+)
+
+from spinningjenny.drill_planner import (
+    create_config_dictionary,
+    verify_constraints,
+    combine_slot_rig_unavailability,
+)
+from spinningjenny.drill_planner.drill_planner_optimization import ScheduleEvent
 from spinningjenny.drill_planner.greedy_drill_planner import (
-    _filter_events,
+    _valid_events,
     _next_best_event,
     get_greedy_drill_plan,
-    create_config_dictionary,
-    _combine_slot_rig_unavailability,
-    event_tuple,
 )
 
 
 def test__filter_events():
-    config_suite = configsuite.ConfigSuite(
-        _advanced_setup(),
-        drill_planner_schema.build(),
-        extract_validation_context=drill_planner_schema.extract_validation_context,
-    )
+    config_snapshot = get_drill_planner_config_snapshot(_advanced_setup())
+    config = create_config_dictionary(config_snapshot)
 
-    config = create_config_dictionary(config_suite.snapshot)
-    all_events = [
-        event_tuple(well=w, slot=s, rig=r)
-        for w, s, r in product(config["wells"], config["slots"], config["rigs"])
-    ]
-
-    filtered_events = _filter_events(config, all_events)
+    filtered_events = _valid_events(config)
 
     for event in filtered_events:
         assert event.well in config["rigs"][event.rig]["wells"]
@@ -36,92 +33,76 @@ def test__filter_events():
 
 
 def test__next_best_event():
-    config_suite = configsuite.ConfigSuite(
-        _advanced_setup(),
-        drill_planner_schema.build(),
-        extract_validation_context=drill_planner_schema.extract_validation_context,
-    )
+    config_snapshot = get_drill_planner_config_snapshot(_advanced_setup())
+    config = create_config_dictionary(config_snapshot)
 
-    config = create_config_dictionary(config_suite.snapshot)
-    all_events = [
-        event_tuple(well=w, slot=s, rig=r)
-        for w, s, r in product(
-            sorted(config["wells"]), sorted(config["slots"]), sorted(config["rigs"])
-        )
-    ]
-
-    filtered_events = _filter_events(config, all_events)
+    filtered_events = _valid_events(config)
     best_event = _next_best_event(config, filtered_events)
-    assert best_event == event_tuple(well="W1", slot="S1", rig="A")
+
+    assert best_event == ScheduleEvent(
+        well="W1",
+        slot="S1",
+        rig="A",
+        start_date=datetime(2000, 1, 1),
+        end_date=datetime(2000, 1, 11),
+    )
 
 
 def test_drill_time():
-    config_suite = configsuite.ConfigSuite(
-        _advanced_setup(),
-        drill_planner_schema.build(),
-        extract_validation_context=drill_planner_schema.extract_validation_context,
-    )
+    config_snapshot = get_drill_planner_config_snapshot(_advanced_setup())
+    config = create_config_dictionary(config_snapshot)
 
-    config = create_config_dictionary(config_suite.snapshot)
     config["wells"]["W1"]["drill_time"] = 9999
-    all_events = [
-        event_tuple(well=w, slot=s, rig=r)
-        for w, s, r in product(config["wells"], config["slots"], config["rigs"])
-    ]
-
-    filtered_events = _filter_events(config, all_events)
+    filtered_events = _valid_events(config)
 
     for event in filtered_events:
         assert event.well != "W1"
 
 
 def test__combine_slot_rig_unavailability():
-    config_suite = configsuite.ConfigSuite(
-        _advanced_setup(),
-        drill_planner_schema.build(),
-        extract_validation_context=drill_planner_schema.extract_validation_context,
-    )
+    config_snapshot = get_drill_planner_config_snapshot(_advanced_setup())
+    config = create_config_dictionary(config_snapshot)
 
-    test_event = event_tuple(well="W1", slot="S1", rig="A")
+    test_slot = "S1"
+    test_rig = "A"
 
-    config = create_config_dictionary(config_suite.snapshot)
     config["slots"]["S1"]["unavailability"] = [
         [config["start_date"], config["end_date"]]
     ]
 
     expected_unavailability = [[config["start_date"], config["end_date"]]]
-    unavailability = _combine_slot_rig_unavailability(config, test_event)
+    unavailability = combine_slot_rig_unavailability(config, test_slot, test_rig)
 
     assert unavailability == expected_unavailability
 
-    config = create_config_dictionary(config_suite.snapshot)
+    config = create_config_dictionary(config_snapshot)
     config["slots"]["S1"]["unavailability"] = [
         [config["start_date"], datetime(2000, 6, 1)]
     ]
     config["rigs"]["A"]["unavailability"] = [[datetime(2000, 6, 1), config["end_date"]]]
-    unavailability = _combine_slot_rig_unavailability(config, test_event)
+    unavailability = combine_slot_rig_unavailability(config, test_slot, test_rig)
 
     assert unavailability == expected_unavailability
 
-    config = create_config_dictionary(config_suite.snapshot)
+    config = create_config_dictionary(config_snapshot)
     config["slots"]["S1"]["unavailability"] = [
         [datetime(2000, 3, 1), config["end_date"]]
     ]
     config["rigs"]["A"]["unavailability"] = [
         [config["start_date"], datetime(2000, 9, 1)]
     ]
-    unavailability = _combine_slot_rig_unavailability(config, test_event)
+    unavailability = combine_slot_rig_unavailability(config, test_slot, test_rig)
 
     assert unavailability == expected_unavailability
 
-    config = create_config_dictionary(config_suite.snapshot)
+    config = create_config_dictionary(config_snapshot)
     config["slots"]["S1"]["unavailability"] = [
         [datetime(2000, 3, 15), datetime(2000, 6, 14)]
     ]
     config["rigs"]["A"]["unavailability"] = [
         [datetime(2000, 9, 1), datetime(2000, 11, 1)]
     ]
-    unavailability = _combine_slot_rig_unavailability(config, test_event)
+    unavailability = combine_slot_rig_unavailability(config, test_slot, test_rig)
 
     expected_unavailability = [
         [datetime(2000, 3, 15), datetime(2000, 6, 14)],
@@ -165,13 +146,8 @@ def test_greedy_drill_plan():
             }
         ]
 
-    config = configsuite.ConfigSuite(
-        config,
-        drill_planner_schema.build(),
-        extract_validation_context=drill_planner_schema.extract_validation_context,
-    )
-
-    copied_config = config.snapshot
-    schedule = get_greedy_drill_plan(copied_config)
-    _verify_constraints(copied_config, schedule)
-    _verify_priority(schedule, copied_config)
+    config_snapshot = get_drill_planner_config_snapshot(config)
+    config_dic = create_config_dictionary(config_snapshot)
+    schedule = get_greedy_drill_plan(deepcopy(config_dic), [])
+    assert not verify_constraints(config_dic, schedule)
+    verify_priority(schedule, config_snapshot)

@@ -1,141 +1,20 @@
 #!/usr/bin/env python
 import argparse
-from operator import attrgetter
 import configsuite
-from functools import partial
 
-from spinningjenny import (
-    customized_logger,
-    valid_yaml_file,
-    write_json_to_file,
-    DATE_FORMAT,
-)
+from functools import partial
+from spinningjenny import customized_logger, valid_yaml_file, write_json_to_file
 from spinningjenny.drill_planner.drill_planner_optimization import evaluate
-from spinningjenny.drill_planner import drill_planner_schema
+from spinningjenny.drill_planner import (
+    drill_planner_schema,
+    create_config_dictionary,
+    append_data,
+    verify_constraints,
+)
 from spinningjenny.drill_planner.greedy_drill_planner import get_greedy_drill_plan
 from copy import deepcopy
 
 logger = customized_logger.get_logger(__name__)
-
-
-def _verify_priority(schedule, config):
-    for task1 in schedule:
-        for task2 in schedule:
-            priority1 = dict(config.wells_priority)[task1.well]
-            priority2 = dict(config.wells_priority)[task2.well]
-            if task1.start_date > task2.start_date:
-                assert priority1 <= priority2
-
-
-def _overlaps(range_one, range_two):
-    start_one, end_one = range_one
-    start_two, end_two = range_two
-    return (end_one > start_two) and (start_one < end_two)
-
-
-def _verify_constraints(config, schedule):
-    errors = []
-
-    wells_at_rig = {rig.name: rig.wells for rig in config.rigs}
-    wells_at_slot = {slot.name: slot.wells for slot in config.slots}
-    slots_at_rig = {rig.name: rig.slots for rig in config.rigs}
-    rig_unavailability = {rig.name: rig.unavailability for rig in config.rigs}
-    slot_unavailability = {slot.name: slot.unavailability for slot in config.slots}
-    drill_time = {well.name: well.drill_time for well in config.wells}
-
-    def repr_task(task):
-        return "(rig={}, slot={}, well={}, start={}, end={})".format(
-            task.rig,
-            task.slot,
-            task.well,
-            task.start_date.strftime(DATE_FORMAT),
-            task.end_date.strftime(DATE_FORMAT),
-        )
-
-    for task in schedule:
-        if not task.start_date >= config.start_date:
-            msg = "Task {} starts before config start date.".format(repr_task(task))
-            logger.error(msg)
-            errors.append(msg)
-        if not task.end_date <= config.end_date:
-            msg = "Task {} ends after config end date.".format(repr_task(task))
-            logger.error(msg)
-            errors.append(msg)
-
-        if not task.well in wells_at_rig[task.rig]:
-            msg = "Well {} cannot be drilled on rig {}.".format(task.well, task.rig)
-            logger.error(msg)
-            errors.append(msg)
-        if not task.well in wells_at_slot[task.slot]:
-            msg = "Well {} cannot be drilled through slot {}.".format(
-                task.well, task.slot
-            )
-            logger.error(msg)
-            errors.append(msg)
-        if not task.slot in slots_at_rig[task.rig]:
-            msg = "Slot {} cannot be drilled through with rig {}.".format(
-                task.slot, task.rig
-            )
-            logger.error(msg)
-            errors.append(msg)
-
-        ranges = rig_unavailability[task.rig]
-        if ranges:
-            rig_overlaps = [
-                _overlaps((task.start_date, task.end_date), (period.start, period.stop))
-                for period in ranges
-            ]
-            if any(rig_overlaps):
-                msg = "Rig {} is unavailable during task {}.".format(
-                    task.rig, repr_task(task)
-                )
-                logger.error(msg)
-                errors.append(msg)
-
-        ranges = slot_unavailability[task.slot]
-        if ranges:
-            slot_overlaps = [
-                _overlaps((task.start_date, task.end_date), (period.start, period.stop))
-                for period in ranges
-            ]
-            if any(slot_overlaps):
-                msg = "Slot {} is unavailable during task {}.".format(
-                    task.slot, repr_task(task)
-                )
-                logger.error(msg)
-                errors.append(msg)
-
-        if not drill_time[task.well] == (task.end_date - task.start_date).days:
-            msg = "Well {}'s drilling time does not line up with that of task {}.".format(
-                task.well, repr_task(task)
-            )
-            logger.error(msg)
-            errors.append(msg)
-
-    # ensure rig drills only one well at a time
-    for rig in [rig.name for rig in config.rigs]:
-        rig_tasks = [task for task in schedule if task.rig == rig]
-        sorted_tasks = sorted(rig_tasks, key=attrgetter("start_date"))
-        succesive_tasks = [
-            (sorted_tasks[i], sorted_tasks[i + 1]) for i in range(len(sorted_tasks) - 1)
-        ]
-        for task1, task2 in succesive_tasks:
-            if not task1.end_date <= task2.start_date:
-                msg = "Task {} ends after task {} begins.".format(
-                    repr_task(task1), repr_task(task2)
-                )
-                logger.error(msg)
-                errors.append(msg)
-
-    # ensure each slot is only drilled once
-    slots_in_schedule = [task.slot for task in schedule]
-    if not len(set(slots_in_schedule)) == len(slots_in_schedule):
-        msg = "A slot is drilled through multiple times."
-        logger.error(msg)
-        errors.append(msg)
-
-    if errors:
-        raise RuntimeError(errors)
 
 
 def _log_detailed_result(schedule):
@@ -148,22 +27,6 @@ def _log_detailed_result(schedule):
         logger.info(
             msg.format(task.well, task.rig, task.slot, task.start_date, task.end_date)
         )
-
-
-def _append_data(input_values, schedule):
-
-    for well_cfg in input_values:
-        well_from_schedule = {
-            "end_date": end_date
-            for (_, _, well, _, end_date) in schedule
-            if well == well_cfg["name"]
-        }
-        date = well_from_schedule["end_date"].strftime(DATE_FORMAT)
-
-        well_cfg["readydate"] = date
-        well_cfg["ops"] = [{"opname": "open", "date": date}]
-
-    return input_values
 
 
 def scheduler_parser():
@@ -241,12 +104,18 @@ def _prepare_config(config, optimizer_values, input_values):
 
 def _run_drill_planner(config, time_limit):
     schedule = evaluate(config.snapshot, max_solver_time=time_limit)
+    config_dic = create_config_dictionary(config.snapshot)
     if not schedule:
         logger.info(
             "Optimized drill plan was not found -    resolving using optimal localized decisions"
         )
-        schedule = get_greedy_drill_plan(deepcopy(config))
-    _verify_constraints(config.snapshot, schedule)
+        schedule = get_greedy_drill_plan(deepcopy(config_dic), [])
+    error_msgs = verify_constraints(config_dic, schedule)
+    if error_msgs:
+        for err_msg in error_msgs:
+            logger.error(err_msg)
+        raise RuntimeError(error_msgs)
+
     return schedule
 
 
@@ -269,7 +138,7 @@ def main_entry_point(args=None):
 
     logger.info("Initializing drill planner")
     schedule = _run_drill_planner(config=config, time_limit=args.time_limit)
-    result = _append_data(input_values=args.input, schedule=schedule)
+    result = append_data(input_values=args.input, schedule=schedule)
 
     _log_detailed_result(schedule)
     write_json_to_file(result, args.output)

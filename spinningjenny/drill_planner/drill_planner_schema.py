@@ -197,7 +197,7 @@ _well_schema = {
                 },
                 "drill_time": {
                     MK.Type: types.Integer,
-                    MK.Description: "Drilltime given in days",
+                    MK.Description: "Drill time given in days",
                     MK.ElementValidators: (_is_positive,),
                 },
             },
