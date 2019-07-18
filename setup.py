@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="spinningjenny",
-    packages=find_packages(include=["spinningjenny", "share"]),
+    packages=find_packages(include=["spinningjenny*", "share*"]),
     package_data={"share": ["spinningjenny/forwardmodels/*", "spinningjenny/npv/*"]},
     description="Module containing a collection of jobs for ERT",
     author="Equinor ASA",
