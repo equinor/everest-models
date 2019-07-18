@@ -1,22 +1,12 @@
 #!/usr/bin/env python
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 setup(
     name="spinningjenny",
-    packages=[
-        "share",
-        "share/spinningjenny",
-        "share/spinningjenny/forwardmodels",
-        "spinningjenny",
-        "spinningjenny/script",
-        "spinningjenny/npv",
-        "spinningjenny/drill_planner",
-        "spinningjenny/well_constraints",
-        "spinningjenny/add_templates",
-    ],
-    package_data={"share": ["spinningjenny/forwardmodels/*"]},
+    packages=find_packages(include=["spinningjenny", "share"]),
+    package_data={"share": ["spinningjenny/forwardmodels/*", "spinningjenny/npv/*"]},
     description="Module containing a collection of jobs for ERT",
     author="Equinor ASA",
     url="https://github.com/equinor/spinningjenny",

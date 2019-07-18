@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import pkg_resources
 
 import configsuite
 
@@ -111,8 +112,9 @@ def _prepare_config(input_data, options):
     # If any args provided, we inject those and overrides whats currently
     # in the config file
 
-    this_path = os.path.dirname(__file__)
-    defaults_path = os.path.join(this_path, "..", "npv", "npv_defaults.yml")
+    defaults_path = pkg_resources.resource_filename(
+        "share", "spinningjenny/npv/npv_defaults.yml"
+    )
 
     defaults = load_yaml(defaults_path)
 
