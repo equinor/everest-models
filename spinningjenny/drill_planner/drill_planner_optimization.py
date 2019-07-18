@@ -33,7 +33,7 @@ class WellDrillScheduleModel(cp_model.CpModel):
             }
             for slot in self.slots
         }
-        self._drill_time = {well.name: well.drilltime for well in config.wells}
+        self._drill_time = {well.name: well.drill_time for well in config.wells}
         self._horizon = (config.end_date - config.start_date).days
         self.start_date = config.start_date
         self.end_date = config.end_date

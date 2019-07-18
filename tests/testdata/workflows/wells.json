@@ -1,22 +1,22 @@
 [
  {
    "name": "PROD1",
-   "drilltime": 20
+   "drill_time": 20
  },
  {
    "name": "PROD2",
-   "drilltime": 25
+   "drill_time": 25
  },
  {
    "name": "INJ1",
-   "drilltime": 43
+   "drill_time": 43
  },
  {
    "name": "INJ2",
-   "drilltime": 23
+   "drill_time": 23
  },
  {
    "name": "PROD3",
-   "drilltime": 36
+   "drill_time": 36
  }
 ]

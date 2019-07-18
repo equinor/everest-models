@@ -27,7 +27,7 @@ def _simple_setup():
     config = {
         "start_date": start_date,
         "end_date": end_date,
-        "wells": [{"name": "W1", "drilltime": 5}, {"name": "W2", "drilltime": 10}],
+        "wells": [{"name": "W1", "drill_time": 5}, {"name": "W2", "drill_time": 10}],
         "rigs": [{"name": rig, "wells": wells, "slots": slots} for rig in rigs],
         "slots": [{"name": slot, "wells": wells} for slot in slots],
         "wells_priority": {"W1": 1, "W2": 0.5},
@@ -79,7 +79,7 @@ def _simple_config_setup():
                 ],
             },
         ],
-        "wells": [{"name": "W1", "drilltime": 5}, {"name": "W2", "drilltime": 10}],
+        "wells": [{"name": "W1", "drill_time": 5}, {"name": "W2", "drill_time": 10}],
         "wells_priority": {"W1": 1, "W2": 0.5},
     }
     return config
@@ -107,11 +107,11 @@ def _advanced_setup():
         "start_date": start_date,
         "end_date": end_date,
         "wells": [
-            {"name": "W1", "drilltime": 10},
-            {"name": "W2", "drilltime": 30},
-            {"name": "W3", "drilltime": 25},
-            {"name": "W4", "drilltime": 20},
-            {"name": "W5", "drilltime": 40},
+            {"name": "W1", "drill_time": 10},
+            {"name": "W2", "drill_time": 30},
+            {"name": "W3", "drill_time": 25},
+            {"name": "W4", "drill_time": 20},
+            {"name": "W5", "drill_time": 40},
         ],
         "rigs": [
             {"name": "A", "wells": wells[:3], "slots": slots},
@@ -148,7 +148,7 @@ def _large_setup():
         "start_date": start_date,
         "end_date": end_date,
         "wells": [
-            {"name": w, "drilltime": drill_times[i]} for i, w in enumerate(wells)
+            {"name": w, "drill_time": drill_times[i]} for i, w in enumerate(wells)
         ],
         "rigs": [{"name": rig, "wells": wells, "slots": slots} for rig in rigs],
         "slots": [{"name": slot, "wells": wells} for slot in slots],

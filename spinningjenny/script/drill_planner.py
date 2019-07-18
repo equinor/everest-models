@@ -39,7 +39,7 @@ def _verify_constraints(config, schedule):
     slots_at_rig = {rig.name: rig.slots for rig in config.rigs}
     rig_unavailability = {rig.name: rig.unavailability for rig in config.rigs}
     slot_unavailability = {slot.name: slot.unavailability for slot in config.slots}
-    drill_time = {well.name: well.drilltime for well in config.wells}
+    drill_time = {well.name: well.drill_time for well in config.wells}
 
     for task in schedule:
         assert task.start_date >= config.start_date

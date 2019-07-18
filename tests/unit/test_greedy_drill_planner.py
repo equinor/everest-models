@@ -63,7 +63,7 @@ def test_drill_time():
     )
 
     config = create_config_dictionary(config_suite.snapshot)
-    config["wells"]["W1"]["drilltime"] = 9999
+    config["wells"]["W1"]["drill_time"] = 9999
     all_events = [
         event_tuple(well=w, slot=s, rig=r)
         for w, s, r in product(config["wells"], config["slots"], config["rigs"])

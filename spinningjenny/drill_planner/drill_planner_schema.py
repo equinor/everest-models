@@ -20,7 +20,7 @@ def _is_prioritized(elem, context):
 
 
 @configsuite.validator_msg("Should have drill time")
-def _has_drilltime(elem, context):
+def _has_drill_time(elem, context):
     return elem in context.scheduled_drill_times
 
 
@@ -196,7 +196,7 @@ _well_schema = {
             MK.Type: types.NamedDict,
             MK.Content: {
                 "name": {MK.Type: types.String, MK.Description: "Well name"},
-                "drilltime": {
+                "drill_time": {
                     MK.Type: types.Integer,
                     MK.Description: "Drilltime given in days",
                     MK.ElementValidators: (_is_positivt,),

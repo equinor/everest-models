@@ -139,7 +139,7 @@ def _combine_slot_rig_unavailability(config, event):
 
 def _first_valid_timebox(config, event):
     event_unavailability = _combine_slot_rig_unavailability(config, event)
-    drilling_time = timedelta(days=config["wells"][event.well]["drilltime"])
+    drilling_time = timedelta(days=config["wells"][event.well]["drill_time"])
     slot_start_available = config["start_date"]
 
     for start, end in event_unavailability:
@@ -192,7 +192,7 @@ def create_config_dictionary(snapshot):
     config["start_date"] = snapshot.start_date
     config["end_date"] = snapshot.end_date
     config["wells"] = {
-        well_dict.name: {"drilltime": well_dict.drilltime}
+        well_dict.name: {"drill_time": well_dict.drill_time}
         for well_dict in snapshot.wells
     }
     config["slots"] = {

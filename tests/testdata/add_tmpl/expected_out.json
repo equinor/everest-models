@@ -1,7 +1,7 @@
 [
     {
         "readydate": "2000-02-22",
-        "drilltime": 20,
+        "drill_time": 20,
         "name": "w1",
         "ops": [
             {
@@ -13,7 +13,7 @@
     },
     {
         "readydate": "2000-04-13",
-        "drilltime": 25,
+        "drill_time": 25,
         "name": "w2",
         "ops": [
             {
@@ -48,7 +48,7 @@
     },
     {
         "readydate": "2000-05-26",
-        "drilltime": 43,
+        "drill_time": 43,
         "name": "w3",
         "ops": [
             {
@@ -66,7 +66,7 @@
     },
     {
         "readydate": "2000-05-06",
-        "drilltime": 23,
+        "drill_time": 23,
         "name": "w4",
         "ops": [
             {
@@ -90,7 +90,7 @@
     },
     {
         "readydate": "2000-06-11",
-        "drilltime": 36,
+        "drill_time": 36,
         "name": "w5",
         "ops": [
             {
