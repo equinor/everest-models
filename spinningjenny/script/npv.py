@@ -10,6 +10,7 @@ from functools import partial
 from spinningjenny import (
     customized_logger,
     valid_file,
+    valid_ecl_file,
     valid_date,
     valid_yaml_file,
     load_yaml,
@@ -42,7 +43,7 @@ def _build_parser():
         "-s",
         "--summary",
         required=True,
-        type=partial(valid_file, parser=parser),
+        type=partial(valid_ecl_file, parser=parser),
         help="Path to eclipse summary file to base your NPV calculation towards",
     )
     parser.add_argument(
@@ -62,7 +63,10 @@ def _build_parser():
         "-i",
         "--input",
         type=partial(valid_file, parser=parser),
-        help="Path to input file.",
+        help="Path to input file containing information related to wells. "
+        "The format is consistent with the wells.json file when running "
+        "everest. It must contain a 'ready-date' key for each well for when "
+        "it is considered completed and ready for production.",
     )
     parser.add_argument(
         "-sd",

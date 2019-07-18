@@ -3,7 +3,6 @@ import datetime
 import json
 from itertools import chain, compress
 
-from ecl.summary import EclSum
 from spinningjenny import customized_logger, DATE_FORMAT
 
 logger = customized_logger.get_logger(__name__)
@@ -17,8 +16,8 @@ class CalculateNPV:
 
     """
 
-    def __init__(self, input_data, summary_file):
-        self.ecl_sum = EclSum(summary_file)
+    def __init__(self, input_data, ecl_sum):
+        self.ecl_sum = ecl_sum
         self.output_file = input_data.files.output_file
         self.multiplier = input_data.multiplier
         self._npv = 0.0
