@@ -4,7 +4,7 @@ import os
 from functools import partial
 
 from spinningjenny.schmerge_job import merge_schedule
-from spinningjenny import customized_logger, valid_file
+from spinningjenny import customized_logger, valid_file, touch_filename
 
 logger = customized_logger.get_logger(__name__)
 
@@ -47,18 +47,11 @@ def schmerge_argparser():
         "-o",
         "--output",
         required=True,
-        type=_writable_location,
+        type=touch_filename,
         help="File path to write the resulting schedule file to.",
     )
 
     return parser
-
-
-def _writable_location(fname):
-    with open(fname, "w") as _:
-        pass
-    os.remove(fname)
-    return fname
 
 
 def main_entry_point(args=None):

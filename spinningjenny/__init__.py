@@ -34,6 +34,12 @@ def valid_file(file_path, parser):
     return file_path
 
 
+def touch_filename(fname):
+    with open(fname, "a") as _:
+        pass
+    return fname
+
+
 def valid_ecl_file(file_path, parser):
     # We don't check valid_file, as the input may be a basename
     # (e.g. NAME is valid input as long as NAME.UNSMRY and NAME.SMSPEC exists)
