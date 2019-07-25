@@ -179,6 +179,23 @@ def test_simple_well_order():
     _verify_constraints(config, schedule)
 
 
+def test_wrong_schedule():
+    config = _simple_setup().snapshot
+    schedule = evaluate(config)
+
+    # mess with the schedule to induce constraint violations
+    schedule = [event._replace(slot="S1") for event in schedule]
+    schedule = [event._replace(start_date=datetime(2000, 1, 1)) for event in schedule]
+
+    try:
+        _verify_constraints(config, schedule)
+    except Exception as e:
+        # verify there are 2 errors
+        # - drill time doesn't like up with event duration
+        # - multiple events with the same slot
+        assert len(e.args[0]) == 2
+
+
 def test_rig_slot_reservation():
     """
     In order for all wells to be drilled, the wells can't be taken randomly

@@ -34,6 +34,8 @@ def _overlaps(range_one, range_two):
 
 
 def _verify_constraints(config, schedule):
+    errors = []
+
     wells_at_rig = {rig.name: rig.wells for rig in config.rigs}
     wells_at_slot = {slot.name: slot.wells for slot in config.slots}
     slots_at_rig = {rig.name: rig.slots for rig in config.rigs}
@@ -42,12 +44,31 @@ def _verify_constraints(config, schedule):
     drill_time = {well.name: well.drill_time for well in config.wells}
 
     for task in schedule:
-        assert task.start_date >= config.start_date
-        assert task.end_date <= config.end_date
+        if not task.start_date >= config.start_date:
+            msg = "Task {} starts before config start date.".format(task)
+            logger.error(msg)
+            errors.append(Exception(msg))
+        if not task.end_date <= config.end_date:
+            msg = "Task {} ends after config end date.".format(task)
+            logger.error(msg)
+            errors.append(Exception(msg))
 
-        assert task.well in wells_at_rig[task.rig]
-        assert task.well in wells_at_slot[task.slot]
-        assert task.slot in slots_at_rig[task.rig]
+        if not task.well in wells_at_rig[task.rig]:
+            msg = "Task {} starts before config start date.".format(task)
+            logger.error(msg)
+            errors.append(Exception(msg))
+        if not task.well in wells_at_slot[task.slot]:
+            msg = "Well {} cannot be drilled through slot {}.".format(
+                task.well, task.slot
+            )
+            logger.error(msg)
+            errors.append(Exception(msg))
+        if not task.slot in slots_at_rig[task.rig]:
+            msg = "slot {} cannot be drilled through with rig {}.".format(
+                task.slot, task.rig
+            )
+            logger.error(msg)
+            errors.append(Exception(msg))
 
         ranges = rig_unavailability[task.rig]
         if ranges:
@@ -55,7 +76,10 @@ def _verify_constraints(config, schedule):
                 _overlaps((task.start_date, task.end_date), (period.start, period.stop))
                 for period in ranges
             ]
-            assert not any(rig_overlaps)
+            if any(rig_overlaps):
+                msg = "There are overlaps concerning task {}.".format(task)
+                logger.error(msg)
+                errors.append(Exception(msg))
 
         ranges = slot_unavailability[task.slot]
         if ranges:
@@ -63,9 +87,17 @@ def _verify_constraints(config, schedule):
                 _overlaps((task.start_date, task.end_date), (period.start, period.stop))
                 for period in ranges
             ]
-            assert not any(slot_overlaps)
+            if any(slot_overlaps):
+                msg = "There are overlaps concerning task {}.".format(task)
+                logger.error(msg)
+                errors.append(Exception(msg))
 
-        assert drill_time[task.well] == (task.end_date - task.start_date).days
+        if not drill_time[task.well] == (task.end_date - task.start_date).days:
+            msg = "Well {}'s drilling time does not line up with that of the task {}.".format(
+                task.well, task
+            )
+            logger.error(msg)
+            errors.append(Exception(msg))
 
     # ensure rig drills only one well at a time
     for rig in [rig.name for rig in config.rigs]:
@@ -75,7 +107,18 @@ def _verify_constraints(config, schedule):
             (sorted_tasks[i], sorted_tasks[i + 1]) for i in range(len(sorted_tasks) - 1)
         ]
         for task1, task2 in succesive_tasks:
-            assert task1.end_date <= task2.start_date
+            if not task1.end_date <= task2.start_date:
+                msg = "Task {} ends after task {} begins."
+
+    # ensure each slot is only drilled once
+    slots_in_schedule = [task.slot for task in schedule]
+    if not len(set(slots_in_schedule)) == len(slots_in_schedule):
+        msg = "A slot is drilled through multiple times."
+        logger.error(msg)
+        errors.append(Exception(msg))
+
+    if errors:
+        raise Exception(errors)
 
 
 def _log_detailed_result(schedule):
