@@ -47,28 +47,28 @@ def _verify_constraints(config, schedule):
         if not task.start_date >= config.start_date:
             msg = "Task {} starts before config start date.".format(task)
             logger.error(msg)
-            errors.append(Exception(msg))
+            errors.append(msg)
         if not task.end_date <= config.end_date:
             msg = "Task {} ends after config end date.".format(task)
             logger.error(msg)
-            errors.append(Exception(msg))
+            errors.append(msg)
 
         if not task.well in wells_at_rig[task.rig]:
             msg = "Task {} starts before config start date.".format(task)
             logger.error(msg)
-            errors.append(Exception(msg))
+            errors.append(msg)
         if not task.well in wells_at_slot[task.slot]:
             msg = "Well {} cannot be drilled through slot {}.".format(
                 task.well, task.slot
             )
             logger.error(msg)
-            errors.append(Exception(msg))
+            errors.append(msg)
         if not task.slot in slots_at_rig[task.rig]:
             msg = "slot {} cannot be drilled through with rig {}.".format(
                 task.slot, task.rig
             )
             logger.error(msg)
-            errors.append(Exception(msg))
+            errors.append(msg)
 
         ranges = rig_unavailability[task.rig]
         if ranges:
@@ -79,7 +79,7 @@ def _verify_constraints(config, schedule):
             if any(rig_overlaps):
                 msg = "There are overlaps concerning task {}.".format(task)
                 logger.error(msg)
-                errors.append(Exception(msg))
+                errors.append(msg)
 
         ranges = slot_unavailability[task.slot]
         if ranges:
@@ -90,14 +90,14 @@ def _verify_constraints(config, schedule):
             if any(slot_overlaps):
                 msg = "There are overlaps concerning task {}.".format(task)
                 logger.error(msg)
-                errors.append(Exception(msg))
+                errors.append(msg)
 
         if not drill_time[task.well] == (task.end_date - task.start_date).days:
             msg = "Well {}'s drilling time does not line up with that of the task {}.".format(
                 task.well, task
             )
             logger.error(msg)
-            errors.append(Exception(msg))
+            errors.append(msg)
 
     # ensure rig drills only one well at a time
     for rig in [rig.name for rig in config.rigs]:
@@ -115,7 +115,7 @@ def _verify_constraints(config, schedule):
     if not len(set(slots_in_schedule)) == len(slots_in_schedule):
         msg = "A slot is drilled through multiple times."
         logger.error(msg)
-        errors.append(Exception(msg))
+        errors.append(msg)
 
     if errors:
         raise Exception(errors)

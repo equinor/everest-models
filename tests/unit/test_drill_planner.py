@@ -193,7 +193,16 @@ def test_wrong_schedule():
         # verify there are 2 errors
         # - drill time doesn't like up with event duration
         # - multiple events with the same slot
-        assert len(e.args[0]) == 2
+        expected_error_list = [
+            (
+                "Well W2's drilling time does not line up with that of "
+                "the task schedule_event(rig='A', slot='S1', well='W2', "
+                "start_date=datetime.datetime(2000, 1, 1, 0, 0), "
+                "end_date=datetime.datetime(2000, 1, 16, 0, 0))."
+            ),
+            "A slot is drilled through multiple times.",
+        ]
+        assert e.args[0] == expected_error_list
 
 
 def test_rig_slot_reservation():
