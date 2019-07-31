@@ -30,7 +30,7 @@ def _verify_priority(schedule, config):
 def _overlaps(range_one, range_two):
     start_one, end_one = range_one
     start_two, end_two = range_two
-    return (start_one < end_two < end_one) or (end_one > start_two > start_one)
+    return (end_one >= start_two) and (start_one <= end_two)
 
 
 def _verify_constraints(config, schedule):
@@ -43,18 +43,27 @@ def _verify_constraints(config, schedule):
     slot_unavailability = {slot.name: slot.unavailability for slot in config.slots}
     drill_time = {well.name: well.drill_time for well in config.wells}
 
+    def repr_task(task):
+        return "(rig={}, slot={}, well={}, start={}, end={})".format(
+            task.rig,
+            task.slot,
+            task.well,
+            task.start_date.strftime(DATE_FORMAT),
+            task.end_date.strftime(DATE_FORMAT),
+        )
+
     for task in schedule:
         if not task.start_date >= config.start_date:
-            msg = "Task {} starts before config start date.".format(task)
+            msg = "Task {} starts before config start date.".format(repr_task(task))
             logger.error(msg)
             errors.append(msg)
         if not task.end_date <= config.end_date:
-            msg = "Task {} ends after config end date.".format(task)
+            msg = "Task {} ends after config end date.".format(repr_task(task))
             logger.error(msg)
             errors.append(msg)
 
         if not task.well in wells_at_rig[task.rig]:
-            msg = "Task {} starts before config start date.".format(task)
+            msg = "Well {} cannot be drilled on rig {}.".format(task.well, task.rig)
             logger.error(msg)
             errors.append(msg)
         if not task.well in wells_at_slot[task.slot]:
@@ -64,7 +73,7 @@ def _verify_constraints(config, schedule):
             logger.error(msg)
             errors.append(msg)
         if not task.slot in slots_at_rig[task.rig]:
-            msg = "slot {} cannot be drilled through with rig {}.".format(
+            msg = "Slot {} cannot be drilled through with rig {}.".format(
                 task.slot, task.rig
             )
             logger.error(msg)
@@ -77,7 +86,9 @@ def _verify_constraints(config, schedule):
                 for period in ranges
             ]
             if any(rig_overlaps):
-                msg = "There are overlaps concerning task {}.".format(task)
+                msg = "Rig {} is unavailable during task {}.".format(
+                    task.rig, repr_task(task)
+                )
                 logger.error(msg)
                 errors.append(msg)
 
@@ -88,13 +99,15 @@ def _verify_constraints(config, schedule):
                 for period in ranges
             ]
             if any(slot_overlaps):
-                msg = "There are overlaps concerning task {}.".format(task)
+                msg = "Slot {} is unavailable during task {}.".format(
+                    task.slot, repr_task(task)
+                )
                 logger.error(msg)
                 errors.append(msg)
 
         if not drill_time[task.well] == (task.end_date - task.start_date).days:
-            msg = "Well {}'s drilling time does not line up with that of the task {}.".format(
-                task.well, task
+            msg = "Well {}'s drilling time does not line up with that of task {}.".format(
+                task.well, repr_task(task)
             )
             logger.error(msg)
             errors.append(msg)
@@ -108,7 +121,11 @@ def _verify_constraints(config, schedule):
         ]
         for task1, task2 in succesive_tasks:
             if not task1.end_date <= task2.start_date:
-                msg = "Task {} ends after task {} begins."
+                msg = "Task {} ends after task {} begins.".format(
+                    repr_task(task1), repr_task(task2)
+                )
+                logger.error(msg)
+                errors.append(msg)
 
     # ensure each slot is only drilled once
     slots_in_schedule = [task.slot for task in schedule]
@@ -118,7 +135,7 @@ def _verify_constraints(config, schedule):
         errors.append(msg)
 
     if errors:
-        raise Exception(errors)
+        raise AssertionError(errors)
 
 
 def _log_detailed_result(schedule):

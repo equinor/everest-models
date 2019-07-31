@@ -180,28 +180,79 @@ def test_simple_well_order():
 
 
 def test_wrong_schedule():
-    config = _simple_setup().snapshot
-    schedule = evaluate(config)
+    config = _advanced_setup()
 
-    # mess with the schedule to induce constraint violations
-    schedule = [event._replace(slot="S1") for event in schedule]
-    schedule = [event._replace(start_date=datetime(2000, 1, 1)) for event in schedule]
+    config_suite = configsuite.ConfigSuite(
+        config,
+        drill_planner_schema.build(),
+        extract_validation_context=drill_planner_schema.extract_validation_context,
+    )
+    schedule = evaluate(config_suite.snapshot)
 
+    # mess with the schedule/config to induce constraint violations
+    config = _advanced_setup()
+    for rig in config["rigs"]:
+        if rig["name"] == "C":
+            rig["slots"] = rig["slots"][1:]
+        if rig["name"] == "A":
+            rig["unavailability"] = [
+                {"start": config["start_date"], "stop": config["end_date"]}
+            ]
+    for slot in config["slots"]:
+        if slot["name"] == "S5":
+            slot["unavailability"] = [
+                {"start": config["start_date"], "stop": config["end_date"]}
+            ]
+
+    config_suite = configsuite.ConfigSuite(
+        config,
+        drill_planner_schema.build(),
+        extract_validation_context=drill_planner_schema.extract_validation_context,
+    )
+
+    schedule[0] = schedule[0]._replace(
+        slot="S1", start_date=datetime(1000, 1, 1), end_date=datetime(2100, 1, 1)
+    )
+    schedule[1] = schedule[1]._replace(slot="S5", well="W5")
+    schedule[2] = schedule[2]._replace(slot="S1")
+
+    expected_error_list = [
+        (
+            "Task (rig=B, slot=S1, well=W1, start=1000-01-01, end=2100-01-01) "
+            "starts before config start date."
+        ),
+        (
+            "Task (rig=B, slot=S1, well=W1, start=1000-01-01, end=2100-01-01) "
+            "ends after config end date."
+        ),
+        (
+            "Well W1's drilling time does not line up with that of task "
+            "(rig=B, slot=S1, well=W1, start=1000-01-01, end=2100-01-01)."
+        ),
+        "Well W5 cannot be drilled on rig A.",
+        "Well W5 cannot be drilled through slot S5.",
+        (
+            "Rig A is unavailable during task "
+            "(rig=A, slot=S5, well=W5, start=2000-01-01, end=2000-01-31)."
+        ),
+        (
+            "Slot S5 is unavailable during task "
+            "(rig=A, slot=S5, well=W5, start=2000-01-01, end=2000-01-31)."
+        ),
+        (
+            "Well W5's drilling time does not line up with that of task "
+            "(rig=A, slot=S5, well=W5, start=2000-01-01, end=2000-01-31)."
+        ),
+        "Slot S1 cannot be drilled through with rig C.",
+        (
+            "Task (rig=B, slot=S1, well=W1, start=1000-01-01, end=2100-01-01) ends after "
+            "task (rig=B, slot=S4, well=W4, start=2000-01-11, end=2000-01-31) begins."
+        ),
+        "A slot is drilled through multiple times.",
+    ]
     try:
-        _verify_constraints(config, schedule)
-    except Exception as e:
-        # verify there are 2 errors
-        # - drill time doesn't like up with event duration
-        # - multiple events with the same slot
-        expected_error_list = [
-            (
-                "Well W2's drilling time does not line up with that of "
-                "the task schedule_event(rig='A', slot='S1', well='W2', "
-                "start_date=datetime.datetime(2000, 1, 1, 0, 0), "
-                "end_date=datetime.datetime(2000, 1, 16, 0, 0))."
-            ),
-            "A slot is drilled through multiple times.",
-        ]
+        _verify_constraints(config_suite.snapshot, schedule)
+    except AssertionError as e:
         assert e.args[0] == expected_error_list
 
 
