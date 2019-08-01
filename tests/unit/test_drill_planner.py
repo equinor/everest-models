@@ -211,23 +211,23 @@ def test_wrong_schedule():
     )
 
     schedule[0] = schedule[0]._replace(
-        slot="S1", start_date=datetime(1000, 1, 1), end_date=datetime(2100, 1, 1)
+        slot="S1", start_date=datetime(1900, 1, 1), end_date=datetime(2100, 1, 1)
     )
     schedule[1] = schedule[1]._replace(slot="S5", well="W5")
     schedule[2] = schedule[2]._replace(slot="S1")
 
     expected_error_list = [
         (
-            "Task (rig=B, slot=S1, well=W1, start=1000-01-01, end=2100-01-01) "
+            "Task (rig=B, slot=S1, well=W1, start=1900-01-01, end=2100-01-01) "
             "starts before config start date."
         ),
         (
-            "Task (rig=B, slot=S1, well=W1, start=1000-01-01, end=2100-01-01) "
+            "Task (rig=B, slot=S1, well=W1, start=1900-01-01, end=2100-01-01) "
             "ends after config end date."
         ),
         (
             "Well W1's drilling time does not line up with that of task "
-            "(rig=B, slot=S1, well=W1, start=1000-01-01, end=2100-01-01)."
+            "(rig=B, slot=S1, well=W1, start=1900-01-01, end=2100-01-01)."
         ),
         "Well W5 cannot be drilled on rig A.",
         "Well W5 cannot be drilled through slot S5.",
@@ -245,7 +245,7 @@ def test_wrong_schedule():
         ),
         "Slot S1 cannot be drilled through with rig C.",
         (
-            "Task (rig=B, slot=S1, well=W1, start=1000-01-01, end=2100-01-01) ends after "
+            "Task (rig=B, slot=S1, well=W1, start=1900-01-01, end=2100-01-01) ends after "
             "task (rig=B, slot=S4, well=W4, start=2000-01-11, end=2000-01-31) begins."
         ),
         "A slot is drilled through multiple times.",
