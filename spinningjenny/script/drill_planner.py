@@ -30,7 +30,7 @@ def _verify_priority(schedule, config):
 def _overlaps(range_one, range_two):
     start_one, end_one = range_one
     start_two, end_two = range_two
-    return (end_one >= start_two) and (start_one <= end_two)
+    return (end_one > start_two) and (start_one < end_two)
 
 
 def _verify_constraints(config, schedule):
