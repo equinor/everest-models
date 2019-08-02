@@ -135,7 +135,7 @@ def _verify_constraints(config, schedule):
         errors.append(msg)
 
     if errors:
-        raise AssertionError(errors)
+        raise RuntimeError(errors)
 
 
 def _log_detailed_result(schedule):

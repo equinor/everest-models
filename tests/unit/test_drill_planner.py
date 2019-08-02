@@ -250,10 +250,10 @@ def test_wrong_schedule():
         ),
         "A slot is drilled through multiple times.",
     ]
-    try:
+    with pytest.raises(RuntimeError) as e:
         _verify_constraints(config_suite.snapshot, schedule)
-    except AssertionError as e:
-        assert e.args[0] == expected_error_list
+
+    assert e.value.args[0] == expected_error_list
 
 
 def test_rig_slot_reservation():
