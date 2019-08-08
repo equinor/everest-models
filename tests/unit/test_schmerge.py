@@ -4,6 +4,7 @@ from spinningjenny.schmerge_job import (
     _extract_comments,
     _insert_extracted_comments,
     _add_dates_to_schedule,
+    _get_dates_from_schedule,
 )
 from spinningjenny.script.schmerge import main_entry_point
 from tests import tmpdir, relpath
@@ -29,6 +30,25 @@ def test__add_dates_to_schedule():
         schedule_inserted_dates, placeholder_dict
     )
     assert schedule_inserted_dates == expected_inserted_dates
+
+
+@tmpdir(TEST_DATA_PATH)
+def test_add_dates_to_schedule_without_initial_dates():
+    # Test dates can be added to schedule file that doesn't contain initial date
+    date_strings_to_add = ["2000-01-01", "2021-08-16", "2015-04-24"]
+    dates_to_add = [str2date(date_string) for date_string in date_strings_to_add]
+
+    with open("no_dates_schedule.tmpl", "r") as f:
+        schedule_string = f.read()
+
+    schedule_string, placeholder_dict = _extract_comments(schedule_string)
+    new_schedule_string = _add_dates_to_schedule(schedule_string, dates_to_add)
+    new_schedule_string = _insert_extracted_comments(
+        new_schedule_string, placeholder_dict
+    )
+    dates_in_schedule = _get_dates_from_schedule(new_schedule_string)
+
+    assert sorted(dates_to_add) == dates_in_schedule
 
 
 @tmpdir(TEST_DATA_PATH)

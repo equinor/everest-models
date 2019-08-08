@@ -85,10 +85,9 @@ def _first_larger_than(val, val_list):
 def _inject_date(schedule_string, dates_in_schedule, date):
     new_date_string = INSERT_SCHEDULE_DATE.format(date.strftime("%d %b %Y")).upper()
 
-    if dates_in_schedule[-1] < date:
+    if len(dates_in_schedule) == 0 or dates_in_schedule[-1] < date:
         new_date_string = os.linesep + new_date_string
         insert_index = len(schedule_string)
-
     else:
         next_date = _first_larger_than(date, dates_in_schedule)
         insert_index, _ = _find_date_index(schedule_string, next_date)
