@@ -62,3 +62,6 @@ venv.bak/
 
 # vscode
 .vscode
+
+# version
+spinningjenny/version.py
