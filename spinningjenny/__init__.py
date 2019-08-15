@@ -3,11 +3,12 @@ import json
 
 from datetime import datetime
 from os import path
+import pkg_resources
 
 from ecl.summary import EclSum
 from configsuite import ConfigSuite
 from spinningjenny import customized_logger
-
+from spinningjenny.bin import entry_points
 
 try:
     from spinningjenny.version import version
@@ -113,3 +114,13 @@ def load_yaml(file_path):
                         input_data[mark.line], " " * mark.column
                     )
                 )
+
+
+def fm_job_names():
+    return [ep_str.split("=")[0].strip() for ep_str in entry_points()]
+
+
+def fm_install_folder():
+    return path.abspath(
+        pkg_resources.resource_filename("share", "spinningjenny/forwardmodels")
+    )
