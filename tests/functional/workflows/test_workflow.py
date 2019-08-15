@@ -4,6 +4,10 @@ from spinningjenny.script.well_constraints import (
 )
 from spinningjenny.script.add_templates import main_entry_point as add_templates_entry
 from spinningjenny.script.schmerge import main_entry_point as schmerge_entry
+from spinningjenny.script.interpret_well_drill import (
+    main_entry_point as interpret_entry,
+)
+from spinningjenny.script.well_filter import main_entry_point as filter_entry
 
 from tests import tmpdir, relpath
 
@@ -15,7 +19,27 @@ def test_workflow():
 
     arguments = [
         "-i",
+        "interpreter_optimizer_values.yml",
+        "-o",
+        "filter_keep_wells.json",
+    ]
+
+    interpret_entry(arguments)
+
+    arguments = [
+        "-i",
         "wells.json",
+        "--keep",
+        "filter_keep_wells.json",
+        "-o",
+        "filtered_wells.json",
+    ]
+
+    filter_entry(arguments)
+
+    arguments = [
+        "-i",
+        "filtered_wells.json",
         "-c",
         "drill_planner_config.yml",
         "-opt",
@@ -29,6 +53,17 @@ def test_workflow():
     arguments = [
         "-i",
         "wells_dp_result.json",
+        "--remove",
+        "remove_EXTRA2.json",
+        "-o",
+        "filtered_wells_dp_result.json",
+    ]
+
+    filter_entry(arguments)
+
+    arguments = [
+        "-i",
+        "filtered_wells_dp_result.json",
         "-c",
         "well_constraint_config.yml",
         "-rc",

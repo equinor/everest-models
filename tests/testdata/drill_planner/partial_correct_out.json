@@ -1,0 +1,35 @@
+[
+  {
+    "name": "w1",
+    "drill_time": 20,
+    "readydate": "2000-02-22",
+    "ops": [
+      {
+        "opname": "open",
+        "date": "2000-02-22"
+      }
+    ]
+  },
+  {
+    "name": "w3",
+    "drill_time": 43,
+    "readydate": "2000-05-01",
+    "ops": [
+      {
+        "opname": "open",
+        "date": "2000-05-01"
+      }
+    ]
+  },
+  {
+    "name": "w5",
+    "drill_time": 36,
+    "readydate": "2000-04-24",
+    "ops": [
+      {
+        "opname": "open",
+        "date": "2000-04-24"
+      }
+    ]
+  }
+]

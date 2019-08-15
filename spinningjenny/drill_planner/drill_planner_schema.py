@@ -4,14 +4,20 @@ from configsuite import MetaKeys as MK
 from configsuite import types
 
 
-@configsuite.validator_msg("Should be a defined well")
-def _is_well(elem, context):
-    return elem in context.wells
+@configsuite.validator_msg("Should have a valid combination")
+def _valid_combination_exists(elem, context):
+    rigs_with_well = set([rig for rig in context.rigs if elem in rig.wells])
+    slots_with_well = set([slot.name for slot in context.slots if elem in slot.wells])
+    valid_combinations = [
+        set(rig.slots).intersection(slots_with_well) for rig in rigs_with_well
+    ]
+
+    return any(valid_combinations)
 
 
 @configsuite.validator_msg("Should be a defined slot")
 def _is_slot(elem, context):
-    return elem in context.slots
+    return elem in context.slot_names
 
 
 @configsuite.validator_msg("Should be prioritized")
@@ -30,19 +36,21 @@ def _is_within_time_period(elem, context):
 
 
 def extract_validation_context(configuration):
-    rigs = tuple([rig.name for rig in configuration.rigs]) if configuration.rigs else ()
+    rigs = configuration.rigs if configuration.rigs else ()
 
-    wells = (
+    well_names = (
         tuple([well.name for well in configuration.wells])
         if configuration.wells
         else ()
     )
 
-    slots = (
+    slot_names = (
         tuple([slot.name for slot in configuration.slots])
         if configuration.slots
         else ()
     )
+
+    slots = configuration.slots if configuration.slots else ()
 
     prioritized_wells = (
         tuple([well_name for well_name, _ in configuration.wells_priority])
@@ -52,12 +60,12 @@ def extract_validation_context(configuration):
 
     Context = collections.namedtuple(
         "Context",
-        ("rigs", "wells", "slots", "start_date", "end_date", "prioritized_wells"),
+        ("rigs", "slots", "slot_names", "start_date", "end_date", "prioritized_wells"),
     )
     return Context(
         rigs,
-        wells,
         slots,
+        slot_names,
         configuration.start_date,
         configuration.end_date,
         prioritized_wells,
@@ -85,7 +93,7 @@ _rig_schema = {
                     MK.Content: {
                         MK.Item: {
                             MK.Type: types.String,
-                            MK.ContextValidators: (_is_well,),
+                            MK.ContextValidators: (_valid_combination_exists,),
                         }
                     },
                 },
@@ -147,7 +155,7 @@ _slot_schema = {
                     MK.Content: {
                         MK.Item: {
                             MK.Type: types.String,
-                            MK.ContextValidators: (_is_well,),
+                            MK.ContextValidators: (_valid_combination_exists,),
                         }
                     },
                 },
@@ -220,7 +228,10 @@ def build():
                 MK.Type: types.Dict,
                 MK.Description: "A list of wells with a well priority value",
                 MK.Content: {
-                    MK.Key: {MK.Type: types.String, MK.ContextValidators: (_is_well,)},
+                    MK.Key: {
+                        MK.Type: types.String,
+                        MK.ContextValidators: (_valid_combination_exists,),
+                    },
                     MK.Value: {MK.Type: types.Number},
                 },
             },

@@ -409,16 +409,6 @@ def test_default_large_setup():
 
 def test_invalid_config_schema():
     raw_config = _simple_config_setup()
-    raw_config["rigs"][0]["wells"].append("UNKNOWN_WELL")
-    config_suite = ConfigSuite(
-        raw_config,
-        drill_planner_schema.build(),
-        extract_validation_context=drill_planner_schema.extract_validation_context,
-    )
-
-    assert not config_suite.valid
-
-    raw_config = _simple_config_setup()
     raw_config["rigs"][0]["unavailability"].append(
         {
             "start": raw_config["start_date"] - timedelta(days=10),
@@ -445,16 +435,6 @@ def test_invalid_config_schema():
 
     raw_config = _simple_config_setup()
     raw_config["wells_priority"]["UNKNOWN_WELL"] = 10
-    config_suite = ConfigSuite(
-        raw_config,
-        drill_planner_schema.build(),
-        extract_validation_context=drill_planner_schema.extract_validation_context,
-    )
-
-    assert not config_suite.valid
-
-    raw_config = _simple_config_setup()
-    raw_config["slots"][0]["wells"].append("UNKNOWN_WELL")
     config_suite = ConfigSuite(
         raw_config,
         drill_planner_schema.build(),

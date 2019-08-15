@@ -18,5 +18,9 @@
  {
    "name": "PROD3",
    "drill_time": 36
+ },
+ {
+   "name": "EXTRA1",
+   "drill_time": 100
  }
 ]
