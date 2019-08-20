@@ -8,7 +8,7 @@ import itertools
 from copy import deepcopy
 
 from spinningjenny import write_yaml_to_file, load_yaml
-from spinningjenny.script import well_constraints
+from spinningjenny.script import fm_well_constraints
 from spinningjenny.well_constraints import well_constraint_job
 from spinningjenny.well_constraints import well_config
 from spinningjenny.well_constraints import well_constraint_validate
@@ -54,7 +54,7 @@ def test_main_entry_point(tmpdir):
 
     tmpdir.chdir()
 
-    well_constraints.main_entry_point(arguments)
+    fm_well_constraints.main_entry_point(arguments)
     result_output = load_yaml(
         os.path.join(tmpdir.strpath, "well_constraint_output.json")
     )
@@ -71,7 +71,7 @@ def test_main_entry_point(tmpdir):
     arguments[6] = fpath
 
     with pytest.raises(SystemExit) as wrapped_error:
-        well_constraints.main_entry_point(arguments)
+        fm_well_constraints.main_entry_point(arguments)
     assert wrapped_error.type == SystemExit
     assert wrapped_error.value.code == 2
 
@@ -81,7 +81,7 @@ def test_main_entry_point(tmpdir):
     write_yaml_to_file(invalid_config, fpath)
 
     with pytest.raises(SystemExit) as wrapped_error:
-        well_constraints.main_entry_point(arguments)
+        fm_well_constraints.main_entry_point(arguments)
     assert wrapped_error.type == SystemExit
     assert wrapped_error.value.code == 2
 
@@ -403,7 +403,7 @@ def test_inject_key_in_dict():
 
     expected_result = {"name": {1: {key: {"optimizer_value": 1}}}}
 
-    result_data = well_constraints._inject_key_in_dict(test_data, key)
+    result_data = fm_well_constraints._inject_key_in_dict(test_data, key)
 
     assert result_data == expected_result
 
@@ -415,6 +415,6 @@ def test_inject_key_in_dict():
         "name_2": {1: {key: {"optimizer_value": 2}}},
     }
 
-    result_data = well_constraints._inject_key_in_dict(test_data, key)
+    result_data = fm_well_constraints._inject_key_in_dict(test_data, key)
 
     assert result_data == expected_result

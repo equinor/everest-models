@@ -6,7 +6,7 @@ from spinningjenny.schmerge_job import (
     _add_dates_to_schedule,
     _get_dates_from_schedule,
 )
-from spinningjenny.script.schmerge import main_entry_point
+from spinningjenny.script.fm_schmerge import main_entry_point
 from tests import tmpdir, relpath
 
 TEST_DATA_PATH = relpath("tests", "testdata", "schmerge")

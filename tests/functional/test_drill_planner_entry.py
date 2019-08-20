@@ -1,4 +1,4 @@
-from spinningjenny.script.drill_planner import main_entry_point
+from spinningjenny.script.fm_drill_planner import main_entry_point
 from spinningjenny import load_yaml
 from tests import tmpdir, relpath
 

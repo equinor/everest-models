@@ -116,11 +116,15 @@ def load_yaml(file_path):
                 )
 
 
-def fm_job_names():
-    return [ep_str.split("=")[0].strip() for ep_str in entry_points()]
-
-
 def fm_install_folder():
     return path.abspath(
         pkg_resources.resource_filename("share", "spinningjenny/forwardmodels")
     )
+
+
+def fm_jobs():
+    install_folder = fm_install_folder()
+    return [
+        {"name": job_name, "path": path.join(install_folder, job_name)}
+        for job_name in entry_points()
+    ]

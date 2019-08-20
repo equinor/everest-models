@@ -4,7 +4,7 @@ from ecl.summary import EclSum
 
 from tests import tmpdir, relpath
 from spinningjenny.strip_dates_job import strip_dates, process_dates
-from spinningjenny.script.strip_dates import main_entry_point
+from spinningjenny.script.fm_strip_dates import main_entry_point
 from spinningjenny import str2date
 
 TEST_DATA_PATH = relpath("tests", "testdata", "stripdates")

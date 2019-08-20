@@ -6,7 +6,7 @@ import pytest
 from configsuite import ConfigSuite
 
 from tests import tmpdir, relpath
-from spinningjenny.script.add_templates import main_entry_point
+from spinningjenny.script.fm_add_templates import main_entry_point
 from spinningjenny.add_templates.add_templates_job import add_templates
 from spinningjenny.add_templates.add_tmpl_schema import build_schema
 

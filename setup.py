@@ -4,6 +4,11 @@ from setuptools import setup, find_packages
 from spinningjenny.bin import entry_points
 
 
+def entry_point_strings():
+    eps = entry_points()
+    return ["fm_{} = {}".format(k, v) for k, v in eps.items()]
+
+
 setup(
     name="spinningjenny",
     packages=find_packages(include=["spinningjenny*", "share*"]),
@@ -28,5 +33,5 @@ setup(
         "Programming language :: Python :: 3.5",
         "Programming language :: Python :: 3.6",
     ],
-    entry_points={"console_scripts": entry_points()},
+    entry_points={"console_scripts": entry_point_strings()},
 )

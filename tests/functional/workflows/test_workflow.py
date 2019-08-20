@@ -1,13 +1,17 @@
-from spinningjenny.script.drill_planner import main_entry_point as drill_planner_entry
-from spinningjenny.script.well_constraints import (
+from spinningjenny.script.fm_drill_planner import (
+    main_entry_point as drill_planner_entry,
+)
+from spinningjenny.script.fm_well_constraints import (
     main_entry_point as well_constraints_entry,
 )
-from spinningjenny.script.add_templates import main_entry_point as add_templates_entry
-from spinningjenny.script.schmerge import main_entry_point as schmerge_entry
-from spinningjenny.script.interpret_well_drill import (
+from spinningjenny.script.fm_add_templates import (
+    main_entry_point as add_templates_entry,
+)
+from spinningjenny.script.fm_schmerge import main_entry_point as schmerge_entry
+from spinningjenny.script.fm_interpret_well_drill import (
     main_entry_point as interpret_entry,
 )
-from spinningjenny.script.well_filter import main_entry_point as filter_entry
+from spinningjenny.script.fm_well_filter import main_entry_point as filter_entry
 
 from tests import tmpdir, relpath
 

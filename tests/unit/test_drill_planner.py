@@ -13,7 +13,7 @@ from spinningjenny.drill_planner.drill_planner_optimization import (
     evaluate,
     ScheduleEvent,
 )
-from spinningjenny.script.drill_planner import _prepare_config, main_entry_point
+from spinningjenny.script.fm_drill_planner import _prepare_config, main_entry_point
 
 from tests import tmpdir, relpath
 

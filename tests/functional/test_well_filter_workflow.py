@@ -1,10 +1,10 @@
 import os
 import json
 from tests import tmpdir, relpath
-from spinningjenny.script.interpret_well_drill import (
+from spinningjenny.script.fm_interpret_well_drill import (
     main_entry_point as interpret_entry,
 )
-from spinningjenny.script.well_filter import main_entry_point as well_filter_entry
+from spinningjenny.script.fm_well_filter import main_entry_point as well_filter_entry
 
 TEST_DATA_PATH = relpath("tests", "testdata")
 

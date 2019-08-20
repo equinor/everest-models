@@ -2,7 +2,7 @@ import os
 import json
 from tests import tmpdir, relpath
 from spinningjenny.interpret_well_drill_job import interpret_well_drill
-from spinningjenny.script.interpret_well_drill import main_entry_point
+from spinningjenny.script.fm_interpret_well_drill import main_entry_point
 
 TEST_DATA_PATH = relpath("tests", "testdata", "interpret_well_drill")
 

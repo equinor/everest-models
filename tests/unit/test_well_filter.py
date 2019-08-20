@@ -3,7 +3,7 @@ import json
 import pytest
 from tests import tmpdir, relpath
 from spinningjenny.well_filter_job import filter_wells
-from spinningjenny.script.well_filter import main_entry_point
+from spinningjenny.script.fm_well_filter import main_entry_point
 
 TEST_DATA_PATH = relpath("tests", "testdata", "well_filter")
 
