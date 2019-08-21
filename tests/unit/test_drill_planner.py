@@ -482,24 +482,3 @@ def test_script_prepare_config():
         input_values=load_yaml("wells.json"),
     )
     assert config.valid
-
-
-@tmpdir(TEST_DATA_PATH)
-def test_main_entry_point():
-    arguments = [
-        "--input",
-        "wells.json",
-        "--config",
-        "config.yml",
-        "--optimizer",
-        "optimizer_values.yml",
-        "--output",
-        "out.json",
-    ]
-
-    main_entry_point(arguments)
-
-    test_output = load_yaml("out.json")
-    expected_output = load_yaml("correct_out.json")
-
-    assert test_output == expected_output

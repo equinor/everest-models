@@ -29,22 +29,6 @@ def test_strip_dates():
 
 
 @tmpdir(TEST_DATA_PATH)
-def test_strip_date_entry_point():
-    args = [
-        "--summary",
-        "REEK-0.UNSMRY",
-        "--dates",
-        "2000-01-01",
-        "2001-02-01",
-        "2003-01-01",
-    ]
-
-    main_entry_point(args)
-    # Check results
-    assert filecmp.cmp("REEK-0.UNSMRY", "REEK-OUT.UNSMRY", shallow=False)
-
-
-@tmpdir(TEST_DATA_PATH)
 def test_strip_dates_preserves_last_report_date():
     file_name = "REEK-0.UNSMRY"
     ecl_sum_in = EclSum(file_name)

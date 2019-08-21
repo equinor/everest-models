@@ -500,23 +500,6 @@ def test_argparser(tmpdir, input_data):
     assert config.snapshot.multiplier == multiplier
 
 
-def test_main_entry_point(tmpdir, input_data):
-
-    args = [
-        "--summary",
-        _SUMMARY_FILE,
-        "--config",
-        _CONFIG_FILE,
-        "--output",
-        "test",
-        "--input",
-        "wells.json",
-    ]
-
-    fm_npv.main_entry_point(args)
-    assert_written_npv(tmpdir, expected_npv=939374969.82, out_path="test")
-
-
 def assert_written_npv(tmpdir, expected_npv, out_path):
     written_npv_output_file = os.path.join(tmpdir.strpath, out_path)
     assert os.path.isfile(written_npv_output_file)
