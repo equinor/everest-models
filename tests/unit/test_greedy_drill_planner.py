@@ -3,6 +3,7 @@ from copy import deepcopy
 
 from tests.unit.test_drill_planner import (
     _advanced_setup,
+    _simple_config_setup,
     verify_priority,
     get_drill_planner_config_snapshot,
 )
@@ -151,3 +152,26 @@ def test_greedy_drill_plan():
     schedule = get_greedy_drill_plan(deepcopy(config_dic), [])
     assert not verify_constraints(config_dic, schedule)
     verify_priority(schedule, config_snapshot)
+
+
+def test_uncompleted_task():
+    """
+    Tests that the greedy drill planner doesn't error out
+    when it checks an undrillable well
+    """
+    config = _simple_config_setup()
+
+    # Add extra well (but no extra slot)
+    config["rigs"][0]["wells"].append("W3")
+    config["slots"][1]["wells"].append("W3")
+    config["wells"].append({"name": "W3", "drill_time": 50})
+    config["wells_priority"]["W3"] = 6
+
+    config_snapshot = get_drill_planner_config_snapshot(config)
+    config_dic = create_config_dictionary(config_snapshot)
+    schedule = get_greedy_drill_plan(deepcopy(config_dic), [])
+
+    drilled_wells = [task.well for task in schedule]
+
+    # W2 is not drilled, there are 3 wells with 2 slots and W3 has the lowest priority
+    assert "W2" not in drilled_wells

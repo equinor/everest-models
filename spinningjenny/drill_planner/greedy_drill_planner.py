@@ -5,6 +5,9 @@ from spinningjenny.drill_planner import (
     valid_drill_combination,
 )
 from spinningjenny.drill_planner.drill_planner_optimization import ScheduleEvent
+from spinningjenny import customized_logger
+
+logger = customized_logger.get_logger(__name__)
 
 
 def _get_next_event(config):
@@ -16,9 +19,13 @@ def _get_next_event(config):
 
     next_event = _next_best_event(config, valid_events)
     if not next_event:
-        raise ValueError(
-            "No valid event was found, there might be too many constraints."
+        uncompleted_wells = config["wells"].keys()
+        logger.info(
+            "wells {} were unable to be drilled due to constraints".format(
+                ", ".join(uncompleted_wells)
+            )
         )
+
     return next_event
 
 
@@ -97,14 +104,16 @@ def get_greedy_drill_plan(config, schedule):
         return schedule
 
     event = _get_next_event(config)
+    if event:
+        config["wells"].pop(event.well)
+        config["wells_priority"].pop(event.well)
+        config["slots"].pop(event.slot)
+        config["rigs"][event.rig]["unavailability"].append(
+            [event.start_date, event.end_date]
+        )
 
-    config["wells"].pop(event.well)
-    config["wells_priority"].pop(event.well)
-    config["slots"].pop(event.slot)
-    config["rigs"][event.rig]["unavailability"].append(
-        [event.start_date, event.end_date]
-    )
-
-    schedule.append(event)
+        schedule.append(event)
+    else:
+        config["wells"] = {}
 
     return get_greedy_drill_plan(config, schedule)

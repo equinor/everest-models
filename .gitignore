@@ -55,6 +55,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+spinningjenny/version.py
 
 # other
 .idea
