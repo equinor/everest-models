@@ -1,3 +1,4 @@
+import datetime
 from spinningjenny import str2date
 from spinningjenny.schmerge_job import (
     merge_schedule,
@@ -5,11 +6,74 @@ from spinningjenny.schmerge_job import (
     _insert_extracted_comments,
     _add_dates_to_schedule,
     _get_dates_from_schedule,
+    _find_date_index,
 )
 from spinningjenny.script.fm_schmerge import main_entry_point
 from tests import tmpdir, relpath
 
 TEST_DATA_PATH = relpath("tests", "testdata", "schmerge")
+
+
+def test__get_dates_from_schedule():
+    schedule_string = """
+DATES
+ 01 JAN 2000 /
+/
+"""
+    dates = _get_dates_from_schedule(schedule_string)
+    assert len(dates) == 1
+    assert dates[0] == datetime.datetime(2000, 1, 1)
+
+
+def test__find_date_index():
+    schedule_string = """
+DATES
+ 01 JAN 2000 /
+/
+
+DATES
+ 01 JAN 2001 /
+--<<2>>
+/
+"""
+    existing_date = datetime.datetime(2000, 1, 1)
+    index = _find_date_index(schedule_string, existing_date)
+    assert index == (1, 22)
+
+    existing_date = datetime.datetime(2001, 1, 1)
+    index = _find_date_index(schedule_string, existing_date)
+    assert index == (25, 30)
+
+
+def test__add_single_date_to_schedule():
+    schedule_string = """
+DATES
+ 01 JAN 2000 /
+/
+
+DATES
+ 01 JAN 2001 /
+/
+"""
+    non_existing_date = datetime.datetime(2005, 1, 1)
+    updated_schedule_string = _add_dates_to_schedule(
+        schedule_string, [non_existing_date]
+    )
+    expected_string = """
+DATES
+ 01 JAN 2000 /
+/
+
+DATES
+ 01 JAN 2001 /
+/
+
+DATES
+ 01 JAN 2005 / --ADDED
+/
+
+"""
+    assert updated_schedule_string == expected_string
 
 
 @tmpdir(TEST_DATA_PATH)
