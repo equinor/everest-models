@@ -19,10 +19,15 @@ def test__get_dates_from_schedule():
 DATES
  01 JAN 2000 /
 /
+
+DATES
+ 2 JAN 2000 /
+/
 """
     dates = _get_dates_from_schedule(schedule_string)
-    assert len(dates) == 1
+    assert len(dates) == 2
     assert dates[0] == datetime.datetime(2000, 1, 1)
+    assert dates[1] == datetime.datetime(2000, 1, 2)
 
 
 def test__find_date_index():

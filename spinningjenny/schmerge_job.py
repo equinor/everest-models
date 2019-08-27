@@ -52,7 +52,7 @@ def _log_template_injection(schedule_string, index, template, params, date):
 
 def _get_dates_from_schedule(schedule_string):
     date_tuples_in_schedule = re.findall(
-        FIND_DATE_REGEX.format("[0-9]{2} [A-Z]{3} [0-9]{4}"), schedule_string
+        FIND_DATE_REGEX.format("[0-9]{1,2} [A-Z]{3} [0-9]{4}"), schedule_string
     )
     return [datetime.strptime(x[1], "%d %b %Y") for x in date_tuples_in_schedule]
 
