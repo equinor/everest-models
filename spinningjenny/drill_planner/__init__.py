@@ -1,7 +1,15 @@
+import collections
 import numpy as np
-from spinningjenny import DATE_FORMAT
 from datetime import timedelta
 from operator import attrgetter
+
+from spinningjenny import DATE_FORMAT, customized_logger
+
+ScheduleEvent = collections.namedtuple(
+    "schedule_event", ("rig", "slot", "well", "start_date", "end_date")
+)
+
+logger = customized_logger.get_logger(__name__)
 
 
 def create_config_dictionary(snapshot):
@@ -183,3 +191,40 @@ def verify_constraints(config, schedule):
         errors.append("A slot is drilled through multiple times.")
 
     return errors
+
+
+def resolve_priorities(schedule, config):
+    """
+    The priorities are not hard constraints in the solvers, which they shouldn't be.
+    Both implementations should prioritize the higher priority wells first.
+    If, and only if, higher priority wells are not affected, a lower priority well
+    can be drilled first. Otherwise forcing the startup for lower priority wells
+    could result in wells not beeing drilled.
+
+    The output of the entire job however should not allow for ready_dates to be
+    in any other order than as a prioritized list. We therefore shift any
+    dates that are not in order.
+    """
+    wells_priority = {k: v for k, v in config.wells_priority}
+    sorted_schedule = sorted(
+        schedule, key=lambda x: wells_priority[x.well], reverse=True
+    )
+
+    modified_schedule = [sorted_schedule[0]]
+
+    for idx, event in enumerate(sorted_schedule[1:]):
+        if modified_schedule[idx].end_date <= event.end_date:
+            modified_schedule.append(event)
+        else:
+            modified_schedule.append(
+                event._replace(end_date=modified_schedule[idx].end_date)
+            )
+            msg = (
+                "Well {first} could be completed prior to well {second}, "
+                "without affecting {second}. End date for {first} shifted "
+                "to conform with priority"
+            )
+            logger.info(
+                msg.format(first=event.well, second=modified_schedule[idx].well)
+            )
+    return modified_schedule

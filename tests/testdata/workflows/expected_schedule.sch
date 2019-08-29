@@ -84,26 +84,6 @@ DATES
 /
 
 DATES
- 06 MAY 2000 / --ADDED
-/
-
---start ./templates/template_welopen.tmpl
-WELOPEN
-  'INJ2' 'OPEN' /
-/
-
---end ./templates/template_welopen.tmpl
-
-
---start ./templates/template_wconinje.tmpl
-WCONINJE
-  'INJ2' 'water' 'OPEN' 'RATE' 1000 1* 320  1*  1*  1*   /
-/
-
---end ./templates/template_wconinje.tmpl
-
-
-DATES
  26 MAY 2000 / --ADDED
 /
 
@@ -118,6 +98,22 @@ WELOPEN
 --start ./templates/template_wconinje.tmpl
 WCONINJE
   'INJ1' 'water' 'OPEN' 'RATE' 550.0 1* 320  1*  1*  1*   /
+/
+
+--end ./templates/template_wconinje.tmpl
+
+
+--start ./templates/template_welopen.tmpl
+WELOPEN
+  'INJ2' 'OPEN' /
+/
+
+--end ./templates/template_welopen.tmpl
+
+
+--start ./templates/template_wconinje.tmpl
+WCONINJE
+  'INJ2' 'water' 'OPEN' 'RATE' 1000 1* 320  1*  1*  1*   /
 /
 
 --end ./templates/template_wconinje.tmpl

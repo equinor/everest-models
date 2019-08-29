@@ -1,4 +1,5 @@
 import pytest
+import collections
 
 from datetime import datetime, timedelta
 from configsuite import ConfigSuite
@@ -8,14 +9,18 @@ from spinningjenny.drill_planner import (
     drill_planner_schema,
     create_config_dictionary,
     verify_constraints,
+    ScheduleEvent,
+    resolve_priorities,
 )
 from spinningjenny.drill_planner.drill_planner_optimization import (
     evaluate,
     ScheduleEvent,
 )
+
 from spinningjenny.script.fm_drill_planner import _prepare_config, main_entry_point
 
 from tests import tmpdir, relpath
+
 
 TEST_DATA_PATH = relpath("tests", "testdata", "drill_planner")
 
@@ -488,3 +493,44 @@ def test_script_prepare_config():
         input_values=load_yaml("wells.json"),
     )
     assert config.valid
+
+
+def test_script_resolve_priorities():
+
+    # The function takes a configsuite snapshot,
+    # but it is really only interested in the priorities part
+    configtype = collections.namedtuple("mock_snapshot", "wells_priority")
+    wells_priority = [("W1", 3), ("W2", 2), ("W3", 1)]
+    config = configtype(wells_priority)
+
+    # Only one well must be shifted (W3)
+    well_order = [
+        ("B", "S5", "W1", datetime(2000, 1, 1), datetime(2000, 1, 10)),
+        ("A", "S2", "W2", datetime(2000, 1, 1), datetime(2000, 2, 10)),
+        ("B", "S4", "W3", datetime(2000, 1, 1), datetime(2000, 1, 20)),
+    ]
+    schedule_list = [
+        ScheduleEvent(rig=x[0], slot=x[1], well=x[2], start_date=x[3], end_date=x[4])
+        for x in well_order
+    ]
+
+    modified_schedule = resolve_priorities(schedule_list, config)
+    assert modified_schedule[0].end_date == datetime(2000, 1, 10)
+    assert modified_schedule[1].end_date == datetime(2000, 2, 10)
+    assert modified_schedule[2].end_date == datetime(2000, 2, 10)
+
+    # Both W2 and W3 must be shifted
+    well_order = [
+        ("B", "S5", "W1", datetime(2000, 1, 1), datetime(2000, 3, 10)),
+        ("A", "S2", "W2", datetime(2000, 1, 1), datetime(2000, 2, 10)),
+        ("B", "S4", "W3", datetime(2000, 1, 1), datetime(2000, 1, 20)),
+    ]
+    schedule_list = [
+        ScheduleEvent(rig=x[0], slot=x[1], well=x[2], start_date=x[3], end_date=x[4])
+        for x in well_order
+    ]
+
+    modified_schedule = resolve_priorities(schedule_list, config)
+    assert modified_schedule[0].end_date == datetime(2000, 3, 10)
+    assert modified_schedule[1].end_date == datetime(2000, 3, 10)
+    assert modified_schedule[2].end_date == datetime(2000, 3, 10)

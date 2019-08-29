@@ -33,12 +33,12 @@
         ]
     },
     {
-        "readydate": "2000-05-06",
+        "readydate": "2000-05-26",
         "drill_time": 23,
         "name": "w4",
         "ops": [
             {
-                "date": "2000-05-06",
+                "date": "2000-05-26",
                 "opname": "open"
             }
         ]

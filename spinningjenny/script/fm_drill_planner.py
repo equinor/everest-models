@@ -10,6 +10,7 @@ from spinningjenny.drill_planner import (
     create_config_dictionary,
     append_data,
     verify_constraints,
+    resolve_priorities,
 )
 from spinningjenny.drill_planner.greedy_drill_planner import get_greedy_drill_plan
 from copy import deepcopy
@@ -120,7 +121,7 @@ def _run_drill_planner(config, time_limit):
         for err_msg in error_msgs:
             logger.error(err_msg)
         raise RuntimeError(error_msgs)
-
+    schedule = resolve_priorities(schedule, config.snapshot)
     return schedule
 
 

@@ -24,11 +24,11 @@
   {
     "name": "w5",
     "drill_time": 36,
-    "readydate": "2000-04-24",
+    "readydate": "2000-05-01",
     "ops": [
       {
         "opname": "open",
-        "date": "2000-04-24"
+        "date": "2000-05-01"
       }
     ]
   }
