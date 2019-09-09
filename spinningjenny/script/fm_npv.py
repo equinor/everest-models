@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
-import os
 import pkg_resources
-
-import configsuite
 
 from functools import partial
 
@@ -13,10 +10,10 @@ from spinningjenny import (
     valid_file,
     valid_ecl_file,
     valid_date,
-    valid_yaml_file,
     load_yaml,
+    valid_config,
 )
-from spinningjenny.npv import npv_config
+from spinningjenny.npv.npv_config import build_schema
 from spinningjenny.npv.npv_job import CalculateNPV
 
 logger = customized_logger.get_logger(__name__)
@@ -26,7 +23,13 @@ def main_entry_point(args=None):
     npv_parser = _build_parser()
     options = npv_parser.parse_args(args=args)
 
-    config = _prepare_config(options.config, options)
+    config = _prepare_config(options)
+    if not config.valid:
+        npv_parser.error(
+            "Invalid config file:\n{}".format(
+                "\n".join([err.msg for err in config.errors])
+            )
+        )
 
     logger.info("initializing npv calculation with options {}".format(options))
     npv = CalculateNPV(config.snapshot, options.summary)
@@ -51,7 +54,9 @@ def _build_parser():
         "-c",
         "--config",
         required=True,
-        type=partial(valid_yaml_file, parser=parser),
+        type=partial(
+            valid_config, schema=build_schema(), parser=parser, layers=(_npv_default(),)
+        ),
         help="Path to config file containing at least prices",
     )
     parser.add_argument(
@@ -104,7 +109,15 @@ def _build_parser():
     return parser
 
 
-def _prepare_config(input_data, options):
+def _npv_default():
+    defaults_path = pkg_resources.resource_filename(
+        "share", "spinningjenny/npv/npv_defaults.yml"
+    )
+
+    return load_yaml(defaults_path)
+
+
+def _prepare_config(options):
     # Purpose of this function is to make config file complete
     # by creating a configsuite instance with user config along with a
     # layer of default settings.
@@ -112,14 +125,7 @@ def _prepare_config(input_data, options):
     # If any args provided, we inject those and overrides whats currently
     # in the config file
 
-    defaults_path = pkg_resources.resource_filename(
-        "share", "spinningjenny/npv/npv_defaults.yml"
-    )
-
-    defaults = load_yaml(defaults_path)
-
-    schema = npv_config._build_schema()
-    config = configsuite.ConfigSuite(input_data, schema, layers=(defaults,))
+    config = options.config
 
     if options.default_discount_rate:
         logger.info(
@@ -160,11 +166,6 @@ def _prepare_config(input_data, options):
     if options.ref_date:
         logger.info("From args - 'ref_date': {}".format(options.ref_date))
         config = config.push({"dates": {"ref_date": options.ref_date}})
-
-    if not config.valid:
-        for error in config.errors:
-            logger.error(error)
-        assert config.valid
 
     return config
 

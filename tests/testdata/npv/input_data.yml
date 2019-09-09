@@ -23,7 +23,7 @@ dates:
 
 summary_keys: ['FWIT', 'FOPT']
 
-exchange_rates:    
+exchange_rates:
     USD:
         - { date: 1997-01-01, value: 5 }
         - { date: 2000-02-01, value: 7 }

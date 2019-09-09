@@ -16,28 +16,23 @@ _TEST_DIR = os.path.join(
 
 
 @pytest.fixture
-def input_data(tmpdir):
+def options(tmpdir):
     for file_name in os.listdir(_TEST_DIR):
         shutil.copy(_TEST_DIR + file_name, tmpdir.strpath)
 
     cwd = os.getcwd()
     tmpdir.chdir()
 
-    yield load_yaml("input_data.yml")
+    parser = fm_npv._build_parser()
+    args = ["--summary", _SUMMARY_FILE, "--config", _CONFIG_FILE]
+
+    yield parser.parse_args(args)
 
     os.chdir(cwd)
 
 
-@pytest.fixture
-def options():
-    parser = fm_npv._build_parser()
-    args = ["--summary", _SUMMARY_FILE, "--config", _CONFIG_FILE]
-
-    return parser.parse_args(args)
-
-
-def test_base_case_npv(tmpdir, input_data, options):
-    config = fm_npv._prepare_config(input_data, options)
+def test_base_case_npv(tmpdir, options):
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
     calculate = fm_npv.CalculateNPV(config.snapshot, options.summary)
@@ -52,14 +47,12 @@ def test_base_case_npv(tmpdir, input_data, options):
     assert_written_npv(tmpdir, expected_npv, config.snapshot.files.output_file)
 
 
-def test_extended_case_npv(tmpdir, input_data, options):
-    input_data.pop("dates")
-    input_data.pop("summary_keys")
-
-    config = fm_npv._prepare_config(input_data, options)
+def test_extended_case_npv(tmpdir, options):
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
-    calculate = fm_npv.CalculateNPV(config.snapshot, options.summary)
+    snapshot = config.snapshot._replace(dates=None, summary_keys=None)
+    calculate = fm_npv.CalculateNPV(snapshot, options.summary)
     calculate.run()
     calculate.write()
 
@@ -73,16 +66,15 @@ def test_extended_case_npv(tmpdir, input_data, options):
     assert_written_npv(tmpdir, expected_npv, config.snapshot.files.output_file)
 
 
-def test_alter_mult(tmpdir, input_data, options):
-    input_data.pop("dates")
-    input_data.pop("summary_keys")
+def test_alter_mult(tmpdir, options):
     multiplier = 2
-    input_data["multiplier"] = multiplier
-
-    config = fm_npv._prepare_config(input_data, options)
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
-    calculate = fm_npv.CalculateNPV(config.snapshot, options.summary)
+    snapshot = config.snapshot._replace(
+        dates=None, summary_keys=None, multiplier=multiplier
+    )
+    calculate = fm_npv.CalculateNPV(snapshot, options.summary)
     calculate.run()
     calculate.write()
 
@@ -96,16 +88,18 @@ def test_alter_mult(tmpdir, input_data, options):
     assert_written_npv(tmpdir, expected_npv, config.snapshot.files.output_file)
 
 
-def test_extended_case_mutated_ref_date_npv(tmpdir, input_data, options):
-    input_data["dates"].pop("start_date")
-    input_data["dates"].pop("end_date")
-    input_data["dates"]["ref_date"] = datetime.date(2000, 5, 6)
-    input_data.pop("summary_keys")
-
-    config = fm_npv._prepare_config(input_data, options)
+def test_extended_case_mutated_ref_date_npv(tmpdir, options):
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
-    calculate = fm_npv.CalculateNPV(config.snapshot, options.summary)
+    snapshot = config.snapshot._replace(
+        dates=config.snapshot.dates._replace(
+            start_date=None, end_date=None, ref_date=datetime.date(2000, 5, 6)
+        ),
+        summary_keys=None,
+    )
+
+    calculate = fm_npv.CalculateNPV(snapshot, options.summary)
     calculate.run()
     calculate.write()
 
@@ -118,15 +112,20 @@ def test_extended_case_mutated_ref_date_npv(tmpdir, input_data, options):
     assert_written_npv(tmpdir, expected_npv, config.snapshot.files.output_file)
 
 
-def test_extended_case_date_mutated_npv(tmpdir, input_data, options):
-    input_data["dates"].pop("ref_date")
-    input_data["dates"]["start_date"] = datetime.date(2000, 6, 12)
-    input_data["dates"]["end_date"] = datetime.date(2002, 12, 23)
+def test_extended_case_date_mutated_npv(tmpdir, options):
 
-    config = fm_npv._prepare_config(input_data, options)
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
-    calculate = fm_npv.CalculateNPV(config.snapshot, options.summary)
+    snapshot = config.snapshot._replace(
+        dates=config.snapshot.dates._replace(
+            start_date=datetime.date(2000, 6, 12),
+            end_date=datetime.date(2002, 12, 23),
+            ref_date=None,
+        )
+    )
+
+    calculate = fm_npv.CalculateNPV(snapshot, options.summary)
     calculate.run()
     calculate.write()
 
@@ -137,16 +136,20 @@ def test_extended_case_date_mutated_npv(tmpdir, input_data, options):
     assert_written_npv(tmpdir, expected_npv, config.snapshot.files.output_file)
 
 
-def test_extended_case_big_date_range_npv(tmpdir, input_data, options):
-    input_data["dates"].pop("ref_date")
-    input_data["dates"]["start_date"] = datetime.date(1999, 12, 1)
-    input_data["dates"]["end_date"] = datetime.date(2003, 1, 1)
-    input_data.pop("summary_keys")
-
-    config = fm_npv._prepare_config(input_data, options)
+def test_extended_case_big_date_range_npv(tmpdir, options):
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
-    calculate = fm_npv.CalculateNPV(config.snapshot, options.summary)
+    snapshot = config.snapshot._replace(
+        dates=config.snapshot.dates._replace(
+            start_date=datetime.date(1999, 12, 1),
+            end_date=datetime.date(2003, 1, 1),
+            ref_date=None,
+        ),
+        summary_keys=None,
+    )
+
+    calculate = fm_npv.CalculateNPV(snapshot, options.summary)
     calculate.run()
     calculate.write()
 
@@ -159,16 +162,20 @@ def test_extended_case_big_date_range_npv(tmpdir, input_data, options):
     assert_written_npv(tmpdir, expected_npv, config.snapshot.files.output_file)
 
 
-def test_extended_case_small_date_range_npv(tmpdir, input_data, options):
-    input_data["dates"].pop("ref_date")
-    input_data["dates"]["start_date"] = datetime.date(1999, 12, 1)
-    input_data["dates"]["end_date"] = datetime.date(1999, 12, 2)
-    input_data.pop("summary_keys")
-
-    config = fm_npv._prepare_config(input_data, options)
+def test_extended_case_small_date_range_npv(tmpdir, options):
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
-    calculate = fm_npv.CalculateNPV(config.snapshot, options.summary)
+    snapshot = config.snapshot._replace(
+        dates=config.snapshot.dates._replace(
+            start_date=datetime.date(1999, 12, 1),
+            end_date=datetime.date(1999, 12, 2),
+            ref_date=None,
+        ),
+        summary_keys=None,
+    )
+
+    calculate = fm_npv.CalculateNPV(snapshot, options.summary)
     calculate.run()
     calculate.write()
 
@@ -181,36 +188,39 @@ def test_extended_case_small_date_range_npv(tmpdir, input_data, options):
     assert_written_npv(tmpdir, expected_npv, config.snapshot.files.output_file)
 
 
-def test_dates_outside_simulation_dates(tmpdir, input_data, options):
-    input_data["dates"].pop("ref_date")
-    input_data["dates"]["start_date"] = datetime.date(1998, 11, 30)
-    input_data["dates"]["end_date"] = datetime.date(2005, 1, 2)
-
-    config = fm_npv._prepare_config(input_data, options)
+def test_dates_outside_simulation_dates(tmpdir, options):
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
-    calculate_outside_sim_dates = fm_npv.CalculateNPV(config.snapshot, options.summary)
+    snapshot = config.snapshot._replace(
+        dates=config.snapshot.dates._replace(
+            start_date=datetime.date(1998, 11, 30),
+            end_date=datetime.date(2005, 1, 2),
+            ref_date=None,
+        )
+    )
+
+    calculate_outside_sim_dates = fm_npv.CalculateNPV(snapshot, options.summary)
     calculate_outside_sim_dates.run()
     outside_sim_dates_npv = calculate_outside_sim_dates.npv
 
-    input_data.pop("dates")
+    snapshot = config.snapshot._replace(dates=None)
 
-    config = fm_npv._prepare_config(input_data, options)
-
-    calculate_inside_sim_dates = fm_npv.CalculateNPV(config.snapshot, options.summary)
+    calculate_inside_sim_dates = fm_npv.CalculateNPV(snapshot, options.summary)
     calculate_inside_sim_dates.run()
     default_sim_dates_npv = calculate_inside_sim_dates.npv
 
     assert outside_sim_dates_npv == default_sim_dates_npv
 
 
-def test_keys_not_available(tmpdir, input_data, options):
-    input_data["summary_keys"] = ["NOT_EXISTING", "FAULTY_KEY"]
+def test_keys_not_available(tmpdir, options):
+    config = fm_npv._prepare_config(options)
+    assert config.valid
 
-    config = fm_npv._prepare_config(input_data, options)
+    snapshot = config.snapshot._replace(summary_keys=["NOT_EXISTING", "FAULTY_KEY"])
 
     with pytest.raises(AttributeError) as excinfo:
-        calculate = fm_npv.CalculateNPV(config.snapshot, options.summary)
+        calculate = fm_npv.CalculateNPV(snapshot, options.summary)
         calculate.keywords
 
     assert (
@@ -219,160 +229,165 @@ def test_keys_not_available(tmpdir, input_data, options):
     )
 
 
-def test_no_date_input(tmpdir, input_data, options):
-    input_data.pop("dates")
-
-    config = fm_npv._prepare_config(input_data, options)
+def test_no_date_input(tmpdir, options):
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
-    calculate = fm_npv.CalculateNPV(config.snapshot, options.summary)
+    snapshot = config.snapshot._replace(dates=None)
+
+    calculate = fm_npv.CalculateNPV(snapshot, options.summary)
 
     assert calculate.date_handler.start_date == calculate.ecl_sum.start_date
     assert calculate.date_handler.end_date == calculate.ecl_sum.end_date
     assert calculate.date_handler.ref_date == calculate.ecl_sum.start_date
 
 
-def test_date_input(tmpdir, input_data, options):
+def test_date_input(tmpdir, options):
     _start_date = datetime.date(2000, 2, 1)
     _end_date = datetime.date(2001, 1, 1)
     _ref_date = datetime.date(2000, 2, 2)
-    input_data["dates"]["start_date"] = _start_date
-    input_data["dates"]["end_date"] = _end_date
-    input_data["dates"]["ref_date"] = _ref_date
 
-    config = fm_npv._prepare_config(input_data, options)
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
-    calculate = fm_npv.CalculateNPV(config.snapshot, options.summary)
+    snapshot = config.snapshot._replace(
+        dates=config.snapshot.dates._replace(
+            start_date=_start_date, end_date=_end_date, ref_date=_ref_date
+        )
+    )
+
+    calculate = fm_npv.CalculateNPV(snapshot, options.summary)
 
     assert calculate.date_handler.start_date == _start_date
     assert calculate.date_handler.end_date == _end_date
     assert calculate.date_handler.ref_date == _ref_date
 
 
-def test_start_date_after_end_date(tmpdir, input_data, options):
+def test_start_date_after_end_date(tmpdir, options):
     _start_date = datetime.date(2001, 2, 1)
     _end_date = datetime.date(2001, 1, 1)
-    input_data["dates"]["start_date"] = _start_date
-    input_data["dates"]["end_date"] = _end_date
 
-    config = fm_npv._prepare_config(input_data, options)
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
+    snapshot = config.snapshot._replace(
+        dates=config.snapshot.dates._replace(start_date=_start_date, end_date=_end_date)
+    )
+
     with pytest.raises(ValueError) as excinfo:
-        fm_npv.CalculateNPV(config.snapshot, options.summary)
+        fm_npv.CalculateNPV(snapshot, options.summary)
 
     assert "Invalid time interval start after end" in str(excinfo.value)
 
 
-def test_find_discount_value_lower_extreme(tmpdir, input_data, options):
+def test_find_discount_value_lower_extreme(tmpdir, options):
     date = datetime.date(1900, 1, 1)
 
-    config = fm_npv._prepare_config(input_data, options)
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
     discount_rate = npv_job.DiscountRate(config.snapshot)
     assert discount_rate.get(date) == discount_rate.default_discount_rate
 
 
-def test_find_discount_value_lower_limit(tmpdir, input_data, options):
+def test_find_discount_value_lower_limit(tmpdir, options):
     date = datetime.date(1999, 1, 1)
 
-    config = fm_npv._prepare_config(input_data, options)
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
     discount_rate = npv_job.DiscountRate(config.snapshot)
     assert discount_rate.get(date) == 0.02
 
 
-def test_find_discount_value_base_case(tmpdir, input_data, options):
+def test_find_discount_value_base_case(tmpdir, options):
     date = datetime.date(2001, 2, 1)
 
-    config = fm_npv._prepare_config(input_data, options)
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
     discount_rate = npv_job.DiscountRate(config.snapshot)
     assert discount_rate.get(date) == 0.02
 
 
-def test_find_discount_value_upper_limit(tmpdir, input_data, options):
+def test_find_discount_value_upper_limit(tmpdir, options):
     date = datetime.date(2002, 1, 1)
 
-    config = fm_npv._prepare_config(input_data, options)
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
     discount_rate = npv_job.DiscountRate(config.snapshot)
     assert discount_rate.get(date) == 0.05
 
 
-def test_find_discount_value_upper_extreme(tmpdir, input_data, options):
+def test_find_discount_value_upper_extreme(tmpdir, options):
     date = datetime.date(2010, 1, 1)
 
-    config = fm_npv._prepare_config(input_data, options)
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
     discount_rate = npv_job.DiscountRate(config.snapshot)
     assert discount_rate.get(date) == 0.05
 
 
-def test_find_exhange_rate_lower_extreme(tmpdir, input_data, options):
+def test_find_exhange_rate_lower_extreme(tmpdir, options):
     date = datetime.date(1990, 1, 1)
     currency = "USD"
 
-    config = fm_npv._prepare_config(input_data, options)
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
     exchange_rate = npv_job.ExchangeRate(config.snapshot)
     assert exchange_rate.get(date, currency) == 1.0
 
 
-def test_find_exhange_rate_lower_limit(tmpdir, input_data, options):
+def test_find_exhange_rate_lower_limit(tmpdir, options):
     date = datetime.date(1997, 1, 1)
     currency = "USD"
 
-    config = fm_npv._prepare_config(input_data, options)
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
     exchange_rate = npv_job.ExchangeRate(config.snapshot)
     assert exchange_rate.get(date, currency) == 5.0
 
 
-def test_find_exhange_rate_base_case(tmpdir, input_data, options):
+def test_find_exhange_rate_base_case(tmpdir, options):
     date = datetime.date(1999, 12, 2)
     currency = "USD"
 
-    config = fm_npv._prepare_config(input_data, options)
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
     exchange_rate = npv_job.ExchangeRate(config.snapshot)
     assert exchange_rate.get(date, currency) == 5.0
 
 
-def test_find_exhange_rate_upper_limit(tmpdir, input_data, options):
+def test_find_exhange_rate_upper_limit(tmpdir, options):
     date = datetime.date(2002, 2, 1)
     currency = "USD"
 
-    config = fm_npv._prepare_config(input_data, options)
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
     exchange_rate = npv_job.ExchangeRate(config.snapshot)
     assert exchange_rate.get(date, currency) == 9.0
 
 
-def test_find_exhange_rate_upper_extreme(tmpdir, input_data, options):
+def test_find_exhange_rate_upper_extreme(tmpdir, options):
     date = datetime.date(2010, 1, 1)
     currency = "USD"
 
-    config = fm_npv._prepare_config(input_data, options)
+    config = fm_npv._prepare_config(options)
     exchange_rate = npv_job.ExchangeRate(config.snapshot)
     assert exchange_rate.get(date, currency) == 9.0
 
 
-def test_find_price_lower_extreme(tmpdir, input_data, options):
+def test_find_price_lower_extreme(tmpdir, options):
     date = datetime.date(1990, 1, 1)
     keyword = "FWPT"
 
-    config = fm_npv._prepare_config(input_data, options)
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
     price = npv_job.Price(config.snapshot)
@@ -380,11 +395,11 @@ def test_find_price_lower_extreme(tmpdir, input_data, options):
     assert transaction == None
 
 
-def test_find_price_lower_limit(tmpdir, input_data, options):
+def test_find_price_lower_limit(tmpdir, options):
     date = datetime.date(1999, 1, 1)
     keyword = "FWPT"
 
-    config = fm_npv._prepare_config(input_data, options)
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
     price = npv_job.Price(config.snapshot)
@@ -395,11 +410,11 @@ def test_find_price_lower_limit(tmpdir, input_data, options):
     assert transaction.value(exchange_rate) == -25
 
 
-def test_find_price_base_case(tmpdir, input_data, options):
+def test_find_price_base_case(tmpdir, options):
     date = datetime.date(1999, 12, 2)
     keyword = "FWPT"
 
-    config = fm_npv._prepare_config(input_data, options)
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
     price = npv_job.Price(config.snapshot)
@@ -409,11 +424,11 @@ def test_find_price_base_case(tmpdir, input_data, options):
     assert transaction.value(exchange_rate) == -25
 
 
-def test_find_price_upper_limit(tmpdir, input_data, options):
+def test_find_price_upper_limit(tmpdir, options):
     date = datetime.date(2002, 2, 1)
     keyword = "FWPT"
 
-    config = fm_npv._prepare_config(input_data, options)
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
     price = npv_job.Price(config.snapshot)
@@ -424,11 +439,11 @@ def test_find_price_upper_limit(tmpdir, input_data, options):
     assert transaction.value(exchange_rate) == -2
 
 
-def test_find_price_upper_extreme(tmpdir, input_data, options):
+def test_find_price_upper_extreme(tmpdir, options):
     date = datetime.date(2010, 1, 1)
     keyword = "FWPT"
 
-    config = fm_npv._prepare_config(input_data, options)
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
     price = npv_job.Price(config.snapshot)
@@ -439,11 +454,11 @@ def test_find_price_upper_extreme(tmpdir, input_data, options):
     assert transaction.value(exchange_rate) == -2
 
 
-def test_find_price_keyword_not_exists(tmpdir, input_data, options):
+def test_find_price_keyword_not_exists(tmpdir, options):
     date = datetime.date(2010, 1, 1)
     keyword = "NOT_A_KEY"
 
-    config = fm_npv._prepare_config(input_data, options)
+    config = fm_npv._prepare_config(options)
     assert config.valid
 
     price = npv_job.Price(config.snapshot)
@@ -453,7 +468,7 @@ def test_find_price_keyword_not_exists(tmpdir, input_data, options):
     assert "Price information missing for NOT_A_KEY" in str(excinfo.value)
 
 
-def test_argparser(tmpdir, input_data):
+def test_argparser(tmpdir, options):
     output_file = "test"
     input_file = "wells.json"
     start_date = datetime.date(2018, 1, 31)
@@ -488,7 +503,7 @@ def test_argparser(tmpdir, input_data):
 
     parser = fm_npv._build_parser()
     options = parser.parse_args(args)
-    config = fm_npv._prepare_config(input_data, options)
+    config = fm_npv._prepare_config(options)
 
     assert config.snapshot.files.output_file == output_file
     assert config.snapshot.files.input_file == input_file

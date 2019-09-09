@@ -1,7 +1,7 @@
 from configsuite import types, MetaKeys as MK
 
 
-def _build_schema():
+def build_schema():
     return {
         MK.Type: types.NamedDict,
         MK.Content: {

@@ -1,7 +1,7 @@
 import os
 
 from spinningjenny.script import fm_npv
-from tests.unit.test_npv import assert_written_npv, input_data
+from tests.unit.test_npv import assert_written_npv, options
 
 _SUMMARY_FILE = "REEK-0.UNSMRY"
 _CONFIG_FILE = "input_data.yml"
@@ -10,7 +10,7 @@ _TEST_DIR = os.path.join(
 )
 
 
-def test_main_entry_point(tmpdir, input_data):
+def test_main_entry_point(tmpdir, options):
 
     args = [
         "--summary",
