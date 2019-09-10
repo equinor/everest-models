@@ -38,7 +38,7 @@ def _list_validation(elem):
     return "options" in elem
 
 
-def _build_schema():
+def build_schema():
     return {
         MK.Type: types.Dict,
         MK.Description: "Sets the well constraints for indivdual wells",

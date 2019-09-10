@@ -170,7 +170,7 @@ def test_dict_merge_invalid_input():
 
 
 def test_config_setup(input_data):
-    schema = well_config._build_schema()
+    schema = well_config.build_schema()
     assert well_constraint_validate.valid_configuration(input_data, schema)
 
     config = configsuite.ConfigSuite(input_data, schema)

@@ -1,4 +1,3 @@
-import os
 import argparse
 from functools import partial
 from spinningjenny.well_filter_job import filter_wells

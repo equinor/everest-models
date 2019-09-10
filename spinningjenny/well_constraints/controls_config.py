@@ -10,7 +10,7 @@ def _to_int(num):
     return int(num)
 
 
-def _build_schema():
+def build_schema():
     return {
         MK.Type: types.Dict,
         MK.Description: "Contains controls for wells",

@@ -77,7 +77,7 @@ def valid_date(date, parser):
         )
 
 
-def valid_config(file_path, schema, parser, layers=()):
+def _validate_config(file_path, schema, parser, layers=()):
     dict_config = valid_yaml_file(file_path, parser)
     config = ConfigSuite(dict_config, schema, layers=layers)
     if not config.valid:
@@ -86,7 +86,17 @@ def valid_config(file_path, schema, parser, layers=()):
                 file_path, "\n".join([err.msg for err in config.errors])
             )
         )
+    return config, dict_config
+
+
+def valid_config(file_path, schema, parser, layers=()):
+    config, _ = _validate_config(file_path, schema, parser, layers)
     return config
+
+
+def valid_raw_config(file_path, schema, parser, layers=()):
+    _, raw_config = _validate_config(file_path, schema, parser, layers)
+    return raw_config
 
 
 def write_json_to_file(dictionary, file_name):

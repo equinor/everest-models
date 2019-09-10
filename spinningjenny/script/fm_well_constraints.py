@@ -2,12 +2,13 @@
 
 import sys
 import argparse
-import os
 from functools import partial
 
-from spinningjenny import customized_logger, load_yaml, valid_file, valid_yaml_file
-from spinningjenny.well_constraints import well_config
-from spinningjenny.well_constraints import controls_config
+from spinningjenny import customized_logger, valid_yaml_file, valid_raw_config
+from spinningjenny.well_constraints.well_config import build_schema as config_schema
+from spinningjenny.well_constraints.controls_config import (
+    build_schema as controls_schema,
+)
 from spinningjenny.well_constraints.well_constraint_job import run_job, merge_dicts
 from spinningjenny.well_constraints.well_constraint_validate import (
     valid_job,
@@ -24,13 +25,9 @@ def main_entry_point(args=None):
     logger.info("Initializing well constraints job")
 
     constraints = options.config
-    valid_user_config = valid_configuration(constraints, well_config._build_schema())
 
     optional_files = _filter_optional_files(options)
-    optimizer_values, valid_control_files = _add_variable_files(optional_files)
-
-    if not all([valid_user_config, valid_control_files]):
-        sys.exit(1)
+    optimizer_values = _add_variable_files(optional_files)
 
     if optimizer_values:
         constraints = merge_dicts(constraints, optimizer_values)
@@ -58,15 +55,9 @@ def _add_variable_files(optional_files):
     :return: combination of controls and bool with validity
     """
     variables = {}
-    valid_files = []
-    for opt_file, key in optional_files:
-        input_dict = load_yaml(opt_file)
-        logger.info("Validating input file: {}".format(os.path.basename(opt_file)))
-        valid_file = valid_configuration(input_dict, controls_config._build_schema())
-        valid_files.append(valid_file)
-        if valid_file:
-            variables = merge_dicts(variables, _inject_key_in_dict(input_dict, key))
-    return variables, all(valid_files)
+    for opt_constraint, key in optional_files:
+        variables = merge_dicts(variables, _inject_key_in_dict(opt_constraint, key))
+    return variables
 
 
 def well_constraint_parser():
@@ -91,7 +82,7 @@ def well_constraint_parser():
         "-c",
         "--config",
         required=True,
-        type=partial(valid_yaml_file, parser=parser),
+        type=partial(valid_raw_config, schema=config_schema(), parser=parser),
         help="""
         Configuration file with names, events and boundaries for constraints
         """,
@@ -100,7 +91,7 @@ def well_constraint_parser():
         "-rc",
         "--rate-constraints",
         required=False,
-        type=partial(valid_file, parser=parser),
+        type=partial(valid_raw_config, schema=controls_schema(), parser=parser),
         default=None,
         help="""
         Rate constraints file, from controls section of Everest config, 
@@ -111,7 +102,7 @@ def well_constraint_parser():
         "-pc",
         "--phase-constraints",
         required=False,
-        type=partial(valid_file, parser=parser),
+        type=partial(valid_raw_config, schema=controls_schema(), parser=parser),
         default=None,
         help="""
         Phase constraints file, from controls section of Everest config, 
@@ -122,7 +113,7 @@ def well_constraint_parser():
         "-dc",
         "--duration-constraints",
         required=False,
-        type=partial(valid_file, parser=parser),
+        type=partial(valid_raw_config, schema=controls_schema(), parser=parser),
         default=None,
         help="""
         Duration constraints file, from controls section of Everest config, 
