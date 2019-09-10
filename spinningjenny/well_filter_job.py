@@ -1,6 +1,4 @@
-import os
 import json
-import yaml
 
 from spinningjenny import customized_logger
 

@@ -10,10 +10,7 @@ from spinningjenny.well_constraints.controls_config import (
     build_schema as controls_schema,
 )
 from spinningjenny.well_constraints.well_constraint_job import run_job, merge_dicts
-from spinningjenny.well_constraints.well_constraint_validate import (
-    valid_job,
-    valid_configuration,
-)
+from spinningjenny.well_constraints.well_constraint_validate import valid_job
 
 logger = customized_logger.get_logger(__name__)
 
