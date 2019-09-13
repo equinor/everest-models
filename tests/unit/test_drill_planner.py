@@ -13,7 +13,7 @@ from spinningjenny.drill_planner.drill_planner_optimization import (
     evaluate,
     ScheduleEvent,
 )
-from spinningjenny.script.fm_drill_planner import _validate_config, main_entry_point
+from spinningjenny.script.fm_drill_planner import _prepare_config, main_entry_point
 
 from tests import tmpdir, relpath
 
@@ -23,7 +23,7 @@ TEST_DATA_PATH = relpath("tests", "testdata", "drill_planner")
 def get_drill_planner_configsuite(config_dic):
     config_suite = ConfigSuite(
         config_dic,
-        drill_planner_schema.config_schema(),
+        drill_planner_schema.build(),
         extract_validation_context=drill_planner_schema.extract_validation_context,
     )
     assert config_suite.valid
@@ -423,7 +423,7 @@ def test_invalid_config_schema():
     )
     config_suite = ConfigSuite(
         raw_config,
-        drill_planner_schema.config_schema(),
+        drill_planner_schema.build(),
         extract_validation_context=drill_planner_schema.extract_validation_context,
     )
 
@@ -433,7 +433,7 @@ def test_invalid_config_schema():
     raw_config["rigs"][0]["slots"].append("UNKNOWN_SLOT")
     config_suite = ConfigSuite(
         raw_config,
-        drill_planner_schema.config_schema(),
+        drill_planner_schema.build(),
         extract_validation_context=drill_planner_schema.extract_validation_context,
     )
 
@@ -443,7 +443,7 @@ def test_invalid_config_schema():
     raw_config["wells_priority"]["UNKNOWN_WELL"] = 10
     config_suite = ConfigSuite(
         raw_config,
-        drill_planner_schema.config_schema(),
+        drill_planner_schema.build(),
         extract_validation_context=drill_planner_schema.extract_validation_context,
     )
 
@@ -458,7 +458,7 @@ def test_invalid_config_schema():
     )
     config_suite = ConfigSuite(
         raw_config,
-        drill_planner_schema.config_schema(),
+        drill_planner_schema.build(),
         extract_validation_context=drill_planner_schema.extract_validation_context,
     )
 
@@ -473,8 +473,18 @@ def test_invalid_config_schema():
     )
     config_suite = ConfigSuite(
         raw_config,
-        drill_planner_schema.config_schema(),
+        drill_planner_schema.build(),
         extract_validation_context=drill_planner_schema.extract_validation_context,
     )
 
     assert not config_suite.valid
+
+
+@tmpdir(TEST_DATA_PATH)
+def test_script_prepare_config():
+    config = _prepare_config(
+        config=load_yaml("config.yml"),
+        optimizer_values=load_yaml("optimizer_values.yml"),
+        input_values=load_yaml("wells.json"),
+    )
+    assert config.valid

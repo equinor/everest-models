@@ -5,12 +5,8 @@ import configsuite
 from functools import partial
 from spinningjenny import customized_logger, valid_yaml_file, write_json_to_file
 from spinningjenny.drill_planner.drill_planner_optimization import evaluate
-from spinningjenny.drill_planner.drill_planner_schema import (
-    extract_validation_context,
-    config_schema,
-)
-
 from spinningjenny.drill_planner import (
+    drill_planner_schema,
     create_config_dictionary,
     append_data,
     verify_constraints,
@@ -33,32 +29,7 @@ def _log_detailed_result(schedule):
         )
 
 
-def _validate_config(file_path, parser, args):
-    _parser = argparse.ArgumentParser()
-    _parser.add_argument("-i", "--input", required=True)
-    _parser.add_argument("-opt", "--optimizer", required=True)
-    _parser.add_argument("-o", "--output", required=True)
-    options, _ = _parser.parse_known_args(args)
-    config = valid_yaml_file(file_path, parser)
-    wells_priority = valid_yaml_file(options.optimizer, parser)
-    wells = valid_yaml_file(options.input, parser)
-
-    config["wells_priority"] = wells_priority
-    config["wells"] = wells
-
-    config = configsuite.ConfigSuite(
-        config, config_schema(), extract_validation_context=extract_validation_context
-    )
-    if not config.valid:
-        parser.error(
-            "Invalid config file: {}\n{}".format(
-                file_path, "\n".join([err.msg for err in config.errors])
-            )
-        )
-    return config
-
-
-def scheduler_parser(args=None):
+def scheduler_parser():
     description = """
     A module that given a well priority list and a set of constraints,
     creates a list of dates for each well to be completed.
@@ -82,7 +53,7 @@ def scheduler_parser(args=None):
         "-c",
         "--config",
         required=True,
-        type=partial(_validate_config, parser=parser, args=args),
+        type=partial(valid_yaml_file, parser=parser),
         help="Configuration file describing the constraints of the field "
         "development. The file must contain information about rigs and slots "
         "that the wells can be drilled through. Additional information, such as "
@@ -120,6 +91,17 @@ def scheduler_parser(args=None):
     return parser
 
 
+def _prepare_config(config, optimizer_values, input_values):
+    config["wells_priority"] = optimizer_values
+    config["wells"] = input_values
+
+    return configsuite.ConfigSuite(
+        config,
+        drill_planner_schema.build(),
+        extract_validation_context=drill_planner_schema.extract_validation_context,
+    )
+
+
 def _run_drill_planner(config, time_limit):
     config_dic = create_config_dictionary(config.snapshot)
     drill_delays = [rig["delay"] for rig in config_dic["rigs"].values()]
@@ -143,11 +125,24 @@ def _run_drill_planner(config, time_limit):
 
 
 def main_entry_point(args=None):
-    parser = scheduler_parser(args)
+    parser = scheduler_parser()
     args = parser.parse_args(args)
 
+    logger.info("Validating config file")
+
+    config = _prepare_config(
+        config=args.config, optimizer_values=args.optimizer, input_values=args.input
+    )
+
+    if not config.valid:
+        parser.error(
+            "Invalid config file: {}\n{}".format(
+                args.config, "\n".join([err.msg for err in config.errors])
+            )
+        )
+
     logger.info("Initializing drill planner")
-    schedule = _run_drill_planner(config=args.config, time_limit=args.time_limit)
+    schedule = _run_drill_planner(config=config, time_limit=args.time_limit)
     result = append_data(input_values=args.input, schedule=schedule)
 
     _log_detailed_result(schedule)

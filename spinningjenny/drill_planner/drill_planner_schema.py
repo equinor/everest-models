@@ -205,7 +205,7 @@ A list of wells each given a unique name and a value for how long it takes to
  drill the well
 """
 
-well_schema = {
+_well_schema = {
     MK.Type: types.List,
     MK.Description: _well_description,
     MK.Content: {
@@ -227,20 +227,8 @@ well_schema = {
     },
 }
 
-wells_priority_schema = {
-    MK.Type: types.Dict,
-    MK.Description: "A list of wells with a well priority value",
-    MK.Content: {
-        MK.Key: {
-            MK.Type: types.String,
-            MK.ContextValidators: (_valid_combination_exists,),
-        },
-        MK.Value: {MK.Type: types.Number},
-    },
-}
 
-
-def config_schema():
+def build():
     return {
         MK.Type: types.NamedDict,
         MK.Content: {
@@ -249,8 +237,18 @@ def config_schema():
                 MK.Description: "ISO8601 formatted date",
             },
             "end_date": {MK.Type: types.Date, MK.Description: "ISO8601 formatted date"},
-            "wells": well_schema,
-            "wells_priority": wells_priority_schema,
+            "wells": _well_schema,
+            "wells_priority": {
+                MK.Type: types.Dict,
+                MK.Description: "A list of wells with a well priority value",
+                MK.Content: {
+                    MK.Key: {
+                        MK.Type: types.String,
+                        MK.ContextValidators: (_valid_combination_exists,),
+                    },
+                    MK.Value: {MK.Type: types.Number},
+                },
+            },
             "rigs": _rig_schema,
             "slots": _slot_schema,
         },
