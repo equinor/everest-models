@@ -12,10 +12,30 @@ COMMENT_INDICATOR = "--"
 PLACEHOLDER_INDICATOR = "<<{}>>"
 INSERT_SCHEDULE_DATE = "DATES{l} {{}} / --ADDED{l}/{l}{l}".format(l=os.linesep)
 
-COMMENT_IGNORING_LINESEP = "{l}(?:--.*{l}|)*".format(l=os.linesep)
-FIND_DATE_REGEX = "(DATES{c} ({{}}) /{c}/)".format(c=".*" + COMMENT_IGNORING_LINESEP)
+ARBITRARY_LINESEPS = "(?:[^/]*{l})+".format(l=os.linesep)
+FIND_DATE_REGEX = "(DATES{c} +{{}} +/{c} */)".format(c=ARBITRARY_LINESEPS)
 
 LOG_AFTER_END_NOTIFICATION = ", this occurs after the END keyword"
+
+MONTH_SPELLINGS = {
+    1: ["JAN"],
+    2: ["FEB"],
+    3: ["MAR"],
+    4: ["APR"],
+    5: ["MAY"],
+    6: ["JUN"],
+    7: ["JUL", "JLY"],
+    8: ["AUG"],
+    9: ["SEP"],
+    10: ["OCT"],
+    11: ["NOV"],
+    12: ["DEC"],
+}
+
+MONTH_TO_NUMBER = {}
+for key, val in MONTH_SPELLINGS.items():
+    for elem in val:
+        MONTH_TO_NUMBER[elem] = key
 
 
 def _get_line_number_and_after_end(schedule_string, index):
@@ -52,9 +72,23 @@ def _log_template_injection(schedule_string, index, template, params, date):
 
 def _get_dates_from_schedule(schedule_string):
     date_tuples_in_schedule = re.findall(
-        FIND_DATE_REGEX.format("[0-9]{1,2} [A-Z]{3} [0-9]{4}"), schedule_string
+        FIND_DATE_REGEX.format(
+            "([0-9]{1,2}) +['\"]*([A-Z]{3})['\"]* +([0-9]{4}) *(?:([0-9]{2}):([0-9]{2}):([0-9]{2}(?:.[0-9]{4})*))*"
+        ),
+        schedule_string,
     )
-    return [datetime.strptime(x[1], "%d %b %Y") for x in date_tuples_in_schedule]
+    # import pytest; pytest.set_trace()
+    return [
+        datetime(
+            year=int(x[3]),
+            month=MONTH_TO_NUMBER[x[2]],
+            day=int(x[1]),
+            hour=int(x[4]) if x[4] else 0,
+            minute=int(x[5]) if x[5] else 0,
+            second=int(float(x[6])) if x[6] else 0,
+        )
+        for x in date_tuples_in_schedule
+    ]
 
 
 def _insert_in_schedule_string(schedule_string, insert_string, index):
@@ -65,9 +99,13 @@ def _find_date_index(schedule_string, date):
     if date is None:
         index = len(schedule_string)
         return (index, 0)
-
+    # import pytest; pytest.set_trace()
+    date_string = "(0?{d}) +['\"]*({m})['\"]* +({y})".format(
+        y=date.year, m="|".join(MONTH_SPELLINGS[date.month]), d=date.day
+    )
+    optional_time = " *(?:([0-9]{2}):([0-9]{2}):([0-9]{2}(?:.[0-9]{4})*))*"
     date_tuple = re.findall(
-        FIND_DATE_REGEX.format(date.strftime("%d %b %Y").upper()), schedule_string
+        FIND_DATE_REGEX.format((date_string + optional_time).upper()), schedule_string
     )[0]
     date_string = date_tuple[0]
     index = schedule_string.index(date_string)

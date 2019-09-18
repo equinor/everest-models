@@ -50,5 +50,13 @@
                     "date": "2021-04-23",
                     "template": "files/welopen.jinja"
                }]
+    },
+    {
+        "name": "PROD4",
+        "ops": [{
+                    "opname": "open",
+                    "date": "2020-07-28",
+                    "template": "files/welopen.jinja"
+               }]
     }
 ]
