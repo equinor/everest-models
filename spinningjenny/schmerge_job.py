@@ -32,10 +32,9 @@ MONTH_SPELLINGS = {
     12: ["DEC"],
 }
 
-MONTH_TO_NUMBER = {}
-for key, val in MONTH_SPELLINGS.items():
-    for elem in val:
-        MONTH_TO_NUMBER[elem] = key
+MONTH_TO_NUMBER = {
+    val: key for key, values in MONTH_SPELLINGS.items() for val in values
+}
 
 
 def _get_line_number_and_after_end(schedule_string, index):
@@ -77,7 +76,7 @@ def _get_dates_from_schedule(schedule_string):
         ),
         schedule_string,
     )
-    # import pytest; pytest.set_trace()
+
     return [
         datetime(
             year=int(x[3]),
@@ -98,8 +97,7 @@ def _insert_in_schedule_string(schedule_string, insert_string, index):
 def _find_date_index(schedule_string, date):
     if date is None:
         index = len(schedule_string)
-        return (index, 0)
-    # import pytest; pytest.set_trace()
+        return index
     date_string = "(0?{d}) +['\"]*({m})['\"]* +({y})".format(
         y=date.year, m="|".join(MONTH_SPELLINGS[date.month]), d=date.day
     )
@@ -110,7 +108,7 @@ def _find_date_index(schedule_string, date):
     date_string = date_tuple[0]
     index = schedule_string.index(date_string)
 
-    return (index, len(date_string))
+    return index
 
 
 def _first_larger_than(val, val_list):
@@ -128,7 +126,7 @@ def _inject_date(schedule_string, dates_in_schedule, date):
         insert_index = len(schedule_string)
     else:
         next_date = _first_larger_than(date, dates_in_schedule)
-        insert_index, _ = _find_date_index(schedule_string, next_date)
+        insert_index = _find_date_index(schedule_string, next_date)
 
     _log_date_injection(
         schedule_string, insert_index, date.strftime("%d %b %Y").upper()
@@ -175,7 +173,7 @@ def _inject_templates(schedule_string, injections):
             next_date = None
             string_to_inject = os.linesep
 
-        insert_index, _ = _find_date_index(schedule_string, next_date)
+        insert_index = _find_date_index(schedule_string, next_date)
 
         for jinja_dict in jinja_dicts:
             for template_file, params in jinja_dict.items():

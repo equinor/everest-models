@@ -25,7 +25,7 @@ DATES
 DATES
 
 
- 2  JAN  2000    12:00:00.1232 /
+ 2  JAN  2000    12:03:06.1232 /
 /
 
 DATES
@@ -37,7 +37,7 @@ DATES
     dates = _get_dates_from_schedule(schedule_string)
     assert len(dates) == 3
     assert dates[0] == datetime.datetime(2000, 1, 1)
-    assert dates[1] == datetime.datetime(2000, 1, 2, 12, 0, 0)
+    assert dates[1] == datetime.datetime(2000, 1, 2, 12, 3, 6)
     assert dates[2] == datetime.datetime(2015, 7, 28)
 
 
@@ -57,11 +57,11 @@ DATES
 """
     existing_date = datetime.datetime(2000, 1, 1)
     index = _find_date_index(schedule_string, existing_date)
-    assert index == (1, 24)
+    assert index == 1
 
     existing_date = datetime.datetime(2001, 1, 1)
     index = _find_date_index(schedule_string, existing_date)
-    assert index == (27, 30)
+    assert index == 27
 
 
 def test__add_single_date_to_schedule():
