@@ -8,15 +8,16 @@ from spinningjenny import load_yaml
 from spinningjenny.drill_planner import (
     drill_planner_schema,
     create_config_dictionary,
-    verify_constraints,
     ScheduleEvent,
     resolve_priorities,
 )
-from spinningjenny.drill_planner.drill_planner_optimization import (
-    evaluate,
-    ScheduleEvent,
-)
+from spinningjenny.drill_planner.drill_planner_optimization import evaluate
 
+from spinningjenny.drill_planner.drillmodel import (
+    FieldManager,
+    FieldSchedule,
+    create_schedule_events,
+)
 from spinningjenny.script.fm_drill_planner import _prepare_config, main_entry_point
 
 from tests import tmpdir, relpath
@@ -239,66 +240,12 @@ def test_simple_well_order():
     assert all(test_task in schedule_well_order for test_task in well_order)
     assert all(schedule_task in well_order for schedule_task in schedule_well_order)
 
-    assert not verify_constraints(create_config_dictionary(config), schedule)
+    rig_model = FieldManager.generate_from_snapshot(config)
 
+    schedule_events = create_schedule_events(rig_model, schedule, config.start_date)
+    rig_schedule = FieldSchedule(schedule_events)
 
-def test_wrong_schedule():
-    config_snapshot = get_drill_planner_config_snapshot(_advanced_setup())
-    schedule = evaluate(config_snapshot)
-
-    # mess with the schedule/config to induce constraint violations
-    config = _advanced_setup()
-    for rig in config["rigs"]:
-        if rig["name"] == "C":
-            rig["slots"] = rig["slots"][1:]
-        if rig["name"] == "A":
-            rig["unavailability"] = [
-                {"start": config["start_date"], "stop": config["end_date"]}
-            ]
-    for slot in config["slots"]:
-        if slot["name"] == "S5":
-            slot["unavailability"] = [
-                {"start": config["start_date"], "stop": config["end_date"]}
-            ]
-
-    config_snapshot = get_drill_planner_config_snapshot(config)
-
-    schedule[0] = schedule[0]._replace(
-        slot="S1", start_date=datetime(1900, 1, 1), end_date=datetime(2100, 1, 1)
-    )
-    schedule[1] = schedule[1]._replace(slot="S5", well="W5")
-    schedule[2] = schedule[2]._replace(slot="S1")
-
-    expected_error_list = [
-        (
-            "Task(rig=B, slot=S1, well=W1, start=1900-01-01, end=2100-01-01) "
-            "starts before config start date."
-        ),
-        (
-            "Task(rig=B, slot=S1, well=W1, start=1900-01-01, end=2100-01-01) "
-            "ends after config end date."
-        ),
-        (
-            "Well W1's drilling time does not line up with that of "
-            "Task(rig=B, slot=S1, well=W1, start=1900-01-01, end=2100-01-01)."
-        ),
-        "Task(rig=A, slot=S5, well=W5, start=2000-01-01, end=2000-01-31) represents an invalid drill combination",
-        "Rig A or Slot S5 is unavailable during Task(rig=A, slot=S5, well=W5, start=2000-01-01, end=2000-01-31).",
-        (
-            "Well W5's drilling time does not line up with that of "
-            "Task(rig=A, slot=S5, well=W5, start=2000-01-01, end=2000-01-31)."
-        ),
-        "Task(rig=C, slot=S1, well=W3, start=2000-01-01, end=2000-01-26) represents an invalid drill combination",
-        "Well W5 was already drilled",
-        (
-            "Task(rig=B, slot=S1, well=W1, start=1900-01-01, end=2100-01-01) ends after "
-            "Task(rig=B, slot=S4, well=W4, start=2000-01-11, end=2000-01-31) begins."
-        ),
-        "A slot is drilled through multiple times.",
-    ]
-    errors = verify_constraints(create_config_dictionary(config_snapshot), schedule)
-
-    assert errors == expected_error_list
+    assert rig_model.valid_schedule(rig_schedule)
 
 
 def test_rig_slot_reservation():
@@ -341,7 +288,14 @@ def test_rig_slot_reservation():
     assert all(test_task in schedule_well_order for test_task in well_order)
     assert all(schedule_task in well_order for schedule_task in schedule_well_order)
 
-    assert not verify_constraints(create_config_dictionary(config_snapshot), schedule)
+    rig_model = FieldManager.generate_from_snapshot(config_snapshot)
+
+    schedule_events = create_schedule_events(
+        rig_model, schedule, config_snapshot.start_date
+    )
+    rig_schedule = FieldSchedule(schedule_events)
+
+    assert rig_model.valid_schedule(rig_schedule)
 
 
 def test_rig_slot_include_delay():
@@ -411,7 +365,14 @@ def test_rig_slot_include_delay():
     assert all(test_task in schedule_well_order for test_task in well_order)
     assert all(schedule_task in well_order for schedule_task in schedule_well_order)
 
-    assert not verify_constraints(create_config_dictionary(config_snapshot), schedule)
+    rig_model = FieldManager.generate_from_snapshot(config_snapshot)
+
+    schedule_events = create_schedule_events(
+        rig_model, schedule, config_snapshot.start_date
+    )
+    rig_schedule = FieldSchedule(schedule_events)
+
+    assert rig_model.valid_schedule(rig_schedule)
 
 
 @pytest.mark.slow
@@ -426,8 +387,14 @@ def test_default_large_setup():
     config_snapshot = get_drill_planner_config_snapshot(_large_setup())
     schedule = evaluate(config_snapshot)
 
-    verify_priority(schedule, config_snapshot)
-    assert not verify_constraints(create_config_dictionary(config_snapshot), schedule)
+    rig_model = FieldManager.generate_from_snapshot(config_snapshot)
+
+    schedule_events = create_schedule_events(
+        rig_model, schedule, config_snapshot.start_date
+    )
+    rig_schedule = FieldSchedule(schedule_events)
+
+    assert rig_model.valid_schedule(rig_schedule)
 
 
 def test_invalid_config_schema():

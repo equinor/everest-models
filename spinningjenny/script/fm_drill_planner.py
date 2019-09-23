@@ -5,11 +5,15 @@ import configsuite
 from functools import partial
 from spinningjenny import customized_logger, valid_yaml_file, write_json_to_file
 from spinningjenny.drill_planner.drill_planner_optimization import evaluate
+from spinningjenny.drill_planner.drillmodel import (
+    FieldManager,
+    FieldSchedule,
+    create_schedule_events,
+)
 from spinningjenny.drill_planner import (
     drill_planner_schema,
     create_config_dictionary,
     append_data,
-    verify_constraints,
     resolve_priorities,
 )
 from spinningjenny.drill_planner.greedy_drill_planner import get_greedy_drill_plan
@@ -106,6 +110,7 @@ def _prepare_config(config, optimizer_values, input_values):
 def _run_drill_planner(config, time_limit):
     config_dic = create_config_dictionary(config.snapshot)
     drill_delays = [rig["delay"] for rig in config_dic["rigs"].values()]
+    rig_model = FieldManager.generate_from_snapshot(config.snapshot)
 
     if any(drill_delays):
         schedule = get_greedy_drill_plan(deepcopy(config_dic), [])
@@ -113,14 +118,20 @@ def _run_drill_planner(config, time_limit):
         schedule = evaluate(config.snapshot, max_solver_time=time_limit)
         if not schedule:
             logger.info(
-                "Optimized drill plan was not found -    resolving using optimal localized decisions"
+                "Optimized drill plan was not found - resolving using optimal localized decisions"
             )
             schedule = get_greedy_drill_plan(deepcopy(config_dic), [])
-    error_msgs = verify_constraints(config_dic, schedule)
-    if error_msgs:
-        for err_msg in error_msgs:
-            logger.error(err_msg)
-        raise RuntimeError(error_msgs)
+
+    schedule_events = create_schedule_events(
+        rig_model, schedule, config.snapshot.start_date
+    )
+    rig_schedule = FieldSchedule(schedule_events)
+
+    if not rig_model.valid_schedule(rig_schedule):
+        raise RuntimeError(
+            "Schedule created was not valid according to the constraints"
+        )
+
     schedule = resolve_priorities(schedule, config.snapshot)
     return schedule
 

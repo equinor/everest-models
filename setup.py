@@ -26,6 +26,7 @@ setup(
         "decorator",
         "mock",
         'black; python_version>="3.6"',
+        "hypothesis",
     ],
     classifiers=[
         "Programming language :: Python",

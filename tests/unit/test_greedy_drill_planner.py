@@ -11,7 +11,6 @@ from tests.unit.test_drill_planner import (
 
 from spinningjenny.drill_planner import (
     create_config_dictionary,
-    verify_constraints,
     combine_slot_rig_unavailability,
 )
 from spinningjenny.drill_planner.drill_planner_optimization import ScheduleEvent
@@ -19,6 +18,11 @@ from spinningjenny.drill_planner.greedy_drill_planner import (
     _valid_events,
     _next_best_event,
     get_greedy_drill_plan,
+)
+from spinningjenny.drill_planner.drillmodel import (
+    FieldManager,
+    FieldSchedule,
+    create_schedule_events,
 )
 
 
@@ -122,7 +126,15 @@ def test_greedy_drill_plan():
     config_snapshot = get_drill_planner_config_snapshot(config)
     config_dic = create_config_dictionary(config_snapshot)
     schedule = get_greedy_drill_plan(deepcopy(config_dic), [])
-    assert not verify_constraints(config_dic, schedule)
+
+    rig_model = FieldManager.generate_from_snapshot(config_snapshot)
+
+    schedule_events = create_schedule_events(
+        rig_model, schedule, config_snapshot.start_date
+    )
+    rig_schedule = FieldSchedule(schedule_events)
+
+    assert rig_model.valid_schedule(rig_schedule)
     verify_priority(schedule, config_snapshot)
 
 
@@ -143,7 +155,15 @@ def test_drill_delay():
     assert schedule[1].start_date == combine_slot_rig_unavailability(
         config_dic, schedule[1].slot, schedule[1].rig
     )[0][1] + timedelta(days=delay_dict[schedule[1].rig] + 1)
-    assert not verify_constraints(config_dic, schedule)
+
+    rig_model = FieldManager.generate_from_snapshot(config_snapshot)
+
+    schedule_events = create_schedule_events(
+        rig_model, schedule, config_snapshot.start_date
+    )
+    rig_schedule = FieldSchedule(schedule_events)
+
+    assert rig_model.valid_schedule(rig_schedule)
     verify_priority(schedule, config_snapshot)
 
 

@@ -1,7 +1,6 @@
 import collections
 import numpy as np
 from datetime import timedelta
-from operator import attrgetter
 
 from spinningjenny import DATE_FORMAT, customized_logger
 
@@ -131,66 +130,6 @@ def repr_task(task):
         task.start_date.strftime(DATE_FORMAT),
         task.end_date.strftime(DATE_FORMAT),
     )
-
-
-def verify_constraints(config, schedule):
-    errors = []
-    drilled_wells = []
-    for task in schedule:
-        if task.start_date < config["start_date"]:
-            errors.append("{} starts before config start date.".format(repr_task(task)))
-        if task.end_date > config["end_date"]:
-            errors.append("{} ends after config end date.".format(repr_task(task)))
-
-        if not valid_drill_combination(config, task.well, task.slot, task.rig):
-            errors.append(
-                "{} represents an invalid drill combination".format(repr_task(task))
-            )
-
-        combined_unavailability = combine_slot_rig_unavailability(
-            config, task.slot, task.rig
-        )
-        overlaps = [
-            task.start_date < period_end and task.end_date > period_start
-            for period_start, period_end in combined_unavailability
-        ]
-        if any(overlaps):
-            msg = "Rig {} or Slot {} is unavailable during {}.".format(
-                task.rig, task.slot, repr_task(task)
-            )
-            errors.append(msg)
-
-        drilling_time = config["wells"][task.well]["drill_time"]
-        if not drilling_time == (task.end_date - task.start_date).days:
-            msg = "Well {}'s drilling time does not line up with that of {}.".format(
-                task.well, repr_task(task)
-            )
-            errors.append(msg)
-        if task.well in drilled_wells:
-            errors.append("Well {} was already drilled".format(task.well))
-        else:
-            drilled_wells.append(task.well)
-
-    # ensure rig drills only one well at a time
-    for rig in config["rigs"]:
-        sorted_tasks = sorted(
-            [task for task in schedule if task.rig == rig], key=attrgetter("start_date")
-        )
-        successive_tasks = zip(sorted_tasks[:-1], sorted_tasks[1:])
-        for task1, task2 in successive_tasks:
-            if task1.end_date > task2.start_date:
-                errors.append(
-                    "{} ends after {} begins.".format(
-                        repr_task(task1), repr_task(task2)
-                    )
-                )
-
-    # ensure each slot is only drilled once
-    slots_in_schedule = [task.slot for task in schedule]
-    if not len(set(slots_in_schedule)) == len(slots_in_schedule):
-        errors.append("A slot is drilled through multiple times.")
-
-    return errors
 
 
 def resolve_priorities(schedule, config):

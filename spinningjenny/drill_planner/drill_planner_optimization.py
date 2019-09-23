@@ -4,13 +4,11 @@ import itertools
 from ortools.sat.python import cp_model
 
 from spinningjenny import customized_logger
+from spinningjenny.drill_planner import ScheduleEvent
 
 logger = customized_logger.get_logger(__name__)
 
 TaskType = collections.namedtuple("TaskType", ("start", "end", "interval"))
-ScheduleEvent = collections.namedtuple(
-    "schedule_event", ("rig", "slot", "well", "start_date", "end_date")
-)
 
 
 class WellDrillScheduleModel(cp_model.CpModel):
