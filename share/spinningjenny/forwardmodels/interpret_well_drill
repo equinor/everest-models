@@ -1,4 +1,4 @@
-EXEUTABLE fm_interpret_well_drill
+EXECUTABLE fm_interpret_well_drill
 
 MIN_ARG    2
 MAX_ARG    2
