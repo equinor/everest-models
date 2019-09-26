@@ -4,7 +4,7 @@ from copy import deepcopy
 from tests.unit.test_drill_planner import (
     _advanced_setup,
     _delayed_advanced_setup,
-    _simple_config_setup,
+    _small_setup_incl_unavailability_config,
     verify_priority,
     get_drill_planner_config_snapshot,
 )
@@ -127,7 +127,7 @@ def test_greedy_drill_plan():
 
 
 def test_drill_delay():
-    config = _simple_config_setup()
+    config = _small_setup_incl_unavailability_config()
 
     # days after a drilling event the rig is unavailable
     delay_dict = {"A": 5, "B": 4}
@@ -152,7 +152,7 @@ def test_uncompleted_task():
     Tests that the greedy drill planner doesn't error out
     when it checks an undrillable well
     """
-    config = _simple_config_setup()
+    config = _small_setup_incl_unavailability_config()
 
     # Add extra well (but no extra slot)
     config["rigs"][0]["wells"].append("W3")

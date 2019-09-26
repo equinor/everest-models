@@ -39,7 +39,7 @@ def get_drill_planner_config_snapshot(config_dic):
     return get_drill_planner_configsuite(config_dic).snapshot
 
 
-def _simple_setup():
+def _simple_setup_config():
     start_date = datetime(2000, 1, 1)
     end_date = datetime(2001, 1, 1)
     wells = ["W1", "W2"]
@@ -53,12 +53,16 @@ def _simple_setup():
         "slots": [{"name": slot, "wells": wells} for slot in slots],
         "wells_priority": {"W1": 1, "W2": 0.5},
     }
-    config_suite = get_drill_planner_configsuite(config)
+    return config
+
+
+def _simple_setup():
+    config_suite = get_drill_planner_configsuite(_simple_setup_config())
 
     return config_suite
 
 
-def _simple_config_setup():
+def _small_setup_incl_unavailability_config():
     start_date = datetime(2000, 1, 1)
     end_date = datetime(2001, 1, 1)
     wells = ["W1", "W2"]
@@ -98,6 +102,14 @@ def _simple_config_setup():
         "wells_priority": {"W1": 1, "W2": 0.5},
     }
     return config
+
+
+def _small_setup_incl_unavailability():
+    config_suite = get_drill_planner_configsuite(
+        _small_setup_incl_unavailability_config()
+    )
+
+    return config_suite
 
 
 def _advanced_setup():
@@ -419,7 +431,7 @@ def test_default_large_setup():
 
 
 def test_invalid_config_schema():
-    raw_config = _simple_config_setup()
+    raw_config = _small_setup_incl_unavailability_config()
     raw_config["rigs"][0]["unavailability"].append(
         {
             "start": raw_config["start_date"] - timedelta(days=10),
@@ -434,7 +446,7 @@ def test_invalid_config_schema():
 
     assert not config_suite.valid
 
-    raw_config = _simple_config_setup()
+    raw_config = _small_setup_incl_unavailability_config()
     raw_config["rigs"][0]["slots"].append("UNKNOWN_SLOT")
     config_suite = ConfigSuite(
         raw_config,
@@ -444,7 +456,7 @@ def test_invalid_config_schema():
 
     assert not config_suite.valid
 
-    raw_config = _simple_config_setup()
+    raw_config = _small_setup_incl_unavailability_config()
     raw_config["wells_priority"]["UNKNOWN_WELL"] = 10
     config_suite = ConfigSuite(
         raw_config,
@@ -454,7 +466,7 @@ def test_invalid_config_schema():
 
     assert not config_suite.valid
 
-    raw_config = _simple_config_setup()
+    raw_config = _small_setup_incl_unavailability_config()
     raw_config["slots"][1]["unavailability"].append(
         {
             "start": raw_config["start_date"] - timedelta(days=10),
@@ -469,7 +481,7 @@ def test_invalid_config_schema():
 
     assert not config_suite.valid
 
-    raw_config = _simple_config_setup()
+    raw_config = _small_setup_incl_unavailability_config()
     raw_config["slots"][1]["unavailability"].append(
         {
             "start": raw_config["start_date"] + timedelta(days=10),
