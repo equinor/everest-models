@@ -1,5 +1,4 @@
 files:
-    input_file: 'wells.json'
     output_file: 'npv_0'
 
 multiplier: 1

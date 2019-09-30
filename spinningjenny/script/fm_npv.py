@@ -68,6 +68,7 @@ def _build_parser():
     parser.add_argument(
         "-i",
         "--input",
+        required=True,
         type=partial(valid_file, parser=parser),
         help="Path to input file containing information related to wells. "
         "The format is consistent with the wells.json file when running "

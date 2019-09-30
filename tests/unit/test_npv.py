@@ -10,6 +10,7 @@ from spinningjenny.script import fm_npv
 
 _SUMMARY_FILE = "REEK-0.UNSMRY"
 _CONFIG_FILE = "input_data.yml"
+_INPUT_FILE = "wells.json"
 _TEST_DIR = os.path.join(
     os.path.dirname(os.path.dirname(__file__)), "../tests/testdata/npv/"
 )
@@ -24,7 +25,14 @@ def options(tmpdir):
     tmpdir.chdir()
 
     parser = fm_npv._build_parser()
-    args = ["--summary", _SUMMARY_FILE, "--config", _CONFIG_FILE]
+    args = [
+        "--input",
+        _INPUT_FILE,
+        "--summary",
+        _SUMMARY_FILE,
+        "--config",
+        _CONFIG_FILE,
+    ]
 
     yield parser.parse_args(args)
 
