@@ -5,10 +5,6 @@ from datetime import timedelta
 
 from spinningjenny import DATE_FORMAT, customized_logger
 
-ScheduleEvent = collections.namedtuple(
-    "schedule_event", ("rig", "slot", "well", "start_date", "end_date")
-)
-
 logger = customized_logger.get_logger(__name__)
 
 ScheduleElement = collections.namedtuple(

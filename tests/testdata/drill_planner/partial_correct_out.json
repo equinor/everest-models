@@ -13,22 +13,22 @@
   {
     "name": "w3",
     "drill_time": 43,
-    "readydate": "2000-05-01",
+    "readydate": "2000-03-29",
     "ops": [
       {
         "opname": "open",
-        "date": "2000-05-01"
+        "date": "2000-03-29"
       }
     ]
   },
   {
     "name": "w5",
     "drill_time": 36,
-    "readydate": "2000-05-01",
+    "readydate": "2000-05-04",
     "ops": [
       {
         "opname": "open",
-        "date": "2000-05-01"
+        "date": "2000-05-04"
       }
     ]
   }

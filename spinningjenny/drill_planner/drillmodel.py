@@ -180,10 +180,13 @@ class FieldManager:
         )
 
     def all_drill_times_valid(self, schedule):
-        return all(
-            (elem.end - elem.begin == self.get_well(elem.well).drill_time)
-            for elem in schedule.elements
-        )
+        def _valid_time(elem):
+            well = self.get_well(elem.well)
+            if well:
+                return elem.end - elem.begin == well.drill_time
+            return False
+
+        return all(_valid_time(elem) for elem in schedule.elements)
 
     def all_rigs_available(self, schedule):
         for rig in self.rigs:
@@ -253,19 +256,6 @@ class FieldManager:
         return "RigModel({} Rigs, {} Slots, {} wells)".format(
             len(self.rigs), len(self.slots), len(self.wells)
         )
-
-
-def create_schedule_elements(schedule, start_date):
-    return [
-        ScheduleElement(
-            rig=elem.rig,
-            slot=elem.slot,
-            well=elem.well,
-            begin=(elem.start_date - start_date).days,
-            end=(elem.end_date - start_date).days,
-        )
-        for elem in schedule
-    ]
 
 
 class FieldSchedule:

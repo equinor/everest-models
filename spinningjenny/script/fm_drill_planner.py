@@ -2,15 +2,13 @@
 import argparse
 import configsuite
 
+from copy import deepcopy
 from datetime import timedelta
 from functools import partial
+
 from spinningjenny import customized_logger, valid_yaml_file, write_json_to_file
-from spinningjenny.drill_planner.drill_planner_optimization import evaluate
-from spinningjenny.drill_planner.drillmodel import (
-    FieldManager,
-    FieldSchedule,
-    create_schedule_elements,
-)
+from spinningjenny.drill_planner.drillmodel import FieldManager, FieldSchedule
+from spinningjenny.drill_planner.ormodel import run_optimization
 from spinningjenny.drill_planner import (
     drill_planner_schema,
     create_config_dictionary,
@@ -18,7 +16,6 @@ from spinningjenny.drill_planner import (
     resolve_priorities,
 )
 from spinningjenny.drill_planner.greedy_drill_planner import get_greedy_drill_plan
-from copy import deepcopy
 
 logger = customized_logger.get_logger(__name__)
 
@@ -122,22 +119,21 @@ def _run_drill_planner(config, time_limit):
     if any(drill_delays):
         schedule = get_greedy_drill_plan(deepcopy(config_dic), [])
     else:
-        schedule = evaluate(config.snapshot, max_solver_time=time_limit)
+        schedule = run_optimization(field_manager, max_solver_time=time_limit)
         if not schedule:
             logger.info(
                 "Optimized drill plan was not found - resolving using optimal localized decisions"
             )
             schedule = get_greedy_drill_plan(deepcopy(config_dic), [])
 
-    schedule_events = create_schedule_elements(schedule, config.snapshot.start_date)
-    rig_schedule = FieldSchedule(schedule_events)
+    field_schedule = FieldSchedule(schedule)
+    if not field_manager.valid_schedule(field_schedule):
 
-    if not field_manager.valid_schedule(rig_schedule):
         raise RuntimeError(
             "Schedule created was not valid according to the constraints"
         )
 
-    schedule = resolve_priorities(rig_schedule.elements, config.snapshot)
+    schedule = resolve_priorities(field_schedule.elements, config.snapshot)
     return schedule
 
 

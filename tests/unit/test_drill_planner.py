@@ -1,29 +1,20 @@
-import pytest
 import collections
 
 from datetime import datetime, timedelta
 from configsuite import ConfigSuite
+from ortools.sat.python import cp_model
 
 from spinningjenny import load_yaml
+from spinningjenny.script.fm_drill_planner import _prepare_config
 from spinningjenny.drill_planner import (
     drill_planner_schema,
-    create_config_dictionary,
-    ScheduleEvent,
     resolve_priorities,
+    ScheduleElement,
 )
-from spinningjenny.drill_planner.drill_planner_optimization import evaluate
-
-from spinningjenny.drill_planner.drillmodel import (
-    FieldManager,
-    FieldSchedule,
-    create_schedule_elements,
-)
-from spinningjenny.script.fm_drill_planner import _prepare_config, main_entry_point
+from spinningjenny.drill_planner.drillmodel import FieldManager, FieldSchedule
+from spinningjenny.drill_planner.ormodel import run_optimization
 
 from tests import tmpdir, relpath
-
-from spinningjenny.drill_planner import ScheduleElement
-
 
 TEST_DATA_PATH = relpath("tests", "testdata", "drill_planner")
 
@@ -162,15 +153,10 @@ def _advanced_setup():
 
 
 def _large_setup():
-    """
-    We're starting out fairly small - this should grow to at least 50 wells, perhaps 100
-
-    14 wells should be drilled, there are three available rigs and a total of 14 slots
-    """
     start_date = datetime(2000, 1, 1)
-    end_date = datetime(2020, 1, 1)
-    wells = ["W" + str(i) for i in range(1, 15)]
-    slots = ["S" + str(i) for i in range(1, 15)]
+    end_date = datetime(2005, 1, 1)
+    wells = ["W" + str(i) for i in range(1, 30)]
+    slots = ["S" + str(i) for i in range(1, 30)]
     rigs = ["A", "B", "C"]
     drill_times = [30, 20, 40, 25, 35, 75, 33, 90, 23, 32, 10, 42, 38, 47, 53]
     wells_priority = zip(wells, range(len(wells), 0, -1))
@@ -178,7 +164,8 @@ def _large_setup():
         "start_date": start_date,
         "end_date": end_date,
         "wells": [
-            {"name": w, "drill_time": drill_times[i]} for i, w in enumerate(wells)
+            {"name": w, "drill_time": drill_times[i % len(drill_times)]}
+            for i, w in enumerate(wells)
         ],
         "rigs": [{"name": rig, "wells": wells, "slots": slots} for rig in rigs],
         "slots": [{"name": slot, "wells": wells} for slot in slots],
@@ -223,22 +210,18 @@ def _delayed_advanced_setup():
 
 
 def test_simple_well_order():
-    config = _simple_setup().snapshot
-    well_order = [("W1", datetime(2000, 1, 1)), ("W2", datetime(2000, 1, 6))]
-    schedule = evaluate(config)
+    config_snapshot = _simple_setup().snapshot
+    well_order = [("W1", 0, 5), ("W2", 5, 15)]
 
-    schedule_well_order = [(event.well, event.start_date) for event in schedule]
+    field_manager = FieldManager.generate_from_snapshot(config_snapshot)
+    schedule = run_optimization(field_manager=field_manager)
 
+    assert field_manager.valid_schedule(FieldSchedule(schedule))
+
+    schedule_well_order = [(elem.well, elem.begin, elem.end) for elem in schedule]
     assert len(schedule) == len(well_order)
     assert all(test_task in schedule_well_order for test_task in well_order)
     assert all(schedule_task in well_order for schedule_task in schedule_well_order)
-
-    field_manager = FieldManager.generate_from_snapshot(config)
-
-    schedule_events = create_schedule_elements(schedule, config.start_date)
-    field_schedule = FieldSchedule(schedule_events)
-
-    assert field_manager.valid_schedule(field_schedule)
 
 
 def test_rig_slot_reservation():
@@ -262,124 +245,96 @@ def test_rig_slot_reservation():
     """
 
     config_snapshot = get_drill_planner_config_snapshot(_advanced_setup())
+
     well_order = [
-        ("W1", datetime(2000, 1, 1), datetime(2000, 1, 11)),
-        ("W2", datetime(2000, 1, 1), datetime(2000, 1, 31)),
-        ("W3", datetime(2000, 1, 1), datetime(2000, 1, 26)),
-        ("W4", datetime(2000, 1, 11), datetime(2000, 1, 31)),
-        ("W5", datetime(2000, 1, 26), datetime(2000, 3, 6)),
+        ("W1", 0, 10),
+        ("W2", 0, 30),
+        ("W3", 0, 25),
+        ("W4", 10, 30),
+        ("W5", 25, 65),
     ]
 
-    schedule = evaluate(config_snapshot)
+    field_manager = FieldManager.generate_from_snapshot(config_snapshot)
+    schedule = run_optimization(field_manager=field_manager)
 
-    schedule_well_order = [
-        (event.well, event.start_date, event.end_date) for event in schedule
-    ]
+    assert field_manager.valid_schedule(FieldSchedule(schedule))
 
+    schedule_well_order = [(elem.well, elem.begin, elem.end) for elem in schedule]
     assert len(schedule) == len(well_order)
     assert all(test_task in schedule_well_order for test_task in well_order)
     assert all(schedule_task in well_order for schedule_task in schedule_well_order)
 
-    field_manager = FieldManager.generate_from_snapshot(config_snapshot)
-
-    schedule_events = create_schedule_elements(schedule, config_snapshot.start_date)
-    field_schedule = FieldSchedule(schedule_events)
-
-    assert field_manager.valid_schedule(field_schedule)
-
 
 def test_rig_slot_include_delay():
     """
-    In order for all wells to be drilled, the wells can't be taken randomly
-    from an instruction set of all possible combinations.
-     - Slot 3 must be reserved to well 5
-     - W4 can not be drilled at rig A, hence the first well to finish (W1)
-       should not be drilled at Rig A
-     - W5 can only be drilled at Rig C, Slot 3. Thus the second well to
-       finish (W3) should be drilled at Rig C
-    The key aspect here is that it is possible to drill the wells continuously
-    given that they are assigned to specific slots and rigs
+    W1 is drilled first and must be drilled in rig A or B -> rig A unavailable
+    thus W1 at B. W1 can be drilled in slot 3 and 5, but slot 3 must be used
+    for W5. Thus W1, S5, B.
 
-    A valid setup that will allow for this drilling regime is:
-    (well='W1', rig='B', slot='S2')
-    (well='W3', rig='C', slot='S1')
-    (well='W2', rig='A', slot='S4')
-    (well='W4', rig='B', slot='S5')
-    (well='W5', rig='C', slot='S3')
+    W2 can be drilled in rig A and B. There's not enough time left in rig B to
+    drill W2, before it becomes unavailable, rig A becomes avaiable again
+    before rig B, thus W2 must be drilled at rig A. Rig A is unavailable till
+    2.5, hence drilling starts after that. W2 can be drill in any of S2, S4 and
+    S1.
+
+    W3 can be drilled at all rigs. Rig A is occupied drilling W2 until 3.6.
+    There is not enough time to drill W3 in rig B before it becomes unavailable
+    after drilling W1. None of the remaining slots have enough time to drill W3
+    before Rig C is unavailable. Thus W3 must be drilled at the first available
+    rig, which is rig B.
+
+    W4 has a shorter drill time than W3 (by 5 days), and the timeslot at Rig B
+    is large enough to drill W4. Drilling W4 before W3 has no effect on when W3
+    is drilled, it wouldn't be able to drill in that timeslot, so W4 is drilled
+    in advance of W3 despite lower priority.
+
+    The final well, W5, must be drilled at Rig C, which is available 2.24,
+    after a rig unavailable period.
     """
 
     config = _delayed_advanced_setup()
 
     config_snapshot = get_drill_planner_config_snapshot(config)
 
-    # WARNING: THIS IS RESULT OF A RUN
-    # The results here show that the well priority constraint is given for start date, while it should
-    # be for end date.
-    """
-    W1 is drilled first and must be drilled in rig A or B -> rig A unavailable thus W1 at B.
-    W1 can be drilled in slot 3 and 5, but slot 3 must be used for W5. Thus W1, S5, B.
-
-    W2 can be drilled in rig A and B. There's not enough time left in rig B to drill W2,
-    before it becomes unavailable, thus W2 must be drilled at rig A. Rig A is unavailable
-    till 2,5, hence drilling starts after that. W2 can be drill in any of S2, S4 and S1
-
-    W3 can be drilled at all rigs, however Rig C is the only one that can drill W5. W4 can be drilled
-    in rig B and C, however if Rig C should drill W5, rig B must drill W4. Hence W3 must be drilled at rig
-    A. Rig A is drilling W2 until 3,6, which then is the new start date for W3.
-
-    W3 has a short drill time than W4 (by 5 days) and thus W4 must be delayed if the order is to be
-    preserved. W5 has longer drill times than W3, by 15 days, and hence drilling start of W5 can commence
-    earlier.
-    """
     detailed_well_order = [
-        ("B", "W1", "S5", datetime(2000, 1, 1), datetime(2000, 1, 11)),
-        ("A", "W2", "S4", datetime(2000, 2, 5), datetime(2000, 3, 6)),
-        ("A", "W3", "S2", datetime(2000, 3, 6), datetime(2000, 3, 31)),
-        ("B", "W4", "S1", datetime(2000, 3, 6), datetime(2000, 3, 26)),
-        ("C", "W5", "S3", datetime(2000, 3, 6), datetime(2000, 4, 15)),
+        ("B", "W1", "S5", 0, 10),
+        ("A", "W2", "S2", 35, 65),
+        ("B", "W3", "S4", 43, 68),
+        ("C", "W4", "S1", 10, 30),
+        ("C", "W5", "S3", 54, 94),
     ]
 
     well_order = [
-        (well, start_date, end_date)
-        for (_, well, _, start_date, end_date) in detailed_well_order
+        (well, begin, end) for (_, well, _, begin, end) in detailed_well_order
     ]
 
-    schedule = evaluate(config_snapshot)
+    field_manager = FieldManager.generate_from_snapshot(config_snapshot)
+    schedule = run_optimization(field_manager=field_manager)
 
-    schedule_well_order = [
-        (event.well, event.start_date, event.end_date) for event in schedule
-    ]
+    assert field_manager.valid_schedule(FieldSchedule(schedule))
 
+    schedule_well_order = [(elem.well, elem.begin, elem.end) for elem in schedule]
     assert len(schedule) == len(well_order)
     assert all(test_task in schedule_well_order for test_task in well_order)
     assert all(schedule_task in well_order for schedule_task in schedule_well_order)
 
-    field_manager = FieldManager.generate_from_snapshot(config_snapshot)
 
-    schedule_events = create_schedule_elements(schedule, config_snapshot.start_date)
-    field_schedule = FieldSchedule(schedule_events)
-
-    assert field_manager.valid_schedule(field_schedule)
-
-
-@pytest.mark.slow
 def test_default_large_setup():
     """
     Test that a larger setup without restrictions works
 
-    We only verify that the output schedule pass the constraints
-    given - the specific dates may change with versions of or-tools,
-    and there may be multiple local minimums.
+    We only verify that it is possible to set it up using or-tools, not that
+    the solution itself is optimal.
     """
-    config_snapshot = get_drill_planner_config_snapshot(_large_setup())
-    schedule = evaluate(config_snapshot)
+    config = _large_setup()
+    config_snapshot = get_drill_planner_config_snapshot(config)
 
     field_manager = FieldManager.generate_from_snapshot(config_snapshot)
+    schedule = run_optimization(
+        field_manager=field_manager, solution_limit=1, accepted_status=cp_model.FEASIBLE
+    )
 
-    schedule_events = create_schedule_elements(schedule, config_snapshot.start_date)
-    field_schedule = FieldSchedule(schedule_events)
-
-    assert field_manager.valid_schedule(field_schedule)
+    assert field_manager.valid_schedule(FieldSchedule(schedule))
 
 
 def test_invalid_config_schema():

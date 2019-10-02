@@ -22,34 +22,34 @@
         ]
     },
     {
-        "readydate": "2000-05-26",
+        "readydate": "2000-04-13",
         "drill_time": 43,
         "name": "w3",
         "ops": [
             {
-                "date": "2000-05-26",
+                "date": "2000-04-13",
                 "opname": "open"
             }
         ]
     },
     {
-        "readydate": "2000-05-26",
+        "readydate": "2000-04-13",
         "drill_time": 23,
         "name": "w4",
         "ops": [
             {
-                "date": "2000-05-26",
+                "date": "2000-04-13",
                 "opname": "open"
             }
         ]
     },
     {
-        "readydate": "2000-06-11",
+        "readydate": "2000-05-04",
         "drill_time": 36,
         "name": "w5",
         "ops": [
             {
-                "date": "2000-06-11",
+                "date": "2000-05-04",
                 "opname": "open"
             }
         ]
