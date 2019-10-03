@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from copy import deepcopy
 
 from tests.unit.test_drill_planner import (
@@ -11,8 +11,9 @@ from tests.unit.test_drill_planner import (
 from spinningjenny.drill_planner import (
     create_config_dictionary,
     combine_slot_rig_unavailability,
+    date_to_int,
 )
-from spinningjenny.drill_planner.drill_planner_optimization import ScheduleEvent
+from spinningjenny.drill_planner import ScheduleElement
 from spinningjenny.drill_planner.greedy_drill_planner import (
     _valid_events,
     _next_best_event,
@@ -21,7 +22,7 @@ from spinningjenny.drill_planner.greedy_drill_planner import (
 from spinningjenny.drill_planner.drillmodel import (
     FieldManager,
     FieldSchedule,
-    create_schedule_events,
+    create_schedule_element,
 )
 
 
@@ -44,13 +45,7 @@ def test__next_best_event():
     filtered_events = _valid_events(config)
     best_event = _next_best_event(config, filtered_events)
 
-    assert best_event == ScheduleEvent(
-        well="W1",
-        slot="S1",
-        rig="A",
-        start_date=datetime(2000, 1, 1),
-        end_date=datetime(2000, 1, 11),
-    )
+    assert best_event == ScheduleElement(well="W1", slot="S1", rig="A", begin=0, end=10)
 
 
 def test_drill_time():
@@ -71,30 +66,19 @@ def test__combine_slot_rig_unavailability():
     test_slot = "S1"
     test_rig = "A"
 
-    config["slots"]["S1"]["unavailability"] = [
-        [config["start_date"], config["end_date"]]
-    ]
+    config["slots"]["S1"]["unavailability"] = [[0, config["horizon"]]]
 
-    expected_unavailability = [[config["start_date"], config["end_date"]]]
+    expected_unavailability = [[0, config["horizon"]]]
     unavailability = combine_slot_rig_unavailability(config, test_slot, test_rig)
 
     assert unavailability == expected_unavailability
 
     config = create_config_dictionary(config_snapshot)
     config["slots"]["S1"]["unavailability"] = [
-        [config["start_date"], datetime(2000, 6, 1)]
-    ]
-    config["rigs"]["A"]["unavailability"] = [[datetime(2000, 6, 1), config["end_date"]]]
-    unavailability = combine_slot_rig_unavailability(config, test_slot, test_rig)
-
-    assert unavailability == expected_unavailability
-
-    config = create_config_dictionary(config_snapshot)
-    config["slots"]["S1"]["unavailability"] = [
-        [datetime(2000, 3, 1), config["end_date"]]
+        [0, date_to_int(datetime(2000, 6, 1), config_snapshot)]
     ]
     config["rigs"]["A"]["unavailability"] = [
-        [config["start_date"], datetime(2000, 9, 1)]
+        [date_to_int(datetime(2000, 6, 1), config_snapshot), config["horizon"]]
     ]
     unavailability = combine_slot_rig_unavailability(config, test_slot, test_rig)
 
@@ -102,16 +86,39 @@ def test__combine_slot_rig_unavailability():
 
     config = create_config_dictionary(config_snapshot)
     config["slots"]["S1"]["unavailability"] = [
-        [datetime(2000, 3, 15), datetime(2000, 6, 14)]
+        [date_to_int(datetime(2000, 3, 1), config_snapshot), config["horizon"]]
     ]
     config["rigs"]["A"]["unavailability"] = [
-        [datetime(2000, 9, 1), datetime(2000, 11, 1)]
+        [0, date_to_int(datetime(2000, 9, 1), config_snapshot)]
+    ]
+    unavailability = combine_slot_rig_unavailability(config, test_slot, test_rig)
+
+    assert unavailability == expected_unavailability
+
+    config = create_config_dictionary(config_snapshot)
+    config["slots"]["S1"]["unavailability"] = [
+        [
+            date_to_int(datetime(2000, 3, 15), config_snapshot),
+            date_to_int(datetime(2000, 6, 14), config_snapshot),
+        ]
+    ]
+    config["rigs"]["A"]["unavailability"] = [
+        [
+            date_to_int(datetime(2000, 9, 1), config_snapshot),
+            date_to_int(datetime(2000, 11, 1), config_snapshot),
+        ]
     ]
     unavailability = combine_slot_rig_unavailability(config, test_slot, test_rig)
 
     expected_unavailability = [
-        [datetime(2000, 3, 15), datetime(2000, 6, 14)],
-        [datetime(2000, 9, 1), datetime(2000, 11, 1)],
+        [
+            date_to_int(datetime(2000, 3, 15), config_snapshot),
+            date_to_int(datetime(2000, 6, 14), config_snapshot),
+        ],
+        [
+            date_to_int(datetime(2000, 9, 1), config_snapshot),
+            date_to_int(datetime(2000, 11, 1), config_snapshot),
+        ],
     ]
     assert unavailability == expected_unavailability
 
@@ -125,13 +132,15 @@ def test_greedy_drill_plan():
     config_snapshot = get_drill_planner_config_snapshot(config)
     config_dic = create_config_dictionary(config_snapshot)
     schedule = get_greedy_drill_plan(deepcopy(config_dic), [])
-
     rig_model = FieldManager.generate_from_snapshot(config_snapshot)
 
-    schedule_events = create_schedule_events(
-        rig_model, schedule, config_snapshot.start_date
-    )
-    rig_schedule = FieldSchedule(schedule_events)
+    schedule_elements = [
+        create_schedule_element(
+            rig_model, event.rig, event.slot, event.well, event.begin, event.end
+        )
+        for event in schedule
+    ]
+    rig_schedule = FieldSchedule(schedule_elements)
 
     assert rig_model.valid_schedule(rig_schedule)
 
@@ -147,19 +156,25 @@ def test_drill_delay():
     config_snapshot = get_drill_planner_config_snapshot(config)
     config_dic = create_config_dictionary(config_snapshot)
     schedule = get_greedy_drill_plan(deepcopy(config_dic), [])
-    assert schedule[0].start_date == config_dic["start_date"] + timedelta(
-        days=delay_dict[schedule[0].rig]
+    assert schedule[0].begin == delay_dict[schedule[0].rig]
+    assert (
+        schedule[1].begin
+        == combine_slot_rig_unavailability(
+            config_dic, schedule[1].slot, schedule[1].rig
+        )[0][1]
+        + delay_dict[schedule[1].rig]
+        + 1
     )
-    assert schedule[1].start_date == combine_slot_rig_unavailability(
-        config_dic, schedule[1].slot, schedule[1].rig
-    )[0][1] + timedelta(days=delay_dict[schedule[1].rig] + 1)
 
     rig_model = FieldManager.generate_from_snapshot(config_snapshot)
 
-    schedule_events = create_schedule_events(
-        rig_model, schedule, config_snapshot.start_date
-    )
-    rig_schedule = FieldSchedule(schedule_events)
+    schedule_elements = [
+        create_schedule_element(
+            rig_model, event.rig, event.slot, event.well, event.begin, event.end
+        )
+        for event in schedule
+    ]
+    rig_schedule = FieldSchedule(schedule_elements)
 
     assert rig_model.valid_schedule(rig_schedule)
 

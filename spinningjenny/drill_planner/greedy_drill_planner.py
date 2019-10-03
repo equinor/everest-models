@@ -1,10 +1,9 @@
 from itertools import product
-from datetime import timedelta
 from spinningjenny.drill_planner import (
     combine_slot_rig_unavailability,
     valid_drill_combination,
 )
-from spinningjenny.drill_planner.drill_planner_optimization import ScheduleEvent
+from spinningjenny.drill_planner import ScheduleElement
 from spinningjenny import customized_logger
 
 logger = customized_logger.get_logger(__name__)
@@ -41,26 +40,25 @@ def _valid_events(config):
         if valid_drill_combination(config, well, slot, rig):
             valid_timebox = _first_valid_timebox(config, well, slot, rig)
             if valid_timebox:
-                start_date, end_date = valid_timebox
-                yield ScheduleEvent(rig, slot, well, start_date, end_date)
+                begin, end = valid_timebox
+                yield ScheduleElement(rig, slot, well, begin, end)
 
 
 def _first_valid_timebox(config, well, slot, rig):
     event_unavailability = combine_slot_rig_unavailability(config, slot, rig)
-    drilling_time = timedelta(days=config["wells"][well]["drill_time"])
-    drill_delay = timedelta(days=config["rigs"][rig]["delay"])
-    available_start_date = config["start_date"] + drill_delay
+    drilling_time = config["wells"][well]["drill_time"]
+    drill_delay = config["rigs"][rig]["delay"]
+    available_start = drill_delay
 
-    for start, end in event_unavailability:
-        if start > config["end_date"]:
+    for begin, end in event_unavailability:
+        if begin > config["horizon"]:
             break
-
-        if available_start_date + drilling_time <= start:
-            return [available_start_date, available_start_date + drilling_time]
+        if available_start + drilling_time <= begin:
+            return [available_start, available_start + drilling_time]
         else:
-            available_start_date = end + drill_delay + timedelta(days=1)
-    if available_start_date + drilling_time <= config["end_date"]:
-        return [available_start_date, available_start_date + drilling_time]
+            available_start = end + drill_delay + 1
+    if available_start + drilling_time <= config["horizon"]:
+        return [available_start, available_start + drilling_time]
     return None
 
 
@@ -86,7 +84,7 @@ def _next_best_event(config, events):
         key=lambda event: (
             -config["wells_priority"][event.well],
             -slot_well_specificity(event.slot),
-            event.start_date,
+            event.begin,
         ),
     )
     return next(iter(sorted_events), None)
@@ -109,9 +107,7 @@ def get_greedy_drill_plan(config, schedule):
         config["wells"].pop(event.well)
         config["wells_priority"].pop(event.well)
         config["slots"].pop(event.slot)
-        config["rigs"][event.rig]["unavailability"].append(
-            [event.start_date, event.end_date]
-        )
+        config["rigs"][event.rig]["unavailability"].append([event.begin, event.end])
 
         schedule.append(event)
     else:

@@ -1,5 +1,6 @@
 import collections
 import numpy as np
+from functools import partial
 from datetime import timedelta
 
 from spinningjenny import DATE_FORMAT, customized_logger
@@ -10,11 +11,21 @@ ScheduleEvent = collections.namedtuple(
 
 logger = customized_logger.get_logger(__name__)
 
+ScheduleElement = collections.namedtuple(
+    "schedule_element", ("rig", "slot", "well", "begin", "end")
+)
+
+
+def date_to_int(date, snapshot):
+    return (date - snapshot.start_date).days
+
 
 def create_config_dictionary(snapshot):
+    date2int = partial(date_to_int, snapshot=snapshot)
     config = {}
     config["start_date"] = snapshot.start_date
     config["end_date"] = snapshot.end_date
+    config["horizon"] = (snapshot.end_date - snapshot.start_date).days
     config["wells"] = {
         well_dict.name: {"drill_time": well_dict.drill_time}
         for well_dict in snapshot.wells
@@ -22,7 +33,8 @@ def create_config_dictionary(snapshot):
     config["slots"] = {
         slot_dict.name: {
             "unavailability": [
-                [elem.start, elem.stop] for elem in (slot_dict.unavailability or [])
+                [date2int(elem.start), date2int(elem.stop)]
+                for elem in (slot_dict.unavailability or [])
             ],
             "wells": list(slot_dict.wells),
         }
@@ -31,7 +43,8 @@ def create_config_dictionary(snapshot):
     config["rigs"] = {
         rig_dict.name: {
             "unavailability": [
-                [elem.start, elem.stop] for elem in (rig_dict.unavailability or [])
+                [date2int(elem.start), date2int(elem.stop)]
+                for elem in (rig_dict.unavailability or [])
             ],
             "wells": list(rig_dict.wells),
             "slots": list(rig_dict.slots),
@@ -86,18 +99,14 @@ def combine_slot_rig_unavailability(config, slot, rig):
     This function would return the following result:
     [(2000-01-01, 2000-02-02), (2000-03-08, 2000-03-19)]
     """
-    unavailability = np.zeros((config["end_date"] - config["start_date"]).days)
+    unavailability = np.zeros(config["horizon"])
     start_date = config["start_date"]
 
     for (start, end) in config["slots"][slot]["unavailability"]:
-        start_int = (start - start_date).days
-        end_int = (end - start_date).days
-        unavailability[start_int:end_int] = 1
+        unavailability[start:end] = 1
 
     for (start, end) in config["rigs"][rig]["unavailability"]:
-        start_int = (start - start_date).days
-        end_int = (end - start_date).days
-        unavailability[start_int:end_int] = 1
+        unavailability[start:end] = 1
 
     diff_array = np.diff(unavailability, 1)
     start_days = np.where(diff_array == 1)[0] + 1
@@ -108,8 +117,7 @@ def combine_slot_rig_unavailability(config, slot, rig):
         end_days = np.append(end_days, unavailability.shape[0])
 
     combined_unavailability = [
-        [timedelta(days=int(start)) + start_date, timedelta(days=int(end)) + start_date]
-        for (start, end) in zip(start_days, end_days)
+        [int(start), int(end)] for (start, end) in zip(start_days, end_days)
     ]
     return combined_unavailability
 
@@ -124,11 +132,7 @@ def valid_drill_combination(config, well, slot, rig):
 
 def repr_task(task):
     return "Task(rig={}, slot={}, well={}, start={}, end={})".format(
-        task.rig,
-        task.slot,
-        task.well,
-        task.start_date.strftime(DATE_FORMAT),
-        task.end_date.strftime(DATE_FORMAT),
+        task.rig, task.slot, task.well, task.begin, task.end
     )
 
 
