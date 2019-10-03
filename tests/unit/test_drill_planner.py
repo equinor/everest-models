@@ -16,7 +16,7 @@ from spinningjenny.drill_planner.drill_planner_optimization import evaluate
 from spinningjenny.drill_planner.drillmodel import (
     FieldManager,
     FieldSchedule,
-    create_schedule_events,
+    create_schedule_elements,
 )
 from spinningjenny.script.fm_drill_planner import _prepare_config, main_entry_point
 
@@ -231,12 +231,12 @@ def test_simple_well_order():
     assert all(test_task in schedule_well_order for test_task in well_order)
     assert all(schedule_task in well_order for schedule_task in schedule_well_order)
 
-    rig_model = FieldManager.generate_from_snapshot(config)
+    field_manager = FieldManager.generate_from_snapshot(config)
 
-    schedule_events = create_schedule_events(rig_model, schedule, config.start_date)
-    rig_schedule = FieldSchedule(schedule_events)
+    schedule_events = create_schedule_elements(schedule, config.start_date)
+    field_schedule = FieldSchedule(schedule_events)
 
-    assert rig_model.valid_schedule(rig_schedule)
+    assert field_manager.valid_schedule(field_schedule)
 
 
 def test_rig_slot_reservation():
@@ -278,14 +278,12 @@ def test_rig_slot_reservation():
     assert all(test_task in schedule_well_order for test_task in well_order)
     assert all(schedule_task in well_order for schedule_task in schedule_well_order)
 
-    rig_model = FieldManager.generate_from_snapshot(config_snapshot)
+    field_manager = FieldManager.generate_from_snapshot(config_snapshot)
 
-    schedule_events = create_schedule_events(
-        rig_model, schedule, config_snapshot.start_date
-    )
-    rig_schedule = FieldSchedule(schedule_events)
+    schedule_events = create_schedule_elements(schedule, config_snapshot.start_date)
+    field_schedule = FieldSchedule(schedule_events)
 
-    assert rig_model.valid_schedule(rig_schedule)
+    assert field_manager.valid_schedule(field_schedule)
 
 
 def test_rig_slot_include_delay():
@@ -354,14 +352,12 @@ def test_rig_slot_include_delay():
     assert all(test_task in schedule_well_order for test_task in well_order)
     assert all(schedule_task in well_order for schedule_task in schedule_well_order)
 
-    rig_model = FieldManager.generate_from_snapshot(config_snapshot)
+    field_manager = FieldManager.generate_from_snapshot(config_snapshot)
 
-    schedule_events = create_schedule_events(
-        rig_model, schedule, config_snapshot.start_date
-    )
-    rig_schedule = FieldSchedule(schedule_events)
+    schedule_events = create_schedule_elements(schedule, config_snapshot.start_date)
+    field_schedule = FieldSchedule(schedule_events)
 
-    assert rig_model.valid_schedule(rig_schedule)
+    assert field_manager.valid_schedule(field_schedule)
 
 
 @pytest.mark.slow
@@ -376,14 +372,12 @@ def test_default_large_setup():
     config_snapshot = get_drill_planner_config_snapshot(_large_setup())
     schedule = evaluate(config_snapshot)
 
-    rig_model = FieldManager.generate_from_snapshot(config_snapshot)
+    field_manager = FieldManager.generate_from_snapshot(config_snapshot)
 
-    schedule_events = create_schedule_events(
-        rig_model, schedule, config_snapshot.start_date
-    )
-    rig_schedule = FieldSchedule(schedule_events)
+    schedule_events = create_schedule_elements(schedule, config_snapshot.start_date)
+    field_schedule = FieldSchedule(schedule_events)
 
-    assert rig_model.valid_schedule(rig_schedule)
+    assert field_manager.valid_schedule(field_schedule)
 
 
 def test_invalid_config_schema():

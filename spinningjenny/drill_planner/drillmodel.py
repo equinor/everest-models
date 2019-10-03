@@ -1,6 +1,8 @@
 from collections import namedtuple
 from itertools import combinations, product
 
+from spinningjenny.drill_planner import ScheduleElement
+
 
 class Rig:
     def __init__(self, name, unavailable_ranges, slot_wells):
@@ -15,7 +17,7 @@ class Rig:
         return True
 
     def can_drill(self, slot, well):
-        return (slot.name, well.name) in self.slot_wells
+        return (slot, well) in self.slot_wells
 
     def __repr__(self):
         return str(self)
@@ -47,7 +49,7 @@ class Slot:
         return True
 
     def has_well(self, well):
-        return well.name in self.wells
+        return well in self.wells
 
     def __repr__(self):
         return str(self)
@@ -141,37 +143,54 @@ class FieldManager:
 
         return FieldManager(rigs=rigs, slots=slots, wells=wells, horizon=horizon)
 
+    def get_well(self, name):
+        return next((w for w in self.wells if w.name == name), None)
+
+    def get_rig(self, name):
+        return next((r for r in self.rigs if r.name == name), None)
+
+    def get_slot(self, name):
+        return next((s for s in self.slots if s.name == name), None)
+
     def within_horizon(self, schedule):
         return all(
             [elem.begin >= 0 and elem.end <= self.horizon for elem in schedule.elements]
         )
 
     def uses_same_wells(self, schedule):
-        return set(self.wells) == set(schedule.scheduled_wells)
+        scheduled_wells = {self.get_well(w) for w in schedule.scheduled_wells}
+        return set(self.wells) == scheduled_wells
 
     def uses_rigs_subset(self, schedule):
-        return set(schedule.scheduled_rigs).issubset(set(self.rigs))
+        scheduled_rigs = {self.get_rig(r) for r in schedule.scheduled_rigs}
+        return scheduled_rigs.issubset(set(self.rigs))
 
     def uses_slots_subset(self, schedule):
-        return set(schedule.scheduled_slots).issubset(set(self.slots))
+        scheduled_slots = {self.get_slot(r) for r in schedule.scheduled_slots}
+        return scheduled_slots.issubset(set(self.slots))
 
     def all_wells_drilled_once(self, schedule):
-        return all(len(list(schedule.well_elements(well))) == 1 for well in self.wells)
+        return all(
+            len(list(schedule.well_elements(well.name))) == 1 for well in self.wells
+        )
 
     def all_slots_atmost_once(self, schedule):
-        return all(len(list(schedule.slot_elements(slot))) <= 1 for slot in self.slots)
+        return all(
+            len(list(schedule.slot_elements(slot.name))) <= 1 for slot in self.slots
+        )
 
     def all_drill_times_valid(self, schedule):
         return all(
-            (elem.end - elem.begin == elem.well.drill_time)
+            (elem.end - elem.begin == self.get_well(elem.well).drill_time)
             for elem in schedule.elements
         )
 
     def all_rigs_available(self, schedule):
         for rig in self.rigs:
             for elem in schedule.rig_elements(rig):
+                period = DayRange(elem.begin, elem.end)
                 if any(
-                    unavailable.overlaps(elem.day_range)
+                    unavailable.overlaps(period)
                     for unavailable in rig.unavailable_ranges
                 ):
                     return False
@@ -180,21 +199,33 @@ class FieldManager:
     def all_slots_available(self, schedule):
         for slot in self.slots:
             for elem in schedule.slot_elements(slot):
+                period = DayRange(elem.begin, elem.end)
                 if any(
-                    unavailable.overlaps(elem.day_range)
+                    unavailable.overlaps(period)
                     for unavailable in slot.unavailable_ranges
                 ):
                     return False
         return True
 
     def all_elements_drillable(self, schedule):
-        return all(elem.is_drillable() for elem in schedule.elements)
+        for elem in schedule.elements:
+            rig = self.get_rig(elem.rig)
+            slot = self.get_slot(elem.slot)
+
+            if not all([rig, slot]):
+                return False
+
+            if not rig.can_drill(elem.slot, elem.well) or not slot.has_well(elem.well):
+                return False
+        return True
 
     def no_rig_overlapping(self, schedule):
         for rig in self.rigs:
             elements = schedule.rig_elements(rig)
             for elem1, elem2 in combinations(elements, 2):
-                if elem1.day_range.overlaps(elem2.day_range):
+                period1 = DayRange(elem1.begin, elem1.end)
+                period2 = DayRange(elem2.begin, elem2.end)
+                if period1.overlaps(period2):
                     return False
         return True
 
@@ -224,38 +255,9 @@ class FieldManager:
         )
 
 
-class ScheduleElement(
-    namedtuple("ScheduleElement", ["well", "rig", "slot", "begin", "end"])
-):
-    @property
-    def day_range(self):
-        return DayRange(self.begin, self.end)
-
-    def __str__(self):
-        return "(rig: {}, slot: {}, well: {}, start: {}, end: {})".format(
-            self.rig, self.slot, self.well, self.begin, self.end
-        )
-
-    def is_drillable(self):
-        return self.rig.can_drill(self.slot, self.well) and self.slot.has_well(
-            self.well
-        )
-
-
-def create_schedule_element(rigmodel, rig, slot, well, begin, end):
-    return ScheduleElement(
-        well=next(w for w in rigmodel.wells if w.name == well),
-        rig=next(r for r in rigmodel.rigs if r.name == rig),
-        slot=next(s for s in rigmodel.slots if s.name == slot),
-        begin=begin,
-        end=end,
-    )
-
-
-def create_schedule_events(rigmodel, schedule, start_date):
+def create_schedule_elements(schedule, start_date):
     return [
-        create_schedule_element(
-            rigmodel=rigmodel,
+        ScheduleElement(
             rig=elem.rig,
             slot=elem.slot,
             well=elem.well,

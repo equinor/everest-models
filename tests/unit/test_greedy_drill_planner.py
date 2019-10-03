@@ -19,11 +19,7 @@ from spinningjenny.drill_planner.greedy_drill_planner import (
     _next_best_event,
     get_greedy_drill_plan,
 )
-from spinningjenny.drill_planner.drillmodel import (
-    FieldManager,
-    FieldSchedule,
-    create_schedule_element,
-)
+from spinningjenny.drill_planner.drillmodel import FieldManager, FieldSchedule
 
 
 def test__filter_events():
@@ -132,17 +128,11 @@ def test_greedy_drill_plan():
     config_snapshot = get_drill_planner_config_snapshot(config)
     config_dic = create_config_dictionary(config_snapshot)
     schedule = get_greedy_drill_plan(deepcopy(config_dic), [])
-    rig_model = FieldManager.generate_from_snapshot(config_snapshot)
 
-    schedule_elements = [
-        create_schedule_element(
-            rig_model, event.rig, event.slot, event.well, event.begin, event.end
-        )
-        for event in schedule
-    ]
-    rig_schedule = FieldSchedule(schedule_elements)
+    field_manager = FieldManager.generate_from_snapshot(config_snapshot)
+    field_schedule = FieldSchedule(schedule)
 
-    assert rig_model.valid_schedule(rig_schedule)
+    assert field_manager.valid_schedule(field_schedule)
 
 
 def test_drill_delay():
@@ -166,17 +156,10 @@ def test_drill_delay():
         + 1
     )
 
-    rig_model = FieldManager.generate_from_snapshot(config_snapshot)
+    field_manager = FieldManager.generate_from_snapshot(config_snapshot)
+    field_schedule = FieldSchedule(schedule)
 
-    schedule_elements = [
-        create_schedule_element(
-            rig_model, event.rig, event.slot, event.well, event.begin, event.end
-        )
-        for event in schedule
-    ]
-    rig_schedule = FieldSchedule(schedule_elements)
-
-    assert rig_model.valid_schedule(rig_schedule)
+    assert field_manager.valid_schedule(field_schedule)
 
 
 def test_uncompleted_task():

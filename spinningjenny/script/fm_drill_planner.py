@@ -8,7 +8,7 @@ from spinningjenny.drill_planner.drill_planner_optimization import evaluate
 from spinningjenny.drill_planner.drillmodel import (
     FieldManager,
     FieldSchedule,
-    create_schedule_events,
+    create_schedule_elements,
 )
 from spinningjenny.drill_planner import (
     drill_planner_schema,
@@ -122,9 +122,7 @@ def _run_drill_planner(config, time_limit):
             )
             schedule = get_greedy_drill_plan(deepcopy(config_dic), [])
 
-    schedule_events = create_schedule_events(
-        rig_model, schedule, config.snapshot.start_date
-    )
+    schedule_events = create_schedule_elements(schedule, config.snapshot.start_date)
     rig_schedule = FieldSchedule(schedule_events)
 
     if not rig_model.valid_schedule(rig_schedule):

@@ -9,9 +9,7 @@ from spinningjenny.drill_planner.drillmodel import (
     Well,
     Rig,
     Slot,
-    ScheduleElement,
     DayRange,
-    create_schedule_element,
 )
 
 from tests.unit.test_drill_planner import (
@@ -19,7 +17,7 @@ from tests.unit.test_drill_planner import (
     _simple_setup,
     _simple_setup_config,
 )
-from spinningjenny.drill_planner import drill_planner_schema
+from spinningjenny.drill_planner import drill_planner_schema, ScheduleElement
 
 num_rigs = 10
 num_wells = 10
@@ -72,10 +70,16 @@ rigs = st.sampled_from(
 )
 
 
+def create_schedule_element(rig, slot, well, begin, end):
+    return ScheduleElement(rig.name, slot.name, well.name, begin, end)
+
+
 @st.composite
 def schedule_elements(draw, r=rigs, s=slots, w=wells):
     dr = draw(day_ranges())  # pylint: disable=no-value-for-parameter
-    return draw(st.builds(ScheduleElement, w, r, s, st.just(dr.begin), st.just(dr.end)))
+    return draw(
+        st.builds(create_schedule_element, r, s, w, st.just(dr.begin), st.just(dr.end))
+    )
 
 
 schedules = st.builds(
@@ -93,9 +97,8 @@ rig_models = st.builds(
 
 @given(schedules, rig_models)
 def test_valid_schedules_must_drill_same_wells(schedule, model):
-    assert (set(schedule.scheduled_wells) == set(model.wells)) == model.uses_same_wells(
-        schedule
-    )
+    scheduled_wells = {model.get_well(w) for w in schedule.scheduled_wells}
+    assert (scheduled_wells == set(model.wells)) == model.uses_same_wells(schedule)
 
 
 @given(schedules, rig_models)
@@ -116,7 +119,7 @@ def test_valid_schedules_must_use_same_rigs(schedule, model):
 def test_valid_schedules_drills_all_wells_once(schedule, model):
     if model.all_wells_drilled_once(schedule):
         for well in model.wells:
-            assert len(list(schedule.well_elements(well))) == 1
+            assert len(list(schedule.well_elements(well.name))) == 1
 
 
 @given(rigs, schedules)
@@ -177,12 +180,25 @@ def test_valid_schedules_available_slots(schedule, model):
 def test_valid_schedules_rig_can_drill_element(schedule, model):
     if model.all_elements_drillable(schedule):
         for element in schedule.elements:
-            assert element.rig.can_drill(element.well, element.slot)
+            rig = model.get_rig(element.rig)
+            slot = model.get_slot(element.slot)
+            well = model.get_well(element.well)
+            assert rig.can_drill(well, slot) and slot.has_well(well)
     else:
-        assert any(
-            not element.rig.can_drill(element.well, element.slot)
-            for element in schedule.elements
-        )
+        not_drillable = []
+        for element in schedule.elements:
+            rig = model.get_rig(element.rig)
+            slot = model.get_slot(element.slot)
+            well = model.get_well(element.well)
+
+            if not all([rig, slot, well]):
+                not_drillable.append(True)
+                continue
+
+            not_drillable.append(
+                not rig.can_drill(well, slot) or not slot.has_well(well)
+            )
+        assert any(not_drillable)
 
 
 # @given(day_ranges(), day_ranges())  # pylint: disable=no-value-for-parameter
@@ -197,7 +213,7 @@ def test_non_overlapping_rigs(schedule, model):
     assert model.no_rig_overlapping(schedule) == (
         all(
             all(
-                not e1.day_range.overlaps(e2.day_range)
+                not DayRange(e1.begin, e1.end).overlaps(DayRange(e2.begin, e2.end))
                 for e1, e2 in combinations(schedule.rig_elements(rig), 2)
             )
             for rig in model.rigs
@@ -216,12 +232,8 @@ def test_valid_schedule():
     config_suite = _simple_setup()
     rig_model = FieldManager.generate_from_snapshot(config_suite.snapshot)
     schedule = [
-        create_schedule_element(
-            rig_model, rig="A", slot="S1", well="W1", begin=0, end=5
-        ),
-        create_schedule_element(
-            rig_model, rig="A", slot="S2", well="W2", begin=6, end=16
-        ),
+        ScheduleElement(rig="A", slot="S1", well="W1", begin=0, end=5),
+        ScheduleElement(rig="A", slot="S2", well="W2", begin=6, end=16),
     ]
     rig_schedule = FieldSchedule(schedule)
     assert rig_model.valid_schedule(rig_schedule)
@@ -251,11 +263,7 @@ def test_invalid_schedule_drill_atleast_once():
     config_suite = _simple_setup()
     rig_model = FieldManager.generate_from_snapshot(config_suite.snapshot)
 
-    schedule = [
-        create_schedule_element(
-            rigmodel=rig_model, rig="A", slot="S1", well="W1", begin=0, end=5
-        )
-    ]
+    schedule = [ScheduleElement(rig="A", slot="S1", well="W1", begin=0, end=5)]
     rig_schedule = FieldSchedule(schedule)
 
     assert not rig_model.all_wells_drilled_once(rig_schedule)
@@ -267,12 +275,8 @@ def test_invalid_schedule_task_before_startdate():
     config_suite = _simple_setup()
     rig_model = FieldManager.generate_from_snapshot(config_suite.snapshot)
     schedule = [
-        create_schedule_element(
-            rig_model, rig="A", slot="S1", well="W1", begin=-1, end=4
-        ),
-        create_schedule_element(
-            rig_model, rig="A", slot="S2", well="W2", begin=6, end=16
-        ),
+        ScheduleElement(rig="A", slot="S1", well="W1", begin=-1, end=4),
+        ScheduleElement(rig="A", slot="S2", well="W2", begin=6, end=16),
     ]
     rig_schedule = FieldSchedule(schedule)
     assert not rig_model.within_horizon(rig_schedule)
@@ -283,12 +287,8 @@ def test_invalid_schedule_task_after_enddate():
     config_suite = _simple_setup()
     rig_model = FieldManager.generate_from_snapshot(config_suite.snapshot)
     schedule = [
-        create_schedule_element(
-            rig_model, rig="A", slot="S1", well="W1", begin=0, end=5
-        ),
-        create_schedule_element(
-            rig_model, rig="A", slot="S2", well="W2", begin=364, end=374
-        ),
+        ScheduleElement(rig="A", slot="S1", well="W1", begin=0, end=5),
+        ScheduleElement(rig="A", slot="S2", well="W2", begin=364, end=374),
     ]
     rig_schedule = FieldSchedule(schedule)
     assert not rig_model.within_horizon(rig_schedule)
@@ -299,12 +299,8 @@ def test_invalid_schedule_used_more_than_once():
     config_suite = _simple_setup()
     rig_model = FieldManager.generate_from_snapshot(config_suite.snapshot)
     schedule = [
-        create_schedule_element(
-            rig_model, rig="A", slot="S1", well="W1", begin=0, end=5
-        ),
-        create_schedule_element(
-            rig_model, rig="A", slot="S1", well="W2", begin=6, end=16
-        ),
+        ScheduleElement(rig="A", slot="S1", well="W1", begin=0, end=5),
+        ScheduleElement(rig="A", slot="S1", well="W2", begin=6, end=16),
     ]
     rig_schedule = FieldSchedule(schedule)
 
@@ -316,12 +312,8 @@ def test_invalid_schedule_unequal_drilltime():
     config_suite = _simple_setup()
     rig_model = FieldManager.generate_from_snapshot(config_suite.snapshot)
     schedule = [
-        create_schedule_element(
-            rig_model, rig="A", slot="S1", well="W1", begin=0, end=5
-        ),
-        create_schedule_element(
-            rig_model, rig="A", slot="S2", well="W2", begin=6, end=20
-        ),
+        ScheduleElement(rig="A", slot="S1", well="W1", begin=0, end=5),
+        ScheduleElement(rig="A", slot="S2", well="W2", begin=6, end=20),
     ]
     rig_schedule = FieldSchedule(schedule)
 
@@ -342,12 +334,8 @@ def test_invalid_schedule_undrillable():
 
     # slot has well and rig has slot, but rig does not contain well
     schedule = [
-        create_schedule_element(
-            rig_model, rig="A", slot="S1", well="W1", begin=0, end=5
-        ),
-        create_schedule_element(
-            rig_model, rig="B", slot="S3", well="W2", begin=6, end=20
-        ),
+        ScheduleElement(rig="A", slot="S1", well="W1", begin=0, end=5),
+        ScheduleElement(rig="B", slot="S3", well="W2", begin=6, end=20),
     ]
     rig_schedule = FieldSchedule(schedule)
 
@@ -356,12 +344,8 @@ def test_invalid_schedule_undrillable():
 
     # rig has slots and wells, but slot does not contain well
     schedule = [
-        create_schedule_element(
-            rig_model, rig="A", slot="S1", well="W2", begin=0, end=5
-        ),
-        create_schedule_element(
-            rig_model, rig="B", slot="S3", well="W1", begin=6, end=20
-        ),
+        ScheduleElement(rig="A", slot="S1", well="W2", begin=0, end=5),
+        ScheduleElement(rig="B", slot="S3", well="W1", begin=6, end=20),
     ]
     rig_schedule = FieldSchedule(schedule)
 
@@ -370,12 +354,8 @@ def test_invalid_schedule_undrillable():
 
     # slot has well and rig has well, but rig does not contain slot
     schedule = [
-        create_schedule_element(
-            rig_model, rig="A", slot="S2", well="W2", begin=0, end=5
-        ),
-        create_schedule_element(
-            rig_model, rig="B", slot="S1", well="W1", begin=6, end=20
-        ),
+        ScheduleElement(rig="A", slot="S2", well="W2", begin=0, end=5),
+        ScheduleElement(rig="B", slot="S1", well="W1", begin=6, end=20),
     ]
     rig_schedule = FieldSchedule(schedule)
 
@@ -387,12 +367,8 @@ def test_invalid_schedule_rig_task_overlap():
     config_suite = _simple_setup()
     rig_model = FieldManager.generate_from_snapshot(config_suite.snapshot)
     schedule = [
-        create_schedule_element(
-            rig_model, rig="A", slot="S1", well="W1", begin=3, end=8
-        ),
-        create_schedule_element(
-            rig_model, rig="A", slot="S2", well="W2", begin=6, end=16
-        ),
+        ScheduleElement(rig="A", slot="S1", well="W1", begin=3, end=8),
+        ScheduleElement(rig="A", slot="S2", well="W2", begin=6, end=16),
     ]
     rig_schedule = FieldSchedule(schedule)
 
@@ -405,12 +381,8 @@ def test_invalid_schedules_rig_unavailability():
     rig_model = FieldManager.generate_from_snapshot(config_suite.snapshot)
 
     schedule = [
-        create_schedule_element(
-            rig_model, rig="A", slot="S1", well="W1", begin=0, end=5
-        ),
-        create_schedule_element(
-            rig_model, rig="A", slot="S2", well="W2", begin=6, end=16
-        ),
+        ScheduleElement(rig="A", slot="S1", well="W1", begin=0, end=5),
+        ScheduleElement(rig="A", slot="S2", well="W2", begin=6, end=16),
     ]
     rig_schedule = FieldSchedule(schedule)
 
@@ -423,12 +395,8 @@ def test_invalid_schedules_slot_unavailability():
     rig_model = FieldManager.generate_from_snapshot(config_suite.snapshot)
     # S2 unavailable from day 34 to 37
     schedule = [
-        create_schedule_element(
-            rig_model, rig="A", slot="S1", well="W1", begin=6, end=11
-        ),
-        create_schedule_element(
-            rig_model, rig="A", slot="S2", well="W2", begin=35, end=45
-        ),
+        ScheduleElement(rig="A", slot="S1", well="W1", begin=6, end=11),
+        ScheduleElement(rig="A", slot="S2", well="W2", begin=35, end=45),
     ]
     rig_schedule = FieldSchedule(schedule)
 
