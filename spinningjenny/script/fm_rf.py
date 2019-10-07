@@ -94,6 +94,7 @@ def main_entry_point(args=None):
         end_date=args.end_date,
     )
 
+    logger.info("Calculated recovery factor: {0:.6f}".format(rf))
     write_results(rf, args.output)
 
 
