@@ -2,7 +2,7 @@ import yaml
 import json
 
 from datetime import datetime
-from os import path
+from os import path, access, W_OK
 import pkg_resources
 
 from ecl.summary import EclSum
@@ -39,6 +39,22 @@ def touch_filename(fname):
     with open(fname, "a") as _:
         pass
     return fname
+
+
+def is_writable(file_path, parser):
+    if path.exists(file_path):
+        if path.isfile(file_path):
+            if not access(file_path, W_OK):
+                parser.error("Can not write to file: {}".format(file_path))
+        else:
+            parser.error("Path '{}' is a directory".format(file_path))
+
+    # If file does not exist, verify that parent directory is writable
+    pdir = path.dirname(file_path) or "."
+    if not access(pdir, W_OK):
+        parser.error("Can not write to directory: {}".format(pdir))
+
+    return file_path
 
 
 def valid_ecl_file(file_path, parser):

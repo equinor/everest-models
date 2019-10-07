@@ -1,11 +1,29 @@
 #!/usr/bin/env python
 import argparse
 from functools import partial
+import sys
+import errno
 
-from spinningjenny import customized_logger, valid_ecl_file
+from spinningjenny import customized_logger, valid_ecl_file, is_writable
 from spinningjenny.rf_job import recovery_factor
 
 logger = customized_logger.get_logger(__name__)
+
+
+def write_results(rf, fname):
+    try:
+        with open(fname, "w") as f:
+            f.write("{0:.6f}".format(rf))
+    except IOError as x:
+        if x.errno == errno.ENOENT:
+            logger.error(
+                "Can not write to file - directory does not exist: {}".format(fname)
+            )
+        elif x.errno == errno.EACCES:
+            logger.error("Can not write to file - no access: {}".format(fname))
+        else:
+            logger.error("Can not write to file: {}".format(fname))
+        sys.exit(1)
 
 
 def rf_parser():
@@ -54,7 +72,11 @@ def rf_parser():
         help="Start date - A date string on the format DD.MM.YYYY",
     )
     parser.add_argument(
-        "-o", "--output", type=str, help="Filename of the output file. "
+        "-o",
+        "--output",
+        type=partial(is_writable, parser=parser),
+        required=True,
+        help="Filename of the output file. ",
     )
     return parser
 
@@ -72,8 +94,7 @@ def main_entry_point(args=None):
         end_date=args.end_date,
     )
 
-    with open(args.output, "w") as f:
-        f.write("{0:.6f}".format(rf))
+    write_results(rf, args.output)
 
 
 if __name__ == "__main__":
