@@ -5,7 +5,6 @@ from tests.unit.test_drill_planner import (
     _advanced_setup,
     _delayed_advanced_setup,
     _small_setup_incl_unavailability_config,
-    verify_priority,
     get_drill_planner_config_snapshot,
 )
 
@@ -135,7 +134,6 @@ def test_greedy_drill_plan():
     rig_schedule = FieldSchedule(schedule_events)
 
     assert rig_model.valid_schedule(rig_schedule)
-    verify_priority(schedule, config_snapshot)
 
 
 def test_drill_delay():
@@ -164,7 +162,6 @@ def test_drill_delay():
     rig_schedule = FieldSchedule(schedule_events)
 
     assert rig_model.valid_schedule(rig_schedule)
-    verify_priority(schedule, config_snapshot)
 
 
 def test_uncompleted_task():

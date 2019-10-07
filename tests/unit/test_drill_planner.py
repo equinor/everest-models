@@ -220,15 +220,6 @@ def _delayed_advanced_setup():
     return config
 
 
-def verify_priority(schedule, config):
-    for task1 in schedule:
-        for task2 in schedule:
-            priority1 = dict(config.wells_priority)[task1.well]
-            priority2 = dict(config.wells_priority)[task2.well]
-            if task1.start_date > task2.start_date:
-                assert priority1 <= priority2
-
-
 def test_simple_well_order():
     config = _simple_setup().snapshot
     well_order = [("W1", datetime(2000, 1, 1)), ("W2", datetime(2000, 1, 6))]
@@ -282,7 +273,6 @@ def test_rig_slot_reservation():
     schedule_well_order = [
         (event.well, event.start_date, event.end_date) for event in schedule
     ]
-    verify_priority(schedule, config_snapshot)
 
     assert len(schedule) == len(well_order)
     assert all(test_task in schedule_well_order for test_task in well_order)
@@ -359,7 +349,6 @@ def test_rig_slot_include_delay():
     schedule_well_order = [
         (event.well, event.start_date, event.end_date) for event in schedule
     ]
-    verify_priority(schedule, config_snapshot)
 
     assert len(schedule) == len(well_order)
     assert all(test_task in schedule_well_order for test_task in well_order)
