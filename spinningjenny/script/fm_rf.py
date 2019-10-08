@@ -4,7 +4,7 @@ from functools import partial
 import sys
 import errno
 
-from spinningjenny import customized_logger, valid_ecl_file, is_writable
+from spinningjenny import customized_logger, valid_ecl_file, is_writable, valid_date
 from spinningjenny.rf_job import recovery_factor
 
 logger = customized_logger.get_logger(__name__)
@@ -61,15 +61,15 @@ def rf_parser():
         "-sd",
         "--start_date",
         default=None,
-        type=str,
-        help="Start date - A date string on the format DD.MM.YYYY",
+        type=partial(valid_date, parser=parser),
+        help="Start date - As ISO8601 formatted date (YYYY-MM-DD).",
     )
     parser.add_argument(
         "-ed",
         "--end_date",
         default=None,
-        type=str,
-        help="Start date - A date string on the format DD.MM.YYYY",
+        type=partial(valid_date, parser=parser),
+        help="Start date - As ISO8601 formatted date (YYYY-MM-DD).",
     )
     parser.add_argument(
         "-o",

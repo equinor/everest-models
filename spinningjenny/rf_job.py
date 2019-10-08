@@ -31,11 +31,11 @@ def recovery_factor(
     total_volume_key : <string>
         A valid summary key.
         Default: FOIP
-    start_date: <string> or <datetime.datetime>
-        A date string on the format DD.MM.YYYY, or a datetime object.
+    start_date: <datetime.date>
+        A datetime.date object.
         Default: First date in the summary
-    end_date: <string> or <datetime.datetime>
-        A date string on the format DD.MM.YYYY, or a datetime object.
+    end_date: <datetime.date>
+        A datetime.date object.
         Default: Last date in the summary
 
     Returns:
@@ -45,23 +45,16 @@ def recovery_factor(
 
     """
 
-    if isinstance(start_date, str):
-        start_date = datetime.strptime(start_date, "%d.%m.%Y")
-    else:
-        start_date = start_date or ecl_sum.start_time
+    start_date = start_date or ecl_sum.start_date
+    end_date = end_date or ecl_sum.end_date
 
-    if isinstance(end_date, str):
-        end_date = datetime.strptime(end_date, "%d.%m.%Y")
-    else:
-        end_date = end_date or ecl_sum.end_time
-
-    if start_date < ecl_sum.start_time or end_date > ecl_sum.end_time:
+    if start_date < ecl_sum.start_date or end_date > ecl_sum.end_date:
         msg = (
-            "The date range {} - {} exceeds the simulation time clamping"
+            "The date range {} - {} exceeds the simulation time, clamping"
             "to simulation time: {} - {}"
         )
         logger.warning(
-            msg.format(start_date, end_date, ecl_sum.start_time, ecl_sum.end_time)
+            msg.format(start_date, end_date, ecl_sum.start_date, ecl_sum.end_date)
         )
 
     total_volume = ecl_sum.numpy_vector(total_volume_key)[0]
