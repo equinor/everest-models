@@ -1,3 +1,15 @@
+# 0.1.4
+ * Improved argument validation for the RF job (checks if files are
+   writable)
+ * RF result is also included in the log (stdout)
+ * Changed date format for RF to be consistent with ISO8601 (was
+   DD.MM.YYYY, is now YYYY-MM-DD)
+ * NPV no longer has a default input file (was wells.json). Instead it
+   is required
+ * Improved schmerge DATES recognition (now handles multiple whitespace,
+   allows JLY (for JUL), and hour:minute:second formatting)
+ * Minor bug fixes
+
 # 0.1.3
  * Add drill delay to greedy drill planner
  * Handle single digit input format in schmerge job
