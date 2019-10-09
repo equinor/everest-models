@@ -20,6 +20,11 @@ except ImportError:
 
 DATE_FORMAT = "%Y-%m-%d"
 
+try:  # py3
+    INVALID_JSON_ERROR = json.JSONDecodeError
+except AttributeError:  # py2
+    INVALID_JSON_ERROR = ValueError
+
 
 def date2str(date):
     return datetime.strftime(date, DATE_FORMAT)
@@ -55,6 +60,16 @@ def is_writable(file_path, parser):
         parser.error("Can not write to directory: {}".format(pdir))
 
     return file_path
+
+
+def valid_json_file(file_path, parser):
+    valid_file(file_path, parser)
+    try:
+        with open(file_path, "r") as f:
+            json_dict = json.load(f)
+        return json_dict
+    except INVALID_JSON_ERROR as e:  # py2 returns a ValueError
+        parser.error("File <{}> is not a valid json file: {}".format(file_path, str(e)))
 
 
 def valid_ecl_file(file_path, parser):

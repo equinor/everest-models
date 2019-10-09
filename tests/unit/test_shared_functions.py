@@ -1,8 +1,10 @@
 import os
 import stat
 
-from tests import tmpdir, MockParser
-from spinningjenny import is_writable
+from tests import tmpdir, MockParser, relpath
+from spinningjenny import is_writable, valid_json_file
+
+VALIDATOR_PATH = relpath("tests", "testdata", "validators")
 
 
 @tmpdir(path=None)
@@ -56,3 +58,29 @@ def test_is_writable_no_write_permissions():
 
     _ = is_writable("existing_dir/valid_filename", mock_parser)
     assert "Can not write to directory" in mock_parser.get_error()
+
+
+@tmpdir(path=VALIDATOR_PATH)
+def test_valid_json_file():
+    valid_json_path = "valid_json.json"
+    invalid_json_path = "invalid_json.json"
+
+    mock_parser = MockParser()
+    valid_json_file(valid_json_path, mock_parser)
+    assert mock_parser.get_error() is None
+
+    mock_parser = MockParser()
+    valid_json_file(invalid_json_path, mock_parser)
+
+    # py2 and py3 have slightly different error messages
+    error_msgs = [
+        (
+            "File <invalid_json.json> is not a valid json file: "
+            "Expecting ',' delimiter: line 6 column 5 (char 55)"
+        ),
+        (
+            "File <invalid_json.json> is not a valid json file: "
+            "Expecting , delimiter: line 6 column 5 (char 55)"
+        ),
+    ]
+    assert any(err in mock_parser.get_error() for err in error_msgs)

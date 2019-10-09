@@ -3,10 +3,21 @@ import os
 
 from functools import partial
 
-from spinningjenny.schmerge_job import merge_schedule
-from spinningjenny import customized_logger, valid_file, touch_filename
+from spinningjenny.schmerge_job import merge_schedule, get_transformed_injections
+from spinningjenny import customized_logger, valid_file, touch_filename, valid_json_file
 
 logger = customized_logger.get_logger(__name__)
+
+
+def valid_schmerge_config(file_path, parser):
+    json_dict = valid_json_file(file_path, parser)
+    try:
+        injections = get_transformed_injections(json_dict)
+        return injections
+    except KeyError as e:
+        parser.error(
+            "Json file <{}> misses a required keyword: {}".format(file_path, str(e))
+        )
 
 
 def schmerge_argparser():
@@ -33,7 +44,7 @@ def schmerge_argparser():
         "-c",
         "--config",
         required=True,
-        type=partial(valid_file, parser=parser),
+        type=partial(valid_schmerge_config, parser=parser),
         help=(
             "Json file that specifies which templates to inject where."
             "The file is structured as a list of dictionaries, each containing"
@@ -60,7 +71,7 @@ def main_entry_point(args=None):
 
     merge_schedule(
         schedule_file=options.input,
-        inject_file=options.config,
+        injections=options.config,
         output_file=options.output,
     )
 

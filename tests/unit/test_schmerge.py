@@ -8,8 +8,8 @@ from spinningjenny.schmerge_job import (
     _get_dates_from_schedule,
     _find_date_index,
 )
-from spinningjenny.script.fm_schmerge import main_entry_point
-from tests import tmpdir, relpath
+from spinningjenny.script.fm_schmerge import main_entry_point, valid_schmerge_config
+from tests import tmpdir, relpath, MockParser
 
 TEST_DATA_PATH = relpath("tests", "testdata", "schmerge")
 
@@ -160,9 +160,11 @@ def test_schmerge():
     filename_injection_list = "schedule_input.json"
     filename_output = "out.tmpl"
 
+    mock_parser = MockParser()
+
     schedule_string = merge_schedule(
         schedule_file=filename_input_schedule,
-        inject_file=filename_injection_list,
+        injections=valid_schmerge_config(filename_injection_list, mock_parser),
         output_file=filename_output,
     )
 

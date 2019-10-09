@@ -1,6 +1,5 @@
 import os
 import re
-import json
 from collections import defaultdict, OrderedDict
 from datetime import datetime
 from jinja2 import Template
@@ -198,7 +197,7 @@ def _inject_templates(schedule_string, injections):
     return schedule_string
 
 
-def _get_transformed_injections(injection_json):
+def get_transformed_injections(injection_json):
     injection_dict = defaultdict(list)
 
     for well_dict in injection_json:
@@ -244,15 +243,11 @@ def _insert_extracted_comments(schedule_string, comment_placeholder_dict):
     return schedule_string
 
 
-def merge_schedule(schedule_file, inject_file, output_file="merged_schedule.tmpl"):
+def merge_schedule(schedule_file, injections, output_file="merged_schedule.tmpl"):
     with open(schedule_file, "r") as f:
         schedule_string = f.read()
 
-    with open(inject_file, "r") as f:
-        injections = json.load(f)
-
     schedule_string, placeholder_dict = _extract_comments(schedule_string)
-    injections = _get_transformed_injections(injections)
     schedule_string = _add_dates_if_necessary(schedule_string, injections)
 
     schedule_string = _inject_templates(schedule_string, injections)
