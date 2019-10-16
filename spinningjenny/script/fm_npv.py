@@ -68,11 +68,11 @@ def _build_parser():
     parser.add_argument(
         "-i",
         "--input",
-        required=True,
+        required=False,
         type=partial(valid_file, parser=parser),
         help="Path to input file containing information related to wells. "
         "The format is consistent with the wells.json file when running "
-        "everest. It must contain a 'ready-date' key for each well for when "
+        "everest. It must contain a 'readydate' key for each well for when "
         "it is considered completed and ready for production.",
     )
     parser.add_argument(

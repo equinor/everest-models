@@ -14,7 +14,7 @@ prices:
         - { date: 1999-01-01, value: -0.02, currency: USD }
         - { date: 2002-01-01, value: -0.1 }
     GOPT:OP:
-        - { date: 1999-12-10, value: 555 }    
+        - { date: 1999-12-10, value: 555 }
 
 dates:
     start_date: 2000-12-06

@@ -4,13 +4,14 @@ import shutil
 
 import pytest
 
-from spinningjenny import load_yaml
+from spinningjenny import load_yaml, DATE_FORMAT
 from spinningjenny.npv import npv_job
 from spinningjenny.script import fm_npv
 
 _SUMMARY_FILE = "REEK-0.UNSMRY"
 _CONFIG_FILE = "input_data.yml"
 _INPUT_FILE = "wells.json"
+_INPUT_FILE_ONE_WELL = "one_well.json"
 _TEST_DIR = os.path.join(
     os.path.dirname(os.path.dirname(__file__)), "../tests/testdata/npv/"
 )
@@ -53,6 +54,42 @@ def test_base_case_npv(tmpdir, options):
     assert sorted(calculate.keywords) == sorted(["FOPT", "FWIT"])
 
     assert_written_npv(tmpdir, expected_npv, config.snapshot.files.output_file)
+
+
+def test_base_case_npv_no_input(tmpdir, options):
+    well_cost = 1000000
+    readydate = datetime.datetime.strptime("2000-06-14", DATE_FORMAT).date()
+    discount_rate = 0.02
+    options.input = _INPUT_FILE_ONE_WELL
+    config = fm_npv._prepare_config(options)
+    assert config.valid
+
+    calculate = fm_npv.CalculateNPV(config.snapshot, options.summary)
+    calculate.run()
+    calculate.write()
+    npv_output_file = os.path.join(tmpdir.strpath, config.snapshot.files.output_file)
+
+    assert os.path.isfile(npv_output_file)
+    with open(npv_output_file, "r") as npv_output:
+        npv_with_well = float(npv_output.readline())
+
+    expected_well_cost = well_cost / (1.0 + discount_rate) ** (
+        (readydate - config.snapshot.dates.ref_date).days / 365.25
+    )
+
+    options.input = None
+    config = fm_npv._prepare_config(options)
+    assert config.valid
+
+    calculate = fm_npv.CalculateNPV(config.snapshot, options.summary)
+    calculate.run()
+    calculate.write()
+
+    allowed_error = 0.01
+    expected_npv_without_well = npv_with_well + expected_well_cost
+    assert abs(calculate.npv - expected_npv_without_well) <= allowed_error
+    assert calculate.multiplier == 1
+    assert sorted(calculate.keywords) == sorted(["FOPT", "FWIT"])
 
 
 def test_extended_case_npv(tmpdir, options):

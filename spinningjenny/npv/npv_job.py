@@ -247,36 +247,45 @@ class Cost:
     """
 
     def __init__(self, input_data):
-        input_file_path = input_data.files.input_file
-
         self._costs = []
         if input_data.costs:
             for cost_entry in input_data.costs:
                 self._costs.append(Transaction.using_cost(cost_entry))
 
         if input_data.well_costs:
-            _wells = {}
-            logger.debug("open input-file from {}".format(input_file_path))
-            with open(input_file_path, "r") as input_file:
-                wells = json.load(input_file)
+            if input_data.files.input_file:
+                self.apply_well_costs(
+                    input_data.well_costs, input_data.files.input_file
+                )
+            else:
+                logger.warning(
+                    "No input file found, well costs will be ignored in calculation."
+                )
 
-            for entry in wells:
-                _wells[entry["name"]] = datetime.datetime.strptime(
-                    entry["readydate"], DATE_FORMAT
-                ).date()
+    def apply_well_costs(self, well_costs, well_dates_path):
+        logger.debug("open input-file from {}".format(well_dates_path))
 
-            for well_cost_entry in input_data.well_costs:
-                well_name = well_cost_entry.well
-                if well_name in _wells:
-                    self._costs.append(
-                        Transaction.using_well_cost(well_cost_entry, _wells, well_name)
+        with open(well_dates_path, "r") as input_file:
+            wells = json.load(input_file)
+
+        _wells = {}
+        for entry in wells:
+            _wells[entry["name"]] = datetime.datetime.strptime(
+                entry["readydate"], DATE_FORMAT
+            ).date()
+
+        for well_cost_entry in well_costs:
+            well_name = well_cost_entry.well
+            if well_name in _wells:
+                self._costs.append(
+                    Transaction.using_well_cost(well_cost_entry, _wells, well_name)
+                )
+            else:
+                logger.warning(
+                    "Well cost for well {} skipped due to lacking reference in input file".format(
+                        well_name
                     )
-                else:
-                    logger.warning(
-                        "Well cost for well {} skipped due to lacking reference in input file".format(
-                            well_name
-                        )
-                    )
+                )
 
     def get(self):
         return self._costs
