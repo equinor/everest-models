@@ -22,6 +22,8 @@ from spinningjenny.script.fm_drill_planner import _prepare_config, main_entry_po
 
 from tests import tmpdir, relpath
 
+from spinningjenny.drill_planner import ScheduleElement
+
 
 TEST_DATA_PATH = relpath("tests", "testdata", "drill_planner")
 
@@ -467,32 +469,32 @@ def test_script_resolve_priorities():
 
     # Only one well must be shifted (W3)
     well_order = [
-        ("B", "S5", "W1", datetime(2000, 1, 1), datetime(2000, 1, 10)),
-        ("A", "S2", "W2", datetime(2000, 1, 1), datetime(2000, 2, 10)),
-        ("B", "S4", "W3", datetime(2000, 1, 1), datetime(2000, 1, 20)),
+        ("B", "S5", "W1", 1, 10),
+        ("A", "S2", "W2", 1, 20),
+        ("B", "S4", "W3", 1, 15),
     ]
     schedule_list = [
-        ScheduleEvent(rig=x[0], slot=x[1], well=x[2], start_date=x[3], end_date=x[4])
+        ScheduleElement(rig=x[0], slot=x[1], well=x[2], begin=x[3], end=x[4])
         for x in well_order
     ]
 
     modified_schedule = resolve_priorities(schedule_list, config)
-    assert modified_schedule[0].end_date == datetime(2000, 1, 10)
-    assert modified_schedule[1].end_date == datetime(2000, 2, 10)
-    assert modified_schedule[2].end_date == datetime(2000, 2, 10)
+    assert modified_schedule[0].end == 10
+    assert modified_schedule[1].end == 20
+    assert modified_schedule[2].end == 20
 
     # Both W2 and W3 must be shifted
     well_order = [
-        ("B", "S5", "W1", datetime(2000, 1, 1), datetime(2000, 3, 10)),
-        ("A", "S2", "W2", datetime(2000, 1, 1), datetime(2000, 2, 10)),
-        ("B", "S4", "W3", datetime(2000, 1, 1), datetime(2000, 1, 20)),
+        ("B", "S5", "W1", 1, 20),
+        ("A", "S2", "W2", 1, 15),
+        ("B", "S4", "W3", 1, 10),
     ]
     schedule_list = [
-        ScheduleEvent(rig=x[0], slot=x[1], well=x[2], start_date=x[3], end_date=x[4])
+        ScheduleElement(rig=x[0], slot=x[1], well=x[2], begin=x[3], end=x[4])
         for x in well_order
     ]
 
     modified_schedule = resolve_priorities(schedule_list, config)
-    assert modified_schedule[0].end_date == datetime(2000, 3, 10)
-    assert modified_schedule[1].end_date == datetime(2000, 3, 10)
-    assert modified_schedule[2].end_date == datetime(2000, 3, 10)
+    assert modified_schedule[0].end == 20
+    assert modified_schedule[1].end == 20
+    assert modified_schedule[2].end == 20

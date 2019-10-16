@@ -60,11 +60,9 @@ def create_config_dictionary(snapshot):
 def append_data(input_values, schedule):
     for well_cfg in input_values:
         well_from_schedule = {
-            "end_date": end_date
-            for (_, _, well, _, end_date) in schedule
-            if well == well_cfg["name"]
+            "date": date for (well, date) in schedule if well == well_cfg["name"]
         }
-        date = well_from_schedule["end_date"].strftime(DATE_FORMAT)
+        date = well_from_schedule["date"].strftime(DATE_FORMAT)
 
         well_cfg["readydate"] = date
         well_cfg["ops"] = [{"opname": "open", "date": date}]
@@ -156,12 +154,10 @@ def resolve_priorities(schedule, config):
     modified_schedule = [sorted_schedule[0]]
 
     for idx, event in enumerate(sorted_schedule[1:]):
-        if modified_schedule[idx].end_date <= event.end_date:
+        if modified_schedule[idx].end <= event.end:
             modified_schedule.append(event)
         else:
-            modified_schedule.append(
-                event._replace(end_date=modified_schedule[idx].end_date)
-            )
+            modified_schedule.append(event._replace(end=modified_schedule[idx].end))
             msg = (
                 "Well {first} could be completed prior to well {second}, "
                 "without affecting {second}. End date for {first} shifted "

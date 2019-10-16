@@ -2,6 +2,7 @@
 import argparse
 import configsuite
 
+from datetime import timedelta
 from functools import partial
 from spinningjenny import customized_logger, valid_yaml_file, write_json_to_file
 from spinningjenny.drill_planner.drill_planner_optimization import evaluate
@@ -22,7 +23,7 @@ from copy import deepcopy
 logger = customized_logger.get_logger(__name__)
 
 
-def _log_detailed_result(schedule):
+def _log_detailed_result(schedule, start_date):
     logger.info("Scheduler result:")
     for task in schedule:
         msg = (
@@ -30,7 +31,13 @@ def _log_detailed_result(schedule):
             "starting on date: {}, completed on date: {}"
         )
         logger.info(
-            msg.format(task.well, task.rig, task.slot, task.start_date, task.end_date)
+            msg.format(
+                task.well,
+                task.rig,
+                task.slot,
+                start_date + timedelta(task.begin),
+                start_date + timedelta(task.end),
+            )
         )
 
 
@@ -130,7 +137,7 @@ def _run_drill_planner(config, time_limit):
             "Schedule created was not valid according to the constraints"
         )
 
-    schedule = resolve_priorities(schedule, config.snapshot)
+    schedule = resolve_priorities(rig_schedule.elements, config.snapshot)
     return schedule
 
 
@@ -153,9 +160,13 @@ def main_entry_point(args=None):
 
     logger.info("Initializing drill planner")
     schedule = _run_drill_planner(config=config, time_limit=args.time_limit)
-    result = append_data(input_values=args.input, schedule=schedule)
 
-    _log_detailed_result(schedule)
+    start_date = config.snapshot.start_date
+    _log_detailed_result(schedule, start_date)
+
+    schedule = [(elem.well, start_date + timedelta(days=elem.end)) for elem in schedule]
+
+    result = append_data(input_values=args.input, schedule=schedule)
     write_json_to_file(result, args.output)
 
 
