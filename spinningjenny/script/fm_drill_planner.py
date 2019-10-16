@@ -110,7 +110,7 @@ def _prepare_config(config, optimizer_values, input_values):
 def _run_drill_planner(config, time_limit):
     config_dic = create_config_dictionary(config.snapshot)
     drill_delays = [rig["delay"] for rig in config_dic["rigs"].values()]
-    rig_model = FieldManager.generate_from_snapshot(config.snapshot)
+    field_manager = FieldManager.generate_from_snapshot(config.snapshot)
 
     if any(drill_delays):
         schedule = get_greedy_drill_plan(deepcopy(config_dic), [])
@@ -125,7 +125,7 @@ def _run_drill_planner(config, time_limit):
     schedule_events = create_schedule_elements(schedule, config.snapshot.start_date)
     rig_schedule = FieldSchedule(schedule_events)
 
-    if not rig_model.valid_schedule(rig_schedule):
+    if not field_manager.valid_schedule(rig_schedule):
         raise RuntimeError(
             "Schedule created was not valid according to the constraints"
         )

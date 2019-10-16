@@ -102,7 +102,7 @@ class FieldManager:
         from a ConfigSuite snapshot, while having the FieldManager class as simple
         as possible which helps a great deal when testing.
 
-        rig_model = FieldManager.generate_from_snapshot(config)
+        field_manager = FieldManager.generate_from_snapshot(config)
 
         """
 
