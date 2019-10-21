@@ -41,7 +41,7 @@ def rf_parser():
         "--summary",
         required=True,
         type=partial(valid_ecl_file, parser=parser),
-        help="Ecl summary file",
+        help="Eclipse summary file",
     )
     parser.add_argument(
         "-pk",
@@ -62,20 +62,20 @@ def rf_parser():
         "--start_date",
         default=None,
         type=partial(valid_date, parser=parser),
-        help="Start date - As ISO8601 formatted date (YYYY-MM-DD).",
+        help="Start date - As ISO8601 formatted date (YYYY-MM-DD)",
     )
     parser.add_argument(
         "-ed",
         "--end_date",
         default=None,
         type=partial(valid_date, parser=parser),
-        help="Start date - As ISO8601 formatted date (YYYY-MM-DD).",
+        help="Start date - As ISO8601 formatted date (YYYY-MM-DD)",
     )
     parser.add_argument(
         "-o",
         "--output",
         type=partial(is_writable, parser=parser),
-        required=True,
+        required=False,
         help="Filename of the output file. ",
     )
     return parser
@@ -95,7 +95,10 @@ def main_entry_point(args=None):
     )
 
     logger.info("Calculated recovery factor: {0:.6f}".format(rf))
-    write_results(rf, args.output)
+
+    if args.output:
+        logger.info("Writing results to {}".format(args.output))
+        write_results(rf, args.output)
 
 
 if __name__ == "__main__":
