@@ -5,7 +5,7 @@ from configsuite import ConfigSuite
 from ortools.sat.python import cp_model
 
 from spinningjenny import load_yaml
-from spinningjenny.script.fm_drill_planner import _prepare_config
+from spinningjenny.script.fm_drill_planner import _prepare_config, _compare_schedules
 from spinningjenny.drill_planner import (
     drill_planner_schema,
     resolve_priorities,
@@ -453,3 +453,33 @@ def test_script_resolve_priorities():
     assert modified_schedule[0].end == 20
     assert modified_schedule[1].end == 20
     assert modified_schedule[2].end == 20
+
+
+def test_compare_schedules():
+    wells_priority = {"W1": 1, "W2": 0.5, "W3": 0}
+    well_order = [
+        ("B", "S5", "W1", 1, 10),
+        ("A", "S2", "W2", 1, 20),
+        ("B", "S4", "W3", 1, 15),
+    ]
+    schedule_list = [
+        ScheduleElement(rig=x[0], slot=x[1], well=x[2], begin=x[3], end=x[4])
+        for x in well_order
+    ]
+    assert schedule_list == _compare_schedules(schedule_list, None, wells_priority)
+    assert schedule_list == _compare_schedules(
+        schedule_list, schedule_list[:-1], wells_priority
+    )
+
+    better_well_order = [
+        ("B", "S5", "W1", 1, 10),
+        ("A", "S2", "W2", 1, 15),
+        ("B", "S4", "W3", 1, 15),
+    ]
+    better_schedule_list = [
+        ScheduleElement(rig=x[0], slot=x[1], well=x[2], begin=x[3], end=x[4])
+        for x in better_well_order
+    ]
+    assert better_schedule_list == _compare_schedules(
+        schedule_list, better_schedule_list, wells_priority
+    )
