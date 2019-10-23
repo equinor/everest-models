@@ -1,6 +1,4 @@
 EXECUTABLE     fm_stea
 ARGLIST        <CONFIG>
 
-MIN_ARG    1
-MAX_ARG    1
 ARG_TYPE 0 STRING

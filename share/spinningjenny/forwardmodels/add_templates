@@ -1,4 +1,1 @@
 EXECUTABLE fm_add_templates
-
-MIN_ARG    3
-MAX_ARG    3
