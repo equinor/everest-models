@@ -51,12 +51,28 @@ def test_config_file_not_found(capsys):
     # capsys-> internal pytest fixture, for usage examples check:
     # https://docs.pytest.org/en/latest/capture.html
 
+    args = ["--config", "not_found.yml"]
+
+    with pytest.raises(SystemExit) as e:
+        main_entry_point(args)
+
+    assert e.value.code == 2
+    _, err = capsys.readouterr()
+
+    assert "File not found: not_found.yml" in err
+
+
+@tmpdir(TEST_DATA_PATH)
+def test_config_file_wrong_opname(capsys):
+    # capsys-> internal pytest fixture, for usage examples check:
+    # https://docs.pytest.org/en/latest/capture.html
+
     args = [
         "--config",
-        "not_found.yml",
-        "--input-file",
-        "wells.json",
-        "--output-file",
+        "config.yml",
+        "--input",
+        "wrong_opname.json",
+        "--output",
         "out_test.json",
     ]
 
@@ -66,4 +82,7 @@ def test_config_file_not_found(capsys):
     assert e.value.code == 2
     _, err = capsys.readouterr()
 
-    assert "File not found: not_found.yml" in err
+    assert (
+        "No template matched for well:'w2' operation:'WRONG' at date:'2000-02-22'"
+        in err
+    )

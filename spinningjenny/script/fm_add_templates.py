@@ -62,10 +62,12 @@ def main_entry_point(args=None):
         )
 
     # Insert template paths in the input well operations structure
-    output, warnings = add_templates(options.config.snapshot.templates, wells)
+    output, warnings, errors = add_templates(options.config.snapshot.templates, wells)
 
     for warning in warnings:
         logger.warning(warning)
+    if errors:
+        arg_parser.error("\n".join(errors))
 
     # Write insertion result to file
     write_json_to_file(output, options.output)

@@ -6,7 +6,6 @@ import pytest
 from configsuite import ConfigSuite
 
 from tests import tmpdir, relpath
-from spinningjenny.script.fm_add_templates import main_entry_point
 from spinningjenny.add_templates.add_templates_job import add_templates
 from spinningjenny.add_templates.add_tmpl_schema import build_schema
 
@@ -14,7 +13,7 @@ TEST_DATA_PATH = relpath("tests", "testdata", "add_tmpl")
 
 
 @tmpdir(TEST_DATA_PATH)
-def test_add_templates():
+def test_add_templates(capsys):
     # Load input well operations file
     with open("wells.json", "r") as f:
         wells = json.load(f)
@@ -26,7 +25,9 @@ def test_add_templates():
     # Check loaded config is valid
     assert config.valid
 
-    output, warnings = add_templates(templates=config.snapshot.templates, wells=wells)
+    output, warnings, _ = add_templates(
+        templates=config.snapshot.templates, wells=wells
+    )
 
     with open("expected_out.json", "r") as input_file:
         expected_result = json.load(input_file)
@@ -46,11 +47,11 @@ def test_add_templates():
             "ops": [{"date": "2001-02-11", "opname": "oepn"}],
         }
     )
-    _, warnings = add_templates(templates=config.snapshot.templates, wells=wells)
-    # Check one extra warning is generated for the new input
-    assert len(warnings) == 2, "There should be two warnings now!"
-    # Check the extra warning is the one we expect
+    _, _, errors = add_templates(templates=config.snapshot.templates, wells=wells)
+
+    assert len(errors) == 1, "There should be only one error"
+
     assert (
         "No template matched for well:'w_test' operation:'oepn' at date:'2001-02-11'"
-        in warnings
+        in errors
     )

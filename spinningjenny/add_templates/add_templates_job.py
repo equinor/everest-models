@@ -1,3 +1,4 @@
+import sys
 import copy
 from collections import namedtuple, Counter
 from spinningjenny import customized_logger
@@ -13,6 +14,7 @@ def add_templates(templates, wells):
      """
     wells = copy.deepcopy(wells)
     warnings = []
+    errors = []
     used_templates = set([])
 
     processed_templates = sorted(
@@ -40,7 +42,7 @@ def add_templates(templates, wells):
                     used_templates.add(entry.file)
 
             if "template" not in op:
-                warnings.append(
+                errors.append(
                     "No template matched for well:'{w}' operation:'{o}' at date:'{d}'".format(
                         w=well_name, o=op_name, d=op_date
                     )
@@ -53,7 +55,7 @@ def add_templates(templates, wells):
             "Template {} was not inserted, check insertion keys!".format(entry)
         )
 
-    return wells, warnings
+    return wells, warnings, errors
 
 
 def find_template_duplicates(templates):
