@@ -4,7 +4,12 @@ import sys
 import argparse
 from functools import partial
 
-from spinningjenny import customized_logger, valid_yaml_file, valid_raw_config
+from spinningjenny import (
+    customized_logger,
+    valid_yaml_file,
+    valid_raw_config,
+    is_writable,
+)
 from spinningjenny.well_constraints.well_config import build_schema as config_schema
 from spinningjenny.well_constraints.controls_config import (
     build_schema as controls_schema,
@@ -124,7 +129,7 @@ def well_constraint_parser():
         "-o",
         "--output",
         required=True,
-        type=str,
+        type=partial(is_writable, parser=parser),
         help="Name of the outputfile. The format will be yaml.",
     )
     return parser

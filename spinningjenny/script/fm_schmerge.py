@@ -4,7 +4,7 @@ import os
 from functools import partial
 
 from spinningjenny.schmerge_job import merge_schedule, get_transformed_injections
-from spinningjenny import customized_logger, valid_file, touch_filename, valid_json_file
+from spinningjenny import customized_logger, valid_file, valid_json_file, is_writable
 
 logger = customized_logger.get_logger(__name__)
 
@@ -58,7 +58,7 @@ def schmerge_argparser():
         "-o",
         "--output",
         required=True,
-        type=touch_filename,
+        type=partial(is_writable, parser=parser),
         help="File path to write the resulting schedule file to.",
     )
 

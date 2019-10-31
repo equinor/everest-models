@@ -11,7 +11,7 @@ from spinningjenny.extract_summary_data import (
     CalculationType,
 )
 
-from spinningjenny import valid_date, valid_ecl_file
+from spinningjenny import valid_date, valid_ecl_file, is_writable
 
 
 def build_argument_parser():
@@ -65,7 +65,13 @@ def build_argument_parser():
     parser.add_argument(
         "-m", "--multiplier", type=float, default=1, help="Result multiplier"
     )
-    parser.add_argument("-o", "--output", required=True, help="Output file")
+    parser.add_argument(
+        "-o",
+        "--output",
+        required=True,
+        type=partial(is_writable, parser=parser),
+        help="Output file",
+    )
 
     return parser
 

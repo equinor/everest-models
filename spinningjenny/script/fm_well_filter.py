@@ -1,7 +1,7 @@
 import argparse
 from functools import partial
 from spinningjenny.well_filter_job import filter_wells
-from spinningjenny import customized_logger, valid_file, touch_filename
+from spinningjenny import customized_logger, valid_file, is_writable
 
 logger = customized_logger.get_logger(__name__)
 
@@ -45,7 +45,7 @@ def filter_argparser():
         "-o",
         "--output",
         required=True,
-        type=touch_filename,
+        type=partial(is_writable, parser=parser),
         help="File path to write the resulting wells file to.",
     )
 

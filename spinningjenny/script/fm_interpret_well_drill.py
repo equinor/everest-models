@@ -2,7 +2,7 @@ import os
 import argparse
 from functools import partial
 from spinningjenny.interpret_well_drill_job import interpret_well_drill
-from spinningjenny import customized_logger, valid_file, touch_filename
+from spinningjenny import customized_logger, valid_file, is_writable
 
 logger = customized_logger.get_logger(__name__)
 
@@ -28,7 +28,7 @@ def interpret_well_drill_argparser():
         "-o",
         "--output",
         required=True,
-        type=touch_filename,
+        type=partial(is_writable, parser=parser),
         help="File path to write the resulting json file to.",
     )
 

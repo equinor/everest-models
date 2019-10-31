@@ -40,12 +40,6 @@ def valid_file(file_path, parser):
     return file_path
 
 
-def touch_filename(fname):
-    with open(fname, "a") as _:
-        pass
-    return fname
-
-
 def is_writable(file_path, parser):
     if path.exists(file_path):
         if path.isfile(file_path):

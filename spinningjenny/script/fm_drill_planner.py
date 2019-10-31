@@ -6,7 +6,12 @@ from copy import deepcopy
 from datetime import timedelta
 from functools import partial
 
-from spinningjenny import customized_logger, valid_yaml_file, write_json_to_file
+from spinningjenny import (
+    customized_logger,
+    valid_yaml_file,
+    write_json_to_file,
+    is_writable,
+)
 from spinningjenny.drill_planner.drillmodel import FieldManager, FieldSchedule
 from spinningjenny.drill_planner.ormodel import run_optimization
 from spinningjenny.drill_planner import (
@@ -90,7 +95,7 @@ def scheduler_parser():
         "-o",
         "--output",
         required=True,
-        type=str,
+        type=partial(is_writable, parser=parser),
         help="Name of the output-file. The output-file will contain the same "
         "information as the input-file, including the results from the "
         "drill_planner. Please note that it is highly recommended to not use the "

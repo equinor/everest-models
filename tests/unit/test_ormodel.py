@@ -75,6 +75,7 @@ def satisfies(model, apply_constraints, assignment):
 
     return status == cp_model.FEASIBLE
 
+
 @settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(well_drill_constraints, assignments)
 @example(DrillConstraints(FieldManager([], [], [], 0)), Assignment([]))
@@ -102,6 +103,7 @@ def test_all_wells_drilled_once_constraints(pair):
     or_valid = satisfies(constraints, constraints.all_wells_drilled_once, assignment)
     assert or_valid == domain_valid
 
+
 @settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(constraints_assignment_pair())  # pylint: disable=no-value-for-parameter
 def test_all_slots_atmost_once_constraints(pair):
@@ -118,6 +120,7 @@ def test_all_slots_atmost_once_constraints(pair):
 
     or_valid = satisfies(constraints, constraints.all_slots_atmost_once, assignment)
     assert or_valid == domain_valid
+
 
 @settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(constraints_assignment_pair())  # pylint: disable=no-value-for-parameter
@@ -136,6 +139,7 @@ def test_all_rigs_available_constraints(pair):
     or_valid = satisfies(constraints, constraints.all_rigs_available, assignment)
     assert or_valid == domain_valid
 
+
 @settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(constraints_assignment_pair())  # pylint: disable=no-value-for-parameter
 def test_all_slots_available_constraints(pair):
@@ -152,6 +156,7 @@ def test_all_slots_available_constraints(pair):
 
     or_valid = satisfies(constraints, constraints.all_slots_available, assignment)
     assert or_valid == domain_valid
+
 
 @settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(constraints_assignment_pair())  # pylint: disable=no-value-for-parameter

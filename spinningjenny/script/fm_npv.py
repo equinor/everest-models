@@ -12,6 +12,7 @@ from spinningjenny import (
     valid_date,
     load_yaml,
     valid_config,
+    is_writable,
 )
 from spinningjenny.npv.npv_config import build_schema
 from spinningjenny.npv.npv_job import CalculateNPV
@@ -62,7 +63,7 @@ def _build_parser():
     parser.add_argument(
         "-o",
         "--output",
-        type=str,
+        type=partial(is_writable, parser=parser),
         help="Path to output-file where the NPV result is written to.",
     )
     parser.add_argument(

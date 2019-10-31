@@ -94,11 +94,13 @@ field_managers = st.builds(
     st.just(100),
 )
 
+
 @settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(schedules, field_managers)
 def test_valid_schedules_must_drill_same_wells(schedule, model):
     scheduled_wells = {model.get_well(w) for w in schedule.scheduled_wells}
     assert (scheduled_wells == set(model.wells)) == model.uses_same_wells(schedule)
+
 
 @settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(schedules, field_managers)
@@ -121,6 +123,7 @@ def test_valid_schedules_drills_all_wells_once(schedule, model):
         for well in model.wells:
             assert len(list(schedule.well_elements(well.name))) == 1
 
+
 @settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(rigs, schedules)
 def test_rig_elements(rig, schedule):
@@ -133,6 +136,7 @@ def test_rig_elements(rig, schedule):
 def test_slot_elements(slot, schedule):
     for element in schedule.slot_elements(slot):
         assert element.slot == slot
+
 
 @settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(schedules, field_managers)
@@ -155,6 +159,7 @@ def test_valid_schedules_available_rigs(schedule, model):
             for rig in model.rigs
         )
 
+
 @settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(schedules, field_managers)
 def test_valid_schedules_available_slots(schedule, model):
@@ -175,6 +180,7 @@ def test_valid_schedules_available_slots(schedule, model):
             )
             for slot in model.slots
         )
+
 
 @settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(schedules, field_managers)
@@ -208,6 +214,7 @@ def test_valid_schedules_rig_can_drill_element(schedule, model):
 #       a.contains(day) and b.contains(day) for day in range(a.begin, a.end + 1)
 #   )
 
+
 @settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(schedules, field_managers)
 def test_non_overlapping_rigs(schedule, model):
@@ -220,6 +227,7 @@ def test_non_overlapping_rigs(schedule, model):
             for rig in model.rigs
         )
     )
+
 
 @settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(schedules, field_managers)

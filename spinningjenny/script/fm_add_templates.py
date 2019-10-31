@@ -9,6 +9,7 @@ from spinningjenny import (
     valid_file,
     valid_config,
     write_json_to_file,
+    is_writable,
 )
 from spinningjenny.add_templates.add_templates_job import (
     add_templates,
@@ -43,7 +44,13 @@ def _build_argument_parser():
         required=True,
         help="Input file that requires template paths. Json file expected ex: wells.json",
     )
-    parser.add_argument("-o", "--output", required=True, help="Output file")
+    parser.add_argument(
+        "-o",
+        "--output",
+        required=True,
+        type=partial(is_writable, parser=parser),
+        help="Output file",
+    )
 
     return parser
 
