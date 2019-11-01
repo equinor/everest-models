@@ -110,6 +110,7 @@ def test_valid_schedules_must_use_same_slots(schedule, model):
     ) == model.uses_rigs_subset(schedule)
 
 
+@settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(schedules, field_managers)
 def test_valid_schedules_must_use_same_rigs(schedule, model):
     assert (
@@ -117,6 +118,7 @@ def test_valid_schedules_must_use_same_rigs(schedule, model):
     ) == model.uses_slots_subset(schedule)
 
 
+@settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(schedules, field_managers)
 def test_valid_schedules_drills_all_wells_once(schedule, model):
     if model.all_wells_drilled_once(schedule):

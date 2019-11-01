@@ -87,6 +87,7 @@ def test_all_valid_schedules_are_consistent_assignments(constraints, assignment)
         assert assignment.is_consistent()
 
 
+@settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(constraints_assignment_pair())  # pylint: disable=no-value-for-parameter
 def test_all_wells_drilled_once_constraints(pair):
 
