@@ -211,7 +211,7 @@ def _delayed_advanced_setup():
 
 def test_simple_well_order():
     config_snapshot = _simple_setup().snapshot
-    well_order = [("W1", 0, 5), ("W2", 5, 15)]
+    well_order = [("W1", 0, 5), ("W2", 6, 16)]
 
     field_manager = FieldManager.generate_from_snapshot(config_snapshot)
     schedule = run_optimization(field_manager=field_manager)
@@ -219,6 +219,7 @@ def test_simple_well_order():
     assert field_manager.valid_schedule(FieldSchedule(schedule))
 
     schedule_well_order = [(elem.well, elem.begin, elem.end) for elem in schedule]
+
     assert len(schedule) == len(well_order)
     assert all(test_task in schedule_well_order for test_task in well_order)
     assert all(schedule_task in well_order for schedule_task in schedule_well_order)
@@ -243,15 +244,14 @@ def test_rig_slot_reservation():
     (well='W4', rig='B', slot='S5')
     (well='W5', rig='C', slot='S3')
     """
-
     config_snapshot = get_drill_planner_config_snapshot(_advanced_setup())
 
     well_order = [
         ("W1", 0, 10),
         ("W2", 0, 30),
         ("W3", 0, 25),
-        ("W4", 10, 30),
-        ("W5", 25, 65),
+        ("W4", 11, 31),
+        ("W5", 26, 66),
     ]
 
     field_manager = FieldManager.generate_from_snapshot(config_snapshot)
@@ -298,10 +298,10 @@ def test_rig_slot_include_delay():
 
     detailed_well_order = [
         ("B", "W1", "S5", 0, 10),
-        ("A", "W2", "S2", 35, 65),
-        ("B", "W3", "S4", 43, 68),
-        ("C", "W4", "S1", 10, 30),
-        ("C", "W5", "S3", 54, 94),
+        ("A", "W2", "S2", 36, 66),
+        ("B", "W3", "S4", 44, 69),
+        ("C", "W4", "S1", 11, 31),
+        ("C", "W5", "S3", 55, 95),
     ]
 
     well_order = [
@@ -492,4 +492,121 @@ def test_compare_schedules():
     ]
     assert better_schedule_list == _compare_schedules(
         schedule_list, better_schedule_list, wells_priority
+    )
+
+
+def assert_start_given(expected_begin, key, unavailabilities):
+    config = _simple_setup_config()
+
+    for idx, ranges in enumerate(unavailabilities):
+        config[key][idx]["unavailability"] = [
+            {
+                "start": config["start_date"] + timedelta(days=begin),
+                "stop": config["start_date"] + timedelta(days=end),
+            }
+            for (begin, end) in ranges
+        ]
+
+    config_snapshot = get_drill_planner_config_snapshot(config)
+
+    field_manager = FieldManager.generate_from_snapshot(config_snapshot)
+    schedule = run_optimization(field_manager=field_manager)
+
+    assert field_manager.valid_schedule(FieldSchedule(schedule))
+    assert schedule[0].begin == expected_begin
+
+
+def test_inclusive_bounds_no_unavailability():
+    config = _simple_setup_config()
+    config_snapshot = get_drill_planner_config_snapshot(config)
+
+    field_manager = FieldManager.generate_from_snapshot(config_snapshot)
+    schedule = run_optimization(field_manager=field_manager)
+
+    assert field_manager.valid_schedule(FieldSchedule(schedule))
+    assert schedule[1].begin > schedule[0].end
+
+
+def test_slot_unavailability_at_start():
+    slot_one_unavailability = [(0, 0)]
+    slot_two_unavailability = [(0, 0)]
+    assert_start_given(
+        expected_begin=1,
+        key="slots",
+        unavailabilities=[slot_one_unavailability, slot_two_unavailability],
+    )
+
+
+def test_slot_unavailability_insufficient_time_to_complete():
+    slot_one_unavailability = [(5, 5)]
+    slot_two_unavailability = [(5, 5)]
+    assert_start_given(
+        expected_begin=6,
+        key="slots",
+        unavailabilities=[slot_one_unavailability, slot_two_unavailability],
+    )
+
+
+def test_slot_unavailability_sufficient_time_to_complete():
+    slot_one_unavailability = [(6, 6)]
+    slot_two_unavailability = [(6, 6)]
+    assert_start_given(
+        expected_begin=0,
+        key="slots",
+        unavailabilities=[slot_one_unavailability, slot_two_unavailability],
+    )
+
+
+def test_slot_unavailability_insufficient_time_to_complete_between_unavailabilities():
+    slot_one_unavailability = [(5, 5), (11, 11)]
+    slot_two_unavailability = [(5, 5), (11, 11)]
+    assert_start_given(
+        expected_begin=12,
+        key="slots",
+        unavailabilities=[slot_one_unavailability, slot_two_unavailability],
+    )
+
+
+def test_slot_unavailability_sufficient_time_to_complete_between_unavailabilities():
+    slot_one_unavailability = [(5, 5), (12, 12)]
+    slot_two_unavailability = [(5, 5), (12, 12)]
+    assert_start_given(
+        expected_begin=6,
+        key="slots",
+        unavailabilities=[slot_one_unavailability, slot_two_unavailability],
+    )
+
+
+def test_rig_unavailability_at_start():
+    rig_unavailability = [(0, 0)]
+    assert_start_given(
+        expected_begin=1, key="rigs", unavailabilities=[rig_unavailability]
+    )
+
+
+def test_rig_unavailability_insufficient_time_to_complete():
+    rig_unavailability = [(5, 5)]
+    assert_start_given(
+        expected_begin=6, key="rigs", unavailabilities=[rig_unavailability]
+    )
+
+
+def test_rig_unavailability_sufficient_time_to_complete():
+    rig_unavailability = [(6, 6)]
+    assert_start_given(
+        expected_begin=0, key="rigs", unavailabilities=[rig_unavailability]
+    )
+
+
+def test_rig_unavailability_insufficient_time_to_complete_between_unavailabilities():
+    rig_unavailability = [(5, 5), (11, 11)]
+    assert_start_given(
+        expected_begin=12, key="rigs", unavailabilities=[rig_unavailability]
+    )
+
+
+def test_rig_unavailability_sufficient_time_to_complete_between_unavailabilities():
+    rig_unavailability = [(5, 5), (12, 12)]
+    assert_start_given(
+        expected_begin=6, key="rigs", unavailabilities=[rig_unavailability]
     )

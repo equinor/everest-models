@@ -4,12 +4,7 @@ from spinningjenny.drill_planner.ormodel import DrillConstraints
 from spinningjenny.drill_planner.drillmodel import FieldSchedule
 from spinningjenny.drill_planner import ScheduleElement
 
-from tests.unit.test_drillmodel import (
-    field_managers,
-    schedule_element,
-    begin_day,
-    end_day,
-)
+from tests.unit.test_drillmodel import field_managers, schedule_element, begin_day
 from ortools.sat.python import cp_model
 
 
@@ -43,16 +38,19 @@ well_drill_constraints = st.builds(DrillConstraints, field_managers)
 assignments = st.builds(Assignment, st.lists(schedule_element, unique=True))
 
 
+def create_schedule_elem(rig, slot, well, begin_day):
+    return ScheduleElement(rig, slot, well.name, begin_day, begin_day + well.drill_time)
+
+
 @st.composite
 def constraints_assignment_pair(draw):
     constraints = draw(well_drill_constraints)
 
-    wells = st.sampled_from([el.name for el in constraints.field_manager.wells])
+    wells = st.sampled_from(constraints.field_manager.wells)
     rigs = st.sampled_from([el.name for el in constraints.field_manager.rigs])
     slots = st.sampled_from([el.name for el in constraints.field_manager.slots])
-
     schedule_list = st.lists(
-        st.builds(ScheduleElement, rigs, slots, wells, begin_day, end_day),
+        st.builds(create_schedule_elem, rigs, slots, wells, begin_day),
         unique_by=(lambda x: (x.rig, x.slot, x.well)),
     )
 
@@ -62,6 +60,8 @@ def constraints_assignment_pair(draw):
 def apply_assignment(model, assignment):
     for (well, rig, slot), task in model.tasks.items():
         for var, value in assignment.task_assignments(well, rig, slot, task):
+            if var.Name().startswith("end"):
+                value += 1
             model.Add(var == value)
 
 

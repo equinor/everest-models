@@ -30,9 +30,13 @@ end_day = st.integers(min_value=50, max_value=100)
 day_range = st.builds(DayRange, begin_day, end_day)
 unavailable_days = st.lists(day_range, min_size=0, max_size=10)
 
-wells = st.sampled_from(
-    list(Well("W{}".format(i), priorities.example(), 1) for i in range(num_wells))
-)
+drill_time = st.integers(min_value=1, max_value=15)
+rig_name = st.sampled_from(["R{}".format(i) for i in range(num_rigs)])
+slot_name = st.sampled_from(["S{}".format(i) for i in range(num_slots)])
+well_name = st.sampled_from(["W{}".format(i) for i in range(num_wells)])
+
+wells = st.builds(Well, well_name, priorities, drill_time)
+
 
 slots = st.sampled_from(
     list(
@@ -61,10 +65,6 @@ rigs = st.sampled_from(
     )
 )
 
-rig_name = st.sampled_from(["R{}".format(i) for i in range(num_rigs)])
-slot_name = st.sampled_from(["S{}".format(i) for i in range(num_slots)])
-well_name = st.sampled_from(["W{}".format(i) for i in range(num_wells)])
-
 schedule_element = st.builds(
     ScheduleElement, rig_name, slot_name, well_name, begin_day, end_day
 )
@@ -78,7 +78,7 @@ field_managers = st.builds(
     FieldManager,
     st.lists(rigs, min_size=1, unique=True),
     st.lists(slots, min_size=1, unique=True),
-    st.lists(wells, min_size=1, unique=True),
+    st.lists(wells, min_size=1, unique_by=lambda x: x.name),
     st.just(100),
 )
 
@@ -128,8 +128,7 @@ def test_valid_schedules_available_rigs(schedule, model):
     if model.all_rigs_available(schedule):
         for rig in model.rigs:
             for element in schedule.rig_elements(rig):
-                # should be range(element.begin, element.end + 1)
-                for day in range(element.begin + 1, element.end):
+                for day in range(element.begin, element.end + 1):
                     assert rig.available(day)
     else:
         assert any(
@@ -149,8 +148,7 @@ def test_valid_schedules_available_slots(schedule, model):
     if model.all_slots_available(schedule):
         for slot in model.slots:
             for element in schedule.slot_elements(slot):
-                # should be range(element.begin, element.end + 1)
-                for day in range(element.begin + 1, element.end):
+                for day in range(element.begin, element.end + 1):
                     assert slot.available(day)
     else:
         assert any(

@@ -38,7 +38,7 @@ class DrillConstraints(cp_model.CpModel):
                 "presence_{}_{}_{}".format(well.name, rig.name, slot.name)
             )
 
-            duration = well.drill_time
+            duration = well.drill_time + 1
 
             interval_var = self.NewOptionalIntervalVar(
                 begin_var,
@@ -102,7 +102,10 @@ class DrillConstraints(cp_model.CpModel):
         for rig in self.field_manager.rigs:
             unavailable_intervals = [
                 self.NewIntervalVar(
-                    r.begin, r.end - r.begin, r.end, "unavailable_{}".format(rig.name)
+                    r.begin,
+                    (min(r.end + 1, self.horizon) - r.begin),
+                    min(r.end + 1, self.horizon),
+                    "unavailable_{}".format(rig.name),
                 )
                 for r in rig.unavailable_ranges
             ]
@@ -119,7 +122,10 @@ class DrillConstraints(cp_model.CpModel):
         for slot in self.field_manager.slots:
             unavailable_intervals = [
                 self.NewIntervalVar(
-                    r.begin, r.end - r.begin, r.end, "unavailable_{}".format(slot.name)
+                    r.begin,
+                    (min(r.end + 1, self.horizon) - r.begin),
+                    min(r.end + 1, self.horizon),
+                    "unavailable_{}".format(slot.name),
                 )
                 for r in slot.unavailable_ranges
             ]
@@ -244,7 +250,7 @@ def create_schedule_elements(tasks, solution):
             slot=slot.name,
             well=well.name,
             begin=solution.Value(t.begin),
-            end=solution.Value(t.end),
+            end=solution.Value(t.end) - 1,
         )
         for (well, rig, slot), t in tasks.items()
         if solution.Value(t.presence)

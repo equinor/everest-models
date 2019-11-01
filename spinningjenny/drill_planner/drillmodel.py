@@ -80,9 +80,8 @@ class DayRange:
         return self.begin <= day <= self.end
 
     def overlaps(self, other):
-        # overlapping should be inclusive
-        end_after = self.end > other.begin
-        start_before = self.begin < other.end
+        end_after = self.end >= other.begin
+        start_before = self.begin <= other.end
         return end_after and start_before
 
 

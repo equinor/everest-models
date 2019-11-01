@@ -32,7 +32,7 @@ DATES
 /
 
 DATES
- 22 FEB 2000 / --ADDED
+ 23 FEB 2000 / --ADDED
 /
 
 --start ./templates/template_welopen.tmpl
@@ -60,7 +60,7 @@ DATES
 /
 
 DATES
- 13 APR 2000 / --ADDED
+ 14 APR 2000 / --ADDED
 /
 
 --start ./templates/template_welopen.tmpl
@@ -116,7 +116,7 @@ DATES
 /
 
 DATES
- 04 MAY 2000 / --ADDED
+ 06 MAY 2000 / --ADDED
 /
 
 --start ./templates/template_welopen.tmpl
@@ -139,6 +139,10 @@ DATES
  01 JUN 2000 /
 /
 
+DATES
+ 02 JUN 2000 / --ADDED
+/
+
 --start ./templates/template_wconprod_oil.tmpl
 WCONPROD
   'PROD1' 'OPEN' 'ORAT' 880.0  4*  1000   /
@@ -148,7 +152,7 @@ WCONPROD
 
 
 DATES
- 04 JUN 2000 / --ADDED
+ 05 JUN 2000 / --ADDED
 /
 
 --start ./templates/template_wconprod_gas.tmpl
@@ -164,7 +168,7 @@ DATES
 /
 
 DATES
- 22 JUL 2000 / --ADDED
+ 23 JUL 2000 / --ADDED
 /
 
 --start ./templates/template_wconprod_gas.tmpl
@@ -180,7 +184,7 @@ DATES
 /
 
 DATES
- 11 AUG 2000 / --ADDED
+ 12 AUG 2000 / --ADDED
 /
 
 --start ./templates/template_wconinje.tmpl
@@ -196,7 +200,7 @@ DATES
 /
 
 DATES
- 02 OCT 2000 / --ADDED
+ 03 OCT 2000 / --ADDED
 /
 
 --start ./templates/template_wconprod_gas.tmpl
@@ -216,7 +220,7 @@ DATES
 /
 
 DATES
- 09 DEC 2000 / --ADDED
+ 10 DEC 2000 / --ADDED
 /
 
 
@@ -229,7 +233,7 @@ WCONINJE
 
 
 DATES
- 30 JAN 2001 / --ADDED
+ 31 JAN 2001 / --ADDED
 /
 
 
