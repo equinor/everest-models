@@ -1,14 +1,9 @@
 import datetime
 import pytest
-from collections import namedtuple
 
 from ecl.summary import EclSum
 
 from spinningjenny.rf_job import recovery_factor
-from spinningjenny.script.fm_rf import main_entry_point
-from spinningjenny import valid_ecl_file
-
-from tests import tmpdir, relpath
 
 
 def _default_ecl_sum():

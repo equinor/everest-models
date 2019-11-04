@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 import json
 import yaml
-import pytest
 
 from configsuite import ConfigSuite
 
