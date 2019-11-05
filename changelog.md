@@ -1,3 +1,14 @@
+# 0.1.5
+ * Improve or-tool drillplanner implementation
+ * Add missing config key handling to schmerge job
+ * Ignore well costs in the NPV job if file with well dates is not
+   supplied
+ * Outputfile no longer required for recovery factor job (outputs
+   to standard out if not supplied)
+ * Add templates job will now stop and return an error for mismatched
+   templates (used to only submit a warning)
+ * Add extract summary data job
+
 # 0.1.4
  * Improved argument validation for the RF job (checks if files are
    writable)
