@@ -1,7 +1,6 @@
 import collections
 import numpy as np
 from functools import partial
-from datetime import timedelta
 
 from spinningjenny import DATE_FORMAT, customized_logger
 

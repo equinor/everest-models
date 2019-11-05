@@ -1,8 +1,15 @@
-from hypothesis import given, example, assume, settings, HealthCheck
+from hypothesis import given, assume
 import hypothesis.strategies as st
 from spinningjenny.drill_planner.ormodel import DrillConstraints
-from spinningjenny.drill_planner.drillmodel import FieldManager, FieldSchedule
-from tests.unit.test_drillmodel import field_managers, schedule_elements
+from spinningjenny.drill_planner.drillmodel import FieldSchedule
+from spinningjenny.drill_planner import ScheduleElement
+
+from tests.unit.test_drillmodel import (
+    field_managers,
+    schedule_element,
+    begin_day,
+    end_day,
+)
 from ortools.sat.python import cp_model
 
 
@@ -12,8 +19,6 @@ class Assignment(FieldSchedule):
         if len(elements) == 0:
             yield (task.presence, False)
         else:
-            if len(elements) != 1:
-                raise Exception("assignment not consistent")
             e = elements[0]
             if e.well != well.name or e.rig != rig.name or e.slot != slot.name:
                 yield (task.presence, False)
@@ -27,7 +32,7 @@ class Assignment(FieldSchedule):
         return len(tasks) == len(set(tasks))
 
     def wrs_elements(self, well, rig, slot):
-        return (
+        return set(
             x
             for x in self.elements
             if x.rig == rig and x.well == well and x.slot == slot
@@ -35,29 +40,23 @@ class Assignment(FieldSchedule):
 
 
 well_drill_constraints = st.builds(DrillConstraints, field_managers)
-assignments = st.builds(
-    Assignment, st.lists(schedule_elements())  # pylint: disable=no-value-for-parameter
-)
+assignments = st.builds(Assignment, st.lists(schedule_element, unique=True))
 
 
 @st.composite
 def constraints_assignment_pair(draw):
     constraints = draw(well_drill_constraints)
 
-    wells = constraints.field_manager.wells
-    rigs = constraints.field_manager.rigs
-    slots = constraints.field_manager.slots
+    wells = st.sampled_from([el.name for el in constraints.field_manager.wells])
+    rigs = st.sampled_from([el.name for el in constraints.field_manager.rigs])
+    slots = st.sampled_from([el.name for el in constraints.field_manager.slots])
 
-    schedule_list = st.just([])
-    if wells and rigs and slots:
-        schedule_list = st.lists(
-            schedule_elements(
-                st.sampled_from(rigs), st.sampled_from(slots), st.sampled_from(wells)
-            )
-        )
+    schedule_list = st.lists(
+        st.builds(ScheduleElement, rigs, slots, wells, begin_day, end_day),
+        unique_by=(lambda x: (x.rig, x.slot, x.well)),
+    )
 
-    assignment = draw(st.builds(Assignment, schedule_list))
-    return (constraints, assignment)
+    return constraints, Assignment(draw(schedule_list))
 
 
 def apply_assignment(model, assignment):
@@ -76,9 +75,7 @@ def satisfies(model, apply_constraints, assignment):
     return status == cp_model.FEASIBLE
 
 
-@settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(well_drill_constraints, assignments)
-@example(DrillConstraints(FieldManager([], [], [], 0)), Assignment([]))
 def test_all_valid_schedules_are_consistent_assignments(constraints, assignment):
 
     field_manager = constraints.field_manager
@@ -87,7 +84,6 @@ def test_all_valid_schedules_are_consistent_assignments(constraints, assignment)
         assert assignment.is_consistent()
 
 
-@settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(constraints_assignment_pair())  # pylint: disable=no-value-for-parameter
 def test_all_wells_drilled_once_constraints(pair):
 
@@ -105,7 +101,6 @@ def test_all_wells_drilled_once_constraints(pair):
     assert or_valid == domain_valid
 
 
-@settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(constraints_assignment_pair())  # pylint: disable=no-value-for-parameter
 def test_all_slots_atmost_once_constraints(pair):
 
@@ -123,7 +118,6 @@ def test_all_slots_atmost_once_constraints(pair):
     assert or_valid == domain_valid
 
 
-@settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(constraints_assignment_pair())  # pylint: disable=no-value-for-parameter
 def test_all_rigs_available_constraints(pair):
 
@@ -141,7 +135,6 @@ def test_all_rigs_available_constraints(pair):
     assert or_valid == domain_valid
 
 
-@settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(constraints_assignment_pair())  # pylint: disable=no-value-for-parameter
 def test_all_slots_available_constraints(pair):
 
@@ -159,7 +152,6 @@ def test_all_slots_available_constraints(pair):
     assert or_valid == domain_valid
 
 
-@settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(constraints_assignment_pair())  # pylint: disable=no-value-for-parameter
 def test_no_rig_overlapping_constraints(pair):
 

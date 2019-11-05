@@ -1,8 +1,6 @@
 from collections import namedtuple
 from itertools import combinations, product
 
-from spinningjenny.drill_planner import ScheduleElement
-
 
 class Rig:
     def __init__(self, name, unavailable_ranges, slot_wells):

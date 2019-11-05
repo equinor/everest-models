@@ -1,5 +1,5 @@
 from configsuite import ConfigSuite
-from hypothesis import given, HealthCheck, settings
+from hypothesis import given
 import hypothesis.strategies as st
 from itertools import combinations
 
@@ -11,32 +11,24 @@ from spinningjenny.drill_planner.drillmodel import (
     Slot,
     DayRange,
 )
+from spinningjenny.drill_planner import drill_planner_schema, ScheduleElement
 
 from tests.unit.test_drill_planner import (
     _small_setup_incl_unavailability,
     _simple_setup,
     _simple_setup_config,
 )
-from spinningjenny.drill_planner import drill_planner_schema, ScheduleElement
 
 num_rigs = 10
 num_wells = 10
 num_slots = 10
-
-days = st.integers(min_value=0, max_value=100)
 priorities = st.integers(min_value=0, max_value=1000)
 
+begin_day = st.integers(min_value=0, max_value=50)
+end_day = st.integers(min_value=50, max_value=100)
 
-@st.composite
-def day_ranges(draw, min_begin=0, max_begin=100, min_end=0, max_end=100):
-    begin_day = draw(st.integers(min_value=min_begin, max_value=max_begin))
-    end_day = draw(st.integers(min_value=max(begin_day, min_end), max_value=max_end))
-    return DayRange(begin_day, end_day)
-
-
-unavailable_days = st.lists(
-    day_ranges(), min_size=0, max_size=10  # pylint: disable=no-value-for-parameter
-)
+day_range = st.builds(DayRange, begin_day, end_day)
+unavailable_days = st.lists(day_range, min_size=0, max_size=10)
 
 wells = st.sampled_from(
     list(Well("W{}".format(i), priorities.example(), 1) for i in range(num_wells))
@@ -69,40 +61,35 @@ rigs = st.sampled_from(
     )
 )
 
+rig_name = st.sampled_from(["R{}".format(i) for i in range(num_rigs)])
+slot_name = st.sampled_from(["S{}".format(i) for i in range(num_slots)])
+well_name = st.sampled_from(["W{}".format(i) for i in range(num_wells)])
 
-def create_schedule_element(rig, slot, well, begin, end):
-    return ScheduleElement(rig.name, slot.name, well.name, begin, end)
-
-
-@st.composite
-def schedule_elements(draw, r=rigs, s=slots, w=wells):
-    dr = draw(day_ranges())  # pylint: disable=no-value-for-parameter
-    return draw(
-        st.builds(create_schedule_element, r, s, w, st.just(dr.begin), st.just(dr.end))
-    )
-
+schedule_element = st.builds(
+    ScheduleElement, rig_name, slot_name, well_name, begin_day, end_day
+)
 
 schedules = st.builds(
     FieldSchedule,
-    st.lists(schedule_elements()),  # pylint: disable=no-value-for-parameter
+    st.lists(schedule_element, unique=True),  # pylint: disable=no-value-for-parameter
 )
+
 field_managers = st.builds(
     FieldManager,
-    st.lists(rigs, unique=True),
-    st.lists(slots, unique=True),
-    st.lists(wells, unique=True),
+    st.lists(rigs, min_size=1, unique=True),
+    st.lists(slots, min_size=1, unique=True),
+    st.lists(wells, min_size=1, unique=True),
     st.just(100),
 )
 
 
-@settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(schedules, field_managers)
 def test_valid_schedules_must_drill_same_wells(schedule, model):
+
     scheduled_wells = {model.get_well(w) for w in schedule.scheduled_wells}
     assert (scheduled_wells == set(model.wells)) == model.uses_same_wells(schedule)
 
 
-@settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(schedules, field_managers)
 def test_valid_schedules_must_use_same_slots(schedule, model):
     assert (
@@ -110,7 +97,6 @@ def test_valid_schedules_must_use_same_slots(schedule, model):
     ) == model.uses_rigs_subset(schedule)
 
 
-@settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(schedules, field_managers)
 def test_valid_schedules_must_use_same_rigs(schedule, model):
     assert (
@@ -118,7 +104,6 @@ def test_valid_schedules_must_use_same_rigs(schedule, model):
     ) == model.uses_slots_subset(schedule)
 
 
-@settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(schedules, field_managers)
 def test_valid_schedules_drills_all_wells_once(schedule, model):
     if model.all_wells_drilled_once(schedule):
@@ -126,21 +111,18 @@ def test_valid_schedules_drills_all_wells_once(schedule, model):
             assert len(list(schedule.well_elements(well.name))) == 1
 
 
-@settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(rigs, schedules)
 def test_rig_elements(rig, schedule):
     for element in schedule.rig_elements(rig):
         assert element.rig == rig
 
 
-@settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(slots, schedules)
 def test_slot_elements(slot, schedule):
     for element in schedule.slot_elements(slot):
         assert element.slot == slot
 
 
-@settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(schedules, field_managers)
 def test_valid_schedules_available_rigs(schedule, model):
     if model.all_rigs_available(schedule):
@@ -162,7 +144,6 @@ def test_valid_schedules_available_rigs(schedule, model):
         )
 
 
-@settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(schedules, field_managers)
 def test_valid_schedules_available_slots(schedule, model):
     if model.all_slots_available(schedule):
@@ -184,7 +165,6 @@ def test_valid_schedules_available_slots(schedule, model):
         )
 
 
-@settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(schedules, field_managers)
 def test_valid_schedules_rig_can_drill_element(schedule, model):
     if model.all_elements_drillable(schedule):
@@ -210,14 +190,6 @@ def test_valid_schedules_rig_can_drill_element(schedule, model):
         assert any(not_drillable)
 
 
-# @given(day_ranges(), day_ranges())  # pylint: disable=no-value-for-parameter
-# def test_overlap_implies_common_contains(a, b):
-#   assert a.overlaps(b) == any(
-#       a.contains(day) and b.contains(day) for day in range(a.begin, a.end + 1)
-#   )
-
-
-@settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(schedules, field_managers)
 def test_non_overlapping_rigs(schedule, model):
     assert model.no_rig_overlapping(schedule) == (
@@ -231,7 +203,6 @@ def test_non_overlapping_rigs(schedule, model):
     )
 
 
-@settings(suppress_health_check=(HealthCheck.too_slow,))
 @given(schedules, field_managers)
 def test_valid_schedules_use_slots_only_once(schedule, model):
     if model.all_slots_atmost_once(schedule):
