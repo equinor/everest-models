@@ -1,9 +1,8 @@
 #!/usr/bin/env/python
-import datetime
 import json
 from itertools import chain, compress
 
-from spinningjenny import customized_logger, DATE_FORMAT
+from spinningjenny import customized_logger, str2date
 
 logger = customized_logger.get_logger(__name__)
 
@@ -23,7 +22,7 @@ class CalculateNPV:
         self._npv = 0.0
         self.exchange_rate = ExchangeRate(input_data)
         self.discount_rate = DiscountRate(input_data)
-        self.price = Price(input_data)
+        self.price = Price(input_data.prices)
         self.date_handler = DateHandler(input_data, self.ecl_sum)
         self.cost = Cost(input_data)
         self.keywords = Keywords(input_data, self.ecl_sum).get()
@@ -85,33 +84,16 @@ class Transaction:
 
     """
 
-    def __init__(self, date, value, currency):
-        self.date = date
-        self._value = value
-        self.currency = currency
+    def __init__(self, entry, date=None):
+        self._entry = entry
+        self._date = date or entry.date
 
-    @classmethod
-    def using_cost(cls, cost_entry):
-        date = cost_entry.date
-        value = cost_entry.value
-        currency = cost_entry.currency
-        return cls(date, value, currency)
-
-    @classmethod
-    def using_well_cost(cls, well_cost_entry, well_entries, well_name):
-        date = well_entries[well_name]
-        value = well_cost_entry.value
-        currency = well_cost_entry.currency
-        return cls(date, value, currency)
-
-    @classmethod
-    def using_price(cls, price_entry, date):
-        value = price_entry.value
-        currency = price_entry.currency
-        return cls(date, value, currency)
+    @property
+    def date(self):
+        return self._date
 
     def value(self, exchange_rate):
-        return exchange_rate.get(self.date, self.currency) * self._value
+        return exchange_rate.get(self._date, self._entry.currency) * self._entry.value
 
 
 class Keywords:
@@ -212,14 +194,8 @@ class Price:
 
     """
 
-    def __init__(self, input_data):
-        if len(input_data.prices) == 0:
-            raise AttributeError(
-                "Price information is required to do an NPV calculation"
-            )
-
-        self._prices = []
-        self._prices = input_data.prices
+    def __init__(self, prices):
+        self._prices = prices
 
     def get(self, date, keyword):
         if not any(keyword in k for k, _ in self._prices):
@@ -230,7 +206,7 @@ class Price:
         ordered_data = sorted(data, key=lambda entry: entry.date, reverse=True)
         for entry in ordered_data:
             if entry.date <= date:
-                return Transaction.using_price(entry, date)
+                return Transaction(entry, date)
 
         logger.warning("Price information missing at {} for {}.".format(date, keyword))
         return None
@@ -250,7 +226,7 @@ class Cost:
         self._costs = []
         if input_data.costs:
             for cost_entry in input_data.costs:
-                self._costs.append(Transaction.using_cost(cost_entry))
+                self._costs.append(Transaction(cost_entry))
 
         if input_data.well_costs:
             if input_data.files.input_file:
@@ -270,16 +246,12 @@ class Cost:
 
         _wells = {}
         for entry in wells:
-            _wells[entry["name"]] = datetime.datetime.strptime(
-                entry["readydate"], DATE_FORMAT
-            ).date()
+            _wells[entry["name"]] = str2date(entry["readydate"]).date()
 
-        for well_cost_entry in well_costs:
-            well_name = well_cost_entry.well
+        for entry in well_costs:
+            well_name = entry.well
             if well_name in _wells:
-                self._costs.append(
-                    Transaction.using_well_cost(well_cost_entry, _wells, well_name)
-                )
+                self._costs.append(Transaction(entry, _wells[well_name]))
             else:
                 logger.warning(
                     "Well cost for well {} skipped due to lacking reference in input file".format(

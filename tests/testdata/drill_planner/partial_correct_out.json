@@ -1,5 +1,6 @@
 [
   {
+    "completion_date": "2000-02-22",
     "name": "w1",
     "drill_time": 20,
     "readydate": "2000-02-22",
@@ -11,6 +12,7 @@
     ]
   },
   {
+    "completion_date": "2000-03-29",
     "name": "w3",
     "drill_time": 43,
     "readydate": "2000-03-29",
@@ -22,6 +24,7 @@
     ]
   },
   {
+    "completion_date": "2000-05-04",
     "name": "w5",
     "drill_time": 36,
     "readydate": "2000-05-04",

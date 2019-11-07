@@ -187,7 +187,11 @@ def main_entry_point(args=None):
     start_date = config.snapshot.start_date
     _log_detailed_result(schedule, start_date)
 
-    schedule = [(elem.well, start_date + timedelta(days=elem.end)) for elem in schedule]
+    schedule = {
+        elem.well: {
+            "completion_date": start_date + timedelta(days=elem.completion),
+            "readydate": start_date + timedelta(days=elem.end)
+        } for elem in schedule}
 
     result = append_data(input_values=args.input, schedule=schedule)
     write_json_to_file(result, args.output)

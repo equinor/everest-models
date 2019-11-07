@@ -438,6 +438,11 @@ def test_script_resolve_priorities():
     assert modified_schedule[1].end == 20
     assert modified_schedule[2].end == 20
 
+    # Completion dates for the scheduled wells are not modified
+    assert modified_schedule[0].completion == 10
+    assert modified_schedule[1].completion == 20
+    assert modified_schedule[2].completion == 15
+
     # Both W2 and W3 must be shifted
     well_order = [
         ("B", "S5", "W1", 1, 20),
@@ -453,6 +458,11 @@ def test_script_resolve_priorities():
     assert modified_schedule[0].end == 20
     assert modified_schedule[1].end == 20
     assert modified_schedule[2].end == 20
+
+    # Completion dates for the scheduled wells are not modified
+    assert modified_schedule[0].completion == 20
+    assert modified_schedule[1].completion == 15
+    assert modified_schedule[2].completion == 10
 
 
 def test_compare_schedules():

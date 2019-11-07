@@ -1,4 +1,3 @@
-import collections
 import numpy as np
 from functools import partial
 
@@ -6,9 +5,15 @@ from spinningjenny import DATE_FORMAT, customized_logger
 
 logger = customized_logger.get_logger(__name__)
 
-ScheduleElement = collections.namedtuple(
-    "schedule_element", ("rig", "slot", "well", "begin", "end")
-)
+
+class ScheduleElement:
+    def __init__(self, rig, slot, well, begin, end):
+        self.rig = rig
+        self.slot = slot
+        self.well = well
+        self.begin = begin
+        self.end = end
+        self.completion = end
 
 
 def date_to_int(date, snapshot):
@@ -54,13 +59,12 @@ def create_config_dictionary(snapshot):
 
 def append_data(input_values, schedule):
     for well_cfg in input_values:
-        well_from_schedule = {
-            "date": date for (well, date) in schedule if well == well_cfg["name"]
-        }
-        date = well_from_schedule["date"].strftime(DATE_FORMAT)
-
-        well_cfg["readydate"] = date
-        well_cfg["ops"] = [{"opname": "open", "date": date}]
+        scheduled_well = schedule.get(well_cfg["name"], None)
+        if scheduled_well:
+            ready_date = str(scheduled_well['readydate'])
+            well_cfg["readydate"] = ready_date
+            well_cfg["completion_date"] = str(scheduled_well['completion_date'])
+            well_cfg["ops"] = [{"opname": "open", "date": ready_date}]
 
     return input_values
 
@@ -128,7 +132,6 @@ def repr_task(task):
         task.rig, task.slot, task.well, task.begin, task.end
     )
 
-
 def resolve_priorities(schedule, config):
     """
     The priorities are not hard constraints in the solvers, which they shouldn't be.
@@ -152,7 +155,8 @@ def resolve_priorities(schedule, config):
         if modified_schedule[idx].end <= event.end:
             modified_schedule.append(event)
         else:
-            modified_schedule.append(event._replace(end=modified_schedule[idx].end))
+            event.end = modified_schedule[idx].end
+            modified_schedule.append(event)
             msg = (
                 "Well {first} could be completed prior to well {second}, "
                 "without affecting {second}. End date for {first} shifted "

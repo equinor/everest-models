@@ -40,8 +40,11 @@ def test__next_best_event():
 
     filtered_events = _valid_events(config)
     best_event = _next_best_event(config, filtered_events)
-
-    assert best_event == ScheduleElement(well="W1", slot="S1", rig="A", begin=0, end=10)
+    assert best_event.well == "W1"
+    assert best_event.slot == "S1"
+    assert best_event.rig == "A"
+    assert best_event.begin == 0
+    assert best_event.end == 10
 
 
 def test_drill_time():

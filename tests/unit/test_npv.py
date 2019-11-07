@@ -265,8 +265,7 @@ def test_keys_not_available(tmpdir, options):
     snapshot = config.snapshot._replace(summary_keys=["NOT_EXISTING", "FAULTY_KEY"])
 
     with pytest.raises(AttributeError) as excinfo:
-        calculate = fm_npv.CalculateNPV(snapshot, options.summary)
-        calculate.keywords
+        fm_npv.CalculateNPV(snapshot, options.summary)
 
     assert (
         "Missing required data (['NOT_EXISTING', 'FAULTY_KEY']) in summary file."
@@ -435,7 +434,7 @@ def test_find_price_lower_extreme(tmpdir, options):
     config = fm_npv._prepare_config(options)
     assert config.valid
 
-    price = npv_job.Price(config.snapshot)
+    price = npv_job.Price(config.snapshot.prices)
     transaction = price.get(date, keyword)
     assert transaction == None
 
@@ -447,11 +446,11 @@ def test_find_price_lower_limit(tmpdir, options):
     config = fm_npv._prepare_config(options)
     assert config.valid
 
-    price = npv_job.Price(config.snapshot)
+    price = npv_job.Price(config.snapshot.prices)
     exchange_rate = npv_job.ExchangeRate(config.snapshot)
     transaction = price.get(date, keyword)
-    assert transaction.currency == "USD"
-    assert transaction._value == -5
+    assert transaction._entry.currency == "USD"
+    assert transaction._entry.value == -5
     assert transaction.value(exchange_rate) == -25
 
 
@@ -462,10 +461,10 @@ def test_find_price_base_case(tmpdir, options):
     config = fm_npv._prepare_config(options)
     assert config.valid
 
-    price = npv_job.Price(config.snapshot)
+    price = npv_job.Price(config.snapshot.prices)
     exchange_rate = npv_job.ExchangeRate(config.snapshot)
     transaction = price.get(date, keyword)
-    assert transaction.currency == "USD"
+    assert transaction._entry.currency == "USD"
     assert transaction.value(exchange_rate) == -25
 
 
@@ -476,11 +475,11 @@ def test_find_price_upper_limit(tmpdir, options):
     config = fm_npv._prepare_config(options)
     assert config.valid
 
-    price = npv_job.Price(config.snapshot)
+    price = npv_job.Price(config.snapshot.prices)
     exchange_rate = npv_job.ExchangeRate(config.snapshot)
     transaction = price.get(date, keyword)
-    assert transaction.currency == None
-    assert transaction._value == -2
+    assert transaction._entry.currency == None
+    assert transaction._entry.value == -2
     assert transaction.value(exchange_rate) == -2
 
 
@@ -491,11 +490,11 @@ def test_find_price_upper_extreme(tmpdir, options):
     config = fm_npv._prepare_config(options)
     assert config.valid
 
-    price = npv_job.Price(config.snapshot)
+    price = npv_job.Price(config.snapshot.prices)
     exchange_rate = npv_job.ExchangeRate(config.snapshot)
     transaction = price.get(date, keyword)
-    assert transaction.currency == None
-    assert transaction._value == -2
+    assert transaction._entry.currency == None
+    assert transaction._entry.value == -2
     assert transaction.value(exchange_rate) == -2
 
 
@@ -506,7 +505,7 @@ def test_find_price_keyword_not_exists(tmpdir, options):
     config = fm_npv._prepare_config(options)
     assert config.valid
 
-    price = npv_job.Price(config.snapshot)
+    price = npv_job.Price(config.snapshot.prices)
     with pytest.raises(AttributeError) as excinfo:
         price.get(date, keyword)
 
