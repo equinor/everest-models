@@ -61,9 +61,9 @@ def append_data(input_values, schedule):
     for well_cfg in input_values:
         scheduled_well = schedule.get(well_cfg["name"], None)
         if scheduled_well:
-            ready_date = str(scheduled_well['readydate'])
+            ready_date = str(scheduled_well["readydate"])
             well_cfg["readydate"] = ready_date
-            well_cfg["completion_date"] = str(scheduled_well['completion_date'])
+            well_cfg["completion_date"] = str(scheduled_well["completion_date"])
             well_cfg["ops"] = [{"opname": "open", "date": ready_date}]
 
     return input_values
@@ -131,6 +131,7 @@ def repr_task(task):
     return "Task(rig={}, slot={}, well={}, start={}, end={})".format(
         task.rig, task.slot, task.well, task.begin, task.end
     )
+
 
 def resolve_priorities(schedule, config):
     """

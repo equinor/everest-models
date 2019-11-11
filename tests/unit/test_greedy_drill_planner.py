@@ -13,7 +13,6 @@ from spinningjenny.drill_planner import (
     combine_slot_rig_unavailability,
     date_to_int,
 )
-from spinningjenny.drill_planner import ScheduleElement
 from spinningjenny.drill_planner.greedy_drill_planner import (
     _valid_events,
     _next_best_event,

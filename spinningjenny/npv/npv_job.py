@@ -84,16 +84,13 @@ class Transaction:
 
     """
 
-    def __init__(self, entry, date=None):
-        self._entry = entry
-        self._date = date or entry.date
-
-    @property
-    def date(self):
-        return self._date
+    def __init__(self, date, value, currency):
+        self.date = date
+        self._value = value
+        self.currency = currency
 
     def value(self, exchange_rate):
-        return exchange_rate.get(self._date, self._entry.currency) * self._entry.value
+        return exchange_rate.get(self.date, self.currency) * self._value
 
 
 class Keywords:
@@ -206,7 +203,7 @@ class Price:
         ordered_data = sorted(data, key=lambda entry: entry.date, reverse=True)
         for entry in ordered_data:
             if entry.date <= date:
-                return Transaction(entry, date)
+                return Transaction(date, entry.value, entry.currency)
 
         logger.warning("Price information missing at {} for {}.".format(date, keyword))
         return None
@@ -225,8 +222,8 @@ class Cost:
     def __init__(self, input_data):
         self._costs = []
         if input_data.costs:
-            for cost_entry in input_data.costs:
-                self._costs.append(Transaction(cost_entry))
+            for cost in input_data.costs:
+                self._costs.append(Transaction(cost.date, cost.value, cost.currency))
 
         if input_data.well_costs:
             if input_data.files.input_file:
@@ -244,14 +241,21 @@ class Cost:
         with open(well_dates_path, "r") as input_file:
             wells = json.load(input_file)
 
-        _wells = {}
-        for entry in wells:
-            _wells[entry["name"]] = str2date(entry["readydate"]).date()
+        _wells = {
+            well["name"]: well.get("completion_date") or well.get("readydate")
+            for well in wells
+        }
 
         for entry in well_costs:
             well_name = entry.well
             if well_name in _wells:
-                self._costs.append(Transaction(entry, _wells[well_name]))
+                self._costs.append(
+                    Transaction(
+                        date=str2date(_wells[well_name]).date(),
+                        value=entry.value,
+                        currency=entry.currency,
+                    )
+                )
             else:
                 logger.warning(
                     "Well cost for well {} skipped due to lacking reference in input file".format(

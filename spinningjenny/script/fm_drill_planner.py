@@ -190,8 +190,10 @@ def main_entry_point(args=None):
     schedule = {
         elem.well: {
             "completion_date": start_date + timedelta(days=elem.completion),
-            "readydate": start_date + timedelta(days=elem.end)
-        } for elem in schedule}
+            "readydate": start_date + timedelta(days=elem.end),
+        }
+        for elem in schedule
+    }
 
     result = append_data(input_values=args.input, schedule=schedule)
     write_json_to_file(result, args.output)

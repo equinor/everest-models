@@ -10,8 +10,8 @@ _TEST_DIR = os.path.join(
 )
 
 
-def test_main_entry_point(tmpdir, options):
-
+def test_npv_entry(tmpdir, options):
+    input_files = ["wells.json", "wells_completion_dates.json", "wells_mix_dates.json"]
     args = [
         "--summary",
         _SUMMARY_FILE,
@@ -20,8 +20,7 @@ def test_main_entry_point(tmpdir, options):
         "--output",
         "test",
         "--input",
-        "wells.json",
     ]
-
-    fm_npv.main_entry_point(args)
-    assert_written_npv(tmpdir, expected_npv=939374969.82, out_path="test")
+    for f in input_files:
+        fm_npv.main_entry_point(args + [f])
+        assert_written_npv(tmpdir, expected_npv=939374969.82, out_path="test")

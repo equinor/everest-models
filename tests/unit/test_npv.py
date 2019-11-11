@@ -4,7 +4,7 @@ import shutil
 
 import pytest
 
-from spinningjenny import load_yaml, DATE_FORMAT
+from spinningjenny import str2date
 from spinningjenny.npv import npv_job
 from spinningjenny.script import fm_npv
 
@@ -58,7 +58,7 @@ def test_base_case_npv(tmpdir, options):
 
 def test_base_case_npv_no_input(tmpdir, options):
     well_cost = 1000000
-    readydate = datetime.datetime.strptime("2000-06-14", DATE_FORMAT).date()
+    readydate = str2date("2000-06-14").date()
     discount_rate = 0.02
     options.input = _INPUT_FILE_ONE_WELL
     config = fm_npv._prepare_config(options)
@@ -449,8 +449,8 @@ def test_find_price_lower_limit(tmpdir, options):
     price = npv_job.Price(config.snapshot.prices)
     exchange_rate = npv_job.ExchangeRate(config.snapshot)
     transaction = price.get(date, keyword)
-    assert transaction._entry.currency == "USD"
-    assert transaction._entry.value == -5
+    assert transaction.currency == "USD"
+    assert transaction._value == -5
     assert transaction.value(exchange_rate) == -25
 
 
@@ -464,7 +464,7 @@ def test_find_price_base_case(tmpdir, options):
     price = npv_job.Price(config.snapshot.prices)
     exchange_rate = npv_job.ExchangeRate(config.snapshot)
     transaction = price.get(date, keyword)
-    assert transaction._entry.currency == "USD"
+    assert transaction.currency == "USD"
     assert transaction.value(exchange_rate) == -25
 
 
@@ -478,8 +478,8 @@ def test_find_price_upper_limit(tmpdir, options):
     price = npv_job.Price(config.snapshot.prices)
     exchange_rate = npv_job.ExchangeRate(config.snapshot)
     transaction = price.get(date, keyword)
-    assert transaction._entry.currency == None
-    assert transaction._entry.value == -2
+    assert transaction.currency == None
+    assert transaction._value == -2
     assert transaction.value(exchange_rate) == -2
 
 
@@ -493,8 +493,8 @@ def test_find_price_upper_extreme(tmpdir, options):
     price = npv_job.Price(config.snapshot.prices)
     exchange_rate = npv_job.ExchangeRate(config.snapshot)
     transaction = price.get(date, keyword)
-    assert transaction._entry.currency == None
-    assert transaction._entry.value == -2
+    assert transaction.currency == None
+    assert transaction._value == -2
     assert transaction.value(exchange_rate) == -2
 
 
