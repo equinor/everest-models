@@ -1,7 +1,7 @@
 import argparse
 from functools import partial
-from spinningjenny.well_filter_job import filter_wells
-from spinningjenny import customized_logger, valid_file, is_writable
+from spinningjenny.well_filter_job import filter_wells, write_results
+from spinningjenny import customized_logger, is_writable, valid_json_file
 
 logger = customized_logger.get_logger(__name__)
 
@@ -20,7 +20,7 @@ def filter_argparser():
         "-i",
         "--input",
         required=True,
-        type=partial(valid_file, parser=parser),
+        type=partial(valid_json_file, parser=parser),
         help=(
             "Json file that contains a list of dictionaries containing well information."
         ),
@@ -28,17 +28,15 @@ def filter_argparser():
     parser.add_argument(
         "-k",
         "--keep",
-        required=False,
         default=None,
-        type=partial(valid_file, parser=parser),
+        type=partial(valid_json_file, parser=parser),
         help="Json file that contains a list of well names to keep.",
     )
     parser.add_argument(
         "-r",
         "--remove",
-        required=False,
         default=None,
-        type=partial(valid_file, parser=parser),
+        type=partial(valid_json_file, parser=parser),
         help="Json file that contains a list of well names to remove.",
     )
     parser.add_argument(
@@ -56,12 +54,14 @@ def main_entry_point(args=None):
     arg_parser = filter_argparser()
     options = arg_parser.parse_args(args)
 
-    filter_wells(
-        wells_file=options.input,
-        output_file=options.output,
-        keep_file=options.keep,
-        remove_file=options.remove,
+    filtered_wells = filter_wells(
+        wells=options.input,
+        parser=arg_parser,
+        keep_wells=options.keep,
+        remove_wells=options.remove,
     )
+
+    write_results(filtered_wells, options.output)
 
 
 if __name__ == "__main__":

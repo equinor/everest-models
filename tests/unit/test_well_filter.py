@@ -1,19 +1,21 @@
 import json
 import pytest
-from tests import tmpdir, relpath
-from spinningjenny.well_filter_job import filter_wells
-
+from tests import tmpdir, relpath, MockParser
+from spinningjenny.well_filter_job import filter_wells, write_results
+from spinningjenny import valid_json_file
 TEST_DATA_PATH = relpath("tests", "testdata", "well_filter")
 
 
 @tmpdir(TEST_DATA_PATH)
 def test_drill_plan_filter():
-    wells_file = "schedule_wells.json"
-    filter_file = "keep_wells_drill_plan.json"
+    parser = MockParser()
     out_file = "test_wells.json"
     expected_out_file = "correct_out_schedule_filter.json"
-
-    filtered_wells = filter_wells(wells_file, out_file, keep_file=filter_file)
+    filtered_wells = filter_wells(
+        wells=valid_json_file("schedule_wells.json", parser),
+        parser=parser,
+        keep_wells=valid_json_file("keep_wells_drill_plan.json", parser))
+    write_results(filtered_wells, out_file)
 
     with open(expected_out_file, "r") as f:
         expected_output = json.load(f)
@@ -23,12 +25,14 @@ def test_drill_plan_filter():
 
 @tmpdir(TEST_DATA_PATH)
 def test_well_filter_keep():
-    wells_file = "wells.json"
-    filter_file = "keep_wells.json"
+    parser = MockParser()
     out_file = "test_wells.json"
     expected_out_file = "correct_out.json"
-
-    filtered_wells = filter_wells(wells_file, out_file, keep_file=filter_file)
+    filtered_wells = filter_wells(
+        wells=valid_json_file("wells.json", parser),
+        parser=parser,
+        keep_wells=valid_json_file("keep_wells.json", parser))
+    write_results(filtered_wells, out_file)
 
     with open(expected_out_file, "r") as f:
         expected_output = json.load(f)
@@ -38,12 +42,14 @@ def test_well_filter_keep():
 
 @tmpdir(TEST_DATA_PATH)
 def test_well_filter_remove():
-    wells_file = "wells.json"
-    filter_file = "remove_wells.json"
+    parser = MockParser()
     out_file = "test_wells.json"
     expected_out_file = "correct_out.json"
-
-    filtered_wells = filter_wells(wells_file, out_file, remove_file=filter_file)
+    filtered_wells = filter_wells(
+        wells=valid_json_file("wells.json", parser),
+        parser=parser,
+        remove_wells=valid_json_file("remove_wells.json", parser))
+    write_results(filtered_wells, out_file)
 
     with open(expected_out_file, "r") as f:
         expected_output = json.load(f)
@@ -53,22 +59,25 @@ def test_well_filter_remove():
 
 @tmpdir(TEST_DATA_PATH)
 def test_well_filter_both():
-    wells_file = "wells.json"
-    filter_file = "keep_remove_wells.json"
-    out_file = "test_wells.json"
+    parser = MockParser()
+    filter_wells(
+        wells=valid_json_file("wells.json", parser),
+        parser=parser,
+        remove_wells=valid_json_file("remove_wells.json", parser),
+        keep_wells=valid_json_file("keep_wells.json", parser)
+    )
 
-    # check that ValueError is raised
-    with pytest.raises(ValueError):
-        _ = filter_wells(
-            wells_file, out_file, keep_file=filter_file, remove_file=filter_file
-        )
+    assert "well_filter requires either the --keep or --remove flag to be set, not both" in parser.get_error()
 
 
 @tmpdir(TEST_DATA_PATH)
 def test_well_filter_neither():
-    wells_file = "wells.json"
-    out_file = "test_wells.json"
+    parser = MockParser()
+    filter_wells(
+        wells=valid_json_file("wells.json", parser),
+        parser=parser,
+        remove_wells=None,
+        keep_wells=None
+    )
 
-    # check that ValueError is raised
-    with pytest.raises(ValueError):
-        _ = filter_wells(wells_file, out_file, keep_file=None, remove_file=None)
+    assert "well_filter requires either the --keep or --remove flag to be set" in parser.get_error()
