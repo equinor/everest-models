@@ -2,4 +2,3 @@ pyyaml
 configsuite>=0.3.1
 ortools
 protobuf
-numpy

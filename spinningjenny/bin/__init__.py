@@ -17,5 +17,4 @@ def entry_points():
         "add_templates": "spinningjenny.script.fm_add_templates:main_entry_point",
         "well_filter": "spinningjenny.script.fm_well_filter:main_entry_point",
         "interpret_well_drill": "spinningjenny.script.fm_interpret_well_drill:main_entry_point",
-        "extract_summary_data": "spinningjenny.script.fm_extract_summary_data:main_entry_point",
     }
