@@ -1,3 +1,14 @@
+# 0.1.6
+ * Make drill planner interval bounds exclusive. Previous implementation
+   would permit overlapping intervals.
+ * Some minor clean-up, removing dead code.
+ * Add NPV calculation for completion dates. In the case where a lower
+   priority well can be drilled before a higher priority well, the end date
+   is shifted. The NPV calculation now reflects this, but using the date
+   that the well is drilled instead of when it is opened.
+ * Reverted the extract_summary_data job for now, this functionality will be
+   further discussed before it is released.
+
 # 0.1.5
  * Improve or-tool drillplanner implementation
  * Add missing config key handling to schmerge job
