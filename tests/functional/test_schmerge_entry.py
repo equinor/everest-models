@@ -7,15 +7,15 @@ TEST_DATA_PATH = relpath("tests", "testdata", "schmerge")
 @tmpdir(TEST_DATA_PATH)
 def test_schmerge_main_entry_point():
     filename_expected_result = "expected_result.tmpl"
-    filename_input_schedule = "original_schedule.tmpl"
+    filename_schedule = "original_schedule.tmpl"
     filename_injection_list = "schedule_input.json"
     filename_output = "out.tmpl"
 
     args = [
         "--input",
-        filename_input_schedule,
-        "--config",
         filename_injection_list,
+        "--schedule",
+        filename_schedule,
         "--output",
         filename_output,
     ]

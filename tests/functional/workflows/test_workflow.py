@@ -95,9 +95,9 @@ def test_workflow():
 
     arguments = [
         "-i",
-        "raw_schedule.sch",
-        "-c",
         "wells_tmpl_result.json",
+        "-s",
+        "raw_schedule.sch",
         "-o",
         "result_schedule.sch",
     ]

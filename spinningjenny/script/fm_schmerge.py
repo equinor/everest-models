@@ -30,19 +30,19 @@ def schmerge_argparser():
 
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
-        "-i",
-        "--input",
+        "-s",
+        "--schedule",
         required=True,
         type=partial(valid_file, parser=parser),
-        help="Input schedule file to inject templates into. The only currently"
+        help="Schedule file to inject templates into. The only currently"
         " accepted date format is the following: one line consisting of the"
         " DATES keyword, followed by a date in the format of '1 JAN 2000'"
         " terminated by a slash. The final line consists of a slash."
         " An empty line should be in between the date format and anything below.",
     )
     parser.add_argument(
-        "-c",
-        "--config",
+        "-i",
+        "--input",
         required=True,
         type=partial(valid_schmerge_config, parser=parser),
         help=(
@@ -70,8 +70,8 @@ def main_entry_point(args=None):
     options = arg_parser.parse_args(args)
 
     merge_schedule(
-        schedule_file=options.input,
-        injections=options.config,
+        schedule_file=options.schedule,
+        injections=options.input,
         output_file=options.output,
     )
 
