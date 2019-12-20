@@ -33,21 +33,19 @@ def validate_arguments(options, parser):
                     options.start_date
                 )
             )
-
-    if options.end_date:
-        if options.start_date is None:
-            logger.info(
-                "Extracting key {} for single date {}".format(
-                    options.key, options.end_date
-                )
+    if options.end_date not in options.summary.report_dates:
+        parser.error(
+            "Date {} is not part of the simulation report dates".format(
+                options.end_date
             )
+        )
 
-        if options.end_date not in options.summary.report_dates:
-            parser.error(
-                "Date {} is not part of the simulation report dates".format(
-                    options.end_date
-                )
+    if options.start_date is None:
+        logger.info(
+            "Extracting key {} for single date {}".format(
+                options.key, options.end_date
             )
+        )
 
 
 def apply_calculation(summary, calc_type, key, start_date, end_date):
