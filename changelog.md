@@ -1,3 +1,11 @@
+# 0.2.0
+ * | The command line argument for fm_schmerge has changed.
+   | This is more in line with how the other jobs behave
+
+    * -i, --input renamed to -s, --schedule
+    * -c, --config renamed to -i, --input
+ * Added the extract_summary_data job
+
 # 0.1.6
  * Make drill planner interval bounds exclusive. Previous implementation
    would permit overlapping intervals.
