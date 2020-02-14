@@ -16,7 +16,7 @@ echo "checkout tag from komodo"
 EV=$(cat $KOMODO_ROOT/$RELEASE_NAME/$RELEASE_NAME | grep "spinningjenny:" -A2 | grep "version:")
 EV=($EV)    # split the string "version: vX.X.X"
 EV=${EV[1]} # extract the version
-EV=komodo-test-spinningjenny
+
 echo "Using spinningjenny version $EV"
 git checkout $EV
 rm -rf !("tests"|"$ENV")
