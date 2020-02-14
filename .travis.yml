@@ -19,15 +19,7 @@ env:
 matrix:
   fast_finish: true
   include:
-  - os: osx
-    osx_image: xcode8.3
-    language: generic
-    python: 2.7
-    env:
-    - MB_PYTHON_VERSION=2.7
-    - INSTALL_DIR="${TRAVIS_BUILD_DIR}/venv"
-    - DYLD_LIBRARY_PATH=${INSTALL_DIR}/lib:${INSTALL_DIR}/lib64:${DYLD_LIBRARY_PATH}"
-
+ 
   - os: osx
     osx_image: xcode8.3
     language: generic
