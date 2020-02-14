@@ -20,15 +20,6 @@ setup(
     setup_requires=["pytest-runner", "setuptools_scm"],
     test_suite="tests",
     use_scm_version={"write_to": "spinningjenny/version.py"},
-    tests_require=[
-        "pytest==4.6.4; python_version<='2.7'",
-        "pytest; python_version>='3.5'",
-        "decorator",
-        "mock<4",
-        'black; python_version>="3.6"',
-        "hypothesis==4.56.1; python_version<'3'",
-        "hypothesis; python_version>'3'",
-    ],
     classifiers=[
         "Programming language :: Python",
         "Programming language :: Python :: 2.7",
