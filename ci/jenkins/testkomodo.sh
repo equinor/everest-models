@@ -21,4 +21,6 @@ echo "Using spinningjenny version $EV"
 git checkout $EV
 rm -rf !("tests"|"$ENV")
 echo "running pytest"
-python -m pytest 
+python -m pytest \
+  --ignore="tests/unit/test_formatting.py"\
+  --ignore="tests/unit/test_jobs_implementation.py"

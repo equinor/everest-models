@@ -1,8 +1,8 @@
 pipeline {
     agent { label 'si-build' }
     parameters {
-        string(defaultValue: "bleeding-py27", description: 'The komodo relase to be used', name: 'RELEASE_NAME')
-        string(defaultValue: "/prog/res/komodo", description: 'The komodo relase to be used', name: 'KOMODO_ROOT')
+        string(defaultValue: "", description: 'The komodo relase to be used', name: 'RELEASE_NAME')
+        string(defaultValue: "", description: 'Root folder for komodo', name: 'KOMODO_ROOT')
     }
     stages{
         stage('run tests') {
