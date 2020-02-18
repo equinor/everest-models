@@ -2,7 +2,7 @@ pipeline {
     agent { label 'si-build' }
     parameters {
         string(defaultValue: "", description: 'The komodo relase to be used', name: 'RELEASE_NAME')
-        string(defaultValue: "", description: 'Root folder for komodo', name: 'KOMODO_ROOT')
+        string(defaultValue: "/prog/res/komodo", description: 'Root folder for komodo', name: 'KOMODO_ROOT')
     }
     stages{
         stage('run tests') {
