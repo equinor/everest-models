@@ -3,4 +3,5 @@ requires = [
     "wheel",
     "setuptools",
     "setuptools_scm",
+    "PyYAML",
 ]
