@@ -2,7 +2,9 @@
 set -xe
 shopt -s extglob
 PROJECT=spinningjenny
+RELEASE_PATH=${KOMODO_ROOT}/${RELEASE_NAME}
 source $KOMODO_ROOT/$RELEASE_NAME/enable
+
 
 echo "create virtualenv"
 ENV=testenv
