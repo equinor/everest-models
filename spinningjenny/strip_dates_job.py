@@ -2,6 +2,7 @@ import shutil
 import os
 
 from ecl.eclfile import EclFile, FortIO
+from ecl.summary import EclSum
 
 
 def process_dates(dates):
@@ -26,15 +27,20 @@ def strip_dates(summary_file, dates):
     shutil.move(summary_file, tmp_file_path)
     shutil.copy(filename + ".SMSPEC", filename + "_tmp.SMSPEC")
 
+    summary = EclSum(tmp_file_path)
+    file_dates = process_dates(summary.dates)
+
     ecl_file = EclFile(tmp_file_path)
     fort_io = FortIO(summary_file, mode=2)
 
     valid_date = True
+    date_inx = 0
     for kw in ecl_file:
         (tmptype, _, _) = kw.header
 
         if tmptype == "PARAMS":
-            valid_date = [kw[4], kw[3], kw[2]] in dates
+            valid_date = file_dates[date_inx] in dates
+            date_inx = date_inx + 1
         if tmptype != "SEQHDR" or valid_date:
             kw.fwrite(fort_io)
 

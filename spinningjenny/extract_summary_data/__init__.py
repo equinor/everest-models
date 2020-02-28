@@ -42,9 +42,7 @@ def validate_arguments(options, parser):
 
     if options.start_date is None:
         logger.info(
-            "Extracting key {} for single date {}".format(
-                options.key, options.end_date
-            )
+            "Extracting key {} for single date {}".format(options.key, options.end_date)
         )
 
 
