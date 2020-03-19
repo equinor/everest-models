@@ -4,6 +4,10 @@ import os
 from ecl.eclfile import EclFile, FortIO
 from ecl.summary import EclSum
 
+from spinningjenny import customized_logger
+
+logger = customized_logger.get_logger(__name__)
+
 
 def process_dates(dates):
     """
@@ -17,18 +21,23 @@ def process_dates(dates):
 def strip_dates(summary_file, dates):
     """
     Strips all other dates except the ones given
-    :param summary_file: summary file that will be striped of dates other than
+    :param summary_file: summary file that will be stripped of dates other than
     the one given.
     :param dates: list of dates that need to remain in the summary file.
     """
+    try:
+        summary = EclSum(summary_file)
+    except:
+        logger.error("Not an eclipse file: {}".format(summary_file))
+        return
+
+    file_dates = process_dates(summary.dates)
+
     filename, file_extension = os.path.splitext(summary_file)
-    tmp_file_path = filename + "_tmp" + file_extension
+    tmp_file_path = filename + "_BAK" + file_extension
 
     shutil.move(summary_file, tmp_file_path)
-    shutil.copy(filename + ".SMSPEC", filename + "_tmp.SMSPEC")
-
-    summary = EclSum(tmp_file_path)
-    file_dates = process_dates(summary.dates)
+    shutil.copy(filename + ".SMSPEC", filename + "_BAK.SMSPEC")
 
     ecl_file = EclFile(tmp_file_path)
     fort_io = FortIO(summary_file, mode=2)
