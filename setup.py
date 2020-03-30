@@ -6,7 +6,7 @@ import yaml
 
 def entry_point_strings():
     with open("share/entry_points.yml") as fh:
-        eps = yaml.load(fh)
+        eps = yaml.safe_load(fh)
 
     return ["fm_{} = {}".format(k, v) for k, v in eps.items()]
 
