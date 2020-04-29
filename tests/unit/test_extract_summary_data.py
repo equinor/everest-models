@@ -15,7 +15,7 @@ from spinningjenny.extract_summary_data import (
 from tests import tmpdir, relpath, MockParser
 
 
-TEST_DATA_PATH = relpath("tests", "testdata", "stripdates")
+TEST_DATA_PATH = relpath("tests", "testdata", "extract_summary_data")
 Options = namedtuple(
     "Options",
     ("summary", "start_date", "end_date", "type", "key", "percentile", "multiplier"),

@@ -5,7 +5,7 @@ from spinningjenny.extract_summary_data import CalculationType
 from tests import tmpdir, relpath
 import os
 
-TEST_DATA_PATH = relpath("tests", "testdata", "stripdates")
+TEST_DATA_PATH = relpath("tests", "testdata", "extract_summary_data")
 
 
 @tmpdir(TEST_DATA_PATH)

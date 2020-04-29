@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import os
+import sys
 
 from functools import partial
 
@@ -34,6 +35,13 @@ def _build_argument_parser():
         help="List of date to remain in the summary file",
     )
 
+    parser.add_argument(
+        "--allow-missing-dates",
+        action="store_true",
+        default=False,
+        help="Do not fail if any requested dates are missing in the file",
+    )
+
     return parser
 
 
@@ -42,7 +50,15 @@ def main_entry_point(args=None):
     options = arg_parser.parse_args(args)
 
     if os.path.exists(options.summary):
-        strip_dates(summary_file=options.summary, dates=process_dates(options.dates))
+        try:
+            strip_dates(
+                summary_file=options.summary,
+                dates=process_dates(options.dates),
+                allow_missing_dates=options.allow_missing_dates,
+            )
+        except RuntimeError as err:
+            logger.error(str(err))
+            sys.exit(1)
     else:
         logger.error("No such file or directory: {}".format(options.summary))
 

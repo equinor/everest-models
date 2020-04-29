@@ -1,5 +1,6 @@
 import shutil
 import os
+import datetime
 
 from ecl.eclfile import EclFile, FortIO
 from ecl.summary import EclSum
@@ -18,20 +19,31 @@ def process_dates(dates):
     return [[date.year, date.month, date.day] for date in dates]
 
 
-def strip_dates(summary_file, dates):
+def strip_dates(summary_file, dates, allow_missing_dates=False):
     """
     Strips all other dates except the ones given
     :param summary_file: summary file that will be stripped of dates other than
     the one given.
     :param dates: list of dates that need to remain in the summary file.
+    :allow_missing_dates: if true, do not raise a runtime error on missing dates.
     """
     try:
         summary = EclSum(summary_file)
     except:
-        logger.error("Not an eclipse file: {}".format(summary_file))
-        return
+        raise RuntimeError("Not an eclipse file: {}".format(summary_file))
 
     file_dates = process_dates(summary.dates)
+
+    missing_dates = [date for date in dates if date not in file_dates]
+    if missing_dates:
+        msg = "Missing date(s): {}, in eclipse file: {}".format(
+            ", ".join(datetime.date(*date).isoformat() for date in missing_dates),
+            summary_file,
+        )
+        if allow_missing_dates:
+            logger.warning(msg)
+        else:
+            raise RuntimeError(msg)
 
     filename, file_extension = os.path.splitext(summary_file)
     tmp_file_path = filename + "_BAK" + file_extension
