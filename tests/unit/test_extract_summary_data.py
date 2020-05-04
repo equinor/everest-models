@@ -1,64 +1,35 @@
 from __future__ import absolute_import
 import datetime
-import pytest
 from collections import namedtuple
 
-from ecl.summary import EclSum
 
-from spinningjenny import valid_ecl_file, valid_date
+from spinningjenny import valid_date
 from spinningjenny.extract_summary_data import (
     validate_arguments,
     apply_calculation,
     extract_value,
     CalculationType,
 )
-from tests import tmpdir, relpath, MockParser
+from tests import MockParser
+from tests.summary import ecl_summary
 
-
-TEST_DATA_PATH = relpath("tests", "testdata", "extract_summary_data")
 Options = namedtuple(
     "Options",
     ("summary", "start_date", "end_date", "type", "key", "percentile", "multiplier"),
 )
 
 
-@pytest.fixture
-@tmpdir(TEST_DATA_PATH)
-def defaults():
+def test_validate_arguments():
     parser = MockParser()
-    return (
-        Options(
-            summary=valid_ecl_file("REEK-0", parser),
-            start_date=valid_date("2000-01-01", parser),
-            end_date=valid_date("2003-01-01", parser),
-            type="max",
-            key="FGPT",
-            percentile=95,
-            multiplier=1,
-        ),
-        parser,
+    options = Options(
+        summary=ecl_summary(),
+        start_date=valid_date("2000-01-01", parser),
+        end_date=valid_date("2000-01-26", parser),
+        type="max",
+        key="FOPT",
+        percentile=95,
+        multiplier=1,
     )
-
-
-@pytest.fixture
-def ecl_sum():
-    sum_keys = {"FOPT": [2, 22, 52, 72, 82, 82], "FOPR": [2, 4, 6, 4, 2, 0]}
-    dimensions = [10, 10, 10]
-    ecl_sum = EclSum.writer("TEST", datetime.date(2000, 1, 1), *dimensions)
-
-    for key in sum_keys:
-        ecl_sum.add_variable(key, wgname=None, num=0)
-
-    for idx in range(6):
-        t_step = ecl_sum.add_t_step(idx, 5 * idx)
-        for key, item in sum_keys.items():
-            t_step[key] = item[idx]
-
-    return ecl_sum
-
-
-def test_validate_arguments(defaults):
-    options, parser = defaults
     validate_arguments(options, parser)
     assert parser.get_error() is None
 
@@ -95,27 +66,27 @@ def test_validate_arguments(defaults):
     )
 
 
-def test_apply_calculation(ecl_sum):
+def test_apply_calculation():
     start_date = datetime.date(2000, 1, 1)
     end_date = datetime.date(2000, 1, 21)
     calc_type = CalculationType.MAX
     key = "FOPT"
 
-    result = apply_calculation(ecl_sum, calc_type, key, start_date, end_date)
+    result = apply_calculation(ecl_summary(), calc_type, key, start_date, end_date)
     expected_result = 82
     assert result == expected_result
 
     calc_type = CalculationType.DIFF
-    result = apply_calculation(ecl_sum, calc_type, key, start_date, end_date)
+    result = apply_calculation(ecl_summary(), calc_type, key, start_date, end_date)
     expected_result = 80
     assert result == expected_result
 
 
-def test_extract_value(ecl_sum):
-    result = extract_value(ecl_sum, "FOPR", datetime.date(2000, 1, 16))
+def test_extract_value():
+    result = extract_value(ecl_summary(), "FOPR", datetime.date(2000, 1, 16))
     expected_result = 4
     assert result == expected_result
 
-    result = extract_value(ecl_sum, "FOPT", datetime.date(2000, 1, 11))
+    result = extract_value(ecl_summary(), "FOPT", datetime.date(2000, 1, 11))
     expected_result = 52
     assert result == expected_result

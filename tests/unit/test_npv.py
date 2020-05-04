@@ -7,8 +7,8 @@ import pytest
 from spinningjenny import str2date
 from spinningjenny.npv import npv_job
 from spinningjenny.script import fm_npv
+from tests.summary import ecl_summary_npv
 
-_SUMMARY_FILE = "REEK-0.UNSMRY"
 _CONFIG_FILE = "input_data.yml"
 _INPUT_FILE = "wells.json"
 _INPUT_FILE_ONE_WELL = "one_well.json"
@@ -18,10 +18,12 @@ _TEST_DIR = os.path.join(
 
 
 @pytest.fixture
-def options(tmpdir):
+def options(monkeypatch, tmpdir):
     for file_name in os.listdir(_TEST_DIR):
         shutil.copy(_TEST_DIR + file_name, tmpdir.strpath)
-
+    monkeypatch.setattr(
+        fm_npv, "valid_ecl_file", ecl_summary_npv,
+    )
     cwd = os.getcwd()
     tmpdir.chdir()
 
@@ -30,7 +32,7 @@ def options(tmpdir):
         "--input",
         _INPUT_FILE,
         "--summary",
-        _SUMMARY_FILE,
+        "MOCKED.UNSMRY",
         "--config",
         _CONFIG_FILE,
     ]
@@ -43,12 +45,11 @@ def options(tmpdir):
 def test_base_case_npv(tmpdir, options):
     config = fm_npv._prepare_config(options)
     assert config.valid
-
     calculate = fm_npv.CalculateNPV(config.snapshot, options.summary)
     calculate.run()
     calculate.write()
 
-    expected_npv = 939374969.82
+    expected_npv = 691981114.68
     assert calculate.npv == expected_npv
     assert calculate.multiplier == 1
     assert sorted(calculate.keywords) == sorted(["FOPT", "FWIT"])
@@ -101,7 +102,7 @@ def test_extended_case_npv(tmpdir, options):
     calculate.run()
     calculate.write()
 
-    expected_npv = 3115781347.26
+    expected_npv = 1323951495.03
     assert calculate.npv == expected_npv
     assert calculate.multiplier == 1
     assert sorted(calculate.keywords) == sorted(
@@ -123,7 +124,7 @@ def test_alter_mult(tmpdir, options):
     calculate.run()
     calculate.write()
 
-    expected_npv = 6231562694.53
+    expected_npv = 2647902990.07
     assert calculate.npv == expected_npv
     assert calculate.multiplier == multiplier
     assert sorted(calculate.keywords) == sorted(
@@ -148,7 +149,7 @@ def test_extended_case_mutated_ref_date_npv(tmpdir, options):
     calculate.run()
     calculate.write()
 
-    expected_npv = 3171949242.71
+    expected_npv = 1344403927.71
     assert calculate.npv == expected_npv
     assert sorted(calculate.keywords) == sorted(
         ["FOPT", "FWPT", "FGPT", "FWIT", "FGIT", "GOPT:OP"]
@@ -174,7 +175,7 @@ def test_extended_case_date_mutated_npv(tmpdir, options):
     calculate.run()
     calculate.write()
 
-    expected_npv = 908267869.83
+    expected_npv = 923994410.31
     assert calculate.npv == expected_npv
     assert sorted(calculate.keywords) == sorted(["FWIT", "FOPT"])
 
@@ -198,7 +199,7 @@ def test_extended_case_big_date_range_npv(tmpdir, options):
     calculate.run()
     calculate.write()
 
-    expected_npv = 3115781347.26
+    expected_npv = 1165564342.7
     assert calculate.npv == expected_npv
     assert sorted(calculate.keywords) == sorted(
         ["FOPT", "FWPT", "FGPT", "FWIT", "FGIT", "GOPT:OP"]
@@ -224,7 +225,7 @@ def test_extended_case_small_date_range_npv(tmpdir, options):
     calculate.run()
     calculate.write()
 
-    expected_npv = -370456890.60
+    expected_npv = -369456947.15
     assert calculate.npv == expected_npv
     assert sorted(calculate.keywords) == sorted(
         ["FOPT", "FWPT", "FGPT", "FWIT", "FGIT", "GOPT:OP"]
@@ -524,7 +525,7 @@ def test_argparser(tmpdir, options):
 
     args = [
         "--summary",
-        _SUMMARY_FILE,
+        "MOCKED.UNSMRY",
         "--config",
         _CONFIG_FILE,
         "--output",
