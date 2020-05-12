@@ -32,9 +32,8 @@ def strip_dates(summary_file, dates, allow_missing_dates=False):
     except:
         raise RuntimeError("Not an eclipse file: {}".format(summary_file))
 
-    file_dates = process_dates(summary.dates)
-
-    missing_dates = [date for date in dates if date not in file_dates]
+    report_dates = process_dates(summary.report_dates)
+    missing_dates = [date for date in dates if date not in report_dates]
     if missing_dates:
         msg = "Missing date(s): {}, in eclipse file: {}".format(
             ", ".join(datetime.date(*date).isoformat() for date in missing_dates),
@@ -53,6 +52,8 @@ def strip_dates(summary_file, dates, allow_missing_dates=False):
 
     ecl_file = EclFile(tmp_file_path)
     fort_io = FortIO(summary_file, mode=2)
+
+    file_dates = process_dates(summary.dates)
 
     valid_date = True
     date_inx = 0
