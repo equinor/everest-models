@@ -10,7 +10,6 @@ def _file_path_validation(file_path):
 def build_schema():
     return {
         MK.Type: types.NamedDict,
-        MK.Required: True,
         MK.Content: {
             "templates": {
                 MK.Type: types.List,
@@ -21,13 +20,11 @@ def build_schema():
                         MK.Type: types.NamedDict,
                         MK.Content: {
                             "file": {
-                                MK.Required: True,
                                 MK.Description: "Template file path",
                                 MK.Type: types.String,
                                 MK.ElementValidators: (_file_path_validation,),
                             },
                             "keys": {
-                                MK.Required: True,
                                 MK.Description: "Key value pairs to be matched with entries in the well operation elements",
                                 MK.Type: types.Dict,
                                 MK.Content: {

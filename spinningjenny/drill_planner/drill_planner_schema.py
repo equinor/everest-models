@@ -114,7 +114,6 @@ _rig_schema = {
                 },
                 "unavailability": {
                     MK.Type: types.List,
-                    MK.Required: False,
                     MK.Description: "A list of time intervals representing periods that the rig is unavailable for drilling.",
                     MK.Content: {
                         MK.Item: {
@@ -137,6 +136,7 @@ _rig_schema = {
                 "delay": {
                     MK.Type: types.Integer,
                     MK.Required: False,
+                    MK.AllowNone: True,
                     MK.Description: (
                         "The number of days of preparation needed before the rig can start drilling a well. "
                         "This setting defaults to 0."
@@ -175,7 +175,6 @@ _slot_schema = {
                 },
                 "unavailability": {
                     MK.Type: types.List,
-                    MK.Required: False,
                     MK.Description: "A list of time intervals representing periods that the slot is unavailable for drilling.",
                     MK.Content: {
                         MK.Item: {

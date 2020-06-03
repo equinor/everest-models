@@ -34,8 +34,8 @@ def _value_validation(elem):
 )
 def _list_validation(elem):
     if "value" in elem:
-        return "options" not in elem
-    return "options" in elem
+        return "options" not in elem or len(elem["options"]) == 0
+    return "options" in elem and len(elem["options"]) > 0
 
 
 def build_schema():
@@ -52,24 +52,22 @@ def build_schema():
                         MK.Type: types.NamedDict,
                         MK.Content: {
                             "phase": {
-                                MK.Required: True,
                                 MK.Description: "Phase must match fluid model",
                                 MK.Type: types.NamedDict,
                                 MK.ElementValidators: (_list_validation,),
                                 MK.Content: {
                                     "value": {
                                         MK.Required: False,
+                                        MK.AllowNone: True,
                                         MK.Type: types.String,
                                     },
                                     "options": {
-                                        MK.Required: False,
                                         MK.Type: types.List,
                                         MK.Content: {MK.Item: {MK.Type: types.String}},
                                     },
                                 },
                             },
                             "rate": {
-                                MK.Required: True,
                                 MK.Description: "Rate in reservoir units",
                                 MK.Type: types.NamedDict,
                                 MK.ElementValidators: (
@@ -77,16 +75,24 @@ def build_schema():
                                     _value_validation,
                                 ),
                                 MK.Content: {
-                                    "min": {MK.Required: False, MK.Type: types.Number},
-                                    "max": {MK.Required: False, MK.Type: types.Number},
+                                    "min": {
+                                        MK.Required: False,
+                                        MK.AllowNone: True,
+                                        MK.Type: types.Number,
+                                    },
+                                    "max": {
+                                        MK.Required: False,
+                                        MK.AllowNone: True,
+                                        MK.Type: types.Number,
+                                    },
                                     "value": {
+                                        MK.AllowNone: True,
                                         MK.Required: False,
                                         MK.Type: types.Number,
                                     },
                                 },
                             },
                             "duration": {
-                                MK.Required: True,
                                 MK.Description: "Time in days",
                                 MK.Type: types.NamedDict,
                                 MK.ElementValidators: (
@@ -94,10 +100,19 @@ def build_schema():
                                     _value_validation,
                                 ),
                                 MK.Content: {
-                                    "min": {MK.Required: False, MK.Type: types.Number},
-                                    "max": {MK.Required: False, MK.Type: types.Number},
+                                    "min": {
+                                        MK.Required: False,
+                                        MK.AllowNone: True,
+                                        MK.Type: types.Number,
+                                    },
+                                    "max": {
+                                        MK.Required: False,
+                                        MK.AllowNone: True,
+                                        MK.Type: types.Number,
+                                    },
                                     "value": {
                                         MK.Required: False,
+                                        MK.AllowNone: True,
                                         MK.Type: types.Number,
                                     },
                                 },

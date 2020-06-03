@@ -24,6 +24,7 @@ def build_schema():
                                     "currency": {
                                         MK.Type: types.String,
                                         MK.Required: False,
+                                        MK.AllowNone: True,
                                     },
                                 },
                             }
@@ -35,10 +36,10 @@ def build_schema():
                 MK.Type: types.Integer,
                 MK.Description: "Multiplier to be used.",
                 MK.Required: False,
+                MK.AllowNone: True,
             },
             "files": {
                 MK.Type: types.NamedDict,
-                MK.Required: False,
                 MK.Content: {
                     "input_file": {
                         MK.Type: types.String,
@@ -47,17 +48,18 @@ def build_schema():
                             "The part important for the NPV job is when the well was completed."
                         ),
                         MK.Required: False,
+                        MK.AllowNone: True,
                     },
                     "output_file": {
                         MK.Type: types.String,
                         MK.Description: "Path where to place the outputfile with the npv result.",
                         MK.Required: False,
+                        MK.AllowNone: True,
                     },
                 },
             },
             "dates": {
                 MK.Type: types.NamedDict,
-                MK.Required: False,
                 MK.Description: (
                     "Specify the start, end and ref dates for the timeframe of the NPV calculation."
                     "Format dd.mm.yyyy"
@@ -67,22 +69,24 @@ def build_schema():
                         MK.Type: types.Date,
                         MK.Description: "ISO8601 formatted date",
                         MK.Required: False,
+                        MK.AllowNone: True,
                     },
                     "end_date": {
                         MK.Type: types.Date,
                         MK.Description: "ISO8601 formatted date",
                         MK.Required: False,
+                        MK.AllowNone: True,
                     },
                     "ref_date": {
                         MK.Type: types.Date,
                         MK.Description: "ISO8601 formatted date",
                         MK.Required: False,
+                        MK.AllowNone: True,
                     },
                 },
             },
             "summary_keys": {
                 MK.Type: types.List,
-                MK.Required: False,
                 MK.Description: (
                     "A list of the Eclipse Summary keys to use as part of the NPV calculation."
                     "Defaults to all the vectors with prices supplied."
@@ -92,6 +96,7 @@ def build_schema():
             "default_exchange_rate": {
                 MK.Type: types.Number,
                 MK.Required: False,
+                MK.AllowNone: True,
                 MK.Description: (
                     "Default exchange rate to use if no exchange rate is found at the "
                     "date of a price or cost when currency is specified. "
@@ -99,7 +104,6 @@ def build_schema():
             },
             "exchange_rates": {
                 MK.Type: types.Dict,
-                MK.Required: False,
                 MK.Description: (
                     "Set the exchange rates."
                     "All are assumed to be to the NPV currency."
@@ -126,6 +130,7 @@ def build_schema():
             "default_discount_rate": {
                 MK.Type: types.Number,
                 MK.Required: False,
+                MK.AllowNone: True,
                 MK.Description: (
                     "Default discount rate to use if no discount rate is found at the "
                     "date of a price or cost."
@@ -133,7 +138,6 @@ def build_schema():
             },
             "discount_rates": {
                 MK.Type: types.List,
-                MK.Required: False,
                 MK.Description: "Vary the discount rate in time.",
                 MK.Content: {
                     MK.Item: {
@@ -150,7 +154,6 @@ def build_schema():
             },
             "costs": {
                 MK.Type: types.List,
-                MK.Required: False,
                 MK.Description: "Set additional costs to include into the NPV calculation.",
                 MK.Content: {
                     MK.Item: {
@@ -161,14 +164,17 @@ def build_schema():
                                 MK.Description: "ISO8601 formatted date",
                             },
                             "value": {MK.Type: types.Number},
-                            "currency": {MK.Type: types.String, MK.Required: False},
+                            "currency": {
+                                MK.Type: types.String,
+                                MK.Required: False,
+                                MK.AllowNone: True,
+                            },
                         },
                     }
                 },
             },
             "well_costs": {
                 MK.Type: types.List,
-                MK.Required: False,
                 MK.Description: (
                     "Set the well costs."
                     "Uses the input file to get date to apply costs at."
@@ -180,7 +186,11 @@ def build_schema():
                         MK.Content: {
                             "well": {MK.Type: types.String},
                             "value": {MK.Type: types.Number},
-                            "currency": {MK.Type: types.String, MK.Required: False},
+                            "currency": {
+                                MK.Type: types.String,
+                                MK.Required: False,
+                                MK.AllowNone: True,
+                            },
                         },
                     }
                 },
