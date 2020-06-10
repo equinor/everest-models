@@ -57,7 +57,6 @@ def build_schema():
                                 MK.ElementValidators: (_list_validation,),
                                 MK.Content: {
                                     "value": {
-                                        MK.Required: False,
                                         MK.AllowNone: True,
                                         MK.Type: types.String,
                                     },
@@ -75,19 +74,10 @@ def build_schema():
                                     _value_validation,
                                 ),
                                 MK.Content: {
-                                    "min": {
-                                        MK.Required: False,
-                                        MK.AllowNone: True,
-                                        MK.Type: types.Number,
-                                    },
-                                    "max": {
-                                        MK.Required: False,
-                                        MK.AllowNone: True,
-                                        MK.Type: types.Number,
-                                    },
+                                    "min": {MK.AllowNone: True, MK.Type: types.Number,},
+                                    "max": {MK.AllowNone: True, MK.Type: types.Number,},
                                     "value": {
                                         MK.AllowNone: True,
-                                        MK.Required: False,
                                         MK.Type: types.Number,
                                     },
                                 },
@@ -100,18 +90,9 @@ def build_schema():
                                     _value_validation,
                                 ),
                                 MK.Content: {
-                                    "min": {
-                                        MK.Required: False,
-                                        MK.AllowNone: True,
-                                        MK.Type: types.Number,
-                                    },
-                                    "max": {
-                                        MK.Required: False,
-                                        MK.AllowNone: True,
-                                        MK.Type: types.Number,
-                                    },
+                                    "min": {MK.AllowNone: True, MK.Type: types.Number,},
+                                    "max": {MK.AllowNone: True, MK.Type: types.Number,},
                                     "value": {
-                                        MK.Required: False,
                                         MK.AllowNone: True,
                                         MK.Type: types.Number,
                                     },

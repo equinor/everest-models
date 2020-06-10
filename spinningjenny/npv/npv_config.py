@@ -23,7 +23,6 @@ def build_schema():
                                     "value": {MK.Type: types.Number},
                                     "currency": {
                                         MK.Type: types.String,
-                                        MK.Required: False,
                                         MK.AllowNone: True,
                                     },
                                 },
@@ -35,7 +34,6 @@ def build_schema():
             "multiplier": {
                 MK.Type: types.Integer,
                 MK.Description: "Multiplier to be used.",
-                MK.Required: False,
                 MK.AllowNone: True,
             },
             "files": {
@@ -47,13 +45,11 @@ def build_schema():
                             "Path to input file needed in the calculations for well cost. "
                             "The part important for the NPV job is when the well was completed."
                         ),
-                        MK.Required: False,
                         MK.AllowNone: True,
                     },
                     "output_file": {
                         MK.Type: types.String,
                         MK.Description: "Path where to place the outputfile with the npv result.",
-                        MK.Required: False,
                         MK.AllowNone: True,
                     },
                 },
@@ -68,19 +64,16 @@ def build_schema():
                     "start_date": {
                         MK.Type: types.Date,
                         MK.Description: "ISO8601 formatted date",
-                        MK.Required: False,
                         MK.AllowNone: True,
                     },
                     "end_date": {
                         MK.Type: types.Date,
                         MK.Description: "ISO8601 formatted date",
-                        MK.Required: False,
                         MK.AllowNone: True,
                     },
                     "ref_date": {
                         MK.Type: types.Date,
                         MK.Description: "ISO8601 formatted date",
-                        MK.Required: False,
                         MK.AllowNone: True,
                     },
                 },
@@ -95,7 +88,6 @@ def build_schema():
             },
             "default_exchange_rate": {
                 MK.Type: types.Number,
-                MK.Required: False,
                 MK.AllowNone: True,
                 MK.Description: (
                     "Default exchange rate to use if no exchange rate is found at the "
@@ -129,7 +121,6 @@ def build_schema():
             },
             "default_discount_rate": {
                 MK.Type: types.Number,
-                MK.Required: False,
                 MK.AllowNone: True,
                 MK.Description: (
                     "Default discount rate to use if no discount rate is found at the "
@@ -164,11 +155,7 @@ def build_schema():
                                 MK.Description: "ISO8601 formatted date",
                             },
                             "value": {MK.Type: types.Number},
-                            "currency": {
-                                MK.Type: types.String,
-                                MK.Required: False,
-                                MK.AllowNone: True,
-                            },
+                            "currency": {MK.Type: types.String, MK.AllowNone: True,},
                         },
                     }
                 },
@@ -186,11 +173,7 @@ def build_schema():
                         MK.Content: {
                             "well": {MK.Type: types.String},
                             "value": {MK.Type: types.Number},
-                            "currency": {
-                                MK.Type: types.String,
-                                MK.Required: False,
-                                MK.AllowNone: True,
-                            },
+                            "currency": {MK.Type: types.String, MK.AllowNone: True,},
                         },
                     }
                 },

@@ -173,13 +173,13 @@ def test_config_setup(input_data):
     schema = well_config.build_schema()
     assert well_constraint_validate.valid_configuration(input_data, schema)
 
-    config = configsuite.ConfigSuite(input_data, schema)
+    config = configsuite.ConfigSuite(input_data, schema, deduce_required=True)
     config = config.push({"INJECT1": {1: {"rate": {"min": 2, "max": 1}}}})
     assert not config.valid
 
     test_data = {"WELL": {1: {"rate": {"value": 50}}}}
 
-    config = configsuite.ConfigSuite(test_data, schema)
+    config = configsuite.ConfigSuite(test_data, schema, deduce_required=True)
 
     assert not config.valid
 
@@ -193,7 +193,7 @@ def test_config_setup(input_data):
         }
     }
 
-    config = configsuite.ConfigSuite(test_data, schema)
+    config = configsuite.ConfigSuite(test_data, schema, deduce_required=True)
     assert config.valid
 
     test_data_copy = deepcopy(test_data)
@@ -201,7 +201,7 @@ def test_config_setup(input_data):
     for key in ["phase", "duration", "rate"]:
         test_data = deepcopy(test_data_copy)
         test_data["WELL"][1].pop(key)
-        config = configsuite.ConfigSuite(test_data, schema)
+        config = configsuite.ConfigSuite(test_data, schema, deduce_required=True)
         assert not config.valid
 
 

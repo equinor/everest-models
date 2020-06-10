@@ -58,7 +58,7 @@ def valid_configuration(input_data, schema):
     :returns: configsuite config validity
     :rtype: bool
     """
-    config = configsuite.ConfigSuite(input_data, schema)
+    config = configsuite.ConfigSuite(input_data, schema, deduce_required=True)
 
     if not config.valid:
         for error in config.errors:

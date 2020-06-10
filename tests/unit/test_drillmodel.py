@@ -224,6 +224,7 @@ def test_valid_schedule():
         config,
         drill_planner_schema.build(),
         extract_validation_context=drill_planner_schema.extract_validation_context,
+        deduce_required=True,
     )
     field_manager = FieldManager.generate_from_snapshot(config_suite.snapshot)
     assert field_manager.valid_schedule(rig_schedule)
@@ -234,6 +235,7 @@ def test_valid_schedule():
         config,
         drill_planner_schema.build(),
         extract_validation_context=drill_planner_schema.extract_validation_context,
+        deduce_required=True,
     )
     field_manager = FieldManager.generate_from_snapshot(config_suite.snapshot)
     assert field_manager.valid_schedule(rig_schedule)
@@ -309,6 +311,7 @@ def test_invalid_schedule_undrillable():
         config,
         drill_planner_schema.build(),
         extract_validation_context=drill_planner_schema.extract_validation_context,
+        deduce_required=True,
     )
     field_manager = FieldManager.generate_from_snapshot(config_suite.snapshot)
 

@@ -20,7 +20,7 @@ def build_schema():
                 MK.Type: types.Dict,
                 MK.Content: {
                     MK.Key: {MK.Type: types.Integer, MK.Transformation: _to_int},
-                    MK.Value: {MK.Required: True, MK.Type: types.Number},
+                    MK.Value: {MK.Type: types.Number, MK.AllowNone: False},
                 },
             },
         },

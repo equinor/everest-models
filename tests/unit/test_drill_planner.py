@@ -24,6 +24,7 @@ def get_drill_planner_configsuite(config_dic):
         config_dic,
         drill_planner_schema.build(),
         extract_validation_context=drill_planner_schema.extract_validation_context,
+        deduce_required=True,
     )
     assert config_suite.valid
     return config_suite
@@ -209,6 +210,15 @@ def _delayed_advanced_setup():
     return config
 
 
+def _build_config(raw_config):
+    return ConfigSuite(
+        raw_config,
+        drill_planner_schema.build(),
+        extract_validation_context=drill_planner_schema.extract_validation_context,
+        deduce_required=True,
+    )
+
+
 def test_simple_well_order():
     config_snapshot = _simple_setup().snapshot
     well_order = [("W1", 0, 5), ("W2", 6, 16)]
@@ -345,31 +355,19 @@ def test_invalid_config_schema():
             "stop": raw_config["start_date"] + timedelta(days=10),
         }
     )
-    config_suite = ConfigSuite(
-        raw_config,
-        drill_planner_schema.build(),
-        extract_validation_context=drill_planner_schema.extract_validation_context,
-    )
+    config_suite = _build_config(raw_config)
 
     assert not config_suite.valid
 
     raw_config = _small_setup_incl_unavailability_config()
     raw_config["rigs"][0]["slots"].append("UNKNOWN_SLOT")
-    config_suite = ConfigSuite(
-        raw_config,
-        drill_planner_schema.build(),
-        extract_validation_context=drill_planner_schema.extract_validation_context,
-    )
+    config_suite = _build_config(raw_config)
 
     assert not config_suite.valid
 
     raw_config = _small_setup_incl_unavailability_config()
     raw_config["wells_priority"]["UNKNOWN_WELL"] = 10
-    config_suite = ConfigSuite(
-        raw_config,
-        drill_planner_schema.build(),
-        extract_validation_context=drill_planner_schema.extract_validation_context,
-    )
+    config_suite = _build_config(raw_config)
 
     assert not config_suite.valid
 
@@ -380,11 +378,7 @@ def test_invalid_config_schema():
             "stop": raw_config["start_date"] + timedelta(days=10),
         }
     )
-    config_suite = ConfigSuite(
-        raw_config,
-        drill_planner_schema.build(),
-        extract_validation_context=drill_planner_schema.extract_validation_context,
-    )
+    config_suite = _build_config(raw_config)
 
     assert not config_suite.valid
 
@@ -395,11 +389,7 @@ def test_invalid_config_schema():
             "stop": raw_config["end_date"] + timedelta(days=10),
         }
     )
-    config_suite = ConfigSuite(
-        raw_config,
-        drill_planner_schema.build(),
-        extract_validation_context=drill_planner_schema.extract_validation_context,
-    )
+    config_suite = _build_config(raw_config)
 
     assert not config_suite.valid
 

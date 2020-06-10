@@ -104,7 +104,7 @@ def valid_date(date, parser):
 
 def _validate_config(file_path, schema, parser, layers=()):
     dict_config = valid_yaml_file(file_path, parser)
-    config = ConfigSuite(dict_config, schema, layers=layers)
+    config = ConfigSuite(dict_config, schema, layers=layers, deduce_required=True)
     if not config.valid:
         parser.error(
             "Invalid config file: {}\n{}".format(

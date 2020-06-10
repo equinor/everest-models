@@ -26,7 +26,7 @@ setup(
     url="https://github.com/equinor/spinningjenny",
     install_requires=[
         "stea",
-        "configsuite>=0.3.1",
+        "configsuite>=0.6.2",
         "ortools",
         "protobuf",
         "libecl",

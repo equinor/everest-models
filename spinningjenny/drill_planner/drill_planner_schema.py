@@ -135,7 +135,6 @@ _rig_schema = {
                 },
                 "delay": {
                     MK.Type: types.Integer,
-                    MK.Required: False,
                     MK.AllowNone: True,
                     MK.Description: (
                         "The number of days of preparation needed before the rig can start drilling a well. "

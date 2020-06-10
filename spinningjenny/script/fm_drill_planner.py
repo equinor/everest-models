@@ -113,6 +113,7 @@ def _prepare_config(config, optimizer_values, input_values):
         config,
         drill_planner_schema.build(),
         extract_validation_context=drill_planner_schema.extract_validation_context,
+        deduce_required=True,
     )
 
 
