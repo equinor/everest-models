@@ -72,7 +72,7 @@ def satisfies(model, apply_constraints, assignment):
     solver = cp_model.CpSolver()
     status = solver.Solve(model)
 
-    return status == cp_model.FEASIBLE
+    return status == cp_model.FEASIBLE or status == cp_model.OPTIMAL
 
 
 @given(well_drill_constraints, assignments)
