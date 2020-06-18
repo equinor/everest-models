@@ -4,12 +4,15 @@ from datetime import datetime, timedelta
 from configsuite import ConfigSuite
 from ortools.sat.python import cp_model
 
+import pytest
+
 from spinningjenny import load_yaml
 from spinningjenny.script.fm_drill_planner import _prepare_config, _compare_schedules
 from spinningjenny.drill_planner import (
     drill_planner_schema,
     resolve_priorities,
     ScheduleElement,
+    add_missing_slots,
 )
 from spinningjenny.drill_planner.drillmodel import FieldManager, FieldSchedule
 from spinningjenny.drill_planner.ormodel import run_optimization
@@ -20,6 +23,7 @@ TEST_DATA_PATH = relpath("tests", "testdata", "drill_planner")
 
 
 def get_drill_planner_configsuite(config_dic):
+    add_missing_slots(config_dic)
     config_suite = ConfigSuite(
         config_dic,
         drill_planner_schema.build(),
@@ -34,7 +38,7 @@ def get_drill_planner_config_snapshot(config_dic):
     return get_drill_planner_configsuite(config_dic).snapshot
 
 
-def _simple_setup_config():
+def _simple_setup_config(remove_slots_from_rigs=False, remove_slots=False):
     start_date = datetime(2000, 1, 1)
     end_date = datetime(2001, 1, 1)
     wells = ["W1", "W2"]
@@ -48,11 +52,19 @@ def _simple_setup_config():
         "slots": [{"name": slot, "wells": wells} for slot in slots],
         "wells_priority": {"W1": 1, "W2": 0.5},
     }
+
+    if remove_slots_from_rigs:
+        for rig in config["rigs"]:
+            del rig["slots"]
+    if remove_slots:
+        del config["slots"]
+
     return config
 
 
-def _simple_setup():
-    config_suite = get_drill_planner_configsuite(_simple_setup_config())
+def _simple_setup(remove_slots_from_rigs=False, remove_slots=False):
+    raw_config = _simple_setup_config(remove_slots_from_rigs, remove_slots)
+    config_suite = get_drill_planner_configsuite(raw_config)
 
     return config_suite
 
@@ -153,7 +165,7 @@ def _advanced_setup():
     return config
 
 
-def _large_setup():
+def _large_setup(remove_slots_from_rigs=False, remove_slots=False):
     start_date = datetime(2000, 1, 1)
     end_date = datetime(2005, 1, 1)
     wells = ["W" + str(i) for i in range(1, 30)]
@@ -172,6 +184,13 @@ def _large_setup():
         "slots": [{"name": slot, "wells": wells} for slot in slots],
         "wells_priority": {w: p for w, p in wells_priority},
     }
+
+    if remove_slots_from_rigs:
+        for rig in config["rigs"]:
+            del rig["slots"]
+    if remove_slots:
+        del config["slots"]
+
     return config
 
 
@@ -211,6 +230,7 @@ def _delayed_advanced_setup():
 
 
 def _build_config(raw_config):
+    add_missing_slots(raw_config)
     return ConfigSuite(
         raw_config,
         drill_planner_schema.build(),
@@ -219,8 +239,15 @@ def _build_config(raw_config):
     )
 
 
-def test_simple_well_order():
-    config_snapshot = _simple_setup().snapshot
+@pytest.mark.parametrize(
+    "remove_slots_from_rigs, remove_slots",
+    [(False, False), (True, False), (True, True)],
+)
+def test_simple_well_order(remove_slots_from_rigs, remove_slots):
+    # Slots can be removed from the rigs, the slots entry is then optional.
+    config_snapshot = _simple_setup(
+        remove_slots_from_rigs=remove_slots_from_rigs, remove_slots=remove_slots
+    ).snapshot
     well_order = [("W1", 0, 5), ("W2", 6, 16)]
 
     field_manager = FieldManager.generate_from_snapshot(config_snapshot)
@@ -329,14 +356,21 @@ def test_rig_slot_include_delay():
     assert all(schedule_task in well_order for schedule_task in schedule_well_order)
 
 
-def test_default_large_setup():
+@pytest.mark.parametrize(
+    "remove_slots_from_rigs, remove_slots",
+    [(False, False), (True, False), (True, True)],
+)
+def test_default_large_setup(remove_slots_from_rigs, remove_slots):
     """
     Test that a larger setup without restrictions works
 
     We only verify that it is possible to set it up using or-tools, not that
     the solution itself is optimal.
     """
-    config = _large_setup()
+    # Slots can be removed from the rigs, the slots entry is then optional.
+    config = _large_setup(
+        remove_slots_from_rigs=remove_slots_from_rigs, remove_slots=remove_slots
+    )
     config_snapshot = get_drill_planner_config_snapshot(config)
 
     field_manager = FieldManager.generate_from_snapshot(config_snapshot)
@@ -389,6 +423,12 @@ def test_invalid_config_schema():
             "stop": raw_config["end_date"] + timedelta(days=10),
         }
     )
+    config_suite = _build_config(raw_config)
+
+    assert not config_suite.valid
+
+    # The rigs have slots, but the slots entry is missing.
+    raw_config = _simple_setup_config(remove_slots_from_rigs=False, remove_slots=True)
     config_suite = _build_config(raw_config)
 
     assert not config_suite.valid

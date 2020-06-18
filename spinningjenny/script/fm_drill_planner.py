@@ -19,6 +19,7 @@ from spinningjenny.drill_planner import (
     create_config_dictionary,
     append_data,
     resolve_priorities,
+    add_missing_slots,
 )
 from spinningjenny.drill_planner.greedy_drill_planner import get_greedy_drill_plan
 
@@ -108,6 +109,9 @@ def scheduler_parser():
 def _prepare_config(config, optimizer_values, input_values):
     config["wells_priority"] = optimizer_values
     config["wells"] = input_values
+
+    # By default, if there are no slots defined in the rig entry, add slots correspoding to wells.
+    add_missing_slots(config)
 
     return configsuite.ConfigSuite(
         config,

@@ -1,0 +1,23 @@
+start_date: 2000-01-01
+end_date: 2001-01-01
+rigs:
+  -
+    name: 'A'
+    wells: ['w1', 'w2', 'w3']
+    unavailability:
+      -
+        start: 2000-01-01
+        stop: 2000-02-02
+      -
+        start: 2000-03-14
+        stop: 2000-03-19
+  -
+    name: 'B'
+    wells: ['w4', 'w5']
+    unavailability:
+      -
+        start: 2000-02-01
+        stop: 2000-02-02
+      -
+        start: 2000-02-14
+        stop: 2000-02-15

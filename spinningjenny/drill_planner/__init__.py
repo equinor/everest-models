@@ -167,3 +167,30 @@ def resolve_priorities(schedule, config):
                 msg.format(first=event.well, second=modified_schedule[idx].well)
             )
     return modified_schedule
+
+
+def add_missing_slots(config):
+    """
+    In the configuration, slots can be defined in each rig entry. In simple,
+    often used, cases there is a single slot for each well. In that case,
+    defining all slots is cumbersome. This function can be called to add slots
+    to the configuration dicts that is the input of ConfigSuite. In case the
+    "slots" field is missing from a rig, it will add a slot for each well, and
+    add them to the slots entry.
+    """
+    slots = config.get("slots", [])
+    slot_names = {slot["name"] for slot in slots}
+    inx = 0
+    rigs_without_slots = [rig for rig in config.get("rigs", []) if "slots" not in rig]
+    for rig in rigs_without_slots:
+        wells = rig.get("wells", [])
+        rig["slots"] = []
+        for well in wells:
+            while True:
+                slot = "_slot_{}".format(inx)
+                inx = inx + 1
+                if slot not in slot_names:
+                    break
+            rig["slots"].append(slot)
+            slots.append({"name": slot, "wells": [well]})
+    config["slots"] = slots

@@ -44,3 +44,37 @@ def test_main_entry_point_partial_wells():
     expected_output = load_yaml("partial_correct_out.json")
 
     assert test_output == expected_output
+
+
+@tmpdir(TEST_DATA_PATH)
+def test_main_entry_point_no_slots():
+    arguments = [
+        "--input",
+        "wells.json",
+        "--config",
+        "config_no_slots.yml",
+        "--optimizer",
+        "optimizer_values.yml",
+        "--output",
+        "out_no_slots.json",
+    ]
+
+    main_entry_point(arguments)
+
+    arguments = [
+        "--input",
+        "wells.json",
+        "--config",
+        "config_single_slots.yml",
+        "--optimizer",
+        "optimizer_values.yml",
+        "--output",
+        "out_single_slots.json",
+    ]
+
+    main_entry_point(arguments)
+
+    test_output = load_yaml("out_no_slots.json")
+    expected_output = load_yaml("out_single_slots.json")
+
+    assert test_output == expected_output
