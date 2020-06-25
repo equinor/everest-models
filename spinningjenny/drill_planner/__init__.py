@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 from functools import partial
 
@@ -97,7 +99,6 @@ def combine_slot_rig_unavailability(config, slot, rig):
     [(2000-01-01, 2000-02-02), (2000-03-08, 2000-03-19)]
     """
     unavailability = np.zeros(config["horizon"])
-    start_date = config["start_date"]
 
     for (start, end) in config["slots"][slot]["unavailability"]:
         unavailability[start:end] = 1
@@ -169,6 +170,26 @@ def resolve_priorities(schedule, config):
     return modified_schedule
 
 
+def _unique_slot_names(rig_name, slot_names):
+    """Generate unique slot names based on the rig name and an index."""
+    inx = 0
+    while True:
+        slot = "_{}_slot_{}".format(rig_name, inx)
+        inx = inx + 1
+        if slot not in slot_names:
+            yield slot
+
+
+def _add_slots_to_rig(rig, slot_names):
+    result = copy.deepcopy(rig)
+    new_slot_names = _unique_slot_names(rig["name"], slot_names)
+    # Iterate over the wells, even when not using them, to get the slot count right.
+    result["slots"] = [
+        slot_name for _, slot_name in zip(rig.get("wells", []), new_slot_names)
+    ]
+    return result
+
+
 def add_missing_slots(config):
     """
     In the configuration, slots can be defined in each rig entry. In simple,
@@ -178,19 +199,24 @@ def add_missing_slots(config):
     "slots" field is missing from a rig, it will add a slot for each well, and
     add them to the slots entry.
     """
+
+    rigs = config.get("rigs", [])
     slots = config.get("slots", [])
+
+    result = copy.deepcopy(config)
+
+    # Add slots to rigs that do not have them.
     slot_names = {slot["name"] for slot in slots}
-    inx = 0
-    rigs_without_slots = [rig for rig in config.get("rigs", []) if "slots" not in rig]
-    for rig in rigs_without_slots:
-        wells = rig.get("wells", [])
-        rig["slots"] = []
-        for well in wells:
-            while True:
-                slot = "_slot_{}".format(inx)
-                inx = inx + 1
-                if slot not in slot_names:
-                    break
-            rig["slots"].append(slot)
-            slots.append({"name": slot, "wells": [well]})
-    config["slots"] = slots
+    result["rigs"] = [
+        rig if "slots" in rig else _add_slots_to_rig(rig, slot_names) for rig in rigs
+    ]
+
+    # Add slots that were added to the rigs above.
+    result["slots"] = slots + [
+        {"name": slot, "wells": [well]}
+        for rig, new_rig in zip(rigs, result["rigs"])
+        for slot, well in zip(new_rig["slots"], new_rig["wells"])
+        if "slots" not in rig
+    ]
+
+    return result

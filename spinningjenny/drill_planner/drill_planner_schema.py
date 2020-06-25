@@ -43,12 +43,6 @@ def _is_within_time_period(elem, context):
 def extract_validation_context(configuration):
     rigs = configuration.rigs if configuration.rigs else ()
 
-    well_names = (
-        tuple([well.name for well in configuration.wells])
-        if configuration.wells
-        else ()
-    )
-
     slot_names = (
         tuple([slot.name for slot in configuration.slots])
         if configuration.slots

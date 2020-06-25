@@ -110,8 +110,8 @@ def _prepare_config(config, optimizer_values, input_values):
     config["wells_priority"] = optimizer_values
     config["wells"] = input_values
 
-    # By default, if there are no slots defined in the rig entry, add slots correspoding to wells.
-    add_missing_slots(config)
+    # By default, if there are no slots defined in the rig entry, add slots corresponding to wells.
+    config = add_missing_slots(config)
 
     return configsuite.ConfigSuite(
         config,

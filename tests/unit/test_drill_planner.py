@@ -23,7 +23,7 @@ TEST_DATA_PATH = relpath("tests", "testdata", "drill_planner")
 
 
 def get_drill_planner_configsuite(config_dic):
-    add_missing_slots(config_dic)
+    config_dic = add_missing_slots(config_dic)
     config_suite = ConfigSuite(
         config_dic,
         drill_planner_schema.build(),
@@ -230,7 +230,7 @@ def _delayed_advanced_setup():
 
 
 def _build_config(raw_config):
-    add_missing_slots(raw_config)
+    raw_config = add_missing_slots(raw_config)
     return ConfigSuite(
         raw_config,
         drill_planner_schema.build(),
