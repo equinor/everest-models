@@ -64,6 +64,27 @@ def test_transformation():
     assert result_dict == expected_dict
 
 
+def test_transformation_logging(caplog):
+    input_dict = {
+        "well": {
+            1: {
+                "var_1": {"optimizer_value": 0.2, "min": 0.0, "max": 1.0},
+                "var_2": {"value": 0.2},
+            }
+        }
+    }
+
+    well_constraint_job._insert_transformed_values(input_dict)
+    log_messages = [rec.message for rec in caplog.records]
+    assert len(log_messages) == 2
+    assert "[var_1: 0.2]" in log_messages[1]
+
+    input_dict["well"][1]["var_2"] = {"optimizer_value": 0.42, "min": 0, "max": 100}
+    well_constraint_job._insert_transformed_values(input_dict)
+    log_messages = [rec.message for rec in caplog.records]
+    assert "[var_2: 42.0]" in log_messages[3]
+
+
 def test_transformation_calc():
     test_values = [0, 1, 0.1, 0.2, 0.15684]
     expected_transformation = [0.0, 1000.0, 100.0, 200.0, 156.84]

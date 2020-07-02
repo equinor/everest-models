@@ -124,13 +124,20 @@ def _insert_transformed_values(input_data):
         msg = "Calculating simulator value for well: {}, number of events: {}"
         logger.info(msg.format(well, len(periods)))
         for index, events in periods.items():
+            calculated_values = []
             for var_name, constraint in events.items():
                 transformed_value = _calc_transformed_value(constraint)
                 output_data = merge_dicts(
                     output_data,
                     {well: {index: {var_name: {"value": transformed_value}}}},
                 )
-
+                if constraint.get("optimizer_value", False):
+                    calculated_values.append(
+                        "[{}: {}]".format(var_name, transformed_value)
+                    )
+            logger.info(
+                "Event {}: Calculated: {}".format(index, " ".join(calculated_values))
+            )
     return output_data
 
 
