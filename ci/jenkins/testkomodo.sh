@@ -5,7 +5,7 @@ PROJECT=spinningjenny
 RELEASE_PATH=${KOMODO_ROOT}/${RELEASE_NAME}
 GIT=${SDPSOFT}/bin/git
 source $KOMODO_ROOT/$RELEASE_NAME/enable
-
+export LD_LIBRARY_PATH=${RELEASE_PATH}/root/lib:${RELEASE_PATH}/root/lib64
 
 echo "create virtualenv"
 ENV=testenv
