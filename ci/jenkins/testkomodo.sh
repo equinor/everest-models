@@ -1,31 +1,12 @@
-#!/bin/bash
-set -xe
-shopt -s extglob
-PROJECT=spinningjenny
-RELEASE_PATH=${KOMODO_ROOT}/${RELEASE_NAME}
-GIT=${SDPSOFT}/bin/git
-source $KOMODO_ROOT/$RELEASE_NAME/enable
-export LD_LIBRARY_PATH=${RELEASE_PATH}/root/lib:${RELEASE_PATH}/root/lib64
 
-echo "create virtualenv"
-ENV=testenv
-rm -rf $ENV
-mkdir $ENV
-python -m virtualenv --system-site-packages $ENV
-source $ENV/bin/activate
-python -m pip install -r test_requirements.txt
+install_package () {
+    pip install ruamel.yaml
+    python setup.py install
+}
 
-if [[ -z "${sha1// }" ]]; then
-    EV=$(cat ${RELEASE_PATH}/${RELEASE_NAME} | grep "${PROJECT}:" -A2 | grep "version:")
-    EV=($EV)    # split the string "version: vX.X.X"
-    EV=${EV[1]} # extract the version
-    EV=${EV%"+py3"}
-    echo "Using ${PROJECT} version ${EV}"
-    $GIT checkout $EV
-
-    rm -rf !("tests"|"$ENV")
-fi
-echo "running pytest"
-python -m pytest \
-  --ignore="tests/unit/test_formatting.py"\
-  --ignore="tests/unit/test_jobs_implementation.py"
+start_tests () {
+    python -m pip install --upgrade protobuf # needed as komodoenv broke protobuf package
+    python -m pytest \
+        --ignore="tests/unit/test_formatting.py"\
+        --ignore="tests/unit/test_jobs_implementation.py"
+}
