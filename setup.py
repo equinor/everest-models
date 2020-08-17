@@ -41,5 +41,8 @@ setup(
         "Programming language :: Python :: 3.5",
         "Programming language :: Python :: 3.6",
     ],
-    entry_points={"console_scripts": entry_point_strings()},
+    entry_points={
+        "console_scripts": entry_point_strings(),
+        "everest": ["spinningjenny = spinningjenny.everest_hooks",],
+    },
 )
