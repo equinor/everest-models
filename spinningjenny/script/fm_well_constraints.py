@@ -100,7 +100,10 @@ def well_constraint_parser():
         default=None,
         help="""
         Rate constraints file, from controls section of Everest config, 
-        must be indexed format.
+        must be indexed format. Values must be in the interval [0, 1], 
+        where 0 corresponds to the minimum possible rate value of the the well
+        the given index and 1 corresponds to the maximum possible value 
+        of the well at the given index.
         """,
     )
     parser.add_argument(
@@ -111,7 +114,10 @@ def well_constraint_parser():
         default=None,
         help="""
         Phase constraints file, from controls section of Everest config, 
-        must be indexed format. Values must be [0,1].
+        must be indexed format. Values must be in the interval [0,1], i.e 
+        in a two phase case ["water", "gas"], any control value in the 
+        interval [0, 0.5] will be attributed to "water" and any control 
+        value in the interval (0.5, 1] will be attributed to "gas".
         """,
     )
     parser.add_argument(
@@ -122,7 +128,9 @@ def well_constraint_parser():
         default=None,
         help="""
         Duration constraints file, from controls section of Everest config, 
-        must be indexed format.
+        must be indexed format. Values must be in the interval [0, 1], 
+        where 0 corresponds to the minimum possible drill time for well,
+        if given, 1 corresponds to the maximum drill time of the well if given.
         """,
     )
     parser.add_argument(
@@ -130,7 +138,7 @@ def well_constraint_parser():
         "--output",
         required=True,
         type=partial(is_writable, parser=parser),
-        help="Name of the outputfile. The format will be yaml.",
+        help="Name of the output file. The format will be yaml.",
     )
     return parser
 

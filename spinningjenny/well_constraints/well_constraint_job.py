@@ -25,8 +25,8 @@ def _find_index(val, options):
     Calculates list index from a float between 0-1, representing
     the length of the list. Note that 0 gives the first element,
     1.0 gives the last element. For mid cases the function will
-    "fall right", for example in a two element list, 0.5 will
-    select the second element.
+    "fall left", for example in a two element list, 0.5 will
+    select the first element.
     :param val: float between 0.0-1.0
     :param options: list of length n
     :return: index
