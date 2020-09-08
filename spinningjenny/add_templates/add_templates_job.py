@@ -9,9 +9,9 @@ logger = customized_logger.get_logger(__name__)
 
 def add_templates(templates, wells):
     """Insert a template file path for each well operation where the template
-     keys match the operation details. Also return any template paths that were
-     not inserted due to unmatched keys.
-     """
+    keys match the operation details. Also return any template paths that were
+    not inserted due to unmatched keys.
+    """
     wells = copy.deepcopy(wells)
     warnings = []
     errors = []

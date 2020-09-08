@@ -155,7 +155,10 @@ def build_schema():
                                 MK.Description: "ISO8601 formatted date",
                             },
                             "value": {MK.Type: types.Number},
-                            "currency": {MK.Type: types.String, MK.AllowNone: True,},
+                            "currency": {
+                                MK.Type: types.String,
+                                MK.AllowNone: True,
+                            },
                         },
                     }
                 },
@@ -173,7 +176,10 @@ def build_schema():
                         MK.Content: {
                             "well": {MK.Type: types.String},
                             "value": {MK.Type: types.Number},
-                            "currency": {MK.Type: types.String, MK.AllowNone: True,},
+                            "currency": {
+                                MK.Type: types.String,
+                                MK.AllowNone: True,
+                            },
                         },
                     }
                 },

@@ -74,8 +74,14 @@ def build_schema():
                                     _value_validation,
                                 ),
                                 MK.Content: {
-                                    "min": {MK.AllowNone: True, MK.Type: types.Number,},
-                                    "max": {MK.AllowNone: True, MK.Type: types.Number,},
+                                    "min": {
+                                        MK.AllowNone: True,
+                                        MK.Type: types.Number,
+                                    },
+                                    "max": {
+                                        MK.AllowNone: True,
+                                        MK.Type: types.Number,
+                                    },
                                     "value": {
                                         MK.AllowNone: True,
                                         MK.Type: types.Number,
@@ -90,8 +96,14 @@ def build_schema():
                                     _value_validation,
                                 ),
                                 MK.Content: {
-                                    "min": {MK.AllowNone: True, MK.Type: types.Number,},
-                                    "max": {MK.AllowNone: True, MK.Type: types.Number,},
+                                    "min": {
+                                        MK.AllowNone: True,
+                                        MK.Type: types.Number,
+                                    },
+                                    "max": {
+                                        MK.AllowNone: True,
+                                        MK.Type: types.Number,
+                                    },
                                     "value": {
                                         MK.AllowNone: True,
                                         MK.Type: types.Number,

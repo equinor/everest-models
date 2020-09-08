@@ -22,7 +22,9 @@ def options(monkeypatch, tmpdir):
     for file_name in os.listdir(_TEST_DIR):
         shutil.copy(_TEST_DIR + file_name, tmpdir.strpath)
     monkeypatch.setattr(
-        fm_npv, "valid_ecl_file", ecl_summary_npv,
+        fm_npv,
+        "valid_ecl_file",
+        ecl_summary_npv,
     )
     cwd = os.getcwd()
     tmpdir.chdir()

@@ -71,7 +71,8 @@ def test_strip_dates_preserves_last_report_date():
 
 
 @pytest.mark.parametrize(
-    "use_existing_date", [False, True],
+    "use_existing_date",
+    [False, True],
 )
 @tmpdir(TEST_DATA_PATH)
 def test_missing_date_exceptions_error(use_existing_date):
@@ -97,7 +98,8 @@ def test_missing_date_exceptions_error(use_existing_date):
 
 
 @pytest.mark.parametrize(
-    "use_existing_date", [False, True],
+    "use_existing_date",
+    [False, True],
 )
 @tmpdir(TEST_DATA_PATH)
 def test_missing_date_exceptions_warning(caplog, use_existing_date):

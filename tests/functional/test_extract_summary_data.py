@@ -14,7 +14,9 @@ def test_extract_summary_data_entry_point(monkeypatch, caplog):
     output_file = "test_out"
     expected_results = {"max": 10, "diff": 8}
     monkeypatch.setattr(
-        fm_extract_summary_data, "valid_ecl_file", ecl_summary,
+        fm_extract_summary_data,
+        "valid_ecl_file",
+        ecl_summary,
     )
     # check range calculations
     for calc_type in CalculationType.types():
