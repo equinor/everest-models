@@ -1,4 +1,4 @@
-import yaml
+import ruamel.yaml as yaml
 import json
 
 from datetime import datetime
@@ -79,7 +79,7 @@ def valid_yaml_file(file_path, parser):
     valid_file(file_path, parser)
     try:
         return load_yaml(file_path)
-    except (yaml.YAMLError, yaml.MarkedYAMLError) as e:
+    except yaml.YAMLError as e:
         parser.error(
             "The config file: <{}> contains invalid YAML syntax: {}".format(
                 file_path, str(e)

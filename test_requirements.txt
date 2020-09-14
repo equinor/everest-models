@@ -7,3 +7,4 @@ black; python_version>="3.6"
 hypothesis==4.56.1; python_version<'3'
 hypothesis; python_version>'3'
 pytest-runner
+ruamel.yaml

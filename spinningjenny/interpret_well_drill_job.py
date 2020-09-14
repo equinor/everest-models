@@ -1,5 +1,5 @@
 import json
-import yaml
+import ruamel.yaml as yaml
 from spinningjenny import customized_logger
 
 logger = customized_logger.get_logger(__name__)

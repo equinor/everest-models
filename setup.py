@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from setuptools import setup, find_packages
-import yaml
+import ruamel.yaml as yaml
 
 
 def entry_point_strings():
@@ -31,7 +31,7 @@ setup(
         "protobuf",
         "libecl",
         "jinja2",
-        "PyYAML",
+        "ruamel.yaml",
     ],
     test_suite="tests",
     use_scm_version={"write_to": "spinningjenny/version.py"},

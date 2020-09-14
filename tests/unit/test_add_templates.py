@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 import json
-import yaml
+import ruamel.yaml as yaml
 
 from configsuite import ConfigSuite
 
