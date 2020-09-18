@@ -1,10 +1,7 @@
-pytest==4.6.4; python_version<='2.7'
-pytest; python_version>='3.5'
+pytest
 decorator
-mock<4; python_version<'3'
-mock; python_version>='3'
-black; python_version>="3.6"
-hypothesis==4.56.1; python_version<'3'
-hypothesis; python_version>'3'
+mock
+black
+hypothesis
 pytest-runner
 ruamel.yaml

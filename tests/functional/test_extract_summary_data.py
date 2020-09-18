@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 from spinningjenny.script import fm_extract_summary_data
 from spinningjenny.script.fm_extract_summary_data import main_entry_point
 from spinningjenny.extract_summary_data import CalculationType

@@ -12,7 +12,7 @@ TaskType = namedtuple("TaskType", ("begin", "end", "presence", "interval"))
 
 class DrillConstraints(cp_model.CpModel):
     def __init__(self, field_manager, *args, **kwargs):
-        super(DrillConstraints, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.field_manager = field_manager
         self.horizon = field_manager.horizon
         self.tasks = dict()

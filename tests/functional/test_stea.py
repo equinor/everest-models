@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from tests import tmpdir, relpath
 from spinningjenny.script.fm_stea import main_entry_point
 import importlib

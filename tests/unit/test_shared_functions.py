@@ -73,14 +73,8 @@ def test_valid_json_file():
     valid_json_file(invalid_json_path, mock_parser)
 
     # py2 and py3 have slightly different error messages
-    error_msgs = [
-        (
-            "File <invalid_json.json> is not a valid json file: "
-            "Expecting ',' delimiter: line 6 column 5 (char 55)"
-        ),
-        (
-            "File <invalid_json.json> is not a valid json file: "
-            "Expecting , delimiter: line 6 column 5 (char 55)"
-        ),
-    ]
-    assert any(err in mock_parser.get_error() for err in error_msgs)
+    error_msgs = (
+        "File <invalid_json.json> is not a valid json file: "
+        "Expecting ',' delimiter: line 6 column 5 (char 55)"
+    )
+    assert error_msgs in mock_parser.get_error()

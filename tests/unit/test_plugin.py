@@ -27,16 +27,16 @@ class TestSpec:
         pass
 
 
-class TestManager(pluggy.PluginManager):
+class MockPluginManager(pluggy.PluginManager):
     """A testing plugin manager"""
 
     def __init__(self):
-        super(TestManager, self).__init__("test")
+        super().__init__("test")
         self.add_hookspecs(TestSpec)
 
 
 def test_hooks_registered():
-    pm = TestManager()
+    pm = MockPluginManager()
     try:
         pm.register(everest_hooks)
     except ValueError as err:
@@ -51,7 +51,7 @@ def test_hooks_registered():
 
 
 def test_everest_hooks():
-    pm = TestManager()
+    pm = MockPluginManager()
     try:
         pm.register(everest_hooks)
     except ValueError as err:
