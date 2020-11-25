@@ -23,17 +23,17 @@ jobs:
         with:
           python-version: "${{ matrix.python-version }}"
 
-    - name: "Install dependencies"
-      run: |
-        pip install --upgrade pip setuptools wheel
-        pip install git+https://git@github.com/equinor/stea.git
-        pip install --upgrade -r test_requirements.txt
+      - name: "Install dependencies"
+        run: |
+          pip install --upgrade pip setuptools wheel
+          pip install git+https://git@github.com/equinor/stea.git
+          pip install --upgrade -r test_requirements.txt
 
-    - name: "Install package"
-      run: |
-        pip install .
+      - name: "Install package"
+        run: |
+          pip install .
 
-    - name: "Test package spinningjenny"
-      run: |
-        python -m pytest -sv
+      - name: "Test package spinningjenny"
+        run: |
+          python -m pytest -sv
 
