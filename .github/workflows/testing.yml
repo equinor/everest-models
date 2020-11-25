@@ -1,0 +1,39 @@
+name: Testing
+
+on: [push, pull_request]
+
+env:
+  ERT_SHOW_BACKTRACE: 1
+
+jobs:
+  tests:
+    name: "Python ${{ matrix.python-version }} on ${{ matrix.os }}"
+    strategy:
+      matrix:
+        python-version: ["3.6", "3.7", "3.8"]
+        os: [ ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: "actions/checkout@v2"
+        with:
+          fetch-depth: 0
+
+      - uses: "actions/setup-python@v2"
+        with:
+          python-version: "${{ matrix.python-version }}"
+
+    - name: "Install dependencies"
+      run: |
+        pip install --upgrade pip setuptools wheel
+        pip install git+https://git@github.com/equinor/stea.git
+        pip install --upgrade -r test_requirements.txt
+
+    - name: "Install package"
+      run: |
+        pip install .
+
+    - name: "Test package spinningjenny"
+      run: |
+        python -m pytest -sv
+

@@ -39,8 +39,7 @@ before_install:
 install:
   - pip install --upgrade pip setuptools wheel
   - pip install git+https://git@github.com/equinor/stea.git
-  # For now we have to make install libecl.
-  # Remove when it's possible to pip install
+
 script:
   - pip install .
   - pip install --upgrade -r test_requirements.txt
