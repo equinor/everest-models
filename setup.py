@@ -26,8 +26,8 @@ setup(
     url="https://github.com/equinor/spinningjenny",
     install_requires=[
         "configsuite>=0.6.2",
+        "ecl",
         "jinja2",
-        "libecl",
         "numpy",
         "ortools",
         "protobuf",
