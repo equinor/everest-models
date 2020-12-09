@@ -28,6 +28,7 @@ setup(
         "configsuite>=0.6.2",
         "jinja2",
         "libecl",
+        "numpy",
         "ortools",
         "protobuf",
         "ruamel.yaml",
