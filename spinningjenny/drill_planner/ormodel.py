@@ -66,7 +66,7 @@ class DrillConstraints(cp_model.CpModel):
         and provide an integer value that should suffice to keep that behaviour.
         """
         sorted_by_priority = sorted(self.field_manager.wells, key=lambda x: x.priority)
-        wells_priority = {w: (i + 1) ** 5 for i, w in enumerate(sorted_by_priority)}
+        wells_priority = {w: (i + 1) ** 4 for i, w in enumerate(sorted_by_priority)}
 
         objective = self.NewIntVar(0, 1000000000 * self.horizon, "makespan")
         self.Add(
