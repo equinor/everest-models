@@ -11,10 +11,11 @@ TaskType = namedtuple("TaskType", ("begin", "end", "presence", "interval"))
 
 
 class DrillConstraints(cp_model.CpModel):
-    def __init__(self, field_manager, *args, **kwargs):
+    def __init__(self, field_manager, best_guess_schedule=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.field_manager = field_manager
         self.horizon = field_manager.horizon
+        self.best_guess_schedule = best_guess_schedule
         self.tasks = dict()
         self.create_tasks()
 
@@ -67,8 +68,25 @@ class DrillConstraints(cp_model.CpModel):
         """
         sorted_by_priority = sorted(self.field_manager.wells, key=lambda x: x.priority)
         wells_priority = {w: (i + 1) ** 4 for i, w in enumerate(sorted_by_priority)}
+        bound = (
+            sum(wells_priority[well] for (well, _, _), _ in self.tasks.items())
+            * self.horizon
+        )
 
-        objective = self.NewIntVar(0, 1000000000 * self.horizon, "makespan")
+        if self.best_guess_schedule is not None:
+            # Calculate the objective value given an initial guess including some leverage
+            well_end_time = {key.name: val for key, val in wells_priority.items()}
+            bound = int(
+                1.1
+                * sum(
+                    [
+                        well_end_time[elem.well] * elem.end
+                        for elem in self.best_guess_schedule
+                    ]
+                )
+            )
+
+        objective = self.NewIntVar(0, bound, "makespan")
         self.Add(
             objective
             == sum(
@@ -199,12 +217,13 @@ class SolutionCallback(cp_model.CpSolverSolutionCallback):
 
 def run_optimization(
     field_manager,
+    best_guess_schedule=None,
     max_solver_time=3600,
     solution_limit=None,
     accepted_status=cp_model.OPTIMAL,
 ):
 
-    model = DrillConstraints(field_manager)
+    model = DrillConstraints(field_manager, best_guess_schedule=best_guess_schedule)
 
     model.apply_constraints()
     model.objective_function()

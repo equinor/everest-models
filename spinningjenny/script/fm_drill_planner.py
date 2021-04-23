@@ -151,8 +151,12 @@ def _run_drill_planner(config, time_limit):
     if any(drill_delays):
         schedule = get_greedy_drill_plan(deepcopy(config_dic), [])
     else:
-        or_tools_schedule = run_optimization(field_manager, max_solver_time=time_limit)
         greedy_schedule = get_greedy_drill_plan(deepcopy(config_dic), [])
+        or_tools_schedule = run_optimization(
+            field_manager,
+            best_guess_schedule=greedy_schedule,
+            max_solver_time=time_limit,
+        )
 
         schedule = _compare_schedules(
             or_tools_schedule, greedy_schedule, config_dic["wells_priority"]
