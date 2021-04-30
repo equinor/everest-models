@@ -13,9 +13,11 @@ from spinningjenny.drill_planner import (
     resolve_priorities,
     ScheduleElement,
     add_missing_slots,
+    create_config_dictionary,
 )
 from spinningjenny.drill_planner.drillmodel import FieldManager, FieldSchedule
 from spinningjenny.drill_planner.ormodel import run_optimization
+from spinningjenny.drill_planner.greedy_drill_planner import get_greedy_drill_plan
 
 from tests import tmpdir, relpath
 
@@ -165,11 +167,11 @@ def _advanced_setup():
     return config
 
 
-def _large_setup(remove_slots_from_rigs=False, remove_slots=False):
+def _large_setup(remove_slots_from_rigs=False, remove_slots=False, nwells=30):
     start_date = datetime(2000, 1, 1)
-    end_date = datetime(2005, 1, 1)
-    wells = ["W" + str(i) for i in range(1, 30)]
-    slots = ["S" + str(i) for i in range(1, 30)]
+    end_date = datetime(2025, 1, 1)
+    wells = ["W" + str(i) for i in range(1, nwells)]
+    slots = ["S" + str(i) for i in range(1, nwells)]
     rigs = ["A", "B", "C"]
     drill_times = [30, 20, 40, 25, 35, 75, 33, 90, 23, 32, 10, 42, 38, 47, 53]
     wells_priority = zip(wells, range(len(wells), 0, -1))
@@ -378,6 +380,37 @@ def test_default_large_setup(remove_slots_from_rigs, remove_slots):
         field_manager=field_manager, solution_limit=1, accepted_status=cp_model.FEASIBLE
     )
 
+    assert field_manager.valid_schedule(FieldSchedule(schedule))
+
+
+def test_many_wells_one_rig():
+    """
+    A setup without restrictions and single rig can be solved easily by the
+    greedy planner, while the sat solver could have more difficulties. Some
+    work has been done to facilitate the or tools to understand the simple
+    solution. We verify that single rig, 40 wells is possible to solve in a
+    short amount of time. The quick solving is only applicable in scenarios
+    where no well can be drilled by more than a single rig.
+
+    40 wells seems to take about 5 seconds and 70 wells takes about 50 seconds.
+    The time taken seems evenly split among the greedy planner and the or-tools
+    planner.
+
+    """
+    config = _large_setup(nwells=40)
+    # Reduce problem to single rig
+    config["rigs"] = [config["rigs"][0]]
+    config_snapshot = get_drill_planner_config_snapshot(config)
+
+    field_manager = FieldManager.generate_from_snapshot(config_snapshot)
+
+    config_dic = create_config_dictionary(config_snapshot)
+    greedy_schedule = get_greedy_drill_plan(config_dic, [])
+    assert field_manager.valid_schedule(FieldSchedule(greedy_schedule))
+
+    schedule = run_optimization(
+        field_manager=field_manager, best_guess_schedule=greedy_schedule
+    )
     assert field_manager.valid_schedule(FieldSchedule(schedule))
 
 

@@ -1,8 +1,13 @@
-from collections import namedtuple
-from ortools.sat.python import cp_model
 import itertools
+from collections import defaultdict, namedtuple
+
+from ortools.sat.python import cp_model
 
 from spinningjenny import customized_logger
+import logging
+from collections import Counter, defaultdict, namedtuple
+
+from ortools.sat.python import cp_model
 from spinningjenny.drill_planner import ScheduleElement
 
 logger = customized_logger.get_logger(__name__)
@@ -18,6 +23,54 @@ class DrillConstraints(cp_model.CpModel):
         self.best_guess_schedule = best_guess_schedule
         self.tasks = dict()
         self.create_tasks()
+        self.create_well_cost()
+        self.create_objective_vars()
+        self.create_single_rig_wells()
+
+    def create_well_cost(self):
+        """The difference between priorities of the wells can be quite small
+        (e.g. W1: 0.83, W2: 0.84). We want to make sure that a lower priority
+        well is only shifted prior to a higher priority well, if the higher
+        priority is unaffected. We therefore sort the wells after priority and
+        provide a significant increase in cost as priority is reduced
+        """
+        sorted_by_priority = sorted(self.field_manager.wells, key=lambda x: x.priority)
+        self.well_cost = {w: (i + 1) ** 4 for i, w in enumerate(sorted_by_priority)}
+
+    def create_objective_vars(self):
+        """
+        We create a bound that covers worst case scenario, and hence should
+        provide a large enough upper limit for the objective function
+        """
+        bound = (
+            sum(self.well_cost[well] for well in self.field_manager.wells)
+            * self.horizon
+        )
+
+        self.rig_costs = {}
+        for rig in self.field_manager.rigs:
+            self.rig_costs[rig] = self.NewIntVar(0, bound, f"{rig.name}_cost")
+
+        self.objective = self.NewIntVar(0, bound, "total_cost")
+
+    def create_single_rig_wells(self):
+        """
+        Sets up the self.single_rig_tasks property.
+        for each rig, self.single_rig_tasks[rig] is the list of
+        tasks that can only performed by that rig.
+        """
+        wells_at_rig = {
+            rig: {self.field_manager.get_well(sw[1]) for sw in rig.slot_wells}
+            for rig in self.field_manager.rigs
+        }
+        single_rig_wells = set(self.field_manager.wells)
+        wells_counter = Counter(itertools.chain.from_iterable(wells_at_rig.values()))
+        single_rig_wells = [well for well, n in wells_counter.items() if n == 1]
+
+        self.single_wells_at_rig = {
+            rig: wells_at_rig[rig].intersection(single_rig_wells)
+            for rig in self.field_manager.rigs
+        }
 
     def create_tasks(self):
         """
@@ -59,42 +112,19 @@ class DrillConstraints(cp_model.CpModel):
             self.tasks[well, rig, slot]
 
     def objective_function(self):
-        """
-        The difference between priorities of the wells can be quite small
-        (e.g. W1: 0.83, W2: 0.84). We want to make sure that a lower priority
-        well is only shifted prior to a higher priority well, if the higher
-        priority is unaffected. We therefore sort the wells after priority
-        and provide an integer value that should suffice to keep that behaviour.
-        """
-        sorted_by_priority = sorted(self.field_manager.wells, key=lambda x: x.priority)
-        wells_priority = {w: (i + 1) ** 4 for i, w in enumerate(sorted_by_priority)}
-        bound = (
-            sum(wells_priority[well] for (well, _, _), _ in self.tasks.items())
-            * self.horizon
-        )
-
-        if self.best_guess_schedule is not None:
-            # Calculate the objective value given an initial guess including some leverage
-            well_end_time = {key.name: val for key, val in wells_priority.items()}
-            bound = int(
-                1.1
-                * sum(
-                    [
-                        well_end_time[elem.well] * elem.end
-                        for elem in self.best_guess_schedule
-                    ]
+        for rig in self.field_manager.rigs:
+            self.Add(
+                self.rig_costs[rig]
+                == sum(
+                    t.end * self.well_cost[well]
+                    for (well, rig2, _), t in self.tasks.items()
+                    if rig2 == rig
                 )
             )
-
-        objective = self.NewIntVar(0, bound, "makespan")
         self.Add(
-            objective
-            == sum(
-                t.end * wells_priority[well]
-                for (well, rig, slot), t in self.tasks.items()
-            )
+            self.objective == sum(rig_cost for rig_cost in self.rig_costs.values())
         )
-        self.Minimize(objective)
+        self.Minimize(self.objective)
 
     def all_wells_drilled_once(self):
         """
@@ -181,6 +211,37 @@ class DrillConstraints(cp_model.CpModel):
         self.no_rig_overlapping()
         self.all_wells_drillable()
 
+    def add_redundant_constraints(self):
+        """
+        Adds a lower bound to each rig_costs. This lower bound is based on
+        relaxing the problem to only drilling wells that can only be drilled by
+        one rig and there is no unavailability. In that case the best solution
+        is to drill the wells in prioritized order for each rig.
+        """
+        for rig in self.field_manager.rigs:
+            wells = self.single_wells_at_rig[rig]
+            sorted_wells = list(wells)
+            sorted_wells.sort(key=self.well_cost.get, reverse=True)
+            running_sum = 0
+            well_end_sum = 0
+            for well in sorted_wells:
+                running_sum += well.drill_time + 1
+                well_end_sum += self.well_cost[well] * running_sum
+            self.Add(self.rig_costs[rig] >= well_end_sum)
+
+    def add_hint_solution(self):
+        if self.best_guess_schedule is None:
+            return
+
+        tasks_by_name = {
+            (well.name, rig.name, slot.name): t
+            for (well, rig, slot), t in self.tasks.items()
+        }
+        for item in self.best_guess_schedule:
+            t = tasks_by_name[item.well, item.rig, item.slot]
+            self.AddHint(t.begin, item.begin)
+            self.AddHint(t.presence, True)
+
     def rig_tasks(self, rig):
         for well, slot in itertools.product(
             self.field_manager.wells, self.field_manager.slots
@@ -208,6 +269,9 @@ class SolutionCallback(cp_model.CpSolverSolutionCallback):
 
     def on_solution_callback(self):
         self.__solution_count += 1
+        logger.info(
+            f"Best bound: {self.BestObjectiveBound()}, Best solution: {self.ObjectiveValue()}"
+        )
         if self.__solution_limit and self.__solution_count >= self.__solution_limit:
             self.StopSearch()
 
@@ -227,6 +291,8 @@ def run_optimization(
 
     model.apply_constraints()
     model.objective_function()
+    model.add_redundant_constraints()
+    model.add_hint_solution()
 
     solver = cp_model.CpSolver()
     solver.parameters.max_time_in_seconds = max_solver_time
