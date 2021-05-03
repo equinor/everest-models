@@ -30,7 +30,7 @@ def relpath(*path):
 
 
 def tmpdir(path, teardown=True):
-    """ Decorator based on the  `tmp` context """
+    """Decorator based on the  `tmp` context"""
 
     def real_decorator(function):
         def wrapper(function, *args, **kwargs):
