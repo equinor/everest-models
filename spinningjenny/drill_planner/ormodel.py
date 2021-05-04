@@ -270,7 +270,9 @@ class SolutionCallback(cp_model.CpSolverSolutionCallback):
     def on_solution_callback(self):
         self.__solution_count += 1
         logger.info(
-            f"Best bound: {self.BestObjectiveBound()}, Best solution: {self.ObjectiveValue()}"
+            "Solution found: Best bound: %f, new solution: %f",
+            self.BestObjectiveBound(),
+            self.ObjectiveValue(),
         )
         if self.__solution_limit and self.__solution_count >= self.__solution_limit:
             self.StopSearch()
@@ -296,30 +298,25 @@ def run_optimization(
 
     solver = cp_model.CpSolver()
     solver.parameters.max_time_in_seconds = max_solver_time
-    logger.debug(
-        "Solver set with maximum solve time of {} seconds".format(max_solver_time)
-    )
+    logger.debug("Solver set with maximum solve time of %f seconds", max_solver_time)
 
+    logger.info("Model statistics: %s", model.ModelStats())
     logger.info("Optimization solver starting..")
 
     solution_printer = SolutionCallback(solution_limit)
     status = solver.SolveWithSolutionCallback(model, solution_printer)
 
-    logger.debug("Solver completed with status: {}".format(solver.StatusName(status)))
-    msg = (
-        "Detailed solver status: \n"
-        "Number of conflicts: {}\n"
-        "Number of solutions found: {}\n"
-        "Objective Value: {}\n"
-        "Walltime: {}\n"
-    )
+    logger.debug("Solver completed with status: %s", solver.StatusName(status))
     logger.debug(
-        msg.format(
-            solver.NumConflicts(),
-            solver.ObjectiveValue(),
-            solver.WallTime(),
-            solution_printer.solution_count(),
-        )
+        "Detailed solver status: \n"
+        "Number of conflicts: %d\n"
+        "Number of solutions found: %d\n"
+        "Objective Value: %d\n"
+        "Walltime: %f\n",
+        solver.NumConflicts(),
+        solution_printer.solution_count(),
+        solver.ObjectiveValue(),
+        solver.WallTime(),
     )
     schedule = []
     if status == accepted_status:
