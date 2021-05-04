@@ -1,12 +1,12 @@
 import argparse
+import logging
 import os
-
 from functools import partial
 
-from spinningjenny.schmerge_job import merge_schedule, get_transformed_injections
-from spinningjenny import customized_logger, valid_file, valid_json_file, is_writable
+from spinningjenny import is_writable, valid_file, valid_json_file
+from spinningjenny.schmerge_job import get_transformed_injections, merge_schedule
 
-logger = customized_logger.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def valid_schmerge_config(file_path, parser):

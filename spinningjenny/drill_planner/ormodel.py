@@ -1,16 +1,12 @@
 import itertools
-from collections import defaultdict, namedtuple
-
-from ortools.sat.python import cp_model
-
-from spinningjenny import customized_logger
 import logging
-from collections import Counter, defaultdict, namedtuple
+from collections import Counter, namedtuple
 
 from ortools.sat.python import cp_model
+
 from spinningjenny.drill_planner import ScheduleElement
 
-logger = customized_logger.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 TaskType = namedtuple("TaskType", ("begin", "end", "presence", "interval"))
 

@@ -1,10 +1,11 @@
 #!/usr/bin/env/python
 import json
+import logging
 from itertools import chain, compress
 
-from spinningjenny import customized_logger, str2date
+from spinningjenny import str2date
 
-logger = customized_logger.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class CalculateNPV:

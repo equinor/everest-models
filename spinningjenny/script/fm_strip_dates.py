@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 import argparse
+import logging
 import os
 import sys
-
 from functools import partial
 
-from spinningjenny.strip_dates_job import strip_dates, process_dates
-from spinningjenny import customized_logger, str2date, valid_file
+from spinningjenny import str2date, valid_file
+from spinningjenny.strip_dates_job import process_dates, strip_dates
 
-logger = customized_logger.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def _build_argument_parser():

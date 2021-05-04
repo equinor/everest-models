@@ -1,13 +1,12 @@
-import shutil
-import os
 import datetime
+import logging
+import os
+import shutil
 
 from ecl.eclfile import EclFile, FortIO
 from ecl.summary import EclSum
 
-from spinningjenny import customized_logger
-
-logger = customized_logger.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def process_dates(dates):

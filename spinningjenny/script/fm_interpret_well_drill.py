@@ -1,10 +1,12 @@
-import os
 import argparse
+import logging
+import os
 from functools import partial
-from spinningjenny.interpret_well_drill_job import interpret_well_drill
-from spinningjenny import customized_logger, valid_file, is_writable
 
-logger = customized_logger.get_logger(__name__)
+from spinningjenny import is_writable, valid_file
+from spinningjenny.interpret_well_drill_job import interpret_well_drill
+
+logger = logging.getLogger(__name__)
 
 
 def interpret_well_drill_argparser():

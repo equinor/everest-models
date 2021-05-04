@@ -1,12 +1,13 @@
+import logging
 from itertools import product
+
 from spinningjenny.drill_planner import (
+    ScheduleElement,
     combine_slot_rig_unavailability,
     valid_drill_combination,
 )
-from spinningjenny.drill_planner import ScheduleElement
-from spinningjenny import customized_logger
 
-logger = customized_logger.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def _get_next_event(config):

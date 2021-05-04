@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 import argparse
-from functools import partial
-import sys
 import errno
+import logging
+import sys
+from functools import partial
 
-from spinningjenny import customized_logger, valid_ecl_file, is_writable, valid_date
+from spinningjenny import is_writable, valid_date, valid_ecl_file
 from spinningjenny.rf_job import recovery_factor
 
-logger = customized_logger.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def write_results(rf, fname):

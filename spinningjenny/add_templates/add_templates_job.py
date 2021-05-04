@@ -1,10 +1,10 @@
-import sys
 import copy
-from collections import namedtuple, Counter
-from spinningjenny import customized_logger
+import logging
+import sys
+from collections import Counter, namedtuple
 
 Template = namedtuple("Template", ("file", "key_set"))
-logger = customized_logger.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def add_templates(templates, wells):

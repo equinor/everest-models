@@ -1,11 +1,14 @@
+import logging
 import os
 import re
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict, defaultdict
 from datetime import datetime
-from jinja2 import Template
-from spinningjenny import customized_logger, str2date
 
-logger = customized_logger.get_logger(__name__)
+from jinja2 import Template
+
+from spinningjenny import str2date
+
+logger = logging.getLogger(__name__)
 
 COMMENT_INDICATOR = "--"
 PLACEHOLDER_INDICATOR = "<<{}>>"

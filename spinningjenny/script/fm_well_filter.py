@@ -1,9 +1,11 @@
 import argparse
+import logging
 from functools import partial
-from spinningjenny.well_filter_job import filter_wells, write_results
-from spinningjenny import customized_logger, is_writable, valid_json_file
 
-logger = customized_logger.get_logger(__name__)
+from spinningjenny import is_writable, valid_json_file
+from spinningjenny.well_filter_job import filter_wells, write_results
+
+logger = logging.getLogger(__name__)
 
 
 def filter_argparser():

@@ -1,8 +1,9 @@
 import json
-import ruamel.yaml as yaml
-from spinningjenny import customized_logger
+import logging
 
-logger = customized_logger.get_logger(__name__)
+import ruamel.yaml as yaml
+
+logger = logging.getLogger(__name__)
 
 
 def interpret_well_drill(dakota_values_file, output_file):

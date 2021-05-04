@@ -1,9 +1,9 @@
-import configsuite
+import logging
 import os
 
-from spinningjenny import customized_logger
+import configsuite
 
-logger = customized_logger.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def valid_job(well_dates, constraints):

@@ -5,10 +5,12 @@ try:
 except ImportError:
     from collections import Mapping
 
-from spinningjenny import customized_logger, date2str, str2date, write_json_to_file
+import logging
 from copy import deepcopy
 
-logger = customized_logger.get_logger(__name__)
+from spinningjenny import date2str, str2date, write_json_to_file
+
+logger = logging.getLogger(__name__)
 
 
 def run_job(output_data, well_data, output_file):

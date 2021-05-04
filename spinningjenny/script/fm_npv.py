@@ -1,23 +1,23 @@
 #!/usr/bin/env python
 
 import argparse
-import pkg_resources
-
+import logging
 from functools import partial
 
+import pkg_resources
+
 from spinningjenny import (
-    customized_logger,
-    valid_file,
-    valid_ecl_file,
-    valid_date,
+    is_writable,
     load_yaml,
     valid_config,
-    is_writable,
+    valid_date,
+    valid_ecl_file,
+    valid_file,
 )
 from spinningjenny.npv.npv_config import build_schema
 from spinningjenny.npv.npv_job import CalculateNPV
 
-logger = customized_logger.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def main_entry_point(args=None):

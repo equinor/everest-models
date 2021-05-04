@@ -1,26 +1,22 @@
 #!/usr/bin/env python
 
-import sys
 import argparse
+import logging
+import sys
 from functools import partial
 
-from spinningjenny import (
-    customized_logger,
-    valid_yaml_file,
-    valid_raw_config,
-    is_writable,
-)
-from spinningjenny.well_constraints.well_config import build_schema as config_schema
+from spinningjenny import is_writable, valid_raw_config, valid_yaml_file
 from spinningjenny.well_constraints.controls_config import (
     build_schema as controls_schema,
 )
-from spinningjenny.well_constraints.well_constraint_job import run_job, merge_dicts
+from spinningjenny.well_constraints.well_config import build_schema as config_schema
+from spinningjenny.well_constraints.well_constraint_job import merge_dicts, run_job
 from spinningjenny.well_constraints.well_constraint_validate import (
-    valid_job,
     valid_configuration,
+    valid_job,
 )
 
-logger = customized_logger.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def main_entry_point(args=None):

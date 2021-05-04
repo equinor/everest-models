@@ -1,14 +1,44 @@
-import ruamel.yaml as yaml
 import json
-
+import logging
+import sys
 from datetime import datetime
-from os import path, access, W_OK
-import pkg_resources
+from os import W_OK, access, path
 
-from ecl.summary import EclSum
+import pkg_resources
+import ruamel.yaml as yaml
 from configsuite import ConfigSuite
-from spinningjenny import customized_logger
+from ecl.summary import EclSum
+
 from spinningjenny.bin import entry_points
+
+
+def set_up_logger(logger):
+    formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+    # All levels should pass root logger
+    logger.setLevel(logging.DEBUG)
+
+    # Creating handler for stdout logging levels DEBUG <= WARN
+    out = logging.StreamHandler(sys.stdout)
+    out.setFormatter(formatter)
+    out.setLevel(logging.DEBUG)
+    out.addFilter(
+        type(
+            "",
+            (logging.Filter,),
+            {"filter": staticmethod(lambda r: r.levelno <= logging.WARN)},
+        )
+    )
+
+    # Creating handler for stderr logging levels ERROR <
+    err = logging.StreamHandler(sys.stderr)
+    err.setFormatter(formatter)
+    err.setLevel(logging.ERROR)
+
+    logger.addHandler(out)
+    logger.addHandler(err)
+
+
+set_up_logger(logging.getLogger(__name__))
 
 try:
     from spinningjenny.version import version

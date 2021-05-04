@@ -1,23 +1,17 @@
 #!/usr/bin/env python
 import argparse
 import json
-
+import logging
 from functools import partial
 
-from spinningjenny import (
-    customized_logger,
-    valid_file,
-    valid_config,
-    write_json_to_file,
-    is_writable,
-)
+from spinningjenny import is_writable, valid_config, valid_file, write_json_to_file
 from spinningjenny.add_templates.add_templates_job import (
     add_templates,
     find_template_duplicates,
 )
 from spinningjenny.add_templates.add_tmpl_schema import build_schema
 
-logger = customized_logger.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def _build_argument_parser():

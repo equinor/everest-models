@@ -1,9 +1,9 @@
+import logging
 from enum import Enum
+
 import numpy as np
 
-from spinningjenny import customized_logger
-
-logger = customized_logger.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class CalculationType(Enum):

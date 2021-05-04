@@ -1,29 +1,25 @@
 #!/usr/bin/env python
 import argparse
-import configsuite
-
+import logging
 from copy import deepcopy
 from datetime import timedelta
 from functools import partial
 
-from spinningjenny import (
-    customized_logger,
-    valid_yaml_file,
-    write_json_to_file,
-    is_writable,
+import configsuite
+
+from spinningjenny import is_writable, valid_yaml_file, write_json_to_file
+from spinningjenny.drill_planner import (
+    add_missing_slots,
+    append_data,
+    create_config_dictionary,
+    drill_planner_schema,
+    resolve_priorities,
 )
 from spinningjenny.drill_planner.drillmodel import FieldManager, FieldSchedule
-from spinningjenny.drill_planner.ormodel import run_optimization
-from spinningjenny.drill_planner import (
-    drill_planner_schema,
-    create_config_dictionary,
-    append_data,
-    resolve_priorities,
-    add_missing_slots,
-)
 from spinningjenny.drill_planner.greedy_drill_planner import get_greedy_drill_plan
+from spinningjenny.drill_planner.ormodel import run_optimization
 
-logger = customized_logger.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def _log_detailed_result(schedule, start_date):

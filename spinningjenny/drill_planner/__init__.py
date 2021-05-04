@@ -1,11 +1,10 @@
 import copy
-
-import numpy as np
+import logging
 from functools import partial
 
-from spinningjenny import DATE_FORMAT, customized_logger
+import numpy as np
 
-logger = customized_logger.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class ScheduleElement:

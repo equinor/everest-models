@@ -1,8 +1,7 @@
 import json
+import logging
 
-from spinningjenny import customized_logger
-
-logger = customized_logger.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def filter_wells(wells, parser, keep_wells=None, remove_wells=None):
