@@ -5,6 +5,8 @@ import logging
 import sys
 from functools import partial
 
+import configsuite
+
 from spinningjenny import is_writable, valid_raw_config, valid_yaml_file
 from spinningjenny.well_constraints.controls_config import (
     build_schema as controls_schema,
@@ -86,7 +88,8 @@ def well_constraint_parser():
         type=partial(valid_raw_config, schema=config_schema(), parser=parser),
         help="""
         Configuration file with names, events and boundaries for constraints
-        """,
+        """
+        + f"config format: \n{configsuite.docs.generate(config_schema())}",
     )
     parser.add_argument(
         "-rc",
@@ -97,10 +100,11 @@ def well_constraint_parser():
         help="""
         Rate constraints file, from controls section of Everest config, 
         must be indexed format. Values must be in the interval [0, 1], 
-        where 0 corresponds to the minimum possible rate value of the the well
+        where 0 corresponds to the minimum possible rate value of the well
         the given index and 1 corresponds to the maximum possible value 
         of the well at the given index.
-        """,
+        """
+        + f"config format: \n{configsuite.docs.generate(controls_schema())}",
     )
     parser.add_argument(
         "-pc",
@@ -114,7 +118,8 @@ def well_constraint_parser():
         in a two phase case ["water", "gas"], any control value in the 
         interval [0, 0.5] will be attributed to "water" and any control 
         value in the interval (0.5, 1] will be attributed to "gas".
-        """,
+        """
+        + f"config format: \n{configsuite.docs.generate(controls_schema())}",
     )
     parser.add_argument(
         "-dc",
@@ -127,7 +132,8 @@ def well_constraint_parser():
         must be indexed format. Values must be in the interval [0, 1], 
         where 0 corresponds to the minimum possible drill time for well,
         if given, 1 corresponds to the maximum drill time of the well if given.
-        """,
+        """
+        + f"config format: \n{configsuite.docs.generate(controls_schema())}",
     )
     parser.add_argument(
         "-o",
