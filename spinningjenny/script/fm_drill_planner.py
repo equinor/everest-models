@@ -65,10 +65,13 @@ def scheduler_parser():
         "--config",
         required=True,
         type=partial(valid_yaml_file, parser=parser),
-        help="Configuration file describing the constraints of the field "
-        "development. The file must contain information about rigs and slots "
-        "that the wells can be drilled through. Additional information, such as "
-        "when rigs and slots are available is also added here.",
+        help="""
+        Configuration file describing the constraints of the field
+        development. The file must contain information about rigs and slots
+        that the wells can be drilled through. Additional information, such as
+        when rigs and slots are available is also added here.
+        """
+        + f"Schema: \n{configsuite.docs.generate(drill_planner_schema.build())}",
     )
     parser.add_argument(
         "-opt",
