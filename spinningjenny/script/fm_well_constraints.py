@@ -14,7 +14,6 @@ from spinningjenny.well_constraints.controls_config import (
 from spinningjenny.well_constraints.well_config import build_schema as config_schema
 from spinningjenny.well_constraints.well_constraint_job import merge_dicts, run_job
 from spinningjenny.well_constraints.well_constraint_validate import (
-    valid_configuration,
     valid_job,
 )
 
