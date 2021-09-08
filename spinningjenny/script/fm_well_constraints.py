@@ -77,8 +77,8 @@ def well_constraint_parser():
         required=True,
         type=partial(valid_yaml_file, parser=parser),
         help="""
-        File containing well names and well opening times, 
-        should be specified in Everest config.
+        File in json format containing well names and well opening times,
+        should be specified in Everest config (wells.json).
         """,
     )
     parser.add_argument(
@@ -87,7 +87,8 @@ def well_constraint_parser():
         required=True,
         type=partial(valid_raw_config, schema=config_schema(), parser=parser),
         help="""
-        Configuration file with names, events and boundaries for constraints
+        Configuration file in yaml format with names, events and boundaries for
+        constraints
         """
         + f"config format: \n{configsuite.docs.generate(config_schema())}",
     )
@@ -98,7 +99,7 @@ def well_constraint_parser():
         type=partial(valid_raw_config, schema=controls_schema(), parser=parser),
         default=None,
         help="""
-        Rate constraints file, from controls section of Everest config, 
+        Rate constraints file in json format, from controls section of Everest config,
         must be indexed format. Values must be in the interval [0, 1], 
         where 0 corresponds to the minimum possible rate value of the well
         the given index and 1 corresponds to the maximum possible value 
@@ -113,7 +114,7 @@ def well_constraint_parser():
         type=partial(valid_raw_config, schema=controls_schema(), parser=parser),
         default=None,
         help="""
-        Phase constraints file, from controls section of Everest config, 
+        Phase constraints file in json format, from controls section of Everest config,
         must be indexed format. Values must be in the interval [0,1], i.e 
         in a two phase case ["water", "gas"], any control value in the 
         interval [0, 0.5] will be attributed to "water" and any control 
@@ -128,8 +129,8 @@ def well_constraint_parser():
         type=partial(valid_raw_config, schema=controls_schema(), parser=parser),
         default=None,
         help="""
-        Duration constraints file, from controls section of Everest config, 
-        must be indexed format. Values must be in the interval [0, 1], 
+        Duration constraints file in json format, from controls section of Everest
+        config, must be indexed format. Values must be in the interval [0, 1],
         where 0 corresponds to the minimum possible drill time for well,
         if given, 1 corresponds to the maximum drill time of the well if given.
         """

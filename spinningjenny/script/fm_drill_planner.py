@@ -66,7 +66,7 @@ def scheduler_parser():
         required=True,
         type=partial(valid_yaml_file, parser=parser),
         help="""
-        Configuration file describing the constraints of the field
+        Configuration file in yaml format describing the constraints of the field
         development. The file must contain information about rigs and slots
         that the wells can be drilled through. Additional information, such as
         when rigs and slots are available is also added here.
@@ -78,8 +78,8 @@ def scheduler_parser():
         "--optimizer",
         required=True,
         type=partial(valid_yaml_file, parser=parser),
-        help="The optimizer file is the file output from everest that contains "
-        "the well priority values - a float for each well.",
+        help="The optimizer file in yaml format is the file output from everest that "
+        "contains the well priority values - a float for each well.",
     )
     parser.add_argument(
         "-tl",
@@ -96,7 +96,7 @@ def scheduler_parser():
         "--output",
         required=True,
         type=partial(is_writable, parser=parser),
-        help="Name of the output-file. The output-file will contain the same "
+        help="Name of the output-file. The output-file (json) will contain the same "
         "information as the input-file, including the results from the "
         "drill_planner. Please note that it is highly recommended to not use the "
         "same filename as the input-file. In cases where the same workflow is run "
