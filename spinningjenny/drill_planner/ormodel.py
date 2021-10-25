@@ -300,7 +300,7 @@ def run_optimization(
     logger.info("Optimization solver starting..")
 
     solution_printer = SolutionCallback(solution_limit)
-    status = solver.SolveWithSolutionCallback(model, solution_printer)
+    status = solver.Solve(model, solution_callback=solution_printer)
 
     logger.debug("Solver completed with status: %s", solver.StatusName(status))
     logger.debug(
