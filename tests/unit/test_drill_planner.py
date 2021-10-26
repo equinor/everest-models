@@ -558,7 +558,7 @@ def test_compare_schedules():
     )
 
 
-def assert_start_given(expected_begin, key, unavailabilities):
+def assert_start_given(expected_begins, key, unavailabilities):
     config = _simple_setup_config()
 
     for idx, ranges in enumerate(unavailabilities):
@@ -574,9 +574,12 @@ def assert_start_given(expected_begin, key, unavailabilities):
 
     field_manager = FieldManager.generate_from_snapshot(config_snapshot)
     schedule = run_optimization(field_manager=field_manager)
-
     assert field_manager.valid_schedule(FieldSchedule(schedule))
-    assert schedule[0].begin == expected_begin
+
+    for well_name, expected_begin in expected_begins.items():
+        assert [elem.begin for elem in schedule if elem.well == well_name] == [
+            expected_begin
+        ]
 
 
 def test_inclusive_bounds_no_unavailability():
@@ -587,14 +590,19 @@ def test_inclusive_bounds_no_unavailability():
     schedule = run_optimization(field_manager=field_manager)
 
     assert field_manager.valid_schedule(FieldSchedule(schedule))
-    assert schedule[1].begin > schedule[0].end
+    sorted_schedule = sorted(
+        schedule,
+        key=lambda element: config["wells_priority"][element.well],
+        reverse=True,
+    )
+    assert sorted_schedule[1].begin > sorted_schedule[0].end
 
 
 def test_slot_unavailability_at_start():
     slot_one_unavailability = [(0, 0)]
     slot_two_unavailability = [(0, 0)]
     assert_start_given(
-        expected_begin=1,
+        expected_begins={"W1": 1},
         key="slots",
         unavailabilities=[slot_one_unavailability, slot_two_unavailability],
     )
@@ -604,7 +612,7 @@ def test_slot_unavailability_insufficient_time_to_complete():
     slot_one_unavailability = [(5, 5)]
     slot_two_unavailability = [(5, 5)]
     assert_start_given(
-        expected_begin=6,
+        expected_begins={"W1": 6},
         key="slots",
         unavailabilities=[slot_one_unavailability, slot_two_unavailability],
     )
@@ -614,7 +622,7 @@ def test_slot_unavailability_sufficient_time_to_complete():
     slot_one_unavailability = [(6, 6)]
     slot_two_unavailability = [(6, 6)]
     assert_start_given(
-        expected_begin=0,
+        expected_begins={"W1": 0},
         key="slots",
         unavailabilities=[slot_one_unavailability, slot_two_unavailability],
     )
@@ -624,7 +632,7 @@ def test_slot_unavailability_insufficient_time_to_complete_between_unavailabilit
     slot_one_unavailability = [(5, 5), (11, 11)]
     slot_two_unavailability = [(5, 5), (11, 11)]
     assert_start_given(
-        expected_begin=12,
+        expected_begins={"W1": 12},
         key="slots",
         unavailabilities=[slot_one_unavailability, slot_two_unavailability],
     )
@@ -634,7 +642,7 @@ def test_slot_unavailability_sufficient_time_to_complete_between_unavailabilitie
     slot_one_unavailability = [(5, 5), (12, 12)]
     slot_two_unavailability = [(5, 5), (12, 12)]
     assert_start_given(
-        expected_begin=6,
+        expected_begins={"W1": 6},
         key="slots",
         unavailabilities=[slot_one_unavailability, slot_two_unavailability],
     )
@@ -643,33 +651,33 @@ def test_slot_unavailability_sufficient_time_to_complete_between_unavailabilitie
 def test_rig_unavailability_at_start():
     rig_unavailability = [(0, 0)]
     assert_start_given(
-        expected_begin=1, key="rigs", unavailabilities=[rig_unavailability]
+        expected_begins={"W1": 1}, key="rigs", unavailabilities=[rig_unavailability]
     )
 
 
 def test_rig_unavailability_insufficient_time_to_complete():
     rig_unavailability = [(5, 5)]
     assert_start_given(
-        expected_begin=6, key="rigs", unavailabilities=[rig_unavailability]
+        expected_begins={"W1": 6}, key="rigs", unavailabilities=[rig_unavailability]
     )
 
 
 def test_rig_unavailability_sufficient_time_to_complete():
     rig_unavailability = [(6, 6)]
     assert_start_given(
-        expected_begin=0, key="rigs", unavailabilities=[rig_unavailability]
+        expected_begins={"W1": 0}, key="rigs", unavailabilities=[rig_unavailability]
     )
 
 
 def test_rig_unavailability_insufficient_time_to_complete_between_unavailabilities():
     rig_unavailability = [(5, 5), (11, 11)]
     assert_start_given(
-        expected_begin=12, key="rigs", unavailabilities=[rig_unavailability]
+        expected_begins={"W1": 12}, key="rigs", unavailabilities=[rig_unavailability]
     )
 
 
 def test_rig_unavailability_sufficient_time_to_complete_between_unavailabilities():
     rig_unavailability = [(5, 5), (12, 12)]
     assert_start_given(
-        expected_begin=6, key="rigs", unavailabilities=[rig_unavailability]
+        expected_begins={"W1": 6}, key="rigs", unavailabilities=[rig_unavailability]
     )
