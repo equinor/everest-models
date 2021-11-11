@@ -178,7 +178,7 @@ def load_yaml(file_path):
 
 def fm_install_folder():
     return path.abspath(
-        pkg_resources.resource_filename("share", "spinningjenny/forwardmodels")
+        pkg_resources.resource_filename("spinningjenny", "share/forwardmodels")
     )
 
 

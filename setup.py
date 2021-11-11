@@ -5,7 +5,7 @@ import ruamel.yaml as yaml
 
 
 def entry_point_strings():
-    with open("share/entry_points.yml") as fh:
+    with open("spinningjenny/share/entry_points.yml") as fh:
         eps = yaml.safe_load(fh)
 
     return ["fm_{} = {}".format(k, v) for k, v in eps.items()]
@@ -13,12 +13,12 @@ def entry_point_strings():
 
 setup(
     name="spinningjenny",
-    packages=find_packages(include=["spinningjenny*", "share*"]),
+    packages=find_packages(include=["spinningjenny*"]),
     package_data={
-        "share": [
-            "entry_points.yml",
-            "spinningjenny/forwardmodels/*",
-            "spinningjenny/npv/*",
+        "spinningjenny": [
+            "share/entry_points.yml",
+            "share/forwardmodels/*",
+            "share/npv/*",
         ]
     },
     description="Module containing a collection of jobs for ERT",

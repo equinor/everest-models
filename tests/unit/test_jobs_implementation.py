@@ -5,7 +5,7 @@ from tests import relpath
 from spinningjenny.bin import entry_points
 from spinningjenny import fm_jobs
 
-CONFIG_FOLDER = relpath("share", "spinningjenny", "forwardmodels")
+CONFIG_FOLDER = relpath("spinningjenny", "share", "forwardmodels")
 SCRIPT_FOLDER = relpath("spinningjenny", "script")
 
 
@@ -30,5 +30,5 @@ def test_fm_jobs():
 
     for job in jobs:
         assert (
-            "/share/spinningjenny/forwardmodels/{}".format(job["name"]) in job["path"]
+            "/spinningjenny/share/forwardmodels/{}".format(job["name"]) in job["path"]
         )

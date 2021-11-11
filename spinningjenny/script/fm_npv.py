@@ -113,7 +113,7 @@ def _build_parser():
 
 def _npv_default():
     defaults_path = pkg_resources.resource_filename(
-        "share", "spinningjenny/npv/npv_defaults.yml"
+        "spinningjenny", "share/npv/npv_defaults.yml"
     )
 
     return load_yaml(defaults_path)

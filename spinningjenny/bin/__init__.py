@@ -10,5 +10,7 @@ def entry_points():
     will be enforced using a test.
     :return:
     """
-    with open(pkg_resources.resource_filename("share", "entry_points.yml")) as fh:
+    with open(
+        pkg_resources.resource_filename("spinningjenny", "share/entry_points.yml")
+    ) as fh:
         return yaml.safe_load(fh)
