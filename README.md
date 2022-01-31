@@ -90,3 +90,11 @@ extract_summary_data -s SUMMARY [-sd START_DATE] -ed END_DATE
 drill_date_planner [-h] -i INPUT -opt OPTIMIZER -b ['UPPER', 'LOWER'] ['UPPER', 'LOWER']
                    -m MAX_DAYS -o OUTPUT
 ```
+
+
+### select_wells
+```bash
+select_wells [-h] -i INPUT [-n WELL_NUMBER | -f WELL_NUMBER_FILE] [-r ['LOWER', 'UPPER']
+             ['LOWER', 'UPPER']] [-s ['LOWER', 'UPPER'] ['LOWER', 'UPPER']]
+             [-m MAX_DATE] -o OUTPUT
+```
