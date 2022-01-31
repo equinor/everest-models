@@ -1,0 +1,22 @@
+[
+    {
+        "drill_time": 50,
+        "name": "WELL1"
+    },
+    {
+        "drill_time": 80,
+        "name": "WELL2"
+    },
+    {
+        "drill_time": 80,
+        "name": "WELL3"
+    },
+    {
+        "drill_time": 80,
+        "name": "WELL4"
+    },
+    {
+        "drill_time": 80,
+        "name": "WELL5"
+    }
+]

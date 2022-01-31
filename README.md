@@ -84,3 +84,9 @@ extract_summary_data -s SUMMARY [-sd START_DATE] -ed END_DATE
                                OUTPUT
 ```
 
+
+### drill_date_planner
+```bash
+drill_date_planner [-h] -i INPUT -opt OPTIMIZER -b ['UPPER', 'LOWER'] ['UPPER', 'LOWER']
+                   -m MAX_DAYS -o OUTPUT
+```
