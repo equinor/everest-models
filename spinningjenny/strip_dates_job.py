@@ -2,6 +2,7 @@ import datetime
 import logging
 import os
 import shutil
+from typing import List
 
 from ecl.eclfile import EclFile, FortIO
 from ecl.summary import EclSum
@@ -18,26 +19,35 @@ def process_dates(dates):
     return [[date.year, date.month, date.day] for date in dates]
 
 
-def strip_dates(summary_file, dates, allow_missing_dates=False):
+def strip_dates(
+    summary_file: EclSum, dates: List[List[int]], allow_missing_dates: bool = False
+):
     """
     Strips all other dates except the ones given
     :param summary_file: summary file that will be stripped of dates other than
     the one given.
-    :param dates: list of dates that need to remain in the summary file.
+    :param dates: list of dates that need to remain in the summary file. A date
+    is a list with exactly three integers, year, month, day.
     :allow_missing_dates: if true, do not raise a runtime error on missing dates.
     """
     try:
         summary = EclSum(summary_file)
     except:
-        raise RuntimeError("Not an eclipse file: {}".format(summary_file))
+        raise RuntimeError(f"Not an eclipse file: {summary_file}")
 
-    report_dates = process_dates(summary.report_dates)
-    missing_dates = [date for date in dates if date not in report_dates]
+    summary_dates = process_dates(
+        [np_date.astype(datetime.datetime) for np_date in summary.numpy_dates]
+    )
+    missing_dates = [date for date in dates if date not in summary_dates]
     if missing_dates:
-        msg = "Missing date(s): {}, in eclipse file: {}".format(
-            ", ".join(datetime.date(*date).isoformat() for date in missing_dates),
-            summary_file,
+        isoformatted_datelist = ", ".join(
+            datetime.date(*date).isoformat() for date in missing_dates
         )
+        msg = (
+            f"Missing date(s): {isoformatted_datelist}, "
+            f"in eclipse file: {summary_file}"
+        )
+
         if allow_missing_dates:
             logger.warning(msg)
         else:

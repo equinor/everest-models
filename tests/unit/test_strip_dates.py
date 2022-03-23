@@ -1,26 +1,14 @@
 import filecmp
-import pytest
 import logging
 
+import pytest
 from ecl.summary import EclSum
-
-from tests import tmpdir, relpath
-from spinningjenny.strip_dates_job import strip_dates, process_dates
-from spinningjenny.script.fm_strip_dates import main_entry_point
 from spinningjenny import str2date
+from spinningjenny.script.fm_strip_dates import main_entry_point
+from spinningjenny.strip_dates_job import process_dates, strip_dates
+from tests import relpath, tmpdir
 
 TEST_DATA_PATH = relpath("tests", "testdata", "stripdates")
-
-
-def _replace_with_existing_date(filename, dates, index=0):
-    # Pick the first date that is not a report_date.
-    ecl_sum = EclSum(filename)
-    report_dates = ecl_sum.report_dates
-    for date in ecl_sum.dates:
-        if date not in report_dates:
-            date = [date.year, date.month, date.day]
-            if date != dates[index]:
-                return date
 
 
 def test_format_dates():
@@ -69,23 +57,14 @@ def test_strip_dates_preserves_last_report_date():
     assert ecl_sum_result.report_dates[0] == last_report_date
 
 
-@pytest.mark.parametrize(
-    "use_existing_date",
-    [False, True],
-)
 @tmpdir(TEST_DATA_PATH)
-def test_missing_date_exceptions_error(use_existing_date):
+def test_missing_date_exceptions_error():
     dates = [
         [1, 1, 1],
         [2014, 5, 30],
         [2018, 2, 19],
         [2016, 5, 19],
     ]
-
-    if use_existing_date:
-        # In this case, replace the first date, which is not in the file at all,
-        # with a date that is in the file, but which is not a report date.
-        dates[0] = _replace_with_existing_date("EGG.UNSMRY", dates)
 
     with pytest.raises(RuntimeError) as err:
         strip_dates("EGG.UNSMRY", dates, allow_missing_dates=False)
@@ -96,23 +75,14 @@ def test_missing_date_exceptions_error(use_existing_date):
     assert "2016-05-19" not in str(err)
 
 
-@pytest.mark.parametrize(
-    "use_existing_date",
-    [False, True],
-)
 @tmpdir(TEST_DATA_PATH)
-def test_missing_date_exceptions_warning(caplog, use_existing_date):
+def test_missing_date_exceptions_warning(caplog):
     dates = [
         [1, 1, 1],
         [2014, 5, 30],
         [2018, 2, 19],
         [2016, 5, 19],
     ]
-
-    if use_existing_date:
-        # In this case, replace the first date, which is not in the file at all,
-        # with a date that is in the file, but which is not a report date.
-        dates[0] = _replace_with_existing_date("EGG.UNSMRY", dates)
 
     with caplog.at_level(logging.WARNING):
         strip_dates("EGG.UNSMRY", dates, allow_missing_dates=True)
