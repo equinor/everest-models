@@ -39,6 +39,10 @@ setup(
     classifiers=[
         "Programming language :: Python",
         "Programming language :: Python :: 3.6",
+        "Programming language :: Python :: 3.7",
+        "Programming language :: Python :: 3.8",
+        "Programming language :: Python :: 3.9",
+        "Programming language :: Python :: 3.10",
     ],
     entry_points={
         "console_scripts": entry_point_strings(),
