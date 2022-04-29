@@ -1,6 +1,12 @@
 name: Testing
 
-on: [pull_request]
+on:
+ push:
+   branches:
+     - main
+   tags: "*"
+ pull_request:
+
 
 env:
   ERT_SHOW_BACKTRACE: 1
