@@ -5,7 +5,6 @@ install_package () {
 }
 
 start_tests () {
-    python -m pip install --upgrade protobuf # needed as komodoenv broke protobuf package
     # For unknown reasons the many_wells_one_ring hangs on Jenkins
     python -m pytest \
         -k "not test_many_wells_one_rig" \
