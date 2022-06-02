@@ -45,5 +45,4 @@ jobs:
 
       - name: "Test package spinningjenny"
         run: |
-          python -m pytest -sv
-
+          python -m pytest -sv --hypothesis-profile ci
