@@ -22,7 +22,7 @@ pytest -sv
 ## List of supported workflows:
 ### drill_planner
 ```bash
-drill_planner -i INPUT -c CONFIG -opt OPTIMIZER [-tl TIME_LIMIT] -o OUTPUT
+drill_planner -i INPUT -c CONFIG -opt OPTIMIZER [-tl TIME_LIMIT] -o OUTPUT [--ignore-end-date]
 ```
 
 ### npv

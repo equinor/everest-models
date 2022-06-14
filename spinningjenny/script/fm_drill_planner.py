@@ -2,7 +2,7 @@
 import argparse
 import logging
 from copy import deepcopy
-from datetime import timedelta
+from datetime import date, timedelta
 from functools import partial
 
 import configsuite
@@ -102,6 +102,11 @@ def scheduler_parser():
         "same filename as the input-file. In cases where the same workflow is run "
         "twice, it is generally adviced that the input-file for each job is consistent",
     )
+    parser.add_argument(
+        "--ignore-end-date",
+        action="store_true",
+        help="Ignore the end date in the config file.",
+    )
     return parser
 
 
@@ -177,6 +182,9 @@ def main_entry_point(args=None):
     args = parser.parse_args(args)
 
     logger.info("Validating config file")
+
+    if args.ignore_end_date and "end_date" in args.config:
+        args.config["end_date"] = date(3000, 1, 1)
 
     config = _prepare_config(
         config=args.config, optimizer_values=args.optimizer, input_values=args.input

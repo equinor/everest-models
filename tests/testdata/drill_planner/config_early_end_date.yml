@@ -1,0 +1,45 @@
+start_date: 2000-01-01
+end_date: 2000-05-01
+rigs:
+  -
+    name: 'A'
+    wells: ['w1', 'w2', 'w3']
+    slots: ['S1', 'S2', 'S3']
+    unavailability:
+      -
+        start: 2000-01-01
+        stop: 2000-02-02
+      -
+        start: 2000-03-14
+        stop: 2000-03-19
+  -
+    name: 'B'
+    wells: ['w3', 'w4', 'w5']
+    slots: ['S3', 'S4', 'S5']
+    unavailability:
+      -
+        start: 2000-02-01
+        stop: 2000-02-02
+      -
+        start: 2000-02-14
+        stop: 2000-02-15
+slots:
+  -
+    name: 'S1'
+    wells: ['w1', 'w2', 'w3']
+    unavailability:
+      -
+        start: 2000-02-01
+        stop: 2000-02-03
+  -
+    name: 'S2'
+    wells: ['w1', 'w2', 'w3']
+  -
+    name: 'S3'
+    wells: ['w1', 'w2', 'w3']
+  -
+    name: 'S4'
+    wells: ['w3', 'w4', 'w5']
+  -
+    name: 'S5'
+    wells: ['w3', 'w4', 'w5']
