@@ -15,7 +15,7 @@ PLACEHOLDER_INDICATOR = "<<{}>>"
 INSERT_SCHEDULE_DATE = "DATES{l} {{}} / --ADDED{l}/{l}{l}".format(l=os.linesep)
 
 ARBITRARY_LINESEPS = "(?:[^/]*{l})+".format(l=os.linesep)
-FIND_DATE_REGEX = "(DATES{c} +{{}} +/{c} */)".format(c=ARBITRARY_LINESEPS)
+FIND_DATE_REGEX = "(DATES{c} *{{}} */{c} */)".format(c=ARBITRARY_LINESEPS)
 
 LOG_AFTER_END_NOTIFICATION = ", this occurs after the END keyword"
 

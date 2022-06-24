@@ -33,12 +33,22 @@ DATES
  28   'JLY' 2015     /
 
    /
+
+DATES
+1 JAN 2020 /
+/
+
+DATES
+ 1 FEB 2020/
+/
 """
     dates = _get_dates_from_schedule(schedule_string)
-    assert len(dates) == 3
+    assert len(dates) == 5
     assert dates[0] == datetime.datetime(2000, 1, 1)
     assert dates[1] == datetime.datetime(2000, 1, 2, 12, 3, 6)
     assert dates[2] == datetime.datetime(2015, 7, 28)
+    assert dates[3] == datetime.datetime(2020, 1, 1)
+    assert dates[4] == datetime.datetime(2020, 2, 1)
 
 
 def test__find_date_index():
