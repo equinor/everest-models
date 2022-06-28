@@ -38,8 +38,6 @@ setup(
     use_scm_version={"write_to": "spinningjenny/version.py"},
     classifiers=[
         "Programming language :: Python",
-        "Programming language :: Python :: 3.6",
-        "Programming language :: Python :: 3.7",
         "Programming language :: Python :: 3.8",
         "Programming language :: Python :: 3.9",
         "Programming language :: Python :: 3.10",
