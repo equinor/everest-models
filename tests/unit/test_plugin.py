@@ -5,11 +5,16 @@ from itertools import chain
 import pytest
 import pluggy
 
-# On Python3 we can mock the everest.plugins module:
-sys.modules["everest.plugins"] = type(sys)("everest.plugins")
-sys.modules["everest.plugins"].hookimpl = pluggy.HookimplMarker("test")
+# Tests will be disabled on python2, since they will fail if everest is not
+# installed and patching the module as below seems not possible.
+pytestmark = pytest.mark.skipif(sys.version_info[0] < 3, reason="Python 3 required")
 
-from spinningjenny import everest_hooks, fm_jobs
+if sys.version_info[0] >= 3:
+    # On Python3 we can mock the everest.plugins module:
+    sys.modules["everest.plugins"] = type(sys)("everest.plugins")
+    sys.modules["everest.plugins"].hookimpl = pluggy.HookimplMarker("test")
+
+    from spinningjenny import everest_hooks, fm_jobs
 
 
 class TestSpec:

@@ -4,6 +4,7 @@ import os
 import pytest
 
 
+@pytest.mark.skipif(sys.version_info < (3, 6), reason="requires Python3")
 def test_code_style():
     from pathlib import Path
     import black
