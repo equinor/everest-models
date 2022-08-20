@@ -18,7 +18,11 @@ def test_add_templates(capsys):
 
     # Load config
     with open("config.yml", "r") as f:
-        config = ConfigSuite(yaml.safe_load(f), build_schema(), deduce_required=True)
+        config = ConfigSuite(
+            yaml.YAML(typ="safe", pure=True).load(f),
+            build_schema(),
+            deduce_required=True,
+        )
 
     # Check loaded config is valid
     assert config.valid

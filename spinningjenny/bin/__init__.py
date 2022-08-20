@@ -1,5 +1,5 @@
-import ruamel.yaml as yaml
 import pkg_resources
+import ruamel.yaml as yaml
 
 
 def entry_points():
@@ -13,4 +13,4 @@ def entry_points():
     with open(
         pkg_resources.resource_filename("spinningjenny", "share/entry_points.yml")
     ) as fh:
-        return yaml.safe_load(fh)
+        return yaml.YAML(typ="safe", pure=True).load(fh)

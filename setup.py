@@ -6,7 +6,7 @@ import ruamel.yaml as yaml
 
 def entry_point_strings():
     with open("spinningjenny/share/entry_points.yml") as fh:
-        eps = yaml.safe_load(fh)
+        eps = yaml.YAML(typ="safe", pure=True).load(fh)
 
     return ["fm_{} = {}".format(k, v) for k, v in eps.items()]
 
