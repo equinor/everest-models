@@ -1,4 +1,5 @@
 import pytest
+
 from spinningjenny import load_yaml
 from spinningjenny.script.fm_drill_planner import main_entry_point
 from tests import relpath, tmpdir

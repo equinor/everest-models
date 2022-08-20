@@ -1,25 +1,23 @@
 import collections
-
 from datetime import datetime, timedelta
+
+import pytest
 from configsuite import ConfigSuite
 from ortools.sat.python import cp_model
 
-import pytest
-
 from spinningjenny import load_yaml
-from spinningjenny.script.fm_drill_planner import _prepare_config, _compare_schedules
 from spinningjenny.drill_planner import (
-    drill_planner_schema,
-    resolve_priorities,
     ScheduleElement,
     add_missing_slots,
     create_config_dictionary,
+    drill_planner_schema,
+    resolve_priorities,
 )
 from spinningjenny.drill_planner.drillmodel import FieldManager, FieldSchedule
-from spinningjenny.drill_planner.ormodel import run_optimization
 from spinningjenny.drill_planner.greedy_drill_planner import get_greedy_drill_plan
-
-from tests import tmpdir, relpath
+from spinningjenny.drill_planner.ormodel import run_optimization
+from spinningjenny.script.fm_drill_planner import _compare_schedules, _prepare_config
+from tests import relpath, tmpdir
 
 TEST_DATA_PATH = relpath("tests", "testdata", "drill_planner")
 

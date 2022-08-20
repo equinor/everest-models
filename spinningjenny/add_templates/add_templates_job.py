@@ -1,6 +1,5 @@
 import copy
 import logging
-import sys
 from collections import Counter, namedtuple
 
 Template = namedtuple("Template", ("file", "key_set"))

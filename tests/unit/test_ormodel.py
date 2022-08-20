@@ -1,11 +1,11 @@
-from hypothesis import given, assume
 import hypothesis.strategies as st
-from spinningjenny.drill_planner.ormodel import DrillConstraints
-from spinningjenny.drill_planner.drillmodel import FieldSchedule
-from spinningjenny.drill_planner import ScheduleElement
-
-from tests.unit.test_drillmodel import field_managers, schedule_element, begin_day
+from hypothesis import assume, given
 from ortools.sat.python import cp_model
+
+from spinningjenny.drill_planner import ScheduleElement
+from spinningjenny.drill_planner.drillmodel import FieldSchedule
+from spinningjenny.drill_planner.ormodel import DrillConstraints
+from tests.unit.test_drillmodel import begin_day, field_managers, schedule_element
 
 
 class Assignment(FieldSchedule):

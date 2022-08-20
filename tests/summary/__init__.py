@@ -1,4 +1,3 @@
-import pytest
 import datetime
 
 from ecl.summary import EclSum

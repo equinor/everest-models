@@ -1,9 +1,11 @@
-from tests import tmpdir, relpath
-from spinningjenny.script.fm_stea import main_entry_point
 import importlib
-from mock import patch
-from stea import SteaResult, SteaKeys, SteaInput
 import os
+
+from mock import patch
+from stea import SteaInput, SteaKeys, SteaResult
+
+from spinningjenny.script.fm_stea import main_entry_point
+from tests import relpath, tmpdir
 
 TEST_DATA_PATH = relpath("tests", "testdata", "stea")
 

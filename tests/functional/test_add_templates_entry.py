@@ -1,9 +1,9 @@
-import pytest
 import json
 
-from tests import tmpdir, relpath
-from spinningjenny.script.fm_add_templates import main_entry_point
+import pytest
 
+from spinningjenny.script.fm_add_templates import main_entry_point
+from tests import relpath, tmpdir
 
 TEST_DATA_PATH = relpath("tests", "testdata", "add_tmpl")
 

@@ -1,22 +1,22 @@
-from configsuite import ConfigSuite
-from hypothesis import given
-import hypothesis.strategies as st
 from itertools import combinations
 
+import hypothesis.strategies as st
+from configsuite import ConfigSuite
+from hypothesis import given
+
+from spinningjenny.drill_planner import ScheduleElement, drill_planner_schema
 from spinningjenny.drill_planner.drillmodel import (
+    DayRange,
     FieldManager,
     FieldSchedule,
-    Well,
     Rig,
     Slot,
-    DayRange,
+    Well,
 )
-from spinningjenny.drill_planner import drill_planner_schema, ScheduleElement
-
 from tests.unit.test_drill_planner import (
-    _small_setup_incl_unavailability,
     _simple_setup,
     _simple_setup_config,
+    _small_setup_incl_unavailability,
 )
 
 num_rigs = 10

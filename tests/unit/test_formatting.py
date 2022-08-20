@@ -1,11 +1,12 @@
-import sys
 import os
+import sys
 
 import pytest
 
 
 def test_code_style():
     from pathlib import Path
+
     import black
     from click.testing import CliRunner
 

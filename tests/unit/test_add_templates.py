@@ -1,11 +1,11 @@
 import json
-import ruamel.yaml as yaml
 
+import ruamel.yaml as yaml
 from configsuite import ConfigSuite
 
-from tests import tmpdir, relpath
 from spinningjenny.add_templates.add_templates_job import add_templates
 from spinningjenny.add_templates.add_tmpl_schema import build_schema
+from tests import relpath, tmpdir
 
 TEST_DATA_PATH = relpath("tests", "testdata", "add_tmpl")
 

@@ -1,5 +1,5 @@
 from spinningjenny.script.fm_schmerge import main_entry_point, valid_schmerge_config
-from tests import tmpdir, relpath, MockParser
+from tests import MockParser, relpath, tmpdir
 
 TEST_DATA_PATH = relpath("tests", "testdata", "schmerge")
 

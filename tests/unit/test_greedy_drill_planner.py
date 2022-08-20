@@ -1,24 +1,23 @@
-from datetime import datetime
 from copy import deepcopy
+from datetime import datetime
 
+from spinningjenny.drill_planner import (
+    combine_slot_rig_unavailability,
+    create_config_dictionary,
+    date_to_int,
+)
+from spinningjenny.drill_planner.drillmodel import FieldManager, FieldSchedule
+from spinningjenny.drill_planner.greedy_drill_planner import (
+    _next_best_event,
+    _valid_events,
+    get_greedy_drill_plan,
+)
 from tests.unit.test_drill_planner import (
     _advanced_setup,
     _delayed_advanced_setup,
     _small_setup_incl_unavailability_config,
     get_drill_planner_config_snapshot,
 )
-
-from spinningjenny.drill_planner import (
-    create_config_dictionary,
-    combine_slot_rig_unavailability,
-    date_to_int,
-)
-from spinningjenny.drill_planner.greedy_drill_planner import (
-    _valid_events,
-    _next_best_event,
-    get_greedy_drill_plan,
-)
-from spinningjenny.drill_planner.drillmodel import FieldManager, FieldSchedule
 
 
 def test__filter_events():

@@ -1,5 +1,7 @@
-import pytest
 from re import escape
+
+import pytest
+
 from spinningjenny import str2date, valid_json_file
 from spinningjenny.select_wells_job import select_wells
 from tests import MockParser, relpath, tmpdir

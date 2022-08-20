@@ -1,10 +1,9 @@
 from ecl.summary import EclSum
 
-from spinningjenny.script.fm_rf import main_entry_point
 from spinningjenny import valid_ecl_file
+from spinningjenny.script.fm_rf import main_entry_point
+from tests import MockParser, tmpdir
 from tests.unit.test_rf import _default_ecl_sum
-
-from tests import tmpdir, MockParser
 
 
 @tmpdir(path=None)

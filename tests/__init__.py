@@ -1,10 +1,10 @@
-import os
-
 import contextlib
-import decorator
 import logging
+import os
 import shutil
 import tempfile
+
+import decorator
 
 
 class MockParser:

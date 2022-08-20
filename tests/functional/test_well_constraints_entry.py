@@ -1,10 +1,10 @@
 import os
+
 import pytest
 
-from spinningjenny import write_yaml_to_file, load_yaml
+from spinningjenny import load_yaml, write_yaml_to_file
 from spinningjenny.script import fm_well_constraints
 from spinningjenny.well_constraints import well_constraint_job
-
 
 _CONFIG_FILE = "well_constraint_input.yml"
 _TEST_DIR = os.path.join(

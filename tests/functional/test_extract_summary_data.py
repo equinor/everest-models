@@ -1,11 +1,10 @@
+import os
+
+from spinningjenny.extract_summary_data import CalculationType
 from spinningjenny.script import fm_extract_summary_data
 from spinningjenny.script.fm_extract_summary_data import main_entry_point
-from spinningjenny.extract_summary_data import CalculationType
-
 from tests import tmp
 from tests.summary import ecl_summary
-
-import os
 
 
 def test_extract_summary_data_entry_point(monkeypatch, caplog):

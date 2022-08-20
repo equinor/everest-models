@@ -1,9 +1,8 @@
 from os import listdir, path
 
-from tests import relpath
-
-from spinningjenny.bin import entry_points
 from spinningjenny import fm_jobs
+from spinningjenny.bin import entry_points
+from tests import relpath
 
 CONFIG_FOLDER = relpath("spinningjenny", "share", "forwardmodels")
 SCRIPT_FOLDER = relpath("spinningjenny", "script")

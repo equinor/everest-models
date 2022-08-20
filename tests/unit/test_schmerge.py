@@ -1,15 +1,16 @@
 import datetime
+
 from spinningjenny import str2date
 from spinningjenny.schmerge_job import (
-    merge_schedule,
-    _extract_comments,
-    _insert_extracted_comments,
     _add_dates_to_schedule,
-    _get_dates_from_schedule,
+    _extract_comments,
     _find_date_index,
+    _get_dates_from_schedule,
+    _insert_extracted_comments,
+    merge_schedule,
 )
-from spinningjenny.script.fm_schmerge import main_entry_point, valid_schmerge_config
-from tests import tmpdir, relpath, MockParser
+from spinningjenny.script.fm_schmerge import valid_schmerge_config
+from tests import MockParser, relpath, tmpdir
 
 TEST_DATA_PATH = relpath("tests", "testdata", "schmerge")
 

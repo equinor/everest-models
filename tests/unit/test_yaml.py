@@ -1,6 +1,5 @@
-from tests import tmpdir, relpath
 from spinningjenny import load_yaml
-
+from tests import relpath, tmpdir
 
 TEST_DATA_PATH = relpath("tests", "testdata", "misc")
 

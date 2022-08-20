@@ -1,8 +1,8 @@
 import json
-import pytest
-from tests import tmpdir, relpath, MockParser
-from spinningjenny.well_filter_job import filter_wells, write_results
+
 from spinningjenny import valid_json_file
+from spinningjenny.well_filter_job import filter_wells, write_results
+from tests import MockParser, relpath, tmpdir
 
 TEST_DATA_PATH = relpath("tests", "testdata", "well_filter")
 

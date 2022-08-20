@@ -1,4 +1,5 @@
 import collections
+
 import configsuite
 from configsuite import MetaKeys as MK
 from configsuite import types

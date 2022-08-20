@@ -1,7 +1,8 @@
 import pytest
+
 from spinningjenny import valid_json_file
 from spinningjenny.drill_date_planner_job import drill_date_planner
-from tests import relpath, tmpdir, MockParser
+from tests import MockParser, relpath, tmpdir
 
 TEST_DATA_PATH = relpath("tests", "testdata", "drill_date_planner")
 

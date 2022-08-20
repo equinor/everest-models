@@ -1,7 +1,8 @@
 import pytest
-from spinningjenny.script.fm_select_wells import main_entry_point
+
 from spinningjenny import load_yaml
-from tests import tmpdir, relpath
+from spinningjenny.script.fm_select_wells import main_entry_point
+from tests import relpath, tmpdir
 
 TEST_DATA_PATH = relpath("tests", "testdata", "select_wells")
 

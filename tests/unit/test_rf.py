@@ -1,6 +1,6 @@
 import datetime
-import pytest
 
+import pytest
 from ecl.summary import EclSum
 
 from spinningjenny.rf_job import recovery_factor

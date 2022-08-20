@@ -1,4 +1,5 @@
-from configsuite import types, MetaKeys as MK
+from configsuite import MetaKeys as MK
+from configsuite import types
 
 
 def build_schema():

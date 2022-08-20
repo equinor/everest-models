@@ -1,5 +1,9 @@
-from configsuite import validator_msg, types, MetaKeys as MK
+# -*- coding: utf-8 -*-
+
 from os import path
+
+from configsuite import MetaKeys as MK
+from configsuite import types, validator_msg
 
 
 @validator_msg("Template file found")

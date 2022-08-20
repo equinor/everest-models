@@ -1,9 +1,8 @@
 import sys
-import os
 from itertools import chain
 
-import pytest
 import pluggy
+import pytest
 
 # On Python3 we can mock the everest.plugins module:
 sys.modules["everest.plugins"] = type(sys)("everest.plugins")

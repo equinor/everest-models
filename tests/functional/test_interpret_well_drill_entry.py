@@ -1,6 +1,7 @@
 import json
-from tests import tmpdir, relpath
+
 from spinningjenny.script.fm_interpret_well_drill import main_entry_point
+from tests import relpath, tmpdir
 
 TEST_DATA_PATH = relpath("tests", "testdata", "interpret_well_drill")
 

@@ -1,13 +1,12 @@
 import datetime
 from collections import namedtuple
 
-
 from spinningjenny import valid_date
 from spinningjenny.extract_summary_data import (
-    validate_arguments,
+    CalculationType,
     apply_calculation,
     extract_value,
-    CalculationType,
+    validate_arguments,
 )
 from tests import MockParser
 from tests.summary import ecl_summary

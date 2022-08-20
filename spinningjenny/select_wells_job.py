@@ -1,6 +1,6 @@
 import logging
 
-from spinningjenny import str2date, rescale_value
+from spinningjenny import rescale_value, str2date
 
 logger = logging.getLogger(__name__)
 

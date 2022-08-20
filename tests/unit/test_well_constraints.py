@@ -1,17 +1,18 @@
+import itertools
 import os
 import shutil
-import pytest
-import configsuite
-import itertools
-
-
 from copy import deepcopy
 
-from spinningjenny import write_yaml_to_file, load_yaml
+import configsuite
+import pytest
+
+from spinningjenny import load_yaml
 from spinningjenny.script import fm_well_constraints
-from spinningjenny.well_constraints import well_constraint_job
-from spinningjenny.well_constraints import well_config
-from spinningjenny.well_constraints import well_constraint_validate
+from spinningjenny.well_constraints import (
+    well_config,
+    well_constraint_job,
+    well_constraint_validate,
+)
 
 _CONFIG_FILE = "well_constraint_input.yml"
 _TEST_DIR = os.path.join(

@@ -1,7 +1,6 @@
-import json
-from spinningjenny.script.fm_drill_date_planner import main_entry_point
 from spinningjenny import load_yaml
-from tests import tmpdir, relpath
+from spinningjenny.script.fm_drill_date_planner import main_entry_point
+from tests import relpath, tmpdir
 
 TEST_DATA_PATH = relpath("tests", "testdata", "drill_date_planner")
 

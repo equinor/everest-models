@@ -3,8 +3,8 @@ import logging
 
 import pytest
 from ecl.summary import EclSum
+
 from spinningjenny import str2date
-from spinningjenny.script.fm_strip_dates import main_entry_point
 from spinningjenny.strip_dates_job import process_dates, strip_dates
 from tests import relpath, tmpdir
 
