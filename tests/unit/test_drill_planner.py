@@ -356,6 +356,7 @@ def test_rig_slot_include_delay():
     assert all(schedule_task in well_order for schedule_task in schedule_well_order)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "remove_slots_from_rigs, remove_slots",
     [(False, False), (True, False), (True, True)],
@@ -381,6 +382,7 @@ def test_default_large_setup(remove_slots_from_rigs, remove_slots):
     assert field_manager.valid_schedule(FieldSchedule(schedule))
 
 
+@pytest.mark.slow
 def test_many_wells_one_rig():
     """
     A setup without restrictions and single rig can be solved easily by the
