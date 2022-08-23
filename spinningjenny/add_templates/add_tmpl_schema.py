@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from os import path
 
 from configsuite import MetaKeys as MK

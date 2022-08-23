@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import configsuite
 from configsuite import MetaKeys as MK
 from configsuite import types
