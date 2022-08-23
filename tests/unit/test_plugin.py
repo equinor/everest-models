@@ -2,9 +2,7 @@ import sys
 from itertools import chain
 
 import pluggy
-import pytest
 
-# On Python3 we can mock the everest.plugins module:
 sys.modules["everest.plugins"] = type(sys)("everest.plugins")
 sys.modules["everest.plugins"].hookimpl = pluggy.HookimplMarker("test")
 
