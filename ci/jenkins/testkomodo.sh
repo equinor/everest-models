@@ -1,7 +1,6 @@
 
 install_package () {
-    pip install ruamel.yaml
-    python setup.py install
+    pip install .
 }
 
 start_tests () {
