@@ -31,6 +31,8 @@ def main_entry_point(args=None):
                 "\n".join([err.msg for err in config.errors])
             )
         )
+    if config.snapshot.well_costs and options.input is None:
+        npv_parser.error("Well costs specified, but the -i/--input flag is missing")
 
     logger.info("initializing npv calculation with options {}".format(options))
     npv = CalculateNPV(config.snapshot, options.summary)
