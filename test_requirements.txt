@@ -1,8 +1,0 @@
-pytest
-decorator
-mock
-black
-hypothesis
-pytest-runner
-pytest-timeout
-ruamel.yaml

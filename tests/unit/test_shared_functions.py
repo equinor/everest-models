@@ -1,8 +1,9 @@
 import os
 import stat
 
-from spinningjenny import is_writable, valid_json_file
-from tests import MockParser, relpath, tmpdir
+from utils import MockParser, relpath, tmpdir
+
+from jobs.utils.validators import is_writable, valid_json_file
 
 VALIDATOR_PATH = relpath("tests", "testdata", "validators")
 
