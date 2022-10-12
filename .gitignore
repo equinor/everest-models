@@ -15,6 +15,7 @@ downloads/
 eggs/
 .eggs/
 lib/
+!src/lib
 lib64/
 parts/
 sdist/
@@ -55,7 +56,6 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-spinningjenny/version.py
 
 # other
 .idea
@@ -65,4 +65,4 @@ spinningjenny/version.py
 .vscode
 
 # version
-spinningjenny/version.py
+src/spinningjenny/version.py

@@ -1,5 +1,6 @@
-from spinningjenny import load_yaml
-from tests import relpath, tmpdir
+from utils import relpath, tmpdir
+
+from jobs.utils.io_utils import load_yaml
 
 TEST_DATA_PATH = relpath("tests", "testdata", "misc")
 

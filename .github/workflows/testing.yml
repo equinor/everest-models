@@ -35,14 +35,12 @@ jobs:
 
       - name: "Install dependencies"
         run: |
-          pip install --upgrade pip setuptools wheel
-          pip install git+https://git@github.com/equinor/stea.git
-          pip install --upgrade -r test_requirements.txt
+          pip install --upgrade pip setuptools
 
       - name: "Install package"
         run: |
-          pip install .
+          pip install .[test]
 
       - name: "Test package spinningjenny"
         run: |
-          python -m pytest -sv --hypothesis-profile ci
+          python -m pytest
