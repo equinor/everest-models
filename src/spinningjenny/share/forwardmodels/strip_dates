@@ -1,3 +1,0 @@
-EXECUTABLE   strip_dates
-
-ARGLIST "--summary=<ECLSUM> --dates=<SCH_DATES>"
