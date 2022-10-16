@@ -3,9 +3,9 @@ from hypothesis import assume, given
 from ortools.sat.python import cp_model
 from test_drillmodel import begin_day, field_managers, schedule_element
 
-from jobs.fm_drill_planner.drillmodel import FieldSchedule
-from jobs.fm_drill_planner.ormodel import DrillConstraints
-from jobs.fm_drill_planner.utils import ScheduleElement
+from spinningjenny.jobs.fm_drill_planner.drillmodel import FieldSchedule
+from spinningjenny.jobs.fm_drill_planner.ormodel import DrillConstraints
+from spinningjenny.jobs.fm_drill_planner.utils import ScheduleElement
 
 
 class Assignment(FieldSchedule):

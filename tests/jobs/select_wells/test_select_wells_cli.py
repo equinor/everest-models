@@ -1,8 +1,8 @@
 import pytest
 from utils import relpath, tmpdir
 
-from jobs.fm_select_wells.cli import main_entry_point
-from jobs.utils.io_utils import load_yaml
+from spinningjenny.jobs.fm_select_wells.cli import main_entry_point
+from spinningjenny.jobs.utils.io_utils import load_yaml
 
 TEST_DATA_PATH = relpath("tests", "testdata", "select_wells")
 

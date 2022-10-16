@@ -1,8 +1,8 @@
 import pytest
 from utils import relpath, tmpdir
 
-from jobs.fm_drill_planner.cli import main_entry_point
-from jobs.utils.io_utils import load_yaml
+from spinningjenny.jobs.fm_drill_planner.cli import main_entry_point
+from spinningjenny.jobs.utils.io_utils import load_yaml
 
 TEST_DATA_PATH = relpath("tests", "testdata", "drill_planner")
 

@@ -3,7 +3,7 @@ import json
 import pytest
 from utils import relpath, tmpdir
 
-from jobs.fm_add_templates.cli import main_entry_point
+from spinningjenny.jobs.fm_add_templates.cli import main_entry_point
 
 TEST_DATA_PATH = relpath("tests", "testdata", "add_tmpl")
 

@@ -9,8 +9,8 @@ from jobs.drill_planner.test_drill_planner import (
     _small_setup_incl_unavailability,
 )
 
-from jobs.fm_drill_planner import drill_planner_schema
-from jobs.fm_drill_planner.drillmodel import (
+from spinningjenny.jobs.fm_drill_planner import drill_planner_schema
+from spinningjenny.jobs.fm_drill_planner.drillmodel import (
     DayRange,
     FieldManager,
     FieldSchedule,
@@ -18,7 +18,7 @@ from jobs.fm_drill_planner.drillmodel import (
     Slot,
     Well,
 )
-from jobs.fm_drill_planner.utils import ScheduleElement
+from spinningjenny.jobs.fm_drill_planner.utils import ScheduleElement
 
 num_rigs = 10
 num_wells = 10

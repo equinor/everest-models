@@ -5,7 +5,7 @@ from mock import patch
 from stea import SteaInput, SteaKeys, SteaResult
 from utils import relpath, tmpdir
 
-from jobs.fm_stea.cli import main_entry_point
+from spinningjenny.jobs.fm_stea.cli import main_entry_point
 
 TEST_DATA_PATH = relpath("tests", "testdata", "stea")
 

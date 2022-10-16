@@ -5,20 +5,18 @@ import sys
 import pytest
 
 import spinningjenny
-from spinningjenny import scripts
+from spinningjenny import jobs, scripts
 
 
 @pytest.fixture
 def job_config_resources():
     if sys.version_info[1] >= 9:
-        import jobs.fm_add_templates
-
         return (
             rsrc.files(spinningjenny).joinpath("share").joinpath("forwardmodels"),
-            rsrc.files(jobs.fm_add_templates).parent,
+            rsrc.files(jobs),
         )
     with rsrc.path(spinningjenny, "share") as path:
-        return path / "forwardmodels", path.parent.parent / "jobs"
+        return path / "forwardmodels", path.parent / "jobs"
 
 
 def test_job_implementation(job_config_resources):

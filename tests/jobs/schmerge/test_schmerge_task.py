@@ -4,8 +4,8 @@ import pytest
 from jobs.schmerge import MODULE
 from utils import MockParser
 
-from jobs.fm_schmerge.parser import valid_schmerge_config
-from jobs.fm_schmerge.tasks import (
+from spinningjenny.jobs.fm_schmerge.parser import valid_schmerge_config
+from spinningjenny.jobs.fm_schmerge.tasks import (
     _add_dates_to_schedule,
     _extract_comments,
     _find_date_index,

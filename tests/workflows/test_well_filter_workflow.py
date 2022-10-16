@@ -3,8 +3,10 @@ import os
 
 from utils import relpath, tmpdir
 
-from jobs.fm_interpret_well_drill.cli import main_entry_point as interpret_entry
-from jobs.fm_well_filter.cli import main_entry_point as well_filter_entry
+from spinningjenny.jobs.fm_interpret_well_drill.cli import (
+    main_entry_point as interpret_entry,
+)
+from spinningjenny.jobs.fm_well_filter.cli import main_entry_point as well_filter_entry
 
 TEST_DATA_PATH = relpath("tests", "testdata")
 

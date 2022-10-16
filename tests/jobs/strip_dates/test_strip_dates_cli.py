@@ -4,7 +4,7 @@ import logging
 import pytest
 from jobs.strip_dates import MODULE
 
-from jobs.fm_strip_dates.cli import main_entry_point
+from spinningjenny.jobs.fm_strip_dates.cli import main_entry_point
 
 
 @pytest.mark.sub_dir(MODULE)

@@ -1,8 +1,8 @@
 from ecl.summary import EclSum
 from utils import MockParser, tmpdir
 
-from jobs.fm_rf.cli import main_entry_point
-from jobs.utils.validators import valid_ecl_file
+from spinningjenny.jobs.fm_rf.cli import main_entry_point
+from spinningjenny.jobs.utils.validators import valid_ecl_file
 
 
 @tmpdir(path=None)

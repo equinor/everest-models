@@ -2,7 +2,7 @@ import json
 
 from utils import relpath, tmpdir
 
-from jobs.fm_interpret_well_drill.tasks import interpret_well_drill
+from spinningjenny.jobs.fm_interpret_well_drill.tasks import interpret_well_drill
 
 TEST_DATA_PATH = relpath("tests", "testdata", "interpret_well_drill")
 

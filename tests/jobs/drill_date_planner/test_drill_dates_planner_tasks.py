@@ -1,8 +1,8 @@
 import pytest
 from utils import MockParser, relpath, tmpdir
 
-from jobs.fm_drill_date_planner.tasks import drill_date_planner
-from jobs.utils.validators import valid_json_file
+from spinningjenny.jobs.fm_drill_date_planner.tasks import drill_date_planner
+from spinningjenny.jobs.utils.validators import valid_json_file
 
 TEST_DATA_PATH = relpath("tests", "testdata", "drill_date_planner")
 

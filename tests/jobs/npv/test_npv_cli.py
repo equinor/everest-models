@@ -1,7 +1,7 @@
 import pytest
 from jobs.npv.helper import assert_written_npv
 
-from jobs.fm_npv import cli
+from spinningjenny.jobs.fm_npv import cli
 
 _CONFIG_FILE = "input_data.yml"
 _CONFIG_FILE_NO_WELL_COSTS = "input_data_no_well_costs.yml"

@@ -8,13 +8,13 @@ from jobs.drill_planner.test_drill_planner import (
     get_drill_planner_config_snapshot,
 )
 
-from jobs.fm_drill_planner.drillmodel import FieldManager, FieldSchedule
-from jobs.fm_drill_planner.greedy_drill_planner import (
+from spinningjenny.jobs.fm_drill_planner.drillmodel import FieldManager, FieldSchedule
+from spinningjenny.jobs.fm_drill_planner.greedy_drill_planner import (
     _next_best_event,
     _valid_events,
     get_greedy_drill_plan,
 )
-from jobs.fm_drill_planner.utils import (
+from spinningjenny.jobs.fm_drill_planner.utils import (
     combine_slot_rig_unavailability,
     create_config_dictionary,
     date_to_int,

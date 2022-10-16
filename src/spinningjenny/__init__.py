@@ -1,7 +1,7 @@
 import pathlib
 
-from lib.logger import set_up_logger
 from spinningjenny.everest_hooks import get_forward_models
+from spinningjenny.logger import set_up_logger
 
 __all__ = [
     "get_forward_models",

@@ -2,7 +2,7 @@ import datetime
 
 from ecl.summary import EclSum
 
-from jobs.fm_npv.parser import args_parser
+from spinningjenny.jobs.fm_npv.parser import args_parser
 
 
 def ecl_summary_npv(*args, **kwargs):

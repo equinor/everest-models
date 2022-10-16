@@ -2,8 +2,8 @@ import json
 
 from utils import MockParser, relpath, tmpdir
 
-from jobs.fm_well_filter.tasks import filter_wells, write_results
-from jobs.utils.validators import valid_json_file
+from spinningjenny.jobs.fm_well_filter.tasks import filter_wells, write_results
+from spinningjenny.jobs.utils.validators import valid_json_file
 
 TEST_DATA_PATH = relpath("tests", "testdata", "well_filter")
 

@@ -6,18 +6,20 @@ from configsuite import ConfigSuite
 from ortools.sat.python import cp_model
 from utils import relpath, tmpdir
 
-from jobs.fm_drill_planner import drill_planner_schema
-from jobs.fm_drill_planner.cli import _compare_schedules, _prepare_config
-from jobs.fm_drill_planner.drillmodel import FieldManager, FieldSchedule
-from jobs.fm_drill_planner.greedy_drill_planner import get_greedy_drill_plan
-from jobs.fm_drill_planner.ormodel import run_optimization
-from jobs.fm_drill_planner.utils import (
+from spinningjenny.jobs.fm_drill_planner import drill_planner_schema
+from spinningjenny.jobs.fm_drill_planner.cli import _compare_schedules, _prepare_config
+from spinningjenny.jobs.fm_drill_planner.drillmodel import FieldManager, FieldSchedule
+from spinningjenny.jobs.fm_drill_planner.greedy_drill_planner import (
+    get_greedy_drill_plan,
+)
+from spinningjenny.jobs.fm_drill_planner.ormodel import run_optimization
+from spinningjenny.jobs.fm_drill_planner.utils import (
     ScheduleElement,
     add_missing_slots,
     create_config_dictionary,
     resolve_priorities,
 )
-from jobs.utils.io_utils import load_yaml
+from spinningjenny.jobs.utils.io_utils import load_yaml
 
 TEST_DATA_PATH = relpath("tests", "testdata", "drill_planner")
 

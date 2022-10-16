@@ -3,7 +3,7 @@ import stat
 
 from utils import MockParser, relpath, tmpdir
 
-from jobs.utils.validators import is_writable, valid_json_file
+from spinningjenny.jobs.utils.validators import is_writable, valid_json_file
 
 VALIDATOR_PATH = relpath("tests", "testdata", "validators")
 

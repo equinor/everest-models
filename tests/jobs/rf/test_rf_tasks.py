@@ -2,7 +2,7 @@ import datetime
 
 import pytest
 
-from jobs.fm_rf.tasks import recovery_factor
+from spinningjenny.jobs.fm_rf.tasks import recovery_factor
 
 
 def test_simple_usage(ecl_sum):

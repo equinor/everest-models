@@ -1,11 +1,15 @@
 from utils import relpath, tmpdir
 
-from jobs.fm_add_templates import main_entry_point as add_templates_entry
-from jobs.fm_drill_planner import main_entry_point as drill_planner_entry
-from jobs.fm_interpret_well_drill import main_entry_point as interpret_entry
-from jobs.fm_schmerge import main_entry_point as schmerge_entry
-from jobs.fm_well_constraints import main_entry_point as well_constraints_entry
-from jobs.fm_well_filter import main_entry_point as filter_entry
+from spinningjenny.jobs.fm_add_templates import main_entry_point as add_templates_entry
+from spinningjenny.jobs.fm_drill_planner import main_entry_point as drill_planner_entry
+from spinningjenny.jobs.fm_interpret_well_drill import (
+    main_entry_point as interpret_entry,
+)
+from spinningjenny.jobs.fm_schmerge import main_entry_point as schmerge_entry
+from spinningjenny.jobs.fm_well_constraints import (
+    main_entry_point as well_constraints_entry,
+)
+from spinningjenny.jobs.fm_well_filter import main_entry_point as filter_entry
 
 TEST_DATA_PATH = relpath("tests", "testdata", "workflows")
 

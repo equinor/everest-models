@@ -4,13 +4,13 @@ from collections import namedtuple
 from summary import ecl_summary
 from utils import MockParser
 
-from jobs.fm_extract_summary_data.utils import (
+from spinningjenny.jobs.fm_extract_summary_data.utils import (
     CalculationType,
     apply_calculation,
     extract_value,
     validate_arguments,
 )
-from jobs.utils.validators import valid_date
+from spinningjenny.jobs.utils.validators import valid_date
 
 Options = namedtuple(
     "Options",

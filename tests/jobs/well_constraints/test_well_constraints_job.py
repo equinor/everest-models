@@ -4,13 +4,13 @@ from copy import deepcopy
 import configsuite
 import pytest
 
-from jobs.fm_well_constraints import (
+from spinningjenny.jobs.fm_well_constraints import (
     cli,
     well_config,
     well_constraint_job,
     well_constraint_validate,
 )
-from jobs.utils.io_utils import load_yaml
+from spinningjenny.jobs.utils.io_utils import load_yaml
 
 TESTDATA_SUB_DIR = "well_constraints"
 

@@ -3,8 +3,8 @@ import os
 from jobs.extract_summary_data.parser import build_argument_parser
 from utils import tmp
 
-from jobs.fm_extract_summary_data import cli
-from jobs.fm_extract_summary_data.utils import CalculationType
+from spinningjenny.jobs.fm_extract_summary_data import cli
+from spinningjenny.jobs.fm_extract_summary_data.utils import CalculationType
 
 
 def test_extract_summary_data_entry_point(monkeypatch, caplog):

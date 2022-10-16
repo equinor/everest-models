@@ -4,7 +4,7 @@ import os
 import pytest
 from jobs.npv.helper import _CONFIG_FILE, assert_written_npv
 
-from jobs.fm_npv import cli, tasks
+from spinningjenny.jobs.fm_npv import cli, tasks
 
 _INPUT_FILE_ONE_WELL = "one_well.json"
 

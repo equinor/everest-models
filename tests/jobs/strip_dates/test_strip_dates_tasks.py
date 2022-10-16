@@ -6,7 +6,7 @@ import pytest
 from ecl.summary import EclSum
 from jobs.strip_dates import MODULE
 
-from jobs.fm_strip_dates.tasks import process_dates, strip_dates
+from spinningjenny.jobs.fm_strip_dates.tasks import process_dates, strip_dates
 
 
 def test_format_dates():

@@ -3,7 +3,7 @@ from functools import partial
 
 from ecl.summary import EclSum
 
-from jobs.fm_extract_summary_data.parser import args_parser
+from spinningjenny.jobs.fm_extract_summary_data.parser import args_parser
 
 
 def ecl_summary(*args, **kwargs):

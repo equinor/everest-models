@@ -6,7 +6,7 @@ import pytest
 from jobs.npv.helper import _CONFIG_FILE
 from jobs.npv.parser import build_argument_parser
 
-from jobs.fm_npv import cli
+from spinningjenny.jobs.fm_npv import cli
 
 _INPUT_FILE = "wells.json"
 

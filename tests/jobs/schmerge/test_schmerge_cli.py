@@ -2,8 +2,8 @@ import pytest
 from jobs.schmerge import MODULE
 from utils import MockParser
 
-from jobs.fm_schmerge.cli import main_entry_point
-from jobs.fm_schmerge.parser import valid_schmerge_config
+from spinningjenny.jobs.fm_schmerge.cli import main_entry_point
+from spinningjenny.jobs.fm_schmerge.parser import valid_schmerge_config
 
 
 @pytest.mark.sub_dir(MODULE)

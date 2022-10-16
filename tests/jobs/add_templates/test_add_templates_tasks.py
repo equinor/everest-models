@@ -4,8 +4,8 @@ import ruamel.yaml as yaml
 from configsuite import ConfigSuite
 from utils import relpath, tmpdir
 
-from jobs.fm_add_templates.schemas import build_schema
-from jobs.fm_add_templates.tasks import add_templates
+from spinningjenny.jobs.fm_add_templates.schemas import build_schema
+from spinningjenny.jobs.fm_add_templates.tasks import add_templates
 
 TEST_DATA_PATH = relpath("tests", "testdata", "add_tmpl")
 

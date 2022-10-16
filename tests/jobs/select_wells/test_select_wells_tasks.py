@@ -4,8 +4,8 @@ from re import escape
 import pytest
 from utils import MockParser, relpath, tmpdir
 
-from jobs.fm_select_wells.tasks import select_wells
-from jobs.utils.validators import valid_json_file
+from spinningjenny.jobs.fm_select_wells.tasks import select_wells
+from spinningjenny.jobs.utils.validators import valid_json_file
 
 TEST_DATA_PATH = relpath("tests", "testdata", "select_wells")
 

@@ -4,8 +4,6 @@ import shutil
 
 import pytest
 
-import jobs.utils
-
 
 @pytest.fixture
 def path_test_data() -> pathlib.Path:
