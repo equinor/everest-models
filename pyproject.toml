@@ -49,19 +49,19 @@ test = [
 spinningjenny = "spinningjenny.everest_hooks"
 
 [project.scripts]
-add_templates = "spinningjenny.jobs.fm_add_templates.cli:main_entry_point"
-drill_date_planner = "spinningjenny.jobs.fm_drill_date_planner.cli:main_entry_point"
-drill_planner = "spinningjenny.jobs.fm_drill_planner.cli:main_entry_point"
-npv = "spinningjenny.jobs.fm_npv.cli:main_entry_point"
-extract_summary_data = "spinningjenny.jobs.fm_extract_summary_data.cli:main_entry_point"
-interpret_well_drill = "spinningjenny.jobs.fm_interpret_well_drill.cli:main_entry_point"
-rf = "spinningjenny.jobs.fm_rf.cli:main_entry_point"
-schmerge = "spinningjenny.jobs.fm_schmerge.cli:main_entry_point"
-select_wells = "spinningjenny.jobs.fm_select_wells.cli:main_entry_point"
-stea = "spinningjenny.jobs.fm_stea.cli:main_entry_point"
-strip_dates = "spinningjenny.jobs.fm_strip_dates.cli:main_entry_point"
-well_constraints = "spinningjenny.jobs.fm_well_constraints.cli:main_entry_point"
-well_filter = "spinningjenny.jobs.fm_well_filter.cli:main_entry_point"
+fm_add_templates = "spinningjenny.jobs.fm_add_templates.cli:main_entry_point"
+fm_drill_date_planner = "spinningjenny.jobs.fm_drill_date_planner.cli:main_entry_point"
+fm_drill_planner = "spinningjenny.jobs.fm_drill_planner.cli:main_entry_point"
+fm_npv = "spinningjenny.jobs.fm_npv.cli:main_entry_point"
+fm_extract_summary_data = "spinningjenny.jobs.fm_extract_summary_data.cli:main_entry_point"
+fm_interpret_well_drill = "spinningjenny.jobs.fm_interpret_well_drill.cli:main_entry_point"
+fm_rf = "spinningjenny.jobs.fm_rf.cli:main_entry_point"
+fm_schmerge = "spinningjenny.jobs.fm_schmerge.cli:main_entry_point"
+fm_select_wells = "spinningjenny.jobs.fm_select_wells.cli:main_entry_point"
+fm_stea = "spinningjenny.jobs.fm_stea.cli:main_entry_point"
+fm_strip_dates = "spinningjenny.jobs.fm_strip_dates.cli:main_entry_point"
+fm_well_constraints = "spinningjenny.jobs.fm_well_constraints.cli:main_entry_point"
+fm_well_filter = "spinningjenny.jobs.fm_well_filter.cli:main_entry_point"
 
 [tool.setuptools.packages.find]
 where = ["src"]
