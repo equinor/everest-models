@@ -73,7 +73,6 @@ write_to = "src/spinningjenny/version.py"
 version = {attr = "spinningjenny.version.__version__"}
 
 [tool.pytest.ini_options]
-addopts = "-sv --hypothesis-profile ci"
 minversion = "6.0"
 required_plugins = "hypothesis"
 testpaths = [

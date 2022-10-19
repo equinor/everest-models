@@ -33,8 +33,8 @@ def test_select_wells_n():
 def test_select_wells_real_bounds_error():
     parser = MockParser()
     input = valid_json_file("input.json", parser)
-    with pytest.raises(ValueError, match=escape("Invalid real bounds: [47.0, 0.0]")):
-        select_wells(input, 1, [47.0, 0.0], [0.0, 1.0])
+    with pytest.raises(ValueError, match=escape("Invalid real bounds: [47, 0]")):
+        select_wells(input, 1, [47, 0], [0.0, 1.0])
 
 
 @tmpdir(TEST_DATA_PATH)
@@ -42,7 +42,7 @@ def test_select_wells_scaled_bounds_error():
     parser = MockParser()
     input = valid_json_file("input.json", parser)
     with pytest.raises(ValueError, match=escape("Invalid scaled bounds: [1.0, 0.0]")):
-        select_wells(input, 1, [0.0, 47.0], [1.0, 0.0])
+        select_wells(input, 1, [0, 47], [1.0, 0.0])
 
 
 @tmpdir(TEST_DATA_PATH)
@@ -50,7 +50,7 @@ def test_select_wells_too_many_wells_error():
     parser = MockParser()
     input = valid_json_file("input.json", parser)
     with pytest.raises(ValueError, match=escape("Too many wells requested (47).")):
-        select_wells(input, 1, [0.0, 47.0], [0.0, 1.0])
+        select_wells(input, 1, [0, 47], [0.0, 1.0])
 
 
 @tmpdir(TEST_DATA_PATH)
