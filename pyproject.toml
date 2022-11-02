@@ -80,7 +80,6 @@ testpaths = [
 ]
 markers = [
     "slow",
-    "sub_dir"
 ]
 
 log_cli = 0

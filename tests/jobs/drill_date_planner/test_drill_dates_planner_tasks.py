@@ -1,14 +1,13 @@
 import pytest
-from utils import MockParser, relpath, tmpdir
+from sub_testdata import DRILL_DATE_PLANNER as TEST_DATA
+from utils import MockParser
 
 from spinningjenny.jobs.fm_drill_date_planner.tasks import drill_date_planner
 from spinningjenny.jobs.utils.validators import valid_json_file
 
-TEST_DATA_PATH = relpath("tests", "testdata", "drill_date_planner")
 
-
-@tmpdir(TEST_DATA_PATH)
-def test_drill_date_planner():
+def test_drill_date_planner(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     parser = MockParser()
     wells = valid_json_file("wells.json", parser)
     controls = valid_json_file("controls.json", parser)
@@ -17,8 +16,8 @@ def test_drill_date_planner():
     assert output == expected
 
 
-@tmpdir(TEST_DATA_PATH)
-def test_drill_date_planner_bounds_error():
+def test_drill_date_planner_bounds_error(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     parser = MockParser()
     wells = valid_json_file("wells.json", parser)
     controls = valid_json_file("controls.json", parser)
@@ -26,8 +25,8 @@ def test_drill_date_planner_bounds_error():
         drill_date_planner(wells, controls, [1.0, 0.0], 300)
 
 
-@tmpdir(TEST_DATA_PATH)
-def test_drill_date_planner_missing_well():
+def test_drill_date_planner_missing_well(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     parser = MockParser()
     wells = valid_json_file("wells.json", parser)
     controls = valid_json_file("controls.json", parser)
@@ -36,8 +35,8 @@ def test_drill_date_planner_missing_well():
         drill_date_planner(wells, controls, [0.0, 0.1], 300)
 
 
-@tmpdir(TEST_DATA_PATH)
-def test_drill_date_planner_missing_control():
+def test_drill_date_planner_missing_control(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     parser = MockParser()
     wells = valid_json_file("wells.json", parser)
     controls = valid_json_file("controls.json", parser)

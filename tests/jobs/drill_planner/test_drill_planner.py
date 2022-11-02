@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import pytest
 from configsuite import ConfigSuite
 from ortools.sat.python import cp_model
-from utils import relpath, tmpdir
+from sub_testdata import DRILL_PLANNER as TEST_DATA
 
 from spinningjenny.jobs.fm_drill_planner import drill_planner_schema
 from spinningjenny.jobs.fm_drill_planner.cli import _compare_schedules, _prepare_config
@@ -20,8 +20,6 @@ from spinningjenny.jobs.fm_drill_planner.utils import (
     resolve_priorities,
 )
 from spinningjenny.jobs.utils.io_utils import load_yaml
-
-TEST_DATA_PATH = relpath("tests", "testdata", "drill_planner")
 
 
 def get_drill_planner_configsuite(config_dic):
@@ -469,8 +467,8 @@ def test_invalid_config_schema():
     assert not config_suite.valid
 
 
-@tmpdir(TEST_DATA_PATH)
-def test_script_prepare_config():
+def test_script_prepare_config(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     config = _prepare_config(
         config=load_yaml("config.yml"),
         optimizer_values=load_yaml("optimizer_values.yml"),

@@ -1,14 +1,12 @@
 import pytest
-from utils import relpath, tmpdir
+from sub_testdata import DRILL_PLANNER as TEST_DATA
 
 from spinningjenny.jobs.fm_drill_planner.cli import main_entry_point
 from spinningjenny.jobs.utils.io_utils import load_yaml
 
-TEST_DATA_PATH = relpath("tests", "testdata", "drill_planner")
 
-
-@tmpdir(TEST_DATA_PATH)
-def test_main_entry_point():
+def test_main_entry_point(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     arguments = [
         "--input",
         "wells.json",
@@ -28,8 +26,8 @@ def test_main_entry_point():
     assert test_output == expected_output
 
 
-@tmpdir(TEST_DATA_PATH)
-def test_main_entry_point_partial_wells():
+def test_main_entry_point_partial_wells(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     arguments = [
         "--input",
         "partial_wells.json",
@@ -48,8 +46,8 @@ def test_main_entry_point_partial_wells():
     assert test_output == expected_output
 
 
-@tmpdir(TEST_DATA_PATH)
-def test_main_entry_point_no_slots():
+def test_main_entry_point_no_slots(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     arguments = [
         "--input",
         "wells.json",
@@ -82,8 +80,8 @@ def test_main_entry_point_no_slots():
     assert test_output == expected_output
 
 
-@tmpdir(TEST_DATA_PATH)
-def test_main_entry_point_ignore_end_date_no_effect():
+def test_main_entry_point_ignore_end_date_no_effect(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     arguments = [
         "--input",
         "wells.json",
@@ -104,8 +102,8 @@ def test_main_entry_point_ignore_end_date_no_effect():
     assert test_output == expected_output
 
 
-@tmpdir(TEST_DATA_PATH)
-def test_main_entry_point_ignore_end_date():
+def test_main_entry_point_ignore_end_date(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     arguments = [
         "--input",
         "wells.json",

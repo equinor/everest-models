@@ -1,12 +1,10 @@
-from utils import relpath, tmpdir
+from sub_testdata import MISC as TEST_DATA
 
 from spinningjenny.jobs.utils.io_utils import load_yaml
 
-TEST_DATA_PATH = relpath("tests", "testdata", "misc")
 
-
-@tmpdir(TEST_DATA_PATH)
-def test_load_yaml_supports_scientific_notation():
+def test_load_yaml_supports_scientific_notation(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     res = load_yaml("input.json")
     assert res["test"]["1"] == 1e-06
     assert res["test"]["2"] == 1e-05

@@ -1,7 +1,6 @@
 import datetime
 
-import pytest
-from jobs.schmerge import MODULE
+from sub_testdata import SCHMERGE as TEST_DATA
 from utils import MockParser
 
 from spinningjenny.jobs.fm_schmerge.parser import valid_schmerge_config
@@ -106,8 +105,8 @@ DATES
     assert updated_schedule_string == expected_string
 
 
-@pytest.mark.sub_dir(MODULE)
 def test__add_dates_to_schedule(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     filename_input_schedule = "original_schedule.tmpl"
     filename_expected_inserted_dates = "inserted_dates.tmpl"
     with open(filename_input_schedule, "r") as f:
@@ -129,8 +128,8 @@ def test__add_dates_to_schedule(copy_testdata_tmpdir):
     assert schedule_inserted_dates == expected_inserted_dates
 
 
-@pytest.mark.sub_dir(MODULE)
 def test_add_dates_to_schedule_without_initial_dates(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     # Test dates can be added to schedule file that doesn't contain initial date
     date_strings_to_add = ["2000-01-01", "2021-08-16", "2015-04-24"]
     dates_to_add = [
@@ -151,8 +150,8 @@ def test_add_dates_to_schedule_without_initial_dates(copy_testdata_tmpdir):
     assert sorted(dates_to_add) == dates_in_schedule
 
 
-@pytest.mark.sub_dir(MODULE)
 def test__extract_comments(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     filename_input_schedule = "original_schedule.tmpl"
     filename_placeholder = "placeholder_schedule.tmpl"
     with open(filename_input_schedule, "r") as f:
@@ -170,8 +169,8 @@ def test__extract_comments(copy_testdata_tmpdir):
     assert inserted_output == schedule_string
 
 
-@pytest.mark.sub_dir(MODULE)
 def test_schmerge(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     filename_expected_result = "expected_result.tmpl"
     filename_input_schedule = "original_schedule.tmpl"
     filename_injection_list = "schedule_input.json"

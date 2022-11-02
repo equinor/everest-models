@@ -1,13 +1,12 @@
-import pytest
-from jobs.schmerge import MODULE
+from sub_testdata import SCHMERGE as TEST_DATA
 from utils import MockParser
 
 from spinningjenny.jobs.fm_schmerge.cli import main_entry_point
 from spinningjenny.jobs.fm_schmerge.parser import valid_schmerge_config
 
 
-@pytest.mark.sub_dir(MODULE)
 def test_schmerge_main_entry_point(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     filename_expected_result = "expected_result.tmpl"
     filename_schedule = "original_schedule.tmpl"
     filename_injection_list = "schedule_input.json"
@@ -33,8 +32,8 @@ def test_schmerge_main_entry_point(copy_testdata_tmpdir):
     assert expected_schedule_string == schmerge_output
 
 
-@pytest.mark.sub_dir(MODULE)
 def test_valid_schmerge_config(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     invalid_injections = "schedule_input_invalid.json"
     valid_injections = "schedule_input.json"
 

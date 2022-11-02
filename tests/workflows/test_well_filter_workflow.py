@@ -1,18 +1,14 @@
 import json
 import os
 
-from utils import relpath, tmpdir
-
 from spinningjenny.jobs.fm_interpret_well_drill.cli import (
     main_entry_point as interpret_entry,
 )
 from spinningjenny.jobs.fm_well_filter.cli import main_entry_point as well_filter_entry
 
-TEST_DATA_PATH = relpath("tests", "testdata")
 
-
-@tmpdir(TEST_DATA_PATH)
-def test_drill_plan_filter_entry():
+def test_drill_plan_filter_entry(copy_testdata_tmpdir):
+    copy_testdata_tmpdir()
     optimizer_values_file = os.path.join("interpret_well_drill", "optimizer_values.yml")
     wells_file = os.path.join("well_filter", "wells.json")
     wells_filter_file = "keep_wells.json"

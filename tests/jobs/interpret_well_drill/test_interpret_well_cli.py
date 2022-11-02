@@ -1,14 +1,12 @@
 import json
 
-from utils import relpath, tmpdir
+from sub_testdata import INTERPRET_WELL_DRILL as TEST_DATA
 
 from spinningjenny.jobs.fm_interpret_well_drill.cli import main_entry_point
 
-TEST_DATA_PATH = relpath("tests", "testdata", "interpret_well_drill")
 
-
-@tmpdir(TEST_DATA_PATH)
-def test_interpret_well_drill_entry():
+def test_interpret_well_drill_entry(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     optimizer_values_file = "optimizer_values.yml"
     out_file = "test.json"
     expected_out_file = "correct_out.json"

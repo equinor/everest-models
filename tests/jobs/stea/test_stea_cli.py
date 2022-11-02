@@ -1,21 +1,17 @@
 import importlib
 import os
 
-from mock import patch
 from stea import SteaInput, SteaKeys, SteaResult
-from utils import relpath, tmpdir
+from sub_testdata import STEA as TEST_DATA
 
 from spinningjenny.jobs.fm_stea.cli import main_entry_point
-
-TEST_DATA_PATH = relpath("tests", "testdata", "stea")
 
 
 def test_import_stea():
     assert importlib.import_module("stea")
 
 
-@tmpdir(TEST_DATA_PATH)
-def calculate_patch():
+def calculate_patch(*args, **kwargs):
     stea_input = SteaInput(["stea_input.yml"])
     return SteaResult(
         {
@@ -27,11 +23,10 @@ def calculate_patch():
     )
 
 
-@patch("stea.calculate", return_value=calculate_patch())
-@tmpdir(TEST_DATA_PATH)
-def test_stea(stea_calculate_mock):
+def test_stea(copy_testdata_tmpdir, monkeypatch):
+    copy_testdata_tmpdir(TEST_DATA)
+    monkeypatch.setattr("stea.calculate", calculate_patch)
     # run stea job
     main_entry_point(["-c", "stea_input.yml"])
-    stea_calculate_mock.assert_called_once()
     files = os.listdir(os.getcwd())
     assert "NPV_0" in files

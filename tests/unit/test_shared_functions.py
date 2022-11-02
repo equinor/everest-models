@@ -1,15 +1,14 @@
 import os
 import stat
 
-from utils import MockParser, relpath, tmpdir
+from sub_testdata import VALIDATORS as TEST_DATA
+from utils import MockParser
 
 from spinningjenny.jobs.utils.validators import is_writable, valid_json_file
 
-VALIDATOR_PATH = relpath("tests", "testdata", "validators")
 
-
-@tmpdir(path=None)
-def test_is_writable_valid():
+def test_is_writable_valid(copy_testdata_tmpdir):
+    copy_testdata_tmpdir()
     mock_parser = MockParser()
 
     _ = is_writable("non_existing_valid_filename", mock_parser)
@@ -33,16 +32,16 @@ def test_is_writable_valid():
     assert mock_parser.get_error() is None
 
 
-@tmpdir(path=None)
-def test_is_writable_non_existing_dir():
+def test_is_writable_non_existing_dir(copy_testdata_tmpdir):
+    copy_testdata_tmpdir()
     mock_parser = MockParser()
 
     _ = is_writable("non_existing_dir/valid_filename", mock_parser)
     assert "Can not write to directory" in mock_parser.get_error()
 
 
-@tmpdir(path=None)
-def test_is_writable_write_to_dir():
+def test_is_writable_write_to_dir(copy_testdata_tmpdir):
+    copy_testdata_tmpdir()
     mock_parser = MockParser()
     os.mkdir("existing_dir")
 
@@ -50,8 +49,8 @@ def test_is_writable_write_to_dir():
     assert "Path 'existing_dir' is a directory" in mock_parser.get_error()
 
 
-@tmpdir(path=None)
-def test_is_writable_no_write_permissions():
+def test_is_writable_no_write_permissions(copy_testdata_tmpdir):
+    copy_testdata_tmpdir()
     mock_parser = MockParser()
 
     os.mkdir("existing_dir")
@@ -61,8 +60,8 @@ def test_is_writable_no_write_permissions():
     assert "Can not write to directory" in mock_parser.get_error()
 
 
-@tmpdir(path=VALIDATOR_PATH)
-def test_valid_json_file():
+def test_valid_json_file(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     valid_json_path = "valid_json.json"
     invalid_json_path = "invalid_json.json"
 

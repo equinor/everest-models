@@ -2,13 +2,13 @@ import filecmp
 import logging
 
 import pytest
-from jobs.strip_dates import MODULE
+from sub_testdata import STRIP_DATES as TEST_DATA
 
 from spinningjenny.jobs.fm_strip_dates.cli import main_entry_point
 
 
-@pytest.mark.sub_dir(MODULE)
 def test_strip_date_entry_point(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     args = [
         "--summary",
         "EGG.UNSMRY",
@@ -29,8 +29,8 @@ def test_strip_date_entry_point(copy_testdata_tmpdir):
     assert filecmp.cmp("EGG.UNSMRY", "EGG-OUT.UNSMRY", shallow=False)
 
 
-@pytest.mark.sub_dir(MODULE)
 def test_strip_date_entry_point_missing_dates_error(caplog, copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     args = [
         "--summary",
         "EGG.UNSMRY",
@@ -44,8 +44,8 @@ def test_strip_date_entry_point_missing_dates_error(caplog, copy_testdata_tmpdir
     assert "ERROR" in caplog.text and "Missing date" in caplog.text
 
 
-@pytest.mark.sub_dir(MODULE)
 def test_strip_date_entry_point_missing_dates_warn(caplog, copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     args = [
         "--summary",
         "EGG.UNSMRY",

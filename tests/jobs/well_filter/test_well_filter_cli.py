@@ -1,14 +1,12 @@
 import json
 
-from utils import relpath, tmpdir
+from sub_testdata import WELL_FILTER as TEST_DATA
 
 from spinningjenny.jobs.fm_well_filter.cli import main_entry_point
 
-TEST_DATA_PATH = relpath("tests", "testdata", "well_filter")
 
-
-@tmpdir(TEST_DATA_PATH)
-def test_drill_plan_filter_entry():
+def test_drill_plan_filter_entry(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     wells_file = "schedule_wells.json"
     filter_file = "keep_wells_drill_plan.json"
     out_file = "test_wells.json"
@@ -27,8 +25,8 @@ def test_drill_plan_filter_entry():
     assert expected_filter_output == filter_output
 
 
-@tmpdir(TEST_DATA_PATH)
-def test_well_filter_keep_entry():
+def test_well_filter_keep_entry(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     wells_file = "wells.json"
     filter_file = "keep_wells.json"
     out_file = "test_wells.json"
@@ -47,8 +45,8 @@ def test_well_filter_keep_entry():
     assert expected_filter_output == filter_output
 
 
-@tmpdir(TEST_DATA_PATH)
-def test_well_filter_remove_entry():
+def test_well_filter_remove_entry(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     wells_file = "wells.json"
     filter_file = "remove_wells.json"
     out_file = "test_wells.json"

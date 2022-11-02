@@ -3,6 +3,7 @@ from copy import deepcopy
 
 import configsuite
 import pytest
+from sub_testdata import WELL_CONSTRAINTS as TEST_DATA
 
 from spinningjenny.jobs.fm_well_constraints import (
     cli,
@@ -11,8 +12,6 @@ from spinningjenny.jobs.fm_well_constraints import (
     well_constraint_validate,
 )
 from spinningjenny.jobs.utils.io_utils import load_yaml
-
-TESTDATA_SUB_DIR = "well_constraints"
 
 
 def test_transformation():
@@ -169,8 +168,8 @@ def test_dict_merge_invalid_input():
             well_constraint_job.merge_dicts(arg1, arg2)
 
 
-@pytest.mark.sub_dir(TESTDATA_SUB_DIR)
 def test_config_setup(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     input_data = load_yaml("well_constraint_input.yml")
     schema = well_config.build_schema()
     assert well_constraint_validate.valid_configuration(input_data, schema)

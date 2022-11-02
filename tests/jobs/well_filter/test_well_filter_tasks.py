@@ -1,15 +1,14 @@
 import json
 
-from utils import MockParser, relpath, tmpdir
+from sub_testdata import WELL_FILTER as TEST_DATA
+from utils import MockParser
 
 from spinningjenny.jobs.fm_well_filter.tasks import filter_wells, write_results
 from spinningjenny.jobs.utils.validators import valid_json_file
 
-TEST_DATA_PATH = relpath("tests", "testdata", "well_filter")
 
-
-@tmpdir(TEST_DATA_PATH)
-def test_drill_plan_filter():
+def test_drill_plan_filter(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     parser = MockParser()
     out_file = "test_wells.json"
     expected_out_file = "correct_out_schedule_filter.json"
@@ -26,8 +25,8 @@ def test_drill_plan_filter():
     assert filtered_wells == expected_output
 
 
-@tmpdir(TEST_DATA_PATH)
-def test_well_filter_keep():
+def test_well_filter_keep(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     parser = MockParser()
     out_file = "test_wells.json"
     expected_out_file = "correct_out.json"
@@ -44,8 +43,8 @@ def test_well_filter_keep():
     assert filtered_wells == expected_output
 
 
-@tmpdir(TEST_DATA_PATH)
-def test_well_filter_remove():
+def test_well_filter_remove(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     parser = MockParser()
     out_file = "test_wells.json"
     expected_out_file = "correct_out.json"
@@ -62,8 +61,8 @@ def test_well_filter_remove():
     assert filtered_wells == expected_output
 
 
-@tmpdir(TEST_DATA_PATH)
-def test_well_filter_both():
+def test_well_filter_both(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     parser = MockParser()
     filter_wells(
         wells=valid_json_file("wells.json", parser),
@@ -78,8 +77,8 @@ def test_well_filter_both():
     )
 
 
-@tmpdir(TEST_DATA_PATH)
-def test_well_filter_neither():
+def test_well_filter_neither(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     parser = MockParser()
     filter_wells(
         wells=valid_json_file("wells.json", parser),

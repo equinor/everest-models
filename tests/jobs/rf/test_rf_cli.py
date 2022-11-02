@@ -1,12 +1,12 @@
 from ecl.summary import EclSum
-from utils import MockParser, tmpdir
+from utils import MockParser
 
 from spinningjenny.jobs.fm_rf.cli import main_entry_point
 from spinningjenny.jobs.utils.validators import valid_ecl_file
 
 
-@tmpdir(path=None)
-def test_entry_point(ecl_sum):
+def test_entry_point(copy_testdata_tmpdir, ecl_sum):
+    copy_testdata_tmpdir()
     EclSum.fwrite(ecl_sum)
 
     arguments = ["-s", "TEST", "-o", "rf_result"]

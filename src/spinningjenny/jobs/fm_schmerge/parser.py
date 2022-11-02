@@ -1,10 +1,7 @@
 import argparse
 from functools import partial
 
-from spinningjenny.jobs.fm_schmerge.tasks import (
-    get_transformed_injections,
-    merge_schedule,
-)
+from spinningjenny.jobs.fm_schmerge.tasks import get_transformed_injections
 from spinningjenny.jobs.utils.validators import is_writable, valid_file, valid_json_file
 
 

@@ -1,19 +1,16 @@
 import json
 
-from utils import relpath, tmpdir
+from sub_testdata import INTERPRET_WELL_DRILL as TEST_DATA
 
 from spinningjenny.jobs.fm_interpret_well_drill.tasks import interpret_well_drill
 
-TEST_DATA_PATH = relpath("tests", "testdata", "interpret_well_drill")
 
-
-@tmpdir(TEST_DATA_PATH)
-def test_interpret_well_drill():
-    dakota_values_file = "optimizer_values.yml"
+def test_interpret_well_drill(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     out_file = "test_wells.json"
     expected_out_file = "correct_out.json"
 
-    wells_filter = interpret_well_drill(dakota_values_file, out_file)
+    wells_filter = interpret_well_drill("optimizer_values.yml", out_file)
 
     with open(expected_out_file, "r") as f:
         expected_output = json.load(f)

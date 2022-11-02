@@ -1,13 +1,12 @@
-from utils import relpath, tmpdir
+from sub_testdata import DRILL_DATE_PLANNER as TEST_DATA
 
 from spinningjenny.jobs.fm_drill_date_planner.cli import main_entry_point
 from spinningjenny.jobs.utils.io_utils import load_yaml
 
-TEST_DATA_PATH = relpath("tests", "testdata", "drill_date_planner")
 
+def test_drill_date_planner_main_entry_point(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
 
-@tmpdir(TEST_DATA_PATH)
-def test_drill_date_planner_main_entry_point():
     arguments = (
         "--input wells.json -opt controls.json --bounds 0.0 1.0"
         " --max-days 300 -o output.json"

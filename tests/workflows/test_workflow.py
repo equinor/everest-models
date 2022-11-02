@@ -1,4 +1,4 @@
-from utils import relpath, tmpdir
+from sub_testdata import WORKFLOWS as TEST_DATA
 
 from spinningjenny.jobs.fm_add_templates import main_entry_point as add_templates_entry
 from spinningjenny.jobs.fm_drill_planner import main_entry_point as drill_planner_entry
@@ -11,11 +11,9 @@ from spinningjenny.jobs.fm_well_constraints import (
 )
 from spinningjenny.jobs.fm_well_filter import main_entry_point as filter_entry
 
-TEST_DATA_PATH = relpath("tests", "testdata", "workflows")
 
-
-@tmpdir(TEST_DATA_PATH)
-def test_workflow():
+def test_workflow(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
 
     arguments = [
         "-i",

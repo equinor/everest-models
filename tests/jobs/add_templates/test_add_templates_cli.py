@@ -1,17 +1,16 @@
 import json
 
 import pytest
-from utils import relpath, tmpdir
+from sub_testdata import ADD_TEMPLATE as TEST_DATA
 
 from spinningjenny.jobs.fm_add_templates.cli import main_entry_point
 
-TEST_DATA_PATH = relpath("tests", "testdata", "add_tmpl")
 
-
-@tmpdir(TEST_DATA_PATH)
-def test_main_entry_point(caplog):
+def test_main_entry_point(copy_testdata_tmpdir, caplog):
     # caplog-> internal pytest fixture, for usage examples check:
     # https://docs.pytest.org/en/latest/logging.html
+    copy_testdata_tmpdir(TEST_DATA)
+
     args = [
         "--config",
         "config.yml",
@@ -45,10 +44,10 @@ def test_main_entry_point(caplog):
     assert expected_result == result
 
 
-@tmpdir(TEST_DATA_PATH)
-def test_config_file_not_found(capsys):
+def test_config_file_not_found(copy_testdata_tmpdir, capsys):
     # capsys-> internal pytest fixture, for usage examples check:
     # https://docs.pytest.org/en/latest/capture.html
+    copy_testdata_tmpdir(TEST_DATA)
 
     args = ["--config", "not_found.yml"]
 
@@ -61,10 +60,10 @@ def test_config_file_not_found(capsys):
     assert "File not found: not_found.yml" in err
 
 
-@tmpdir(TEST_DATA_PATH)
-def test_config_file_wrong_opname(capsys):
+def test_config_file_wrong_opname(copy_testdata_tmpdir, capsys):
     # capsys-> internal pytest fixture, for usage examples check:
     # https://docs.pytest.org/en/latest/capture.html
+    copy_testdata_tmpdir(TEST_DATA)
 
     args = [
         "--config",

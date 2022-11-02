@@ -4,7 +4,7 @@ import logging
 
 import pytest
 from ecl.summary import EclSum
-from jobs.strip_dates import MODULE
+from sub_testdata import STRIP_DATES as TEST_DATA
 
 from spinningjenny.jobs.fm_strip_dates.tasks import process_dates, strip_dates
 
@@ -20,8 +20,8 @@ def test_format_dates():
     assert formatted_dates == expected_dates
 
 
-@pytest.mark.sub_dir(MODULE)
 def test_strip_dates_egg(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     dates = [
         [2014, 5, 30],
         [2014, 8, 28],
@@ -40,8 +40,8 @@ def test_strip_dates_egg(copy_testdata_tmpdir):
     assert filecmp.cmp("EGG.UNSMRY", "EGG-OUT.UNSMRY", shallow=False)
 
 
-@pytest.mark.sub_dir(MODULE)
 def test_strip_dates_preserves_last_report_date(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     file_name = "EGG.UNSMRY"
     ecl_sum_in = EclSum(file_name)
     last_report_date = ecl_sum_in.report_dates[-1]
@@ -58,8 +58,8 @@ def test_strip_dates_preserves_last_report_date(copy_testdata_tmpdir):
     assert ecl_sum_result.report_dates[0] == last_report_date
 
 
-@pytest.mark.sub_dir(MODULE)
 def test_missing_date_exceptions_error(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     dates = [
         [1, 1, 1],
         [2014, 5, 30],
@@ -76,8 +76,8 @@ def test_missing_date_exceptions_error(copy_testdata_tmpdir):
     assert "2016-05-19" not in str(err)
 
 
-@pytest.mark.sub_dir(MODULE)
 def test_missing_date_exceptions_warning(caplog, copy_testdata_tmpdir):
+    copy_testdata_tmpdir(TEST_DATA)
     dates = [
         [1, 1, 1],
         [2014, 5, 30],

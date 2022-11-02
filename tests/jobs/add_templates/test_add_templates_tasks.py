@@ -2,17 +2,15 @@ import json
 
 import ruamel.yaml as yaml
 from configsuite import ConfigSuite
-from utils import relpath, tmpdir
+from sub_testdata import ADD_TEMPLATE as TEST_DATA
 
 from spinningjenny.jobs.fm_add_templates.schemas import build_schema
 from spinningjenny.jobs.fm_add_templates.tasks import add_templates
 
-TEST_DATA_PATH = relpath("tests", "testdata", "add_tmpl")
 
-
-@tmpdir(TEST_DATA_PATH)
-def test_add_templates(capsys):
+def test_add_templates(copy_testdata_tmpdir):
     # Load input well operations file
+    copy_testdata_tmpdir(TEST_DATA)
     with open("wells.json", "r") as f:
         wells = json.load(f)
 
