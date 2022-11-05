@@ -1,7 +1,6 @@
-import argparse
-from functools import partial
+import stea
 
-from spinningjenny.jobs.shared.validators import valid_file
+from spinningjenny.jobs.shared.arguments import add_lint_argument, get_parser
 
 
 def build_argument_parser():
@@ -13,13 +12,13 @@ def build_argument_parser():
         "yaml config file, STEA will create result files "
         "ex: Res1_0, Res2_0, .. Res#_0"
     )
-    parser = argparse.ArgumentParser(description=description)
-
-    parser.add_argument(
+    parser, required_group = get_parser(description=description)
+    add_lint_argument(parser)
+    required_group.add_argument(
         "-c",
         "--config",
-        type=partial(valid_file, parser=parser),
-        help="STEA config file, yaml format required",
+        type=lambda value: stea.SteaInput([value]),
+        help="STEA (yaml) config file",
         required=True,
     )
     return parser
