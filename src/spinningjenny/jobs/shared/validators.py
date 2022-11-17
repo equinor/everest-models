@@ -1,12 +1,15 @@
+import argparse
 import datetime
 import json
+import pathlib
 from os import W_OK, access, path
 
 import ruamel.yaml as yaml
 from configsuite import ConfigSuite
 from ecl.summary import EclSum
+from pydantic import BaseModel, ValidationError
 
-from spinningjenny.jobs.utils.io_utils import load_yaml
+from spinningjenny.jobs.shared.io_utils import load_yaml
 
 
 def valid_file(file_path, parser):
@@ -31,6 +34,20 @@ def is_writable(file_path, parser):
     return file_path
 
 
+def is_writable_path(value: str) -> pathlib.Path:
+    path = pathlib.Path(value)
+    if not (path.exists() or access(pdir := path.parent, W_OK)):
+        raise argparse.ArgumentTypeError(f"Can not write to directory: {pdir}")
+
+    if path.is_dir():
+        raise argparse.ArgumentTypeError(f"Path '{path}' is a directory")
+
+    if path.exists() and not access(path, W_OK):
+        raise argparse.ArgumentTypeError(f"Can not write to file: {path}")
+
+    return path
+
+
 def valid_json_file(file_path, parser):
     valid_file(file_path, parser)
     try:
@@ -48,6 +65,15 @@ def valid_ecl_file(file_path, parser):
         return EclSum(file_path)
     except (IOError, OSError):
         parser.error("Could not load eclipse summary from file: {}".format(file_path))
+
+
+def valid_ecl_summary(file_path: str) -> EclSum:
+    try:
+        return EclSum(file_path)
+    except (IOError, OSError):
+        argparse.ArgumentTypeError(
+            f"Could not load eclipse summary from file: {file_path}"
+        )
 
 
 def valid_yaml_file(file_path, parser):
@@ -77,6 +103,15 @@ def valid_date(date, parser):
         )
 
 
+def valid_iso_date(value):
+    try:
+        return datetime.date.fromisoformat(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError(
+            f"Not a valid ISO8601 formatted date (YYYY-MM-DD): '{value}'."
+        )
+
+
 def _validate_config(file_path, schema, parser, layers=()):
     dict_config = valid_yaml_file(file_path, parser)
     config = ConfigSuite(dict_config, schema, layers=layers, deduce_required=True)
@@ -97,3 +132,51 @@ def valid_config(file_path, schema, parser, layers=()):
 def valid_raw_config(file_path, schema, parser, layers=()):
     _, raw_config = _validate_config(file_path, schema, parser, layers)
     return raw_config
+
+
+def valid_input_file(value: str):
+    path = pathlib.Path(value)
+    if not path.exists() or path.is_dir():
+        raise argparse.ArgumentTypeError(
+            f"The path '{path}' is a directory or file not found."
+        )
+
+    if path.suffix in (".yaml", ".yml"):
+        try:
+            return load_yaml(path)
+        except yaml.YAMLError as e:
+            raise argparse.ArgumentTypeError(
+                f"The file: '{path}' contains invalid YAML syntax.\n\t<{e}>"
+            )
+    if path.suffix == ".json":
+        with path.open("r", encoding="utf-8") as fp:
+            try:
+                return json.load(fp)
+            except json.JSONDecodeError as e:
+                raise argparse.ArgumentTypeError(
+                    f"The file: '{path}' is not a valid json file.\n\t<{e}>"
+                )
+    raise argparse.ArgumentTypeError(
+        f"Input file extension '{path.suffix}' not supported"
+    )
+
+
+def is_gt_zero(value: str, msg: str) -> int:
+    if not value.lstrip("+-").isnumeric():
+        raise argparse.ArgumentTypeError(f"Value '{value}' is not a number")
+    if (num := int(value)) <= 0:
+        raise argparse.ArgumentTypeError(msg)
+    return num
+
+
+def parse_file(value: str, schema: "BaseModel"):
+    value = valid_input_file(value)
+    try:
+        return schema.parse_obj(value)
+    except ValidationError as e:
+        msg = "\n".join(
+            f"{' -> '.join(key for key in err['loc'])}:\n\t{err['msg']}"
+            for err in e.errors()
+        )
+
+        raise argparse.ArgumentTypeError(f"\n{msg}")

@@ -1,6 +1,6 @@
 from sub_testdata import MISC as TEST_DATA
 
-from spinningjenny.jobs.utils.io_utils import load_yaml
+from spinningjenny.jobs.shared.io_utils import load_yaml
 
 
 def test_load_yaml_supports_scientific_notation(copy_testdata_tmpdir):

@@ -1,7 +1,7 @@
 from sub_testdata import DRILL_DATE_PLANNER as TEST_DATA
 
 from spinningjenny.jobs.fm_drill_date_planner.cli import main_entry_point
-from spinningjenny.jobs.utils.io_utils import load_yaml
+from spinningjenny.jobs.shared.io_utils import load_yaml
 
 
 def test_drill_date_planner_main_entry_point(copy_testdata_tmpdir):

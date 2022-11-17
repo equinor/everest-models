@@ -23,6 +23,7 @@ def load_yaml(file_path):
             return loaded_yaml
         except yaml.YAMLError as exc:
             if hasattr(exc, "problem_mark"):
+                # this code block is never tested
                 mark = exc.problem_mark
                 raise yaml.YAMLError(
                     str(exc)

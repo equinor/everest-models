@@ -6,7 +6,7 @@ from sub_testdata import SELECT_WELLS as TEST_DATA
 from utils import MockParser
 
 from spinningjenny.jobs.fm_select_wells.tasks import select_wells
-from spinningjenny.jobs.utils.validators import valid_json_file
+from spinningjenny.jobs.shared.validators import valid_json_file
 
 
 def test_select_wells(copy_testdata_tmpdir):

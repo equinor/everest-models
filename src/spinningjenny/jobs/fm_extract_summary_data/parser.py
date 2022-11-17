@@ -2,7 +2,7 @@ import argparse
 from functools import partial
 
 from spinningjenny.jobs.fm_extract_summary_data.utils import CalculationType
-from spinningjenny.jobs.utils.validators import is_writable, valid_date, valid_ecl_file
+from spinningjenny.jobs.shared.validators import is_writable, valid_date, valid_ecl_file
 
 
 def build_argument_parser():

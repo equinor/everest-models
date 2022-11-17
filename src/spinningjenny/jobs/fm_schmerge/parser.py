@@ -2,7 +2,11 @@ import argparse
 from functools import partial
 
 from spinningjenny.jobs.fm_schmerge.tasks import get_transformed_injections
-from spinningjenny.jobs.utils.validators import is_writable, valid_file, valid_json_file
+from spinningjenny.jobs.shared.validators import (
+    is_writable,
+    valid_file,
+    valid_json_file,
+)
 
 
 def valid_schmerge_config(file_path, parser):

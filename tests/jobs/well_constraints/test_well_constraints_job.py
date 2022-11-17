@@ -11,7 +11,7 @@ from spinningjenny.jobs.fm_well_constraints import (
     well_constraint_job,
     well_constraint_validate,
 )
-from spinningjenny.jobs.utils.io_utils import load_yaml
+from spinningjenny.jobs.shared.io_utils import load_yaml
 
 
 def test_transformation():

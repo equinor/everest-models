@@ -3,7 +3,7 @@ import logging
 
 from spinningjenny.jobs.fm_drill_date_planner import tasks
 from spinningjenny.jobs.fm_drill_date_planner.parser import args_parser
-from spinningjenny.jobs.utils.io_utils import write_json_to_file
+from spinningjenny.jobs.shared.io_utils import write_json_to_file
 
 logger = logging.getLogger(__name__)
 

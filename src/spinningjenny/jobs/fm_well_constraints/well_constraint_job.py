@@ -8,7 +8,7 @@ except ImportError:
 import logging
 from copy import deepcopy
 
-from spinningjenny.jobs.utils.io_utils import write_json_to_file
+from spinningjenny.jobs.shared.io_utils import write_json_to_file
 
 logger = logging.getLogger(__name__)
 

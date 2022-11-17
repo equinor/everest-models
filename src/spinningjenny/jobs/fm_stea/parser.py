@@ -1,7 +1,7 @@
 import argparse
 from functools import partial
 
-from spinningjenny.jobs.utils.validators import valid_file
+from spinningjenny.jobs.shared.validators import valid_file
 
 
 def build_argument_parser():

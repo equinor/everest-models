@@ -10,7 +10,7 @@ from spinningjenny.jobs.fm_extract_summary_data.utils import (
     extract_value,
     validate_arguments,
 )
-from spinningjenny.jobs.utils.validators import valid_date
+from spinningjenny.jobs.shared.validators import valid_date
 
 Options = namedtuple(
     "Options",

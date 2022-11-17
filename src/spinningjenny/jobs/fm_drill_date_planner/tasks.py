@@ -1,4 +1,4 @@
-from spinningjenny.jobs.utils.converters import rescale_value
+from spinningjenny.jobs.shared.converters import rescale_value
 
 
 def drill_date_planner(wells, controls, bounds, max_days):

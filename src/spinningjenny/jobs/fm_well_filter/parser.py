@@ -1,7 +1,7 @@
 import argparse
 from functools import partial
 
-from spinningjenny.jobs.utils.validators import is_writable, valid_json_file
+from spinningjenny.jobs.shared.validators import is_writable, valid_json_file
 
 
 def build_argument_parser():

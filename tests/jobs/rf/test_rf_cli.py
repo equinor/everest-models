@@ -2,7 +2,7 @@ from ecl.summary import EclSum
 from utils import MockParser
 
 from spinningjenny.jobs.fm_rf.cli import main_entry_point
-from spinningjenny.jobs.utils.validators import valid_ecl_file
+from spinningjenny.jobs.shared.validators import valid_ecl_file
 
 
 def test_entry_point(copy_testdata_tmpdir, ecl_sum):

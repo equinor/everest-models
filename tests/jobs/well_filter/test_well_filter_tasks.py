@@ -4,7 +4,7 @@ from sub_testdata import WELL_FILTER as TEST_DATA
 from utils import MockParser
 
 from spinningjenny.jobs.fm_well_filter.tasks import filter_wells, write_results
-from spinningjenny.jobs.utils.validators import valid_json_file
+from spinningjenny.jobs.shared.validators import valid_json_file
 
 
 def test_drill_plan_filter(copy_testdata_tmpdir):

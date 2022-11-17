@@ -3,7 +3,7 @@ from sub_testdata import DRILL_DATE_PLANNER as TEST_DATA
 from utils import MockParser
 
 from spinningjenny.jobs.fm_drill_date_planner.tasks import drill_date_planner
-from spinningjenny.jobs.utils.validators import valid_json_file
+from spinningjenny.jobs.shared.validators import valid_json_file
 
 
 def test_drill_date_planner(copy_testdata_tmpdir):

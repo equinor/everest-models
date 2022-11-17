@@ -2,7 +2,7 @@ import pytest
 from sub_testdata import SELECT_WELLS as TEST_DATA
 
 from spinningjenny.jobs.fm_select_wells.cli import main_entry_point
-from spinningjenny.jobs.utils.io_utils import load_yaml
+from spinningjenny.jobs.shared.io_utils import load_yaml
 
 
 def test_select_wells_main_entry_point(copy_testdata_tmpdir):

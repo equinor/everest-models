@@ -4,7 +4,7 @@ from functools import partial
 import pkg_resources
 
 from spinningjenny.jobs.fm_npv.schemas import build_schema
-from spinningjenny.jobs.utils.validators import (
+from spinningjenny.jobs.shared.validators import (
     is_writable,
     load_yaml,
     valid_config,

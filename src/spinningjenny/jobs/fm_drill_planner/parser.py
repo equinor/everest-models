@@ -4,7 +4,7 @@ from functools import partial
 import configsuite
 
 from spinningjenny.jobs.fm_drill_planner import drill_planner_schema
-from spinningjenny.jobs.utils.validators import is_writable, valid_yaml_file
+from spinningjenny.jobs.shared.validators import is_writable, valid_yaml_file
 
 
 def build_argument_parser():

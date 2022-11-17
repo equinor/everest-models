@@ -9,7 +9,7 @@ from spinningjenny.jobs.fm_well_constraints.controls_config import (
 from spinningjenny.jobs.fm_well_constraints.well_config import (
     build_schema as config_schema,
 )
-from spinningjenny.jobs.utils.validators import (
+from spinningjenny.jobs.shared.validators import (
     is_writable,
     valid_raw_config,
     valid_yaml_file,

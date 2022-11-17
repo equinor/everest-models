@@ -19,7 +19,7 @@ from spinningjenny.jobs.fm_drill_planner.utils import (
     create_config_dictionary,
     resolve_priorities,
 )
-from spinningjenny.jobs.utils.io_utils import load_yaml
+from spinningjenny.jobs.shared.io_utils import load_yaml
 
 
 def get_drill_planner_configsuite(config_dic):

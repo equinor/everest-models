@@ -3,7 +3,7 @@ import os
 import pytest
 
 from spinningjenny.jobs.fm_well_constraints import cli, well_constraint_job
-from spinningjenny.jobs.utils.io_utils import load_yaml, write_yaml_to_file
+from spinningjenny.jobs.shared.io_utils import load_yaml, write_yaml_to_file
 
 
 def test_main_entry_point(tmpdir, path_test_data):

@@ -2,7 +2,7 @@ import argparse
 from functools import partial
 
 from spinningjenny.jobs.fm_add_templates.schemas import build_schema
-from spinningjenny.jobs.utils.validators import is_writable, valid_config, valid_file
+from spinningjenny.jobs.shared.validators import is_writable, valid_config, valid_file
 
 
 def build_argument_parser():
