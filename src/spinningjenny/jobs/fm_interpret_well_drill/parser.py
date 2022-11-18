@@ -1,7 +1,9 @@
-import argparse
-from functools import partial
-
-from spinningjenny.jobs.shared.validators import is_writable, valid_file
+from spinningjenny.jobs.shared.arguments import (
+    add_input_argument,
+    add_lint_argument,
+    add_output_argument,
+    get_parser,
+)
 
 
 def build_argument_parser():
@@ -10,22 +12,17 @@ def build_argument_parser():
         "This object contains a list of well names to keep."
     )
 
-    parser = argparse.ArgumentParser(description=description)
-    parser.add_argument(
-        "-i",
-        "--input",
-        required=True,
-        type=partial(valid_file, parser=parser),
+    parser, required_group = get_parser(description=description)
+    add_input_argument(
+        required_group,
         help=(
             "Yaml file that contains optimizer output, this should consist "
             "of a list of well names, with their associated value between 0 and 1"
         ),
     )
-    parser.add_argument(
-        "-o",
-        "--output",
-        required=True,
-        type=partial(is_writable, parser=parser),
+    add_lint_argument(parser)
+    add_output_argument(
+        required_group,
         help="File path to write the resulting json file to.",
     )
 

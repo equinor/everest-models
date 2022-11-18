@@ -1,25 +1,64 @@
-import json
+import pathlib
+from typing import Dict, NamedTuple
 
+import pytest
 from sub_testdata import INTERPRET_WELL_DRILL as TEST_DATA
 
-from spinningjenny.jobs.fm_interpret_well_drill.cli import main_entry_point
+from spinningjenny.jobs.fm_interpret_well_drill import cli
 
 
-def test_interpret_well_drill_entry(copy_testdata_tmpdir):
+@pytest.fixture(scope="module")
+def interpret_well_drill_args():
+    return (
+        "--input",
+        "optimizer_values.yml",
+        "--output",
+        "test.json",
+    )
+
+
+def test_interpret_well_drill_entry(copy_testdata_tmpdir, interpret_well_drill_args):
     copy_testdata_tmpdir(TEST_DATA)
-    optimizer_values_file = "optimizer_values.yml"
     out_file = "test.json"
-    expected_out_file = "correct_out.json"
 
-    args = ["--input", optimizer_values_file, "--output", out_file]
+    cli.main_entry_point(interpret_well_drill_args)
+    assert (
+        pathlib.Path(out_file).read_bytes()
+        == pathlib.Path("correct_out.json").read_bytes()
+    )
 
-    main_entry_point(args)
 
-    with open(expected_out_file, "r") as f:
-        expected_filter_output = json.load(f)
+def test_interpret_well_drill_lint(copy_testdata_tmpdir, interpret_well_drill_args):
+    copy_testdata_tmpdir(TEST_DATA)
+    with pytest.raises(SystemExit) as e:
+        cli.main_entry_point([*interpret_well_drill_args, "--lint"])
 
-    with open(out_file, "r") as f:
-        filter_output = json.load(f)
+    assert e.value.code == 0
+    assert not pathlib.Path("test.json").exists()
 
-    assert len(expected_filter_output) == len(filter_output)
-    assert set(expected_filter_output) == set(filter_output)
+
+class Options(NamedTuple):
+    input: Dict[str, str]
+    output: pathlib.Path = pathlib.Path("output.json")
+
+
+def test_interpret_well_drill_bad_input_value(
+    copy_testdata_tmpdir, monkeypatch, interpret_well_drill_args, capsys
+):
+    copy_testdata_tmpdir(TEST_DATA)
+    monkeypatch.setattr(
+        cli.args_parser,
+        "parse_args",
+        lambda *args, **kwargs: Options({"w1": ".8", "w2": "."}),
+    )
+
+    with pytest.raises(SystemExit) as e:
+        cli.main_entry_point(interpret_well_drill_args)
+
+    assert e.value.code == 2
+    _, err = capsys.readouterr()
+
+    assert (
+        "-i/--input file, Make sure all values in 'key: value' pairs are valid numbers."
+        in err
+    )
