@@ -24,6 +24,9 @@ class WellModel(BaseConfig):
     def missing_templates(self) -> Iterator[Operation]:
         return ((op.opname, op.date) for op in self.ops if op.template is None)
 
+    def __hash__(self):
+        return hash(self.name)
+
 
 class WellListModel(BaseConfig):
     __root__: Tuple[WellModel, ...]
@@ -38,7 +41,7 @@ class WellListModel(BaseConfig):
         return {well.name: well for well in self}
 
     def set_wells(self, value: Iterable):
-        self.__root__ = value
+        self.__root__ = tuple(value)
 
     def __len__(self) -> int:
         return len(self.__root__)

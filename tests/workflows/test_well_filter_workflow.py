@@ -11,9 +11,9 @@ def test_drill_plan_filter_entry(copy_testdata_tmpdir):
     copy_testdata_tmpdir()
     optimizer_values_file = os.path.join("interpret_well_drill", "optimizer_values.yml")
     wells_file = os.path.join("well_filter", "wells.json")
-    wells_filter_file = "keep_wells.json"
+    wells_filter_file = "well_names.json"
     out_file = "test.json"
-    expected_out_file = os.path.join("well_filter", "correct_out.json")
+    expected_out_file = os.path.join("well_filter", "keep_out.json")
 
     args = ["--input", optimizer_values_file, "--output", wells_filter_file]
     interpret_entry(args)

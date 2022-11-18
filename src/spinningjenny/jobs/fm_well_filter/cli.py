@@ -1,22 +1,33 @@
 import logging
 
-from spinningjenny.jobs.fm_well_filter.parser import args_parser
-from spinningjenny.jobs.fm_well_filter.tasks import filter_wells, write_results
+from spinningjenny.jobs.fm_well_filter.parser import build_argument_parser
 
 logger = logging.getLogger(__name__)
 
 
 def main_entry_point(args=None):
+    args_parser = build_argument_parser()
     options = args_parser.parse_args(args)
+    keep = options.remove is None
+    well_names = set(options.remove or options.keep)
 
-    filtered_wells = filter_wells(
-        wells=options.input,
-        parser=args_parser,
-        keep_wells=options.keep,
-        remove_wells=options.remove,
+    if diff := well_names.difference(well.name for well in options.input):
+        logger.warning(
+            f"{'Keep' if keep else 'Remove'} value(s) are not present in input file:\n\t"
+            + ", ".join(diff)
+        )
+
+    if options.lint:
+        args_parser.exit()
+
+    options.input.set_wells(
+        filter(
+            lambda x: x.name in well_names if keep else x.name not in well_names,
+            options.input,
+        )
     )
 
-    write_results(filtered_wells, options.output)
+    options.input.json_dump(options.output)
 
 
 if __name__ == "__main__":

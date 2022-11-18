@@ -1,7 +1,9 @@
-import argparse
-from functools import partial
-
-from spinningjenny.jobs.shared.validators import is_writable, valid_json_file
+from spinningjenny.jobs.shared.arguments import (
+    add_output_argument,
+    add_wells_input_argument,
+    bootstrap_parser,
+)
+from spinningjenny.jobs.shared.validators import valid_input_file
 
 
 def build_argument_parser():
@@ -13,39 +15,28 @@ def build_argument_parser():
         "If both or none of the flags are set, the job give an error."
     )
 
-    parser = argparse.ArgumentParser(description=description)
-    parser.add_argument(
-        "-i",
-        "--input",
-        required=True,
-        type=partial(valid_json_file, parser=parser),
+    parser, required_group = bootstrap_parser(description=description)
+    add_wells_input_argument(
+        required_group,
         help=(
             "Json file that contains a list of dictionaries containing well information."
         ),
     )
-    parser.add_argument(
-        "-k",
-        "--keep",
-        default=None,
-        type=partial(valid_json_file, parser=parser),
-        help="Json file that contains a list of well names to keep.",
-    )
-    parser.add_argument(
-        "-r",
-        "--remove",
-        default=None,
-        type=partial(valid_json_file, parser=parser),
-        help="Json file that contains a list of well names to remove.",
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        required=True,
-        type=partial(is_writable, parser=parser),
+    add_output_argument(
+        required_group,
         help="File path to write the resulting wells file to.",
     )
-
+    group = required_group.add_mutually_exclusive_group(required=True)
+    group.add_argument(
+        "-k",
+        "--keep",
+        type=valid_input_file,
+        help="JSON/Y(A)ML file that contains a list of well names to keep.",
+    )
+    group.add_argument(
+        "-r",
+        "--remove",
+        type=valid_input_file,
+        help="(JSON/Y(A)ML file that contains a list of well names to remove.",
+    )
     return parser
-
-
-args_parser = build_argument_parser()
