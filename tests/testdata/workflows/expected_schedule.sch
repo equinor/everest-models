@@ -105,7 +105,7 @@ WELOPEN
 
 --start ./templates/template_wconinje.tmpl
 WCONINJE
-  'INJ2' 'water' 'OPEN' 'RATE' 1000 1* 320  1*  1*  1*   /
+  'INJ2' 'water' 'OPEN' 'RATE' 1000.0 1* 320  1*  1*  1*   /
 /
 
 --end ./templates/template_wconinje.tmpl
@@ -129,7 +129,7 @@ WELOPEN
 
 --start ./templates/template_wconprod_oil.tmpl
 WCONPROD
-  'PROD3' 'OPEN' 'ORAT' 1000  4*  1000   /
+  'PROD3' 'OPEN' 'ORAT' 1000.0  4*  1000   /
 /
 
 --end ./templates/template_wconprod_oil.tmpl

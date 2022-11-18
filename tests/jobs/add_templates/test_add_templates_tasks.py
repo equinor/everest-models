@@ -1,57 +1,54 @@
-import json
+import logging
 
-import ruamel.yaml as yaml
-from configsuite import ConfigSuite
 from sub_testdata import ADD_TEMPLATE as TEST_DATA
 
-from spinningjenny.jobs.fm_add_templates.schemas import build_schema
-from spinningjenny.jobs.fm_add_templates.tasks import add_templates
+from spinningjenny.jobs.fm_add_templates.tasks import add_templates, collect_matching
+from spinningjenny.jobs.fm_add_templates.template_model import Template
+from spinningjenny.jobs.shared.models import WellListModel
+from spinningjenny.jobs.shared.models.wells import Operation
+from spinningjenny.jobs.shared.validators import parse_file
 
 
-def test_add_templates(copy_testdata_tmpdir):
-    # Load input well operations file
-    copy_testdata_tmpdir(TEST_DATA)
-    with open("wells.json", "r") as f:
-        wells = json.load(f)
+def test_collect_matching(add_tmpl_config):
+    wells = parse_file("wells.json", WellListModel)
+    expected = {
+        "w1": ["templates/template_open.tmpl"],
+        "w2": [
+            "templates/template_open.tmpl",
+            "templates/template_water_inject.tmpl",
+            "templates/template_oil_prod.tmpl",
+            "templates/template_water_inject.tmpl",
+            "templates/template_rate_inject.tmpl",
+        ],
+        "w3": ["templates/template_open.tmpl", "templates/template_water_inject.tmpl"],
+        "w4": [
+            "templates/template_open.tmpl",
+            "templates/template_oil_prod.tmpl",
+            "templates/template_water_inject.tmpl",
+        ],
+        "w5": ["templates/template_open.tmpl"],
+    }
+    for well_name, op, template in collect_matching(
+        templates=add_tmpl_config.templates, wells=wells
+    ):
+        assert str(template.file) in expected[well_name]
+        assert template.keys.opname == op.opname
+        assert template.keys.phase == op.phase
 
-    # Load config
-    with open("config.yml", "r") as f:
-        config = ConfigSuite(
-            yaml.YAML(typ="safe", pure=True).load(f),
-            build_schema(),
-            deduce_required=True,
-        )
 
-    # Check loaded config is valid
-    assert config.valid
-
-    output, warnings, _ = add_templates(
-        templates=config.snapshot.templates, wells=wells
-    )
-
-    with open("expected_out.json", "r") as input_file:
-        expected_result = json.load(input_file)
-
-    assert output == expected_result
-
-    assert len(warnings) == 1, "There should be only one warning"
-
-    assert "./templates/notused.tmpl" in next(iter(warnings))
-
-    # Add well containing well operation that doesn't match any key set asociated
-    # with a template in the config
-    wells.append(
-        {
-            "readydate": "2001-06-11",
-            "name": "w_test",
-            "ops": [{"date": "2001-02-11", "opname": "oepn"}],
-        }
-    )
-    _, _, errors = add_templates(templates=config.snapshot.templates, wells=wells)
-
-    assert len(errors) == 1, "There should be only one error"
-
+def test_add_templates(path_test_data, caplog):
+    template_path = path_test_data / f"{TEST_DATA}/templates/template_open.tmpl"
+    template = Template(**dict(file=template_path, keys=dict(opname="tester")))
+    operation = Operation(**dict(date="2020-12-12", opname="tester"))
+    assert operation.template is None
+    assert not template.is_utilized
+    add_templates(well_name="t1", op=operation, template=template)
+    assert operation.template == template_path
+    assert template.is_utilized
+    assert len(caplog.records) == 1
+    record = caplog.records[0]
+    assert record.levelno == logging.INFO
     assert (
-        "No template matched for well:'w_test' operation:'oepn' at date:'2001-02-11'"
-        in errors
+        record.message
+        == f"Template '{template_path}' was inserted for well 't1' date '2020-12-12' operation 'tester'"
     )

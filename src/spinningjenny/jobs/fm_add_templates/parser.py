@@ -1,11 +1,17 @@
-import argparse
 from functools import partial
 
-from spinningjenny.jobs.fm_add_templates.schemas import build_schema
-from spinningjenny.jobs.shared.validators import is_writable, valid_config, valid_file
+from spinningjenny.jobs.fm_add_templates.template_model import TemplateConfigModel
+from spinningjenny.jobs.shared.arguments import (
+    SchemaAction,
+    add_output_argument,
+    add_wells_input_argument,
+    bootstrap_parser,
+)
+from spinningjenny.jobs.shared.validators import parse_file
 
 
 def build_argument_parser():
+    SchemaAction.register_single_model("-c/--config", TemplateConfigModel)
     description = (
         "Inserts template file paths for all well operations in the "
         " given input file where the config keys match the operation"
@@ -13,31 +19,18 @@ def build_argument_parser():
         " a well operation the template with the most keys matching will be the one"
         " inserted"
     )
-    parser = argparse.ArgumentParser(description=description)
-
-    parser.add_argument(
+    parser, required_group = bootstrap_parser(description=description)
+    add_wells_input_argument(
+        required_group,
+        help="Input file that requires template paths. Json file expected ex: wells.json",
+    )
+    add_output_argument(required_group, help="Output file")
+    required_group.add_argument(
         "-c",
         "--config",
-        type=partial(valid_config, schema=build_schema(), parser=parser),
+        type=partial(parse_file, schema=TemplateConfigModel),
         required=True,
         help="Config file containing list of template file paths to be injected.",
     )
-    parser.add_argument(
-        "-i",
-        "--input",
-        type=partial(valid_file, parser=parser),
-        required=True,
-        help="Input file that requires template paths. Json file expected ex: wells.json",
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        required=True,
-        type=partial(is_writable, parser=parser),
-        help="Output file",
-    )
 
     return parser
-
-
-args_parser = build_argument_parser()
