@@ -2,48 +2,32 @@
 import logging
 
 from spinningjenny.jobs.fm_select_wells import tasks
-from spinningjenny.jobs.fm_select_wells.parser import args_parser
-from spinningjenny.jobs.shared.io_utils import write_json_to_file
+from spinningjenny.jobs.fm_select_wells.parser import build_argument_parser
 
 logger = logging.getLogger(__name__)
 
 
 def main_entry_point(args=None):
-    args = args_parser.parse_args(args)
+    args_parser = build_argument_parser()
+    options = args_parser.parse_args(args)
+    well_number = tasks.get_well_number(options, error_msgr=args_parser.error)
 
-    well_number = None
-    if args.well_number_file is not None:
-        if args.real_bounds is None or args.scaled_bounds is None:
-            args_parser.error(
-                "Scaling bounds must be provided if -f/--well-number-file is given"
-            )
-        well_number = next(iter(args.well_number_file.values()))
-
-    if args.well_number is not None:
-        if not (args.real_bounds is None and args.scaled_bounds is None):
-            args_parser.error(
-                "Scaling bounds are not allowed if -n/--well-number is given"
-            )
-        well_number = args.well_number
-        if well_number < 1:
-            args_parser.error("-n/--well-number must be > 0")
-
-    if (
-        args.well_number_file is None
-        and args.well_number is None
-        and args.max_date is None
-    ):
+    if not any((well_number, options.max_date)):
         args_parser.error(
-            "-n/--well-number and -f/--well-number-file are both missing:"
-            " -m/--max-date is required"
+            "\nBoth `well number` and `-m/--max-date` values are missing.\n"
+            "Please provide either/or both values"
         )
+    if options.lint:
+        args_parser.exit()
 
-    output = tasks.select_wells(
-        args.input, well_number, args.real_bounds, args.scaled_bounds, args.max_date
+    tasks.select_wells(
+        wells=options.input,
+        max_date=options.max_date,
+        number_of_wells=well_number,
     )
 
-    logger.info(f"Writing results to {args.output}")
-    write_json_to_file(output, args.output)
+    logger.info(f"Writing results to {options.output}")
+    options.input.json_dump(options.output)
 
 
 if __name__ == "__main__":

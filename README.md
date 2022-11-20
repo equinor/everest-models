@@ -155,9 +155,46 @@ fm_schmerge -s SCHEDULE -i INPUT -o OUTPUT
 
 ### select_wells
 ```bash
-select_wells [-h] -i INPUT [-n WELL_NUMBER | -f WELL_NUMBER_FILE] [-r ['LOWER', 'UPPER']
-             ['LOWER', 'UPPER']] [-s ['LOWER', 'UPPER'] ['LOWER', 'UPPER']]
-             [-m MAX_DATE] -o OUTPUT
+usage: select_wells [-h] [--lint] [--schemas] -i INPUT -o OUTPUT [-m MAX_DATE] {value,file} ...
+
+Select the first wells from a drill planner output file.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --lint                Lints all given input (file) arguments with no data transformation.
+  --schemas             Output all file schemas that are taken as input parameters.
+  -m MAX_DATE, --max-date MAX_DATE
+                        Maximum allowed date
+
+required named arguments:
+  -i INPUT, --input INPUT
+                        Input file: a drill planner output file.
+  -o OUTPUT, --output OUTPUT
+                        Output file: updated drill planner output file
+
+well number:
+  Pass the number of wells to be selected as a value or a file path. If neither, then `-m/--max-date` is
+  required and the whole list of wells, bounded by the max date, is returned.
+
+  {value,file}
+    value               The number of wells as a value
+    file                Everest control file containing the number of wells.
+
+argument: file
+fields:
+   scaled_number_of_wells: {required: true, type: number}
+argument: -i/--input
+fields:
+- completion_date: {format: date, required: false, type: string}
+  drill_time: {required: false, type: integer}
+  name: {required: true, type: string}
+  ops:
+  - date: {format: date, required: true, type: string}
+    opname: {required: true, type: string}
+    phase: {required: false, type: string}
+    rate: {required: false, type: number}
+    template: {format: file-path, required: false, type: string}
+  readydate: {format: date, required: false, type: string}
 ```
 
 ### stea
