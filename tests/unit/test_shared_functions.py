@@ -201,7 +201,7 @@ def test_is_gt_zero(value):
     assert value == is_gt_zero(str(value), "not important")
 
 
-@given(st.characters(blacklist_categories=("Nd", "Nl", "No")))
+@given(st.characters(whitelist_categories=("Lu", "Ll", "Lm")))
 def test_is_gt_zero_not_a_number(value):
     with pytest.raises(argparse.ArgumentTypeError) as e:
         is_gt_zero(value, "not important")
