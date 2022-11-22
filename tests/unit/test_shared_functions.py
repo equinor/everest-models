@@ -12,6 +12,7 @@ from sub_testdata import VALIDATORS as TEST_DATA
 from utils import MockParser
 
 from spinningjenny.jobs.shared.validators import (
+    _prettify_validation_error_message,
     is_gt_zero,
     is_writable,
     is_writable_path,
@@ -260,4 +261,24 @@ def test_not_valid_date(value):
         valid_iso_date(value)
     assert f"Not a valid ISO8601 formatted date (YYYY-MM-DD): '{value}'." in str(
         e.value
+    )
+
+
+def test_prettify_validation_error_message(monkeypatch):
+    class ValidationError:
+        def errors(self):
+            return [
+                {"loc": ("__root__", 5, "name"), "msg": "not a name"},
+                {"loc": ("__root__", "field_a", "child"), "msg": "baby"},
+                {"loc": ("field_b", 4, "sub", "child"), "msg": "nested"},
+            ]
+
+    assert (
+        _prettify_validation_error_message(ValidationError())
+        == """index 6 -> name:
+\tnot a name
+field_a -> child:
+\tbaby
+field_b -> index 5 -> sub -> child:
+\tnested"""
     )

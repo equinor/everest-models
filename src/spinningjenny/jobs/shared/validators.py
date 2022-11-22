@@ -169,14 +169,21 @@ def is_gt_zero(value: str, msg: str) -> int:
     return num
 
 
+def _prettify_validation_error_message(error: ValidationError) -> str:
+    return "\n".join(
+        " -> ".join(
+            f"index {key + 1}" if isinstance(key, int) else key
+            for key in err["loc"]
+            if key != "__root__"
+        )
+        + f":\n\t{err['msg']}"
+        for err in error.errors()
+    )
+
+
 def parse_file(value: str, schema: "BaseModel"):
     value = valid_input_file(value)
     try:
         return schema.parse_obj(value)
     except ValidationError as e:
-        msg = "\n".join(
-            f"{' -> '.join(key for key in err['loc'])}:\n\t{err['msg']}"
-            for err in e.errors()
-        )
-
-        raise argparse.ArgumentTypeError(f"\n{msg}")
+        raise argparse.ArgumentTypeError(f"\n{_prettify_validation_error_message(e)}")
