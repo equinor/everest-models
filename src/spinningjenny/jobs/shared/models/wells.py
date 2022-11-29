@@ -17,7 +17,7 @@ class Operation(BaseConfig):
 class WellModel(BaseConfig):
     readydate: Optional[datetime.date] = None
     completion_date: Optional[datetime.date] = None
-    drill_time: int
+    drill_time: Optional[int] = None
     name: str = Field(..., allow_mutation=False)
     ops: Tuple[Operation, ...] = Field(default_factory=tuple)
 
