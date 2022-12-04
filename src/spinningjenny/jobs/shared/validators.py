@@ -140,10 +140,9 @@ def valid_input_file(value: str):
         raise argparse.ArgumentTypeError(
             f"The path '{path}' is a directory or file not found."
         )
-
     if path.suffix in (".yaml", ".yml"):
         try:
-            return load_yaml(path)
+            return yaml.YAML(typ="safe", pure=True).load(path.read_bytes())
         except yaml.YAMLError as e:
             raise argparse.ArgumentTypeError(
                 f"The file: '{path}' contains invalid YAML syntax.\n\t<{e}>"
