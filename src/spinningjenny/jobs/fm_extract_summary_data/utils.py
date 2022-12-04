@@ -1,9 +1,39 @@
+import argparse
+import datetime
 import logging
 from enum import Enum
 
 import numpy as np
+from ecl.summary import EclSum
 
 logger = logging.getLogger(__name__)
+
+
+def extract_value(
+    summary: EclSum, key: str, end_date: datetime.date, **kwargs
+) -> float:
+    return summary.get_interp(key, date=end_date)
+
+
+def extract_max(
+    summary: EclSum, key: str, start_date: datetime.date, end_date: datetime.date
+) -> float:
+    return np.max(
+        summary.numpy_vector(
+            key,
+            time_index=summary.time_range(
+                start=start_date, end=end_date, interval="1d"
+            ),
+        )
+    )
+
+
+def extract_diff(
+    summary: EclSum, key: str, start_date: datetime.date, end_date: datetime.date
+) -> float:
+    return summary.get_interp(key, date=end_date) - summary.get_interp(
+        key, date=start_date
+    )
 
 
 class CalculationType(Enum):
@@ -13,54 +43,41 @@ class CalculationType(Enum):
     def __eq__(self, other):
         return self.value == other
 
-    @staticmethod
-    def types():
-        return [el.value.lower() for el in CalculationType]
+    def extract(
+        self,
+        summary: EclSum,
+        key: str,
+        start_date: datetime.date,
+        end_date: datetime.date,
+    ) -> float:
+        if self == self.MAX:
+            return extract_max(summary, key, start_date, end_date)
+        if self == self.DIFF:
+            return extract_diff(summary, key, start_date, end_date)
+
+    @classmethod
+    def types(cls):
+        return tuple(el.value for el in cls)
 
 
-def validate_arguments(options, parser):
-    summary = options.summary
-    if options.key not in summary:
-        parser.error("Missing required data {} in summary file.".format(options.key))
-
-    if options.start_date:
-        if options.start_date > options.end_date:
-            parser.error("Start date is after end date.")
-
-        if options.start_date not in options.summary.report_dates:
-            parser.error(
-                "Date {} is not part of the simulation report dates".format(
-                    options.start_date
-                )
-            )
+def validate_arguments(options: argparse.Namespace) -> argparse.Namespace:
+    errors = []
+    if options.key not in options.summary:
+        errors.append(f"Missing required data {options.key} in summary file.")
+    if options.start_date is not None and options.start_date > options.end_date:
+        errors.append(
+            f"Start date '{options.start_date}' is after end date '{options.end_date}'."
+        )
+    if not (
+        options.start_date is None or options.start_date in options.summary.report_dates
+    ):
+        errors.append(
+            f"Start date '{options.start_date}' is not part of the simulation report dates"
+        )
     if options.end_date not in options.summary.report_dates:
-        parser.error(
-            "Date {} is not part of the simulation report dates".format(
-                options.end_date
-            )
+        errors.append(
+            f"End date '{options.end_date}' is not part of the simulation report dates"
         )
-
-    if options.start_date is None:
-        logger.info(
-            "Extracting key {} for single date {}".format(options.key, options.end_date)
-        )
-
-
-def apply_calculation(summary, calc_type, key, start_date, end_date):
-    time_range = summary.time_range(start=start_date, end=end_date, interval="1d")
-    kw_data = summary.numpy_vector(key, time_range)
-    if calc_type == CalculationType.MAX:
-        return np.max(kw_data)
-    if calc_type == CalculationType.DIFF:
-        star_val = summary.get_interp(key, date=start_date)
-        end_val = summary.get_interp(key, date=end_date)
-        return end_val - star_val
-
-
-def extract_value(summary, key, date):
-    return summary.get_interp(key, date=date)
-
-
-def write_result(path, result, multiplier):
-    with open(path, "w") as f:
-        f.write("{0:.10f}\n".format((multiplier * result)))
+    if errors:
+        raise argparse.ArgumentTypeError("\n".join(errors))
+    return options

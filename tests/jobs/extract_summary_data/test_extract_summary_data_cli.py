@@ -1,4 +1,5 @@
 import os
+import pathlib
 
 import pytest
 from jobs.extract_summary_data.parser import build_argument_parser
@@ -43,7 +44,6 @@ def extract_summary_data_args_types(extract_summary_data_base_args, request):
 
 def test_extract_summary_data_entry_point(
     extract_summary_data_args_types,
-    caplog,
     mock_extract_summary_data_parser,
     switch_cwd_tmp_path,
 ):
@@ -51,17 +51,26 @@ def test_extract_summary_data_entry_point(
     expected_results = {"max": 10, "diff": 8}
     # check range calculations
     cli.main_entry_point(extract_summary_data_args_types)
-    assert os.path.exists(output_file)
     with open(output_file, "r") as f:
         result = float(f.readline())
 
     assert result == expected_results[extract_summary_data_args_types[-1]]
-    assert len(caplog.records) == 0
+
+
+def test_extract_summary_data_lint(
+    extract_summary_data_args_types,
+    switch_cwd_tmp_path,
+    mock_extract_summary_data_parser,
+):
+    with pytest.raises(SystemExit) as e:
+        cli.main_entry_point([*extract_summary_data_args_types, "--lint"])
+
+    assert e.value.code == 0
+    assert not pathlib.Path("output.json").exists()
 
 
 def test_extract_summary_data_entry_point_multiplier(
     extract_summary_data_args_types,
-    caplog,
     mock_extract_summary_data_parser,
     switch_cwd_tmp_path,
 ):
@@ -74,13 +83,31 @@ def test_extract_summary_data_entry_point_multiplier(
             "2.6",
         ]
     )
-    assert os.path.exists(output_file)
     with open(output_file, "r") as f:
         result = float(f.readline())
 
     assert result == 2.6 * expected_results[extract_summary_data_args_types[-1]]
 
-    assert len(caplog.records) == 0
+
+def test_extract_summary_data_entry_point_default_type(
+    extract_summary_data_base_args,
+    mock_extract_summary_data_parser,
+    switch_cwd_tmp_path,
+):
+    output_file = extract_summary_data_base_args[3]
+    cli.main_entry_point(
+        [
+            *extract_summary_data_base_args,
+            "--start-date",
+            "2000-01-01",
+            "--end-date",
+            "2000-01-26",
+        ]
+    )
+    with open(output_file, "r") as f:
+        result = float(f.readline())
+
+    assert result == 8
 
 
 def test_extract_summary_data_entry_point_single_date(
