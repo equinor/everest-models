@@ -12,14 +12,13 @@ from spinningjenny.jobs.shared.validators import parse_file
 
 def build_argument_parser():
     SchemaAction.register_single_model("-c/--config", TemplateConfigModel)
-    description = (
-        "Inserts template file paths for all well operations in the "
+    parser, required_group = bootstrap_parser(
+        description="Inserts template file paths for all well operations in the "
         " given input file where the config keys match the operation"
         " information. If key sets associated with multiple template files match"
         " a well operation the template with the most keys matching will be the one"
         " inserted"
     )
-    parser, required_group = bootstrap_parser(description=description)
     add_wells_input_argument(
         required_group,
         help="Input file that requires template paths. Json file expected ex: wells.json",

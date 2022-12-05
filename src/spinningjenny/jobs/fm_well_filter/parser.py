@@ -37,6 +37,6 @@ def build_argument_parser():
         "-r",
         "--remove",
         type=valid_input_file,
-        help="(JSON/Y(A)ML file that contains a list of well names to remove.",
+        help="JSON/Y(A)ML file that contains a list of well names to remove.",
     )
     return parser
