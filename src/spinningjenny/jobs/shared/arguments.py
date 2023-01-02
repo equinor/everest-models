@@ -20,7 +20,7 @@ class SchemaAction(argparse.Action):
 
     @classmethod
     def register_models(cls, items: Dict[str, models.BaseConfig]):
-        cls._models = items
+        cls._models.update(items)
 
     def __call__(self, parser, namespace, values, option_string):
         for argument, model in self._models.items():
