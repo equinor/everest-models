@@ -1,79 +1,76 @@
 #!/usr/bin/env python
 
 import logging
-import sys
+import typing
+from functools import partial
 
-from spinningjenny.jobs.fm_well_constraints.parser import args_parser
-from spinningjenny.jobs.fm_well_constraints.well_constraint_job import (
-    merge_dicts,
-    run_job,
-)
-from spinningjenny.jobs.fm_well_constraints.well_constraint_validate import valid_job
+from spinningjenny.jobs.fm_well_constraints.models import Constraints
+from spinningjenny.jobs.fm_well_constraints.parser import build_argument_parser
+from spinningjenny.jobs.fm_well_constraints.tasks import create_well_operations
 
 logger = logging.getLogger(__name__)
 
 
+def _collect_constraints_errors(
+    optional_constraints: typing.Iterable[typing.Tuple[Constraints, str]],
+    well_names: typing.Iterable[str],
+):
+    for argument, constraint in optional_constraints:
+        constraint = set() if constraint is None else set(dict(constraint))
+        if diff := constraint.difference(well_names):
+            yield f"\t{argument}_constraints:\n\t\t{'    '.join(diff)}"
+
+
 def main_entry_point(args=None):
+    args_parser = build_argument_parser()
     options = args_parser.parse_args(args)
 
-    logger.info("Initializing well constraints job")
+    mismatch_errors = []
 
-    constraints = options.config
+    constraints = tuple(
+        filter(
+            lambda x: x[1],
+            (
+                ("rate", options.rate_constraints),
+                ("duration", options.duration_constraints),
+                ("phase", options.phase_constraints),
+            ),
+        )
+    )
 
-    optional_files = _filter_optional_files(options)
-    optimizer_values = _add_variable_files(optional_files)
+    if errors := list(
+        _collect_constraints_errors(
+            constraints,
+            well_names=[well.name for well in options.input],
+        )
+    ):
+        mismatch_errors.append(
+            "Constraint well name keys do not match input well names:\n"
+            + "\n".join(errors)
+        )
 
-    if optimizer_values:
-        constraints = merge_dicts(constraints, optimizer_values)
+    if errors := set(options.config.keys()).difference(
+        well.name for well in options.input if well.readydate is not None
+    ):
+        mismatch_errors.append(
+            "Missing start date (keyword: readydate) for the following wells:\n\t"
+            + "\t".join(errors)
+        )
 
-    well_dates = options.input
-    if not valid_job(well_dates, constraints):
-        sys.exit(1)
+    if mismatch_errors:
+        args_parser.error("\n\n".join(mismatch_errors))
 
-    run_job(constraints, well_dates, options.output)
+    if options.lint:
+        args_parser.exit()
 
+    operations = partial(create_well_operations, constraints=dict(constraints))
+    for well in options.input:
+        well.ops = (
+            *well.ops,
+            *operations(options.config.get(well.name, {}), well.name, well.readydate),
+        )
 
-def _filter_optional_files(args):
-    optional_files = [
-        (args.rate_constraints, "rate"),
-        (args.duration_constraints, "duration"),
-        (args.phase_constraints, "phase"),
-    ]
-    return [x for x in optional_files if x[0]]
-
-
-def _add_variable_files(optional_files):
-    """
-    Combines files with controls, and checks if they are valid input files
-    :param optional_files:
-    :return: combination of controls and bool with validity
-    """
-    variables = {}
-    for opt_constraint, key in optional_files:
-        variables = merge_dicts(variables, _inject_key_in_dict(opt_constraint, key))
-    return variables
-
-
-def _inject_key_in_dict(input_dict, new_key):
-    """
-    Replaces the optimizer value from the dict of the input .json file with
-    a key/value pair, where the value is kept and expands the dict to match
-    the format of the user config.
-    :param input_dict: dictionary with optimization values
-    :param key: the key in the key/value pair.
-    :return: new dict
-    """
-    output_dict = {}
-    for key, val in input_dict.items():
-        for index in val:
-            new_dict = {
-                key: {
-                    int(index): {new_key: {"optimizer_value": input_dict[key][index]}}
-                }
-            }
-            output_dict = merge_dicts(output_dict, new_dict)
-
-    return output_dict
+    options.input.json_dump(options.output)
 
 
 if __name__ == "__main__":
