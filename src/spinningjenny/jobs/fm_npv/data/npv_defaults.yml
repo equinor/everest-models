@@ -1,6 +1,0 @@
-files:
-    output_file: 'npv_0'
-
-multiplier: 1
-default_exchange_rate: 1
-default_discount_rate: 0.08

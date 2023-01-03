@@ -5,7 +5,6 @@ import pathlib
 from os import W_OK, access, path
 
 import ruamel.yaml as yaml
-from configsuite import ConfigSuite
 from ecl.summary import EclSum
 from pydantic import BaseModel, ValidationError
 
@@ -110,28 +109,6 @@ def valid_iso_date(value):
         raise argparse.ArgumentTypeError(
             f"Not a valid ISO8601 formatted date (YYYY-MM-DD): '{value}'."
         )
-
-
-def _validate_config(file_path, schema, parser, layers=()):
-    dict_config = valid_yaml_file(file_path, parser)
-    config = ConfigSuite(dict_config, schema, layers=layers, deduce_required=True)
-    if not config.valid:
-        parser.error(
-            "Invalid config file: {}\n{}".format(
-                file_path, "\n".join([err.msg for err in config.errors])
-            )
-        )
-    return config, dict_config
-
-
-def valid_config(file_path, schema, parser, layers=()):
-    config, _ = _validate_config(file_path, schema, parser, layers)
-    return config
-
-
-def valid_raw_config(file_path, schema, parser, layers=()):
-    _, raw_config = _validate_config(file_path, schema, parser, layers)
-    return raw_config
 
 
 def valid_input_file(value: str):

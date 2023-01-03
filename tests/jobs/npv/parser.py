@@ -1,8 +1,12 @@
 import datetime
+import pathlib
+import sys
+from typing import NamedTuple
 
 from ecl.summary import EclSum
 
-from spinningjenny.jobs.fm_npv.parser import args_parser
+from spinningjenny.jobs.fm_npv.npv_config_model import NPVConfig
+from spinningjenny.jobs.shared.models import WellListModel
 
 
 def ecl_summary_npv(*args, **kwargs):
@@ -39,7 +43,31 @@ def ecl_summary_npv(*args, **kwargs):
     return ecl_sum
 
 
-def build_argument_parser():
-    parser = args_parser
-    parser._actions[1].type = ecl_summary_npv
-    return parser
+class Options(NamedTuple):
+    config: NPVConfig
+    input: WellListModel = None
+    start_date: datetime.date = None
+    end_date: datetime.date = None
+    ref_date: datetime.date = None
+    default_exchange_rate: float = None
+    default_discount_rate: float = None
+    schema: bool = None
+    lint: bool = None
+    multiplier: float = 1.0
+    summary: EclSum = ecl_summary_npv()
+    output: pathlib.Path = pathlib.Path("test_0")
+
+
+class MockParser:
+    def __init__(self, options: Options):
+        self._options = options
+
+    def parse_args(self, *args, **kwargs):
+        return self._options
+
+    def error(self, message):
+        sys.stderr.write(message)
+        sys.exit(2)
+
+    def exit(self):
+        sys.exit(0)

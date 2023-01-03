@@ -136,10 +136,100 @@ required named arguments:
 
 ### npv
 ```bash
-npv -s SUMMARY -c CONFIG [-o OUTPUT] [-i INPUT]
-  [-sd START_DATE] [-ed END_DATE] [-rd REF_DATE]
-  [-ddr DEFAULT_DISCOUNT_RATE] [-der DEFAULT_EXCHANGE_RATE]
-  [--multiplier MULTIPLIER]
+usage: npv [-h] [--lint] [--schemas] -s SUMMARY [-i INPUT]
+                       [-o OUTPUT] -c CONFIG [-sd START_DATE] [-ed END_DATE]
+                       [-rd REF_DATE] [-ddr DEFAULT_DISCOUNT_RATE]
+                       [-der DEFAULT_EXCHANGE_RATE] [--multiplier MULTIPLIER]
+
+Module to calculate the NPV based on an eclipse simulation. All optional args,
+except: lint, schemas, input and output, is also configurable through the
+config file.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --lint                Lints all given input (file) arguments with no data
+                        transformation.
+  --schemas             Output all file schemas that are taken as input
+                        parameters.
+  -i INPUT, --input INPUT
+                        Path to input file containing information related to
+                        wells. The format is consistent with the wells.json
+                        file when running everest. It must contain a
+                        'readydate' key for each well for when it is
+                        considered completed and ready for production.
+  -o OUTPUT, --output OUTPUT
+                        Path to output-file where the NPV result is written
+                        to. (default: npv_0)
+  -sd START_DATE, --start-date START_DATE
+                        Start point of NPV calculation as ISO8601 formatted
+                        date (YYYY-MM-DD).
+  -ed END_DATE, --end-date END_DATE
+                        End point of NPV calculation as ISO8601 formatted date
+                        (YYYY-MM-DD).
+  -rd REF_DATE, --ref-date REF_DATE
+                        Ref point of NPV calculation as ISO8601 formatted date
+                        (YYYY-MM-DD).
+  -ddr DEFAULT_DISCOUNT_RATE, --default-discount-rate DEFAULT_DISCOUNT_RATE
+                        Default discount rate you want to use.
+  -der DEFAULT_EXCHANGE_RATE, --default-exchange-rate DEFAULT_EXCHANGE_RATE
+                        Default exchange rate you want to use.
+  --multiplier MULTIPLIER
+                        Multiplier you want to use.
+
+required named arguments:
+  -s SUMMARY, --summary SUMMARY
+                        Ecl summary file
+  -c CONFIG, --config CONFIG
+                        Path to config file containing at least prices
+arguments: -c/--config
+fields:
+   costs:
+   - currency: {required: false, type: string}
+     date: {format: date, required: true, type: string}
+     value: {required: true, type: number}
+   dates:
+      end_date: {format: date, required: false, type: string}
+      ref_date: {format: date, required: false, type: string}
+      start_date: {format: date, required: false, type: string}
+   default_discount_rate: {default: 0.08, required: false, type: number}
+   default_exchange_rate: {default: 1, required: false, type: number}
+   discount_rates:
+   - currency: {required: false, type: string}
+     date: {format: date, required: true, type: string}
+     value: {required: true, type: number}
+   exchange_rates:
+      string:
+      - currency: {required: false, type: string}
+        date: {format: date, required: true, type: string}
+        value: {required: true, type: number}
+   multiplier: {default: 1, required: false, type: number}
+   prices:
+      string:
+      - currency: {required: false, type: string}
+        date: {format: date, required: true, type: string}
+        value: {required: true, type: number}
+   summary_keys: [string]
+   well_costs:
+   - currency: {required: false, type: string}
+     value: {required: true, type: number}
+     well: {required: true, type: string}
+...
+---
+arguments: -i/--input
+fields:
+- completion_date: {format: date, required: false, type: string}
+  drill_time: {required: false, type: integer}
+  name: {required: true, type: string}
+  ops:
+  - date: {format: date, required: true, type: string}
+    opname: {required: true, type: string}
+    phase:
+       choices: [WATER, GAS, OIL]
+       type: string
+    rate: {required: false, type: number}
+    template: {format: file-path, required: false, type: string}
+  readydate: {format: date, required: false, type: string}
+...
 ```
 
 ### rf

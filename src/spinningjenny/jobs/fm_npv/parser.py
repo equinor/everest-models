@@ -1,81 +1,61 @@
-import argparse
 from functools import partial
 
-import pkg_resources
-
-from spinningjenny.jobs.fm_npv.schemas import build_schema
-from spinningjenny.jobs.shared.validators import (
-    is_writable,
-    load_yaml,
-    valid_config,
-    valid_date,
-    valid_ecl_file,
-    valid_file,
+from spinningjenny.jobs.fm_npv.npv_config_model import NPVConfig
+from spinningjenny.jobs.shared.arguments import (
+    SchemaAction,
+    add_output_argument,
+    add_summary_argument,
+    add_wells_input_argument,
+    bootstrap_parser,
 )
+from spinningjenny.jobs.shared.validators import parse_file, valid_iso_date
 
-
-def _npv_default():
-    defaults_path = pkg_resources.resource_filename(
-        "spinningjenny.jobs.fm_npv", "data/npv_defaults.yml"
-    )
-
-    return load_yaml(defaults_path)
+CONFIG_ARGUMENT = ["-c", "--config"]
 
 
 def build_argument_parser():
-    description = (
-        "Module to calculate the NPV based on an eclipse simulation. "
-        "All optional args is also configurable through the config file"
+    SchemaAction.register_single_model("/".join(CONFIG_ARGUMENT), NPVConfig)
+    parser, required_group = bootstrap_parser(
+        description="Module to calculate the NPV based on an eclipse simulation. "
+        "All optional args, except: lint, schemas, input and output, is also configurable through the config file."
     )
-    parser = argparse.ArgumentParser(description=description)
-    parser.add_argument(
-        "-s",
-        "--summary",
-        required=True,
-        type=partial(valid_ecl_file, parser=parser),
-        help="Path to eclipse summary file to base your NPV calculation towards",
-    )
-    parser.add_argument(
-        "-c",
-        "--config",
-        required=True,
-        type=partial(
-            valid_config, schema=build_schema(), parser=parser, layers=(_npv_default(),)
-        ),
-        help="Path to config file containing at least prices",
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        type=partial(is_writable, parser=parser),
-        help="Path to output-file where the NPV result is written to.",
-    )
-    parser.add_argument(
-        "-i",
-        "--input",
+    add_summary_argument(required_group)
+    add_wells_input_argument(
+        parser,
         required=False,
-        type=partial(valid_file, parser=parser),
         help="Path to input file containing information related to wells. "
         "The format is consistent with the wells.json file when running "
         "everest. It must contain a 'readydate' key for each well for when "
         "it is considered completed and ready for production.",
     )
+    add_output_argument(
+        parser,
+        required=False,
+        default="npv_0",
+        help="Path to output-file where the NPV result is written to.",
+    )
+    required_group.add_argument(
+        *CONFIG_ARGUMENT,
+        required=True,
+        type=partial(parse_file, schema=NPVConfig),
+        help="Path to config file containing at least prices",
+    )
     parser.add_argument(
         "-sd",
         "--start-date",
-        type=partial(valid_date, parser=parser),
-        help="Startpoint of NPV calculation as ISO8601 formatted date (YYYY-MM-DD).",
+        type=valid_iso_date,
+        help="Start point of NPV calculation as ISO8601 formatted date (YYYY-MM-DD).",
     )
     parser.add_argument(
         "-ed",
         "--end-date",
-        type=partial(valid_date, parser=parser),
-        help="Endpoint of NPV calculation as ISO8601 formatted date (YYYY-MM-DD).",
+        type=valid_iso_date,
+        help="End point of NPV calculation as ISO8601 formatted date (YYYY-MM-DD).",
     )
     parser.add_argument(
         "-rd",
         "--ref-date",
-        type=partial(valid_date, parser=parser),
+        type=valid_iso_date,
         help="Ref point of NPV calculation as ISO8601 formatted date (YYYY-MM-DD).",
     )
     parser.add_argument(
@@ -93,6 +73,3 @@ def build_argument_parser():
     parser.add_argument("--multiplier", type=int, help="Multiplier you want to use.")
 
     return parser
-
-
-args_parser = build_argument_parser()

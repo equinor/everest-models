@@ -1,83 +1,53 @@
 #!/usr/bin/env python
 
+import argparse
 import logging
 
-from spinningjenny.jobs.fm_npv.parser import args_parser
-from spinningjenny.jobs.fm_npv.tasks import CalculateNPV
+from spinningjenny.jobs.fm_npv.manager import NPVCalculator
+from spinningjenny.jobs.fm_npv.parser import build_argument_parser
 
 logger = logging.getLogger(__name__)
 
 
+def _overwrite_npv_config(options: argparse.Namespace, field: str, index: int = 1):
+    if (value := getattr(options, field, None)) is not None:
+        instance = options.config.dates if "date" in field else options.config
+        setattr(instance, field, value[index] if isinstance(value, tuple) else value)
+        logger.info(f"Overwrite config field with '{field}' CLI argument: {value}")
+
+
 def main_entry_point(args=None):
+    args_parser = build_argument_parser()
     options = args_parser.parse_args(args=args)
 
-    config = _prepare_config(options)
-    if not config.valid:
+    if bool(options.config.well_costs) ^ bool(options.input):
         args_parser.error(
-            "Invalid config file:\n{}".format(
-                "\n".join([err.msg for err in config.errors])
-            )
+            "-c/--config argument file key 'well cost' and -i/--input argument file "
+            "must always be paired; one of the two is missing."
         )
-    if config.snapshot.well_costs and options.input is None:
-        args_parser.error("Well costs specified, but the -i/--input flag is missing")
 
-    logger.info("initializing npv calculation with options {}".format(options))
-    npv = CalculateNPV(config.snapshot, options.summary)
-    npv.run()
-    npv.write()
+    if options.lint:
+        args_parser.exit()
 
+    for field in (
+        "multiplier",
+        "default_exchange_rate",
+        "default_discount_rate",
+        "start_date",
+        "end_date",
+        "ref_date",
+    ):
+        _overwrite_npv_config(options, field)
 
-def _prepare_config(options):
-    # Purpose of this function is to make config file complete
-    # by creating a configsuite instance with user config along with a
-    # layer of default settings.
-    #
-    # If any args provided, we inject those and overrides whats currently
-    # in the config file
+    logger.info(f"Initializing npv calculation with options {options}")
+    npv = NPVCalculator(config=options.config, summary=options.summary).compute(
+        {
+            well.name: well.completion_date or well.readydate
+            for well in options.input or {}
+        }
+    )
 
-    config = options.config
-
-    if options.default_discount_rate:
-        logger.info(
-            "From args - 'default_discount_rate': {}".format(
-                options.default_discount_rate
-            )
-        )
-        config = config.push({"default_discount_rate": options.default_discount_rate})
-
-    if options.default_exchange_rate:
-        logger.info(
-            "From args - 'default_exchange_rate': {}".format(
-                options.default_exchange_rate
-            )
-        )
-        config = config.push({"default_exchange_rate": options.default_exchange_rate})
-
-    if options.multiplier:
-        logger.info("From args - 'multiplier': {}".format(options.multiplier))
-        config = config.push({"multiplier": options.multiplier})
-
-    if options.output:
-        logger.info("From args - 'output': {}".format(options.output))
-        config = config.push({"files": {"output_file": options.output}})
-
-    if options.input:
-        logger.info("From args - 'input': {}".format(options.input))
-        config = config.push({"files": {"input_file": options.input}})
-
-    if options.start_date:
-        logger.info("From args - 'start_date': {}".format(options.start_date))
-        config = config.push({"dates": {"start_date": options.start_date}})
-
-    if options.end_date:
-        logger.info("From args - 'end_date': {}".format(options.end_date))
-        config = config.push({"dates": {"end_date": options.end_date}})
-
-    if options.ref_date:
-        logger.info("From args - 'ref_date': {}".format(options.ref_date))
-        config = config.push({"dates": {"ref_date": options.ref_date}})
-
-    return config
+    options.output.write_text(f"{npv:.2f}")
 
 
 if __name__ == "__main__":

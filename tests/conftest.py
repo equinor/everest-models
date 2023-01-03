@@ -13,7 +13,10 @@ sys.modules["everest.plugins"].hookimpl = pluggy.HookimplMarker("test")
 from spinningjenny import everest_hooks
 
 settings.register_profile(
-    "ci", max_examples=250, deadline=None, suppress_health_check=[HealthCheck.too_slow]
+    "ci",
+    max_examples=250,
+    deadline=None,
+    suppress_health_check=[HealthCheck.too_slow],
 )
 
 

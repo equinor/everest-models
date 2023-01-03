@@ -75,25 +75,27 @@ def add_summary_argument(parser: argparse.ArgumentParser, *, func: Callable = No
     )
 
 
-def add_wells_input_argument(parser: argparse.ArgumentParser, *args, **kwargs):
+def add_wells_input_argument(
+    parser: argparse.ArgumentParser, *, required: bool = True, **kwargs
+):
     arg = ["-i", "--input"]
     parser.add_argument(
         *arg,
         type=partial(parse_file, schema=models.WellListModel),
-        required=True,
-        *args,
+        required=required,
         **kwargs,
     )
     SchemaAction.register_single_model("/".join(arg), models.WellListModel)
 
 
-def add_output_argument(parser: argparse.ArgumentTypeError, *args, **kwargs):
+def add_output_argument(
+    parser: argparse.ArgumentTypeError, *, required: bool = True, **kwargs
+):
     parser.add_argument(
         "-o",
         "--output",
-        required=True,
+        required=required,
         type=is_writable_path,
-        *args,
         **kwargs,
     )
 
