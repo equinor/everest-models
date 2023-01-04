@@ -62,19 +62,19 @@ class CalculationType(Enum):
 
 def validate_arguments(options: argparse.Namespace) -> argparse.Namespace:
     errors = []
+    available_dates = [d.date() for d in options.summary.dates]
+
     if options.key not in options.summary:
         errors.append(f"Missing required data {options.key} in summary file.")
     if options.start_date is not None and options.start_date > options.end_date:
         errors.append(
             f"Start date '{options.start_date}' is after end date '{options.end_date}'."
         )
-    if not (
-        options.start_date is None or options.start_date in options.summary.report_dates
-    ):
+    if not (options.start_date is None or options.start_date in available_dates):
         errors.append(
             f"Start date '{options.start_date}' is not part of the simulation report dates"
         )
-    if options.end_date not in options.summary.report_dates:
+    if options.end_date not in available_dates:
         errors.append(
             f"End date '{options.end_date}' is not part of the simulation report dates"
         )
