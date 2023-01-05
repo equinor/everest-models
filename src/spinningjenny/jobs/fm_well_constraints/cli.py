@@ -15,10 +15,12 @@ def _collect_constraints_errors(
     optional_constraints: typing.Iterable[typing.Tuple[Constraints, str]],
     well_names: typing.Iterable[str],
 ):
+    errors = []
     for argument, constraint in optional_constraints:
         constraint = set() if constraint is None else set(dict(constraint))
         if diff := constraint.difference(well_names):
-            yield f"\t{argument}_constraints:\n\t\t{'    '.join(diff)}"
+            errors.append(f"\t{argument}_constraints:\n\t\t{'    '.join(diff)}")
+    return errors
 
 
 def main_entry_point(args=None):
@@ -38,11 +40,9 @@ def main_entry_point(args=None):
         )
     )
 
-    if errors := list(
-        _collect_constraints_errors(
-            constraints,
-            well_names=[well.name for well in options.input],
-        )
+    if errors := _collect_constraints_errors(
+        constraints,
+        well_names=[well.name for well in options.input],
     ):
         mismatch_errors.append(
             "Constraint well name keys do not match input well names:\n"
