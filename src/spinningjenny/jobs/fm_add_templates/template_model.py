@@ -2,17 +2,17 @@ from typing import Optional, Protocol, Tuple
 
 from pydantic import Field, FilePath
 
-from spinningjenny.jobs.shared.models import BaseConfig, BaseFrozenConfig
+from spinningjenny.jobs.shared.models import BaseConfig, BaseFrozenConfig, PhaseEnum
 
 
 class TemplateOpProtocol(Protocol):
     opname: str
-    phase: Optional[str]
+    phase: Optional[PhaseEnum]
 
 
 class Key(BaseFrozenConfig):
     opname: str
-    phase: Optional[str] = None
+    phase: Optional[PhaseEnum] = None
 
     def __eq__(self, other: TemplateOpProtocol) -> bool:
         return other.opname == self.opname and other.phase == self.phase

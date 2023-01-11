@@ -6,6 +6,8 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from spinningjenny.jobs.shared.models import BaseConfig, BaseEnum
 
+# from spinningjenny.jobs.shared.models.phase import BaseEnum
+
 
 class ABEnum(BaseEnum):
     a = "A"

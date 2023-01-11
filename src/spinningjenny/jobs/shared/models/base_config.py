@@ -1,5 +1,3 @@
-import abc
-import enum
 import inspect
 import pathlib
 import sys
@@ -10,16 +8,7 @@ from pydantic import BaseModel, Extra
 from pydantic.fields import ModelField
 
 from spinningjenny.jobs.shared.converters import path_to_str
-
-
-class _ABCEnumMeta(enum.EnumMeta, abc.ABCMeta):
-    pass
-
-
-class BaseEnum(enum.Enum, metaclass=_ABCEnumMeta):
-    @abc.abstractclassmethod
-    def value_type(cls) -> str:
-        pass
+from spinningjenny.jobs.shared.models.phase import BaseEnum
 
 
 class BaseConfig(BaseModel):

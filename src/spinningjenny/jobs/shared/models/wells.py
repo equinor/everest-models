@@ -3,13 +3,13 @@ from typing import Dict, Iterable, Iterator, Optional, Tuple
 
 from pydantic import Field, FilePath
 
-from spinningjenny.jobs.shared.models import BaseConfig
+from spinningjenny.jobs.shared.models import BaseConfig, PhaseEnum
 
 
 class Operation(BaseConfig):
     date: datetime.date
     opname: str
-    phase: Optional[str] = None
+    phase: Optional[PhaseEnum] = None
     template: Optional[FilePath] = None
     rate: Optional[float] = None
 

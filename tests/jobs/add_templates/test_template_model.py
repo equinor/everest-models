@@ -10,7 +10,7 @@ from spinningjenny.jobs.fm_add_templates.template_model import (
     Template,
     TemplateConfigModel,
 )
-from spinningjenny.jobs.shared.models import Operation
+from spinningjenny.jobs.shared.models import Operation, PhaseEnum
 
 
 @pytest.fixture(scope="module")
@@ -34,7 +34,7 @@ def test_template_model_fields(add_tmpl_config):
     assert isinstance(template.file, pathlib.Path)
     assert isinstance(template.keys, Key)
     assert isinstance(template.keys.opname, str)
-    assert isinstance(add_tmpl_config.templates[3].keys.phase, str)
+    assert isinstance(add_tmpl_config.templates[3].keys.phase, PhaseEnum)
 
     with pytest.raises(TypeError, match="allow_mutation set to False"):
         template.file = "does_not_exist.txt"

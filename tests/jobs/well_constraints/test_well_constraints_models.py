@@ -169,7 +169,7 @@ def test_constraints_config_model_fields_multi_error_multi_message():
 
 @pytest.mark.parametrize(
     "optimizer_value, expected",
-    ((0, "gas"), (0.25, "gas"), (0.5, "gas"), (0.75, "water"), (1, "water")),
+    ((0, "GAS"), (0.25, "GAS"), (0.5, "GAS"), (0.75, "WATER"), (1, "WATER")),
 )
 def test_constraint_phase_model_optimum_value(optimizer_value, expected):
     phase = Phase.parse_obj(_WELL_CONSTRAINTS_CONFIG["INJECT1"][1]["phase"])
@@ -177,7 +177,7 @@ def test_constraint_phase_model_optimum_value(optimizer_value, expected):
 
 
 def test_constraint_phase_model_optimum_value_none():
-    assert Phase.parse_obj({"value": "water"}).optimum_value(None) == "water"
+    assert Phase.parse_obj({"value": "water"}).optimum_value(None) == "WATER"
 
 
 @pytest.mark.parametrize(

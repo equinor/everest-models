@@ -5,7 +5,7 @@ from typing import Dict
 import pytest
 from pydantic import ValidationError
 
-from spinningjenny.jobs.shared.models import WellListModel
+from spinningjenny.jobs.shared.models import PhaseEnum, WellListModel
 from spinningjenny.jobs.shared.models.wells import Operation, WellModel
 
 
@@ -74,7 +74,7 @@ def test_well_model_fields(well_model):
     with pytest.raises(ValidationError):
         ops2[0].template = "does_not_exist.txt"  # file does not exist
         ops2[0].template = "src"  # not a file
-    assert isinstance(ops2[1].phase, str)
+    assert isinstance(ops2[1].phase, PhaseEnum)
     assert isinstance(ops2[1].rate, float)
 
 

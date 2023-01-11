@@ -1,18 +1,8 @@
-from typing import Any, Dict, Iterator, Tuple
+from typing import Dict, Iterator, Tuple
 
 from pydantic import root_validator, validator
 
-from spinningjenny.jobs.shared.models import BaseEnum, BaseFrozenConfig, DictRootMixin
-
-
-class PhaseEnum(BaseEnum):
-    WATER = "water"
-    GAS = "gas"
-    OIL = "oil"
-
-    @classmethod
-    def value_type(cls) -> Dict[str, Any]:
-        return {"type": "string", "choices": [item.value for item in cls]}
+from spinningjenny.jobs.shared.models import BaseFrozenConfig, DictRootMixin, PhaseEnum
 
 
 class Phase(BaseFrozenConfig):

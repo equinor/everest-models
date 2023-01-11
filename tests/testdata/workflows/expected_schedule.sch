@@ -89,7 +89,7 @@ WELOPEN
 
 --start ./templates/template_wconinje.tmpl
 WCONINJE
-  'INJ1' 'water' 'OPEN' 'RATE' 550.0 1* 320  1*  1*  1*   /
+  'INJ1' 'WATER' 'OPEN' 'RATE' 550.0 1* 320  1*  1*  1*   /
 /
 
 --end ./templates/template_wconinje.tmpl
@@ -105,7 +105,7 @@ WELOPEN
 
 --start ./templates/template_wconinje.tmpl
 WCONINJE
-  'INJ2' 'water' 'OPEN' 'RATE' 1000.0 1* 320  1*  1*  1*   /
+  'INJ2' 'WATER' 'OPEN' 'RATE' 1000.0 1* 320  1*  1*  1*   /
 /
 
 --end ./templates/template_wconinje.tmpl
@@ -189,7 +189,7 @@ DATES
 
 --start ./templates/template_wconinje.tmpl
 WCONINJE
-  'INJ1' 'water' 'OPEN' 'RATE' 650.0 1* 320  1*  1*  1*   /
+  'INJ1' 'WATER' 'OPEN' 'RATE' 650.0 1* 320  1*  1*  1*   /
 /
 
 --end ./templates/template_wconinje.tmpl
@@ -226,7 +226,7 @@ DATES
 
 --start ./templates/template_wconinje.tmpl
 WCONINJE
-  'INJ1' 'water' 'OPEN' 'RATE' 750.0 1* 320  1*  1*  1*   /
+  'INJ1' 'WATER' 'OPEN' 'RATE' 750.0 1* 320  1*  1*  1*   /
 /
 
 --end ./templates/template_wconinje.tmpl

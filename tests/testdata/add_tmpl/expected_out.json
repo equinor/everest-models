@@ -23,19 +23,19 @@
       {
         "date": "2000-04-13",
         "opname": "rate",
-        "phase": "water",
+        "phase": "WATER",
         "template": "./templates/template_water_inject.tmpl"
       },
       {
         "date": "2000-05-13",
         "opname": "rate",
-        "phase": "oil",
+        "phase": "OIL",
         "template": "./templates/template_oil_prod.tmpl"
       },
       {
         "date": "2000-06-13",
         "opname": "rate",
-        "phase": "water",
+        "phase": "WATER",
         "template": "./templates/template_water_inject.tmpl"
       },
       {
@@ -58,7 +58,7 @@
       {
         "date": "2000-05-26",
         "opname": "rate",
-        "phase": "water",
+        "phase": "WATER",
         "template": "./templates/template_water_inject.tmpl"
       }
     ],
@@ -76,13 +76,13 @@
       {
         "date": "2000-05-13",
         "opname": "rate",
-        "phase": "oil",
+        "phase": "OIL",
         "template": "./templates/template_oil_prod.tmpl"
       },
       {
         "date": "2000-06-13",
         "opname": "rate",
-        "phase": "water",
+        "phase": "WATER",
         "template": "./templates/template_water_inject.tmpl"
       }
     ],
