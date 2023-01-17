@@ -24,9 +24,11 @@ def create_well_operations(
                 **{
                     constraint_type: constraint.optimum_value(
                         constraints[constraint_type].get(well_name, {}).get(index)
+                        if constraint_type in constraints
+                        else None
                     )
                     for constraint_type, constraint in event
-                    if constraint_type != "duration" and constraint_type in constraints
+                    if constraint_type != "duration"
                 },
                 "opname": "rate",
                 "date": start_date,
