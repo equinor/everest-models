@@ -76,12 +76,16 @@ def add_summary_argument(parser: argparse.ArgumentParser, *, func: Callable = No
 
 
 def add_wells_input_argument(
-    parser: argparse.ArgumentParser, *, required: bool = True, **kwargs
+    parser: argparse.ArgumentParser,
+    *,
+    required: bool = True,
+    schema: models.BaseConfig = models.WellListModel,
+    **kwargs,
 ):
     arg = ["-i", "--input"]
     parser.add_argument(
         *arg,
-        type=partial(parse_file, schema=models.WellListModel),
+        type=partial(parse_file, schema=schema),
         required=required,
         **kwargs,
     )

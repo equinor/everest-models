@@ -9,6 +9,7 @@ from ecl.summary import EclSum
 from pydantic import BaseModel, ValidationError
 
 from spinningjenny.jobs.shared.io_utils import load_yaml
+from spinningjenny.jobs.shared.models.eclipse import ECLIPSE_HEADER
 
 
 def valid_file(file_path, parser):
@@ -45,16 +46,6 @@ def is_writable_path(value: str) -> pathlib.Path:
         raise argparse.ArgumentTypeError(f"Can not write to file: {path}")
 
     return path
-
-
-def valid_json_file(file_path, parser):
-    valid_file(file_path, parser)
-    try:
-        with open(file_path, "r") as f:
-            json_dict = json.load(f)
-        return json_dict
-    except json.JSONDecodeError as e:
-        parser.error("File <{}> is not a valid json file: {}".format(file_path, str(e)))
 
 
 def valid_ecl_file(file_path, parser):
@@ -105,10 +96,37 @@ def valid_date(date, parser):
 def valid_iso_date(value):
     try:
         return datetime.date.fromisoformat(value)
-    except ValueError:
+    except ValueError as e:
         raise argparse.ArgumentTypeError(
             f"Not a valid ISO8601 formatted date (YYYY-MM-DD): '{value}'."
-        )
+        ) from e
+
+
+def valid_schedule_template(value: str):
+    path = pathlib.Path(value)
+    content = path.read_text(encoding="utf-8")
+    if not ECLIPSE_HEADER.search(content):
+        raise argparse.ArgumentTypeError("Invalid eclipse schedule")
+    return content
+
+
+def _valid_yaml(path: pathlib.Path):
+    try:
+        return yaml.YAML(typ="safe", pure=True).load(path.read_bytes())
+    except yaml.YAMLError as e:
+        raise argparse.ArgumentTypeError(
+            f"The file: '{path}' contains invalid YAML syntax.\n\t<{e}>"
+        ) from e
+
+
+def _valid_json(path: pathlib.Path):
+    with path.open("r", encoding="utf-8") as fp:
+        try:
+            return json.load(fp)
+        except json.JSONDecodeError as e:
+            raise argparse.ArgumentTypeError(
+                f"The file: '{path}' is not a valid json file.\n\t<{e}>"
+            ) from e
 
 
 def valid_input_file(value: str):
@@ -117,24 +135,17 @@ def valid_input_file(value: str):
         raise argparse.ArgumentTypeError(
             f"The path '{path}' is a directory or file not found."
         )
-    if path.suffix in (".yaml", ".yml"):
-        try:
-            return yaml.YAML(typ="safe", pure=True).load(path.read_bytes())
-        except yaml.YAMLError as e:
-            raise argparse.ArgumentTypeError(
-                f"The file: '{path}' contains invalid YAML syntax.\n\t<{e}>"
-            )
-    if path.suffix == ".json":
-        with path.open("r", encoding="utf-8") as fp:
-            try:
-                return json.load(fp)
-            except json.JSONDecodeError as e:
-                raise argparse.ArgumentTypeError(
-                    f"The file: '{path}' is not a valid json file.\n\t<{e}>"
-                )
-    raise argparse.ArgumentTypeError(
-        f"Input file extension '{path.suffix}' not supported"
-    )
+    if (
+        get_content := {
+            ".yaml": _valid_yaml,
+            ".yml": _valid_yaml,
+            ".json": _valid_json,
+        }.get(path.suffix)
+    ) is None:
+        raise argparse.ArgumentTypeError(
+            f"Input file extension '{path.suffix}' not supported"
+        )
+    return get_content(path)
 
 
 def is_gt_zero(value: str, msg: str) -> int:
@@ -162,4 +173,6 @@ def parse_file(value: str, schema: "BaseModel"):
     try:
         return schema.parse_obj(value)
     except ValidationError as e:
-        raise argparse.ArgumentTypeError(f"\n{_prettify_validation_error_message(e)}")
+        raise argparse.ArgumentTypeError(
+            f"\n{_prettify_validation_error_message(e)}"
+        ) from e

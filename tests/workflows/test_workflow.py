@@ -1,3 +1,5 @@
+import pathlib
+
 from sub_testdata import WORKFLOWS as TEST_DATA
 
 from spinningjenny.jobs.fm_add_templates import main_entry_point as add_templates_entry
@@ -98,10 +100,7 @@ def test_workflow(copy_testdata_tmpdir):
 
     schmerge_entry(arguments)
 
-    with open("result_schedule.sch") as f:
-        test_output = f.read()
-
-    with open("expected_schedule.sch") as f:
-        expected_output = f.read()
-
-    assert test_output == expected_output
+    assert (
+        pathlib.Path("result_schedule.sch").read_text()
+        == pathlib.Path("expected_schedule.sch").read_text()
+    )

@@ -23,6 +23,8 @@ RPTRST
 
 -- Adding twelve DATES, once a month
 
+-- MODIFIED by schmerge forward model
+
 DATES
  01 JAN 2000 /
 /
@@ -35,21 +37,21 @@ DATES
  23 FEB 2000 / --ADDED
 /
 
---start ./templates/template_welopen.tmpl
+--start templates/template_welopen.tmpl
+
 WELOPEN
   'PROD1' 'OPEN' /
 /
 
---end ./templates/template_welopen.tmpl
+--end templates/template_welopen.tmpl
 
+--start templates/template_wconprod_oil.tmpl
 
---start ./templates/template_wconprod_oil.tmpl
 WCONPROD
   'PROD1' 'OPEN' 'ORAT' 920.0  4*  1000   /
 /
 
---end ./templates/template_wconprod_oil.tmpl
-
+--end templates/template_wconprod_oil.tmpl
 
 DATES
  01 MAR 2000 /
@@ -63,53 +65,53 @@ DATES
  14 APR 2000 / --ADDED
 /
 
---start ./templates/template_welopen.tmpl
+--start templates/template_welopen.tmpl
+
 WELOPEN
   'PROD2' 'OPEN' /
 /
 
---end ./templates/template_welopen.tmpl
+--end templates/template_welopen.tmpl
 
+--start templates/template_wconprod_oil.tmpl
 
---start ./templates/template_wconprod_oil.tmpl
 WCONPROD
   'PROD2' 'OPEN' 'ORAT' 824.6  4*  1000   /
 /
 
---end ./templates/template_wconprod_oil.tmpl
+--end templates/template_wconprod_oil.tmpl
 
+--start templates/template_welopen.tmpl
 
---start ./templates/template_welopen.tmpl
 WELOPEN
   'INJ1' 'OPEN' /
 /
 
---end ./templates/template_welopen.tmpl
+--end templates/template_welopen.tmpl
 
+--start templates/template_wconinje.tmpl
 
---start ./templates/template_wconinje.tmpl
 WCONINJE
   'INJ1' 'WATER' 'OPEN' 'RATE' 550.0 1* 320  1*  1*  1*   /
 /
 
---end ./templates/template_wconinje.tmpl
+--end templates/template_wconinje.tmpl
 
+--start templates/template_welopen.tmpl
 
---start ./templates/template_welopen.tmpl
 WELOPEN
   'INJ2' 'OPEN' /
 /
 
---end ./templates/template_welopen.tmpl
+--end templates/template_welopen.tmpl
 
+--start templates/template_wconinje.tmpl
 
---start ./templates/template_wconinje.tmpl
 WCONINJE
   'INJ2' 'WATER' 'OPEN' 'RATE' 1000.0 1* 320  1*  1*  1*   /
 /
 
---end ./templates/template_wconinje.tmpl
-
+--end templates/template_wconinje.tmpl
 
 DATES
  01 MAY 2000 /
@@ -119,21 +121,21 @@ DATES
  06 MAY 2000 / --ADDED
 /
 
---start ./templates/template_welopen.tmpl
+--start templates/template_welopen.tmpl
+
 WELOPEN
   'PROD3' 'OPEN' /
 /
 
---end ./templates/template_welopen.tmpl
+--end templates/template_welopen.tmpl
 
+--start templates/template_wconprod_oil.tmpl
 
---start ./templates/template_wconprod_oil.tmpl
 WCONPROD
   'PROD3' 'OPEN' 'ORAT' 1000.0  4*  1000   /
 /
 
---end ./templates/template_wconprod_oil.tmpl
-
+--end templates/template_wconprod_oil.tmpl
 
 DATES
  01 JUN 2000 /
@@ -143,25 +145,25 @@ DATES
  02 JUN 2000 / --ADDED
 /
 
---start ./templates/template_wconprod_oil.tmpl
+--start templates/template_wconprod_oil.tmpl
+
 WCONPROD
   'PROD1' 'OPEN' 'ORAT' 880.0  4*  1000   /
 /
 
---end ./templates/template_wconprod_oil.tmpl
-
+--end templates/template_wconprod_oil.tmpl
 
 DATES
  05 JUN 2000 / --ADDED
 /
 
---start ./templates/template_wconprod_gas.tmpl
+--start templates/template_wconprod_gas.tmpl
+
 WCONPROD
   'INJ1' 'OPEN' 'GRAT' 600.0  4*  1000   /
 /
 
---end ./templates/template_wconprod_gas.tmpl
-
+--end templates/template_wconprod_gas.tmpl
 
 DATES
  01 JUL 2000 /
@@ -171,13 +173,13 @@ DATES
  23 JUL 2000 / --ADDED
 /
 
---start ./templates/template_wconprod_gas.tmpl
+--start templates/template_wconprod_gas.tmpl
+
 WCONPROD
   'PROD2' 'OPEN' 'GRAT' 10930.0  4*  1000   /
 /
 
---end ./templates/template_wconprod_gas.tmpl
-
+--end templates/template_wconprod_gas.tmpl
 
 DATES
  01 AUG 2000 /
@@ -187,13 +189,13 @@ DATES
  12 AUG 2000 / --ADDED
 /
 
---start ./templates/template_wconinje.tmpl
+--start templates/template_wconinje.tmpl
+
 WCONINJE
   'INJ1' 'WATER' 'OPEN' 'RATE' 650.0 1* 320  1*  1*  1*   /
 /
 
---end ./templates/template_wconinje.tmpl
-
+--end templates/template_wconinje.tmpl
 
 DATES
  01 OCT 2000 /
@@ -203,13 +205,13 @@ DATES
  03 OCT 2000 / --ADDED
 /
 
---start ./templates/template_wconprod_gas.tmpl
+--start templates/template_wconprod_gas.tmpl
+
 WCONPROD
   'INJ1' 'OPEN' 'GRAT' 700.0  4*  1000   /
 /
 
---end ./templates/template_wconprod_gas.tmpl
-
+--end templates/template_wconprod_gas.tmpl
 
 DATES
  01 NOV 2000 /
@@ -223,25 +225,23 @@ DATES
  10 DEC 2000 / --ADDED
 /
 
+--start templates/template_wconinje.tmpl
 
---start ./templates/template_wconinje.tmpl
 WCONINJE
   'INJ1' 'WATER' 'OPEN' 'RATE' 750.0 1* 320  1*  1*  1*   /
 /
 
---end ./templates/template_wconinje.tmpl
-
+--end templates/template_wconinje.tmpl
 
 DATES
  31 JAN 2001 / --ADDED
 /
 
+--start templates/template_wconprod_gas.tmpl
 
---start ./templates/template_wconprod_gas.tmpl
 WCONPROD
   'INJ1' 'OPEN' 'GRAT' 800.0  4*  1000   /
 /
 
---end ./templates/template_wconprod_gas.tmpl
-
+--end templates/template_wconprod_gas.tmpl
 

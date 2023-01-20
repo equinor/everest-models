@@ -1,9 +1,20 @@
 RPTRST
    BASIC=3 FREQ=3 /
    
+
+-- MODIFIED by schmerge forward model
+
 DATES
  01 JAN 2000 / --ADDED
 /
+
+--start files/wconinje.jinja
+
+WCONINJE
+  'INJECT7'  'WATER'  'OPEN'  'RATE' 0.7   1* 320  1*  1*    1*   /
+/
+
+--end files/wconinje.jinja
 
 DATES
  30 MAY 2014 /
@@ -19,7 +30,6 @@ DATES
 DATES
  28 AUG 2014 /
 /
-
 
 DATES
  26 NOV 2014 /
@@ -50,14 +60,28 @@ DATES
  19 MAY 2016 /
 /
 
-
 -- this END limits the life cycle period to 5 years instead of 10
 END
 
+--start files/welopen.jinja
+
+WELOPEN
+  'INJECT5' 'OPEN' /
+/
+
+--end files/welopen.jinja
 
 DATES
- 16 AUG 2016 / --ADDED
+ 20 MAY 2016 / --ADDED
 /
+
+--start files/welopen.jinja
+
+WELOPEN
+  'PROD3' 'OPEN' /
+/
+
+--end files/welopen.jinja
 
 DATES
  17 AUG 2016 /
@@ -116,6 +140,18 @@ DATES
 /
 
 DATES
+ 28 JAN 2020 / --ADDED
+/
+
+--start files/welopen.jinja
+
+WELOPEN
+  'INJECT1' 'OPEN' /
+/
+
+--end files/welopen.jinja
+
+DATES
  29 JAN 2020 /
 /
 
@@ -143,9 +179,25 @@ DATES
  23 APR 2021 /
 /
 
-
 END
+
+--start files/welopen.jinja
+
+WELOPEN
+  'PROD1' 'OPEN' /
+/
+
+--end files/welopen.jinja
+
 DATES
  24 APR 2021 / --ADDED
 /
+
+--start files/wconinje.jinja
+
+WCONINJE
+  'INJECT3'  'GAS'  'OPEN'  'RATE' 0.55   1* 320  1*  1*    1*   /
+/
+
+--end files/wconinje.jinja
 

@@ -6,8 +6,6 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from spinningjenny.jobs.shared.models import BaseConfig, BaseEnum
 
-# from spinningjenny.jobs.shared.models.phase import BaseEnum
-
 
 class ABEnum(BaseEnum):
     a = "A"
@@ -72,7 +70,7 @@ def test_base_config_json_dump(tmpdir):
 
 def test_base_config_help_schema_set_argument():
     schema = SubTester.help_schema()
-    assert not any(x in ("fields", "arguments") for x in schema)
+    assert all(x not in ("fields", "arguments") for x in schema)
     schema = SubTester.help_schema("arg")
     assert schema["arguments"] == "arg"
     assert schema["fields"]

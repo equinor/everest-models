@@ -240,7 +240,57 @@ rf -s SUMMARY [-pk PRODUCTION_KEY] [-tvk TOTAL_VOLUME_KEY]
 
 ### schmerge
 ```bash
-fm_schmerge -s SCHEDULE -i INPUT -o OUTPUT
+usage: fm_schmerge [-h] [--lint] [--schemas] -s SCHEDULE -i INPUT -o
+                       OUTPUT
+
+This module works on a schedule file intended for reservoir simulation(e.g.
+eclipse or flow), and injects templates at given dates. If the reportdate does
+not exist in advance it will be added as an independent step. The templates
+will further be filled in with the given parameter values.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --lint                Lints all given input (file) arguments with no data
+                        transformation.
+  --schemas             Output all file schemas that are taken as input
+                        parameters.
+
+required named arguments:
+  -s SCHEDULE, --schedule SCHEDULE
+                        Schedule file to inject templates into. The only
+                        currently accepted date format is the following: one
+                        line consisting of the DATES keyword, followed by a
+                        date in the format of '1 JAN 2000' terminated by a
+                        slash. The final line consists of a slash. An empty
+                        line should be in between the date format and anything
+                        below.
+  -i INPUT, --input INPUT
+                        Json file that specifies which templates to inject
+                        where.The file is structured as a list of
+                        dictionaries, each containing information regarding
+                        one well. The name defines the name of the well, and
+                        the ops is a list of operations to be performed on the
+                        well. The operations are defined within a dict with
+                        the required keys template, date and any parameter
+                        values that are to be injected into the given template
+  -o OUTPUT, --output OUTPUT
+                        File path to write the resulting schedule file to.
+---
+arguments: -i/--input
+fields:
+- completion_date: {format: date, required: false, type: string}
+  drill_time: {required: false, type: integer}
+  name: {required: true, type: string}
+  ops:
+  - date: {format: date, required: true, type: string}
+    opname: {required: true, type: string}
+    phase:
+       choices: [WATER, GAS, OIL]
+       type: string
+    rate: {required: false, type: number}
+    template: {format: file-path, required: false, type: string}
+  readydate: {format: date, required: false, type: string}
+...
 ```
 
 ### select_wells

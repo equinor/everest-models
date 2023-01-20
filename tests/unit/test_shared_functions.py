@@ -8,7 +8,6 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 from pydantic import BaseModel, FilePath
-from sub_testdata import VALIDATORS as TEST_DATA
 from utils import MockParser
 
 from spinningjenny.jobs.shared.validators import (
@@ -19,7 +18,6 @@ from spinningjenny.jobs.shared.validators import (
     parse_file,
     valid_input_file,
     valid_iso_date,
-    valid_json_file,
 )
 
 
@@ -74,26 +72,6 @@ def test_is_writable_no_write_permissions(copy_testdata_tmpdir):
 
     _ = is_writable("existing_dir/valid_filename", mock_parser)
     assert "Can not write to directory" in mock_parser.get_error()
-
-
-def test_valid_json_file(copy_testdata_tmpdir):
-    copy_testdata_tmpdir(TEST_DATA)
-    valid_json_path = "valid_json.json"
-    invalid_json_path = "invalid_json.json"
-
-    mock_parser = MockParser()
-    valid_json_file(valid_json_path, mock_parser)
-    assert mock_parser.get_error() is None
-
-    mock_parser = MockParser()
-    valid_json_file(invalid_json_path, mock_parser)
-
-    # py2 and py3 have slightly different error messages
-    error_msgs = (
-        "File <invalid_json.json> is not a valid json file: "
-        "Expecting ',' delimiter: line 6 column 5 (char 55)"
-    )
-    assert error_msgs in mock_parser.get_error()
 
 
 def write_file(path, txt):

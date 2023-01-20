@@ -1,49 +1,55 @@
+import pathlib
+from typing import Tuple
+
+import pytest
 from sub_testdata import SCHMERGE as TEST_DATA
-from utils import MockParser
 
 from spinningjenny.jobs.fm_schmerge.cli import main_entry_point
-from spinningjenny.jobs.fm_schmerge.parser import valid_schmerge_config
 
 
-def test_schmerge_main_entry_point(copy_testdata_tmpdir):
-    copy_testdata_tmpdir(TEST_DATA)
-    filename_expected_result = "expected_result.tmpl"
-    filename_schedule = "original_schedule.tmpl"
-    filename_injection_list = "schedule_input.json"
-    filename_output = "out.tmpl"
-
-    args = [
-        "--input",
-        filename_injection_list,
-        "--schedule",
-        filename_schedule,
+@pytest.fixture(scope="module")
+def schmerge_args() -> Tuple[str]:
+    return [
         "--output",
-        filename_output,
+        "out.sch",
+        "--schedule",
+        "loaded_dates.sch",
+        "--input",
+        "wells.json",
     ]
 
-    main_entry_point(args)
 
-    with open(filename_expected_result, "r") as f:
-        expected_schedule_string = f.read()
-
-    with open(filename_output, "r") as f:
-        schmerge_output = f.read()
-
-    assert expected_schedule_string == schmerge_output
-
-
-def test_valid_schmerge_config(copy_testdata_tmpdir):
+def test_schmerge_main_entry_point(copy_testdata_tmpdir, schmerge_args):
     copy_testdata_tmpdir(TEST_DATA)
-    invalid_injections = "schedule_input_invalid.json"
-    valid_injections = "schedule_input.json"
 
-    mock_parser = MockParser()
-    valid_schmerge_config(invalid_injections, mock_parser)
+    main_entry_point(schmerge_args)
+
     assert (
-        "Json file <schedule_input_invalid.json> misses a required keyword: 'template'"
-        in mock_parser.get_error()
+        pathlib.Path("result.sch").read_bytes() == pathlib.Path("out.sch").read_bytes()
     )
 
-    mock_parser = MockParser()
-    valid_schmerge_config(valid_injections, mock_parser)
-    assert mock_parser.get_error() is None
+
+def test_schmerge_main_entry_point_invalid_wells(
+    copy_testdata_tmpdir, schmerge_args, capsys
+):
+    copy_testdata_tmpdir(TEST_DATA)
+
+    with pytest.raises(SystemExit) as e:
+        main_entry_point([*schmerge_args[:-1], "invalid_wells.json"])
+
+    assert e.value.code == 2
+    _, err = capsys.readouterr()
+    assert (
+        "argument -i/--input: \nindex 1 -> ops -> index 1 -> template:\n\tfield required"
+        in err
+    )
+
+
+def test_schmerge_entry_lint(copy_testdata_tmpdir, schmerge_args):
+    copy_testdata_tmpdir(TEST_DATA)
+
+    with pytest.raises(SystemExit) as e:
+        main_entry_point([*schmerge_args, "--lint"])
+
+    assert e.value.code == 0
+    assert not pathlib.Path("out.sch").exists()
