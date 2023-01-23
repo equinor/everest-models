@@ -12,6 +12,7 @@ from spinningjenny.jobs import (
     fm_strip_dates,
     fm_well_constraints,
     fm_well_filter,
+    fm_well_trajectory,
 )
 
 __all__ = [
@@ -28,4 +29,5 @@ __all__ = [
     "fm_strip_dates",
     "fm_well_constraints",
     "fm_well_filter",
+    "fm_well_trajectory",
 ]

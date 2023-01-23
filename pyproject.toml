@@ -26,6 +26,7 @@ dependencies = [
     "ruamel.yaml>=0.17.21",
     "stea>=0.5.2",
     "pydantic < 2",
+    "scipy"
 ]
 dynamic = [
     "version",
