@@ -284,7 +284,6 @@ def run_optimization(
     solution_limit=None,
     accepted_status=cp_model.OPTIMAL,
 ):
-
     model = DrillConstraints(field_manager, best_guess_schedule=best_guess_schedule)
 
     model.apply_constraints()

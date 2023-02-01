@@ -77,7 +77,6 @@ def satisfies(model, apply_constraints, assignment):
 
 @given(well_drill_constraints, assignments)
 def test_all_valid_schedules_are_consistent_assignments(constraints, assignment):
-
     field_manager = constraints.field_manager
 
     if field_manager.valid_schedule(assignment):
@@ -86,7 +85,6 @@ def test_all_valid_schedules_are_consistent_assignments(constraints, assignment)
 
 @given(constraints_assignment_pair())  # pylint: disable=no-value-for-parameter
 def test_all_wells_drilled_once_constraints(pair):
-
     constraints, assignment = pair
 
     field_manager = constraints.field_manager
@@ -103,7 +101,6 @@ def test_all_wells_drilled_once_constraints(pair):
 
 @given(constraints_assignment_pair())  # pylint: disable=no-value-for-parameter
 def test_all_slots_atmost_once_constraints(pair):
-
     constraints, assignment = pair
 
     field_manager = constraints.field_manager
@@ -120,7 +117,6 @@ def test_all_slots_atmost_once_constraints(pair):
 
 @given(constraints_assignment_pair())  # pylint: disable=no-value-for-parameter
 def test_all_rigs_available_constraints(pair):
-
     constraints, assignment = pair
 
     field_manager = constraints.field_manager
@@ -137,7 +133,6 @@ def test_all_rigs_available_constraints(pair):
 
 @given(constraints_assignment_pair())  # pylint: disable=no-value-for-parameter
 def test_all_slots_available_constraints(pair):
-
     constraints, assignment = pair
 
     field_manager = constraints.field_manager
@@ -154,7 +149,6 @@ def test_all_slots_available_constraints(pair):
 
 @given(constraints_assignment_pair())  # pylint: disable=no-value-for-parameter
 def test_no_rig_overlapping_constraints(pair):
-
     constraints, assignment = pair
 
     field_manager = constraints.field_manager

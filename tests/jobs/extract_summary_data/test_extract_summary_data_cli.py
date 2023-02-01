@@ -116,7 +116,6 @@ def test_extract_summary_data_entry_point_single_date(
     mock_extract_summary_data_parser,
     switch_cwd_tmp_path,
 ):
-
     output_file = extract_summary_data_base_args[3]
     cli.main_entry_point(
         [

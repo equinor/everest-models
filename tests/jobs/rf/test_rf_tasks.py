@@ -52,7 +52,6 @@ def test_clamping_behaviour(ecl_sum):
 
 
 def test_exceptions(ecl_sum):
-
     with pytest.raises(ValueError) as excinfo:
         recovery_factor(
             ecl_sum,

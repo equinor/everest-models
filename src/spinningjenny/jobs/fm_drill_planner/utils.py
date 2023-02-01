@@ -99,10 +99,10 @@ def combine_slot_rig_unavailability(config, slot, rig):
     """
     unavailability = np.zeros(config["horizon"])
 
-    for (start, end) in config["slots"][slot]["unavailability"]:
+    for start, end in config["slots"][slot]["unavailability"]:
         unavailability[start:end] = 1
 
-    for (start, end) in config["rigs"][rig]["unavailability"]:
+    for start, end in config["rigs"][rig]["unavailability"]:
         unavailability[start:end] = 1
 
     diff_array = np.diff(unavailability, 1)

@@ -86,7 +86,6 @@ field_managers = st.builds(
 
 @given(schedules, field_managers)
 def test_valid_schedules_must_drill_same_wells(schedule, model):
-
     scheduled_wells = {model.get_well(w) for w in schedule.scheduled_wells}
     assert (scheduled_wells == set(model.wells)) == model.uses_same_wells(schedule)
 

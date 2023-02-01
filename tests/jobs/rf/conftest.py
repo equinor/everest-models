@@ -16,7 +16,6 @@ def ecl_sum():
     ecl_sum = EclSum.writer("TEST", datetime.date(2000, 1, 1), *dimensions)
 
     for key in sum_keys:
-
         sub_name = None
         if ":" in key:
             name, sub_name = key.split(":")

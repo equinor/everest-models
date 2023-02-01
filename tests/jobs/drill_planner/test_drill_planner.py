@@ -478,7 +478,6 @@ def test_script_prepare_config(copy_testdata_tmpdir):
 
 
 def test_script_resolve_priorities():
-
     # The function takes a configsuite snapshot,
     # but it is really only interested in the priorities part
     configtype = collections.namedtuple("mock_snapshot", "wells_priority")

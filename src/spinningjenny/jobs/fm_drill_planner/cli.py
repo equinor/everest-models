@@ -99,7 +99,6 @@ def _run_drill_planner(config, time_limit):
 
     field_schedule = FieldSchedule(schedule)
     if not field_manager.valid_schedule(field_schedule):
-
         raise RuntimeError(
             "Schedule created was not valid according to the constraints"
         )
