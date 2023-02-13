@@ -16,23 +16,9 @@ _ECLIPSE_DATE_REGEX = re.compile(
 \s*/
 (?:[^/]*\s)+                                                    # Arbitrary line separator
 /
-(?:(?:[^/]*\n)+END(?:[^/]\n)*)?                                  # Trailing END token
+(?:(?:[^/]*\n)+END(?:[^/]\n)*)?                                 # Trailing END token
 """,
     re.VERBOSE + re.MULTILINE,
-)
-
-ECLIPSE_HEADER = re.compile(
-    r"""
-    \s*
-    (?<=RPTRST)     # Starting token
-    \s+
-    (?:BASIC=)\d    # Key value token
-    \s+
-    (?:FREQ=)\d     # Key value token
-    \s+
-    /\s*
-    """,
-    re.VERBOSE,
 )
 
 

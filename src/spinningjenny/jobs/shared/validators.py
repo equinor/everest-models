@@ -9,7 +9,6 @@ from ecl.summary import EclSum
 from pydantic import BaseModel, ValidationError
 
 from spinningjenny.jobs.shared.io_utils import load_yaml
-from spinningjenny.jobs.shared.models.eclipse import ECLIPSE_HEADER
 
 
 def valid_file(file_path, parser):
@@ -103,11 +102,7 @@ def valid_iso_date(value):
 
 
 def valid_schedule_template(value: str):
-    path = pathlib.Path(value)
-    content = path.read_text(encoding="utf-8")
-    if not ECLIPSE_HEADER.search(content):
-        raise argparse.ArgumentTypeError("Invalid eclipse schedule")
-    return content
+    return pathlib.Path(value).read_text(encoding="utf-8")
 
 
 def _valid_yaml(path: pathlib.Path):
