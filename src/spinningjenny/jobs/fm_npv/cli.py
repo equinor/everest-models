@@ -22,7 +22,7 @@ def main_entry_point(args=None):
 
     if bool(options.config.well_costs) ^ bool(options.input):
         args_parser.error(
-            "-c/--config argument file key 'well cost' and -i/--input argument file "
+            "-c/--config argument file key 'well_cost' and -i/--input argument file "
             "must always be paired; one of the two is missing."
         )
 

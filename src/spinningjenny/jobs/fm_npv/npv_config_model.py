@@ -37,14 +37,14 @@ class WellCost(Capital):
 
 class NPVConfig(BaseConfig):
     prices: Dict[str, Tuple[CurrencyRate, ...]]
-    exchange_rates: Dict[str, Tuple[CurrencyRate, ...]]
-    costs: Tuple[CurrencyRate, ...]
     summary_keys: Tuple[str, ...]
     multiplier: float = 1
     default_exchange_rate: float = 1
     default_discount_rate: float = 0.08
     dates: Dates = Dates()
+    exchange_rates: Dict[str, Tuple[CurrencyRate, ...]] = Field(default_factory=dict)
     discount_rates: Tuple[CurrencyRate, ...] = Field(default_factory=tuple)
+    costs: Tuple[CurrencyRate, ...] = Field(default_factory=tuple)
     well_costs: Tuple[WellCost, ...] = Field(default_factory=tuple)
 
     @root_validator(pre=True)

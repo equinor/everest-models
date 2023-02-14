@@ -13,6 +13,10 @@ from spinningjenny.jobs.shared.validators import parse_file
 
 _CONFIG_FILE = "input_data.yml"
 _CONFIG_FILE_NO_WELL_COSTS = "input_data_no_well_costs.yml"
+_WELL_COSTS_N_INPUT_PAIR_ERR_MSG = (
+    "-c/--config argument file key 'well_cost' and -i/--input argument file "
+    "must always be paired; one of the two is missing."
+)
 
 
 @pytest.mark.parametrize(
@@ -49,10 +53,7 @@ def test_npv_main_entry_point_no_input_error(copy_testdata_tmpdir, monkeypatch, 
         cli.main_entry_point()
     assert e.value.code == 2
     _, err = capsys.readouterr()
-    assert (
-        "-c/--config argument file key 'well cost' and -i/--input argument file "
-        "must always be paired; one of the two is missing."
-    ) in err
+    assert (_WELL_COSTS_N_INPUT_PAIR_ERR_MSG) in err
 
 
 @pytest.mark.parametrize(
@@ -76,10 +77,7 @@ def test_npv_main_entry_point_no_well_costs_error(
         cli.main_entry_point()
     assert e.value.code == 2
     _, err = capsys.readouterr()
-    assert (
-        "-c/--config argument file key 'well cost' and -i/--input argument file "
-        "must always be paired; one of the two is missing."
-    ) in err
+    assert (_WELL_COSTS_N_INPUT_PAIR_ERR_MSG) in err
 
 
 def test_npv_main_entry_point_no_input(copy_testdata_tmpdir, monkeypatch):
