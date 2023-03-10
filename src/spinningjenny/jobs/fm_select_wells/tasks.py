@@ -6,8 +6,6 @@ from typing import Callable, Optional, Tuple
 from spinningjenny.jobs.shared.converters import rescale_value
 from spinningjenny.jobs.shared.models import WellListModel
 
-BoundType = Tuple[float, float]
-
 logger = logging.getLogger(__name__)
 
 
@@ -27,7 +25,9 @@ def _check_bounds(
 
 
 def _equidistant_range(
-    scaled_well_number: float, scaled_bounds: BoundType, real_bounds: BoundType
+    scaled_well_number: float,
+    scaled_bounds: Tuple[float, float],
+    real_bounds: Tuple[int, int],
 ) -> int:
     return max(
         real_bounds[0],
@@ -37,8 +37,8 @@ def _equidistant_range(
                     scaled_well_number,
                     scaled_bounds[0],
                     scaled_bounds[1],
-                    real_bounds[0] - 0.5,
-                    real_bounds[1] + 0.5,
+                    float(real_bounds[0]) - 0.5,
+                    float(real_bounds[1]) + 0.5,
                 ),
             ),
             real_bounds[1],

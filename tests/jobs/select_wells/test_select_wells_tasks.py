@@ -10,7 +10,7 @@ from spinningjenny.jobs.shared.models import WellListModel
 
 class FileOptions(NamedTuple):
     file_path: float = 0.05
-    real_bounds: Tuple[float, float] = (0.0, 47.0)
+    real_bounds: Tuple[int, int] = (0, 47)
     scaled_bounds: Tuple[float, float] = (0.0, 1.0)
     lint: bool = False
 

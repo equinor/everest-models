@@ -64,7 +64,7 @@ def build_argument_parser():
         "-r",
         "--real-bounds",
         metavar=("LOWER", "UPPER"),
-        type=float,
+        type=int,
         help="Lower and upper bounds for the well number.",
         required=True,
         nargs=2,
