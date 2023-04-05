@@ -1,62 +1,62 @@
 [
-    {
-        "completion_date": "2000-02-23",
-        "readydate": "2000-02-23",
-        "drill_time": 20,
-        "name": "w1",
-        "ops": [
-            {
-                "date": "2000-02-23",
-                "opname": "open"
-            }
-        ]
-    },
-    {
-        "completion_date": "2000-04-14",
-        "readydate": "2000-04-14",
-        "drill_time": 25,
-        "name": "w2",
-        "ops": [
-            {
-                "date": "2000-04-14",
-                "opname": "open"
-            }
-        ]
-    },
-    {
-        "completion_date": "2000-03-30",
-        "readydate": "2000-04-14",
-        "drill_time": 43,
-        "name": "w3",
-        "ops": [
-            {
-                "date": "2000-04-14",
-                "opname": "open"
-            }
-        ]
-    },
-    {
-        "completion_date": "2000-01-24",
-        "readydate": "2000-04-14",
-        "drill_time": 23,
-        "name": "w4",
-        "ops": [
-            {
-                "date": "2000-04-14",
-                "opname": "open"
-            }
-        ]
-    },
-    {
-        "completion_date": "2000-05-06",
-        "readydate": "2000-05-06",
-        "drill_time": 36,
-        "name": "w5",
-        "ops": [
-            {
-                "date": "2000-05-06",
-                "opname": "open"
-            }
-        ]
-    }
+  {
+    "completion_date": "2000-02-23",
+    "drill_time": 20,
+    "name": "w1",
+    "ops": [
+      {
+        "date": "2000-02-23",
+        "opname": "open"
+      }
+    ],
+    "readydate": "2000-02-23"
+  },
+  {
+    "completion_date": "2000-04-14",
+    "drill_time": 25,
+    "name": "w2",
+    "ops": [
+      {
+        "date": "2000-04-14",
+        "opname": "open"
+      }
+    ],
+    "readydate": "2000-04-14"
+  },
+  {
+    "completion_date": "2000-03-30",
+    "drill_time": 43,
+    "name": "w3",
+    "ops": [
+      {
+        "date": "2000-03-30",
+        "opname": "open"
+      }
+    ],
+    "readydate": "2000-03-30"
+  },
+  {
+    "completion_date": "2000-01-24",
+    "drill_time": 23,
+    "name": "w4",
+    "ops": [
+      {
+        "date": "2000-01-24",
+        "opname": "open"
+      }
+    ],
+    "readydate": "2000-01-24"
+  },
+  {
+    "completion_date": "2000-05-06",
+    "drill_time": 36,
+    "name": "w5",
+    "ops": [
+      {
+        "date": "2000-05-06",
+        "opname": "open"
+      }
+    ],
+    "readydate": "2000-05-06"
+  }
 ]

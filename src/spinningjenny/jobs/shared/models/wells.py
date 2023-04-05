@@ -1,7 +1,7 @@
 import datetime
 from typing import Dict, Iterable, Iterator, Optional, Tuple
 
-from pydantic import Field, FilePath
+from pydantic import Field, FilePath, ValidationError, validator
 
 from spinningjenny.jobs.shared.models import BaseConfig, PhaseEnum
 
@@ -26,6 +26,12 @@ class WellModel(BaseConfig):
 
     def __hash__(self):
         return hash(self.name)
+
+    @validator("drill_time")
+    def is_positive_drill_time(cls, drill_time):
+        if drill_time is not None and drill_time <= 0:
+            ValidationError("Drill_time must be greater than 0")
+        return drill_time
 
 
 class WellListModel(BaseConfig):

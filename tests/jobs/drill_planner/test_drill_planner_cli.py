@@ -1,128 +1,88 @@
+import pathlib
+
 import pytest
 from sub_testdata import DRILL_PLANNER as TEST_DATA
 
 from spinningjenny.jobs.fm_drill_planner.cli import main_entry_point
-from spinningjenny.jobs.shared.io_utils import load_yaml
+
+OUTPUT_FILENAME = "out.json"
 
 
-def test_main_entry_point(copy_testdata_tmpdir):
-    copy_testdata_tmpdir(TEST_DATA)
-    arguments = [
+@pytest.fixture(scope="session")
+def drill_planner_arguments():
+    return [
+        "--output",
+        OUTPUT_FILENAME,
+        "--optimizer",
+        "optimizer_values.yml",
         "--input",
         "wells.json",
         "--config",
         "config.yml",
-        "--optimizer",
-        "optimizer_values.yml",
-        "--output",
-        "out.json",
     ]
 
-    main_entry_point(arguments)
 
-    test_output = load_yaml("out.json")
-    expected_output = load_yaml("correct_out.json")
-
-    assert test_output == expected_output
-
-
-def test_main_entry_point_partial_wells(copy_testdata_tmpdir):
+def test_main_entry_point(drill_planner_arguments, copy_testdata_tmpdir):
     copy_testdata_tmpdir(TEST_DATA)
-    arguments = [
-        "--input",
-        "partial_wells.json",
-        "--config",
-        "config.yml",
-        "--optimizer",
-        "optimizer_values.yml",
-        "--output",
-        "partial_out.json",
-    ]
+    main_entry_point(drill_planner_arguments)
 
-    main_entry_point(arguments)
-    test_output = load_yaml("partial_out.json")
-    expected_output = load_yaml("partial_correct_out.json")
-
-    assert test_output == expected_output
+    assert (
+        pathlib.Path(OUTPUT_FILENAME).read_bytes()
+        == pathlib.Path("correct_out.json").read_bytes()
+    )
 
 
-def test_main_entry_point_no_slots(copy_testdata_tmpdir):
+def test_main_entry_point_partial_wells(drill_planner_arguments, copy_testdata_tmpdir):
     copy_testdata_tmpdir(TEST_DATA)
-    arguments = [
-        "--input",
-        "wells.json",
-        "--config",
-        "config_no_slots.yml",
-        "--optimizer",
-        "optimizer_values.yml",
-        "--output",
-        "out_no_slots.json",
-    ]
-
-    main_entry_point(arguments)
-
-    arguments = [
-        "--input",
-        "wells.json",
-        "--config",
-        "config_single_slots.yml",
-        "--optimizer",
-        "optimizer_values.yml",
-        "--output",
-        "out_single_slots.json",
-    ]
-
-    main_entry_point(arguments)
-
-    test_output = load_yaml("out_no_slots.json")
-    expected_output = load_yaml("out_single_slots.json")
-
-    assert test_output == expected_output
+    main_entry_point(
+        [
+            *drill_planner_arguments[:-3],
+            "partial_wells.json",
+            *drill_planner_arguments[-2:],
+        ]
+    )
+    assert (
+        pathlib.Path(OUTPUT_FILENAME).read_bytes()
+        == pathlib.Path("partial_correct_out.json").read_bytes()
+    )
 
 
-def test_main_entry_point_ignore_end_date_no_effect(copy_testdata_tmpdir):
+def test_main_entry_point_no_slots(drill_planner_arguments, copy_testdata_tmpdir):
     copy_testdata_tmpdir(TEST_DATA)
-    arguments = [
-        "--input",
-        "wells.json",
-        "--config",
-        "config.yml",
-        "--optimizer",
-        "optimizer_values.yml",
-        "--output",
-        "out.json",
-        "--ignore-end-date",
-    ]
+    main_entry_point([*drill_planner_arguments[:-1], "config_no_slots.yml"])
+    main_entry_point(
+        [
+            "--output",
+            "out_single_slot.json",
+            *drill_planner_arguments[2:-1],
+            "config_single_slots.yml",
+        ]
+    )
 
-    main_entry_point(arguments)
-
-    test_output = load_yaml("out.json")
-    expected_output = load_yaml("correct_out.json")
-
-    assert test_output == expected_output
+    assert (
+        pathlib.Path(OUTPUT_FILENAME).read_bytes()
+        == pathlib.Path("out_single_slot.json").read_bytes()
+    )
 
 
-def test_main_entry_point_ignore_end_date(copy_testdata_tmpdir):
+@pytest.mark.parametrize("config_argument", ("config.yml", "config_early_end_date.yml"))
+def test_main_entry_point_ignore_end_date_no_effect(
+    config_argument, drill_planner_arguments, copy_testdata_tmpdir
+):
     copy_testdata_tmpdir(TEST_DATA)
-    arguments = [
-        "--input",
-        "wells.json",
-        "--config",
-        "config_early_end_date.yml",
-        "--optimizer",
-        "optimizer_values.yml",
-        "--output",
-        "out.json",
-    ]
+    main_entry_point(
+        [*drill_planner_arguments[:-1], config_argument, "--ignore-end-date"]
+    )
 
-    with pytest.raises(RuntimeError):
-        main_entry_point(arguments)
+    assert (
+        pathlib.Path(OUTPUT_FILENAME).read_bytes()
+        == pathlib.Path("correct_out.json").read_bytes()
+    )
 
-    arguments.append("--ignore-end-date")
 
-    main_entry_point(arguments)
-
-    test_output = load_yaml("out.json")
-    expected_output = load_yaml("correct_out.json")
-
-    assert test_output == expected_output
+def test_main_entry_point_ignore_end_date(
+    drill_planner_arguments, copy_testdata_tmpdir
+):
+    copy_testdata_tmpdir(TEST_DATA)
+    with pytest.raises(AttributeError, match="is well drilled once"):
+        main_entry_point([*drill_planner_arguments[:-1], "config_early_end_date.yml"])

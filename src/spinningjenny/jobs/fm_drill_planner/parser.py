@@ -75,6 +75,3 @@ def build_argument_parser():
         help="Ignore the end date in the config file.",
     )
     return parser
-
-
-args_parser = build_argument_parser()

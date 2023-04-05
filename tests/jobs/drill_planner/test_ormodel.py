@@ -1,99 +1,60 @@
-import hypothesis.strategies as st
 from hypothesis import assume, given
+from jobs.drill_planner.strategies import constraints_assignment_pair
 from ortools.sat.python import cp_model
-from test_drillmodel import begin_day, field_managers, schedule_element
 
-from spinningjenny.jobs.fm_drill_planner.drillmodel import FieldSchedule
-from spinningjenny.jobs.fm_drill_planner.ormodel import DrillConstraints
-from spinningjenny.jobs.fm_drill_planner.utils import ScheduleElement
+from spinningjenny.jobs.fm_drill_planner import drillmodel
 
 
-class Assignment(FieldSchedule):
-    def task_assignments(self, well, rig, slot, task):
-        elements = list(self.wrs_elements(well.name, rig.name, slot.name))
-        if len(elements) == 0:
+def wrs_elements(schedule, well, rig, slot):
+    return {x for x in schedule if x.rig == rig and x.well == well and x.slot == slot}
+
+
+def task_assignments(schedule, well, rig, slot, task):
+    if elements := list(wrs_elements(schedule, well, rig, slot)):
+        e = elements[0]
+        if e.well != well or e.rig != rig or e.slot != slot:
             yield (task.presence, False)
         else:
-            e = elements[0]
-            if e.well != well.name or e.rig != rig.name or e.slot != slot.name:
-                yield (task.presence, False)
-            else:
-                yield (task.presence, True)
-                yield (task.begin, e.begin)
-                yield (task.end, e.end)
+            yield (task.presence, True)
+            yield (task.begin, e.begin)
+            yield (task.end, e.end)
 
-    def is_consistent(self):
-        tasks = [(elem.rig, elem.slot, elem.well) for elem in self.elements]
-        return len(tasks) == len(set(tasks))
-
-    def wrs_elements(self, well, rig, slot):
-        return set(
-            x
-            for x in self.elements
-            if x.rig == rig and x.well == well and x.slot == slot
-        )
+    else:
+        yield (task.presence, False)
 
 
-well_drill_constraints = st.builds(DrillConstraints, field_managers)
-assignments = st.builds(Assignment, st.lists(schedule_element, unique=True))
+def is_consistent(schedule):
+    tasks = [(elem.rig, elem.slot, elem.well) for elem in schedule]
+    return len(tasks) == len(set(tasks))
 
 
-def create_schedule_elem(rig, slot, well, begin_day):
-    return ScheduleElement(rig, slot, well.name, begin_day, begin_day + well.drill_time)
-
-
-@st.composite
-def constraints_assignment_pair(draw):
-    constraints = draw(well_drill_constraints)
-
-    wells = st.sampled_from(constraints.field_manager.wells)
-    rigs = st.sampled_from([el.name for el in constraints.field_manager.rigs])
-    slots = st.sampled_from([el.name for el in constraints.field_manager.slots])
-    schedule_list = st.lists(
-        st.builds(create_schedule_elem, rigs, slots, wells, begin_day),
-        unique_by=(lambda x: (x.rig, x.slot, x.well)),
-    )
-
-    return constraints, Assignment(draw(schedule_list))
-
-
-def apply_assignment(model, assignment):
+def apply_assignment(model, schedule):
     for (well, rig, slot), task in model.tasks.items():
-        for var, value in assignment.task_assignments(well, rig, slot, task):
+        for var, value in task_assignments(schedule, well, rig, slot, task):
             if var.Name().startswith("end"):
                 value += 1
             model.Add(var == value)
 
 
-def satisfies(model, apply_constraints, assignment):
+def satisfies(model, apply_constraints, schedule):
     apply_constraints()
-    apply_assignment(model, assignment)
+    apply_assignment(model, schedule)
 
     solver = cp_model.CpSolver()
     status = solver.Solve(model)
 
-    return status == cp_model.FEASIBLE or status == cp_model.OPTIMAL
-
-
-@given(well_drill_constraints, assignments)
-def test_all_valid_schedules_are_consistent_assignments(constraints, assignment):
-    field_manager = constraints.field_manager
-
-    if field_manager.valid_schedule(assignment):
-        assert assignment.is_consistent()
+    return status in [cp_model.FEASIBLE, cp_model.OPTIMAL]
 
 
 @given(constraints_assignment_pair())  # pylint: disable=no-value-for-parameter
 def test_all_wells_drilled_once_constraints(pair):
     constraints, assignment = pair
 
-    field_manager = constraints.field_manager
+    domain_valid = drillmodel.all_wells_drilled_once(
+        assignment, constraints.wells.values()
+    ) and drillmodel.all_drill_times_valid(assignment, constraints.wells)
 
-    domain_valid = field_manager.all_wells_drilled_once(
-        assignment
-    ) and field_manager.all_drill_times_valid(assignment)
-
-    assume(assignment.is_consistent())
+    assume(is_consistent(assignment))
 
     or_valid = satisfies(constraints, constraints.all_wells_drilled_once, assignment)
     assert or_valid == domain_valid
@@ -103,13 +64,11 @@ def test_all_wells_drilled_once_constraints(pair):
 def test_all_slots_atmost_once_constraints(pair):
     constraints, assignment = pair
 
-    field_manager = constraints.field_manager
+    domain_valid = drillmodel.all_slots_atmost_once(
+        assignment, constraints.slots.values()
+    ) and drillmodel.all_drill_times_valid(assignment, constraints.wells)
 
-    domain_valid = field_manager.all_slots_atmost_once(
-        assignment
-    ) and field_manager.all_drill_times_valid(assignment)
-
-    assume(assignment.is_consistent())
+    assume(is_consistent(assignment))
 
     or_valid = satisfies(constraints, constraints.all_slots_atmost_once, assignment)
     assert or_valid == domain_valid
@@ -119,13 +78,11 @@ def test_all_slots_atmost_once_constraints(pair):
 def test_all_rigs_available_constraints(pair):
     constraints, assignment = pair
 
-    field_manager = constraints.field_manager
+    domain_valid = drillmodel.all_rigs_available(
+        assignment, constraints.rigs.values()
+    ) and drillmodel.all_drill_times_valid(assignment, constraints.wells)
 
-    domain_valid = field_manager.all_rigs_available(
-        assignment
-    ) and field_manager.all_drill_times_valid(assignment)
-
-    assume(assignment.is_consistent())
+    assume(is_consistent(assignment))
 
     or_valid = satisfies(constraints, constraints.all_rigs_available, assignment)
     assert or_valid == domain_valid
@@ -135,13 +92,11 @@ def test_all_rigs_available_constraints(pair):
 def test_all_slots_available_constraints(pair):
     constraints, assignment = pair
 
-    field_manager = constraints.field_manager
+    domain_valid = drillmodel.all_slots_available(
+        assignment, constraints.slots.values()
+    ) and drillmodel.all_drill_times_valid(assignment, constraints.wells)
 
-    domain_valid = field_manager.all_slots_available(
-        assignment
-    ) and field_manager.all_drill_times_valid(assignment)
-
-    assume(assignment.is_consistent())
+    assume(is_consistent(assignment))
 
     or_valid = satisfies(constraints, constraints.all_slots_available, assignment)
     assert or_valid == domain_valid
@@ -151,13 +106,11 @@ def test_all_slots_available_constraints(pair):
 def test_no_rig_overlapping_constraints(pair):
     constraints, assignment = pair
 
-    field_manager = constraints.field_manager
+    domain_valid = drillmodel.no_rig_overlapping(
+        assignment, constraints.rigs
+    ) and drillmodel.all_drill_times_valid(assignment, constraints.wells)
 
-    domain_valid = field_manager.no_rig_overlapping(
-        assignment
-    ) and field_manager.all_drill_times_valid(assignment)
-
-    assume(assignment.is_consistent())
+    assume(is_consistent(assignment))
 
     or_valid = satisfies(constraints, constraints.no_rig_overlapping, assignment)
     assert or_valid == domain_valid

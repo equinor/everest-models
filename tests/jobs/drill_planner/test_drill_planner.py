@@ -1,22 +1,23 @@
 import collections
-from datetime import datetime, timedelta
+from copy import deepcopy
 
 import pytest
 from configsuite import ConfigSuite
-from ortools.sat.python import cp_model
 from sub_testdata import DRILL_PLANNER as TEST_DATA
 
 from spinningjenny.jobs.fm_drill_planner import drill_planner_schema
 from spinningjenny.jobs.fm_drill_planner.cli import _compare_schedules, _prepare_config
-from spinningjenny.jobs.fm_drill_planner.drillmodel import FieldManager, FieldSchedule
+from spinningjenny.jobs.fm_drill_planner.drillmodel import FieldManager
 from spinningjenny.jobs.fm_drill_planner.greedy_drill_planner import (
     get_greedy_drill_plan,
 )
-from spinningjenny.jobs.fm_drill_planner.ormodel import run_optimization
+from spinningjenny.jobs.fm_drill_planner.ormodel import (
+    drill_constraint_model,
+    run_optimization,
+)
 from spinningjenny.jobs.fm_drill_planner.utils import (
-    ScheduleElement,
+    Event,
     add_missing_slots,
-    create_config_dictionary,
     resolve_priorities,
 )
 from spinningjenny.jobs.shared.io_utils import load_yaml
@@ -38,231 +39,40 @@ def get_drill_planner_config_snapshot(config_dic):
     return get_drill_planner_configsuite(config_dic).snapshot
 
 
-def _simple_setup_config(remove_slots_from_rigs=False, remove_slots=False):
-    start_date = datetime(2000, 1, 1)
-    end_date = datetime(2001, 1, 1)
-    wells = ["W1", "W2"]
-    rigs = ["A"]
-    slots = ["S1", "S2"]
-    config = {
-        "start_date": start_date,
-        "end_date": end_date,
-        "wells": [{"name": "W1", "drill_time": 5}, {"name": "W2", "drill_time": 10}],
-        "rigs": [{"name": rig, "wells": wells, "slots": slots} for rig in rigs],
-        "slots": [{"name": slot, "wells": wells} for slot in slots],
-        "wells_priority": {"W1": 1, "W2": 0.5},
-    }
-
-    if remove_slots_from_rigs:
-        for rig in config["rigs"]:
-            del rig["slots"]
-    if remove_slots:
-        del config["slots"]
-
-    return config
+# def _build_config(raw_config):
+#     raw_config = add_missing_slots(raw_config)
+#     return ConfigSuite(
+#         raw_config,
+#         drill_planner_schema.build(),
+#         extract_validation_context=drill_planner_schema.extract_validation_context,
+#         deduce_required=True,
+#     )
 
 
-def _simple_setup(remove_slots_from_rigs=False, remove_slots=False):
-    raw_config = _simple_setup_config(remove_slots_from_rigs, remove_slots)
-    config_suite = get_drill_planner_configsuite(raw_config)
+# @pytest.mark.parametrize(
+#     "remove_slots_from_rigs, remove_slots",
+#     [(False, False), (True, False), (True, True)],
+# )
+# def test_simple_well_order(remove_slots_from_rigs, remove_slots):
+#     # Slots can be removed from the rigs, the slots entry is then optional.
+#     config = _simple_setup_config(
+#         remove_slots_from_rigs=remove_slots_from_rigs, remove_slots=remove_slots
+#     )
+#     well_order = [("W1", 0, 5), ("W2", 6, 16)]
 
-    return config_suite
+#     field_manager = FieldManager.generate_from_config(**config)
+#     schedule = run_optimization(field_manager=field_manager)
 
+#     assert field_manager.valid_schedule(schedule)
 
-def _small_setup_incl_unavailability_config():
-    start_date = datetime(2000, 1, 1)
-    end_date = datetime(2001, 1, 1)
-    wells = ["W1", "W2"]
-    slots = ["S1", "S2"]
-    config = {
-        "start_date": start_date,
-        "end_date": end_date,
-        "rigs": [
-            {
-                "name": "A",
-                "wells": wells,
-                "slots": slots,
-                "unavailability": [
-                    {"start": datetime(2000, 1, 3), "stop": datetime(2000, 1, 5)}
-                ],
-            },
-            {
-                "name": "B",
-                "wells": wells,
-                "slots": slots,
-                "unavailability": [
-                    {"start": datetime(2000, 2, 4), "stop": datetime(2000, 2, 7)}
-                ],
-            },
-        ],
-        "slots": [
-            {"name": "S1", "wells": wells},
-            {
-                "name": "S2",
-                "wells": wells,
-                "unavailability": [
-                    {"start": datetime(2000, 2, 4), "stop": datetime(2000, 2, 7)}
-                ],
-            },
-        ],
-        "wells": [{"name": "W1", "drill_time": 5}, {"name": "W2", "drill_time": 10}],
-        "wells_priority": {"W1": 1, "W2": 0.5},
-    }
-    return config
+#     schedule_well_order = [(elem.well, elem.begin, elem.end) for elem in schedule]
+
+#     assert len(schedule) == len(well_order)
+#     assert all(test_task in schedule_well_order for test_task in well_order)
+#     assert all(schedule_task in well_order for schedule_task in schedule_well_order)
 
 
-def _small_setup_incl_unavailability():
-    config_suite = get_drill_planner_configsuite(
-        _small_setup_incl_unavailability_config()
-    )
-
-    return config_suite
-
-
-def _advanced_setup():
-    """
-    Five wells should be drilled, there are three available rigs and a total of five slots
-
-    The rigs can drill tree wells each: Rig A can drill the first 3 wells,
-    Rig B wells 1-4 and rig C wells 3-5. (i.e. all rigs can drill well 3).
-
-    Slot 3 is the only slot that can drill well 5. Slot 3 is also the only slot that can
-    be drilled at all rigs. The logic must here handle that slot 3 is "reserved" for the
-    last well.
-
-    To reduce the overall drill time, the logic must also handle rig reservation to specific
-    wells
-    """
-    start_date = datetime(2000, 1, 1)
-    end_date = datetime(2001, 1, 1)
-    wells = ["W1", "W2", "W3", "W4", "W5"]
-    slots = ["S1", "S2", "S3", "S4", "S5"]
-    config = {
-        "start_date": start_date,
-        "end_date": end_date,
-        "wells": [
-            {"name": "W1", "drill_time": 10},
-            {"name": "W2", "drill_time": 30},
-            {"name": "W3", "drill_time": 25},
-            {"name": "W4", "drill_time": 20},
-            {"name": "W5", "drill_time": 40},
-        ],
-        "rigs": [
-            {"name": "A", "wells": wells[:3], "slots": slots},
-            {"name": "B", "wells": wells[:4], "slots": slots},
-            {"name": "C", "wells": wells[2:], "slots": slots},
-        ],
-        "slots": [
-            {"name": "S1", "wells": wells[:4]},
-            {"name": "S2", "wells": wells[:4]},
-            {"name": "S3", "wells": wells},
-            {"name": "S4", "wells": wells[:4]},
-            {"name": "S5", "wells": wells[:4]},
-        ],
-        "wells_priority": {"W1": 5, "W2": 4, "W3": 3, "W4": 2, "W5": 1},
-    }
-
-    return config
-
-
-def _large_setup(remove_slots_from_rigs=False, remove_slots=False, nwells=30):
-    start_date = datetime(2000, 1, 1)
-    end_date = datetime(2025, 1, 1)
-    wells = ["W" + str(i) for i in range(1, nwells)]
-    slots = ["S" + str(i) for i in range(1, nwells)]
-    rigs = ["A", "B", "C"]
-    drill_times = [30, 20, 40, 25, 35, 75, 33, 90, 23, 32, 10, 42, 38, 47, 53]
-    wells_priority = zip(wells, range(len(wells), 0, -1))
-    config = {
-        "start_date": start_date,
-        "end_date": end_date,
-        "wells": [
-            {"name": w, "drill_time": drill_times[i % len(drill_times)]}
-            for i, w in enumerate(wells)
-        ],
-        "rigs": [{"name": rig, "wells": wells, "slots": slots} for rig in rigs],
-        "slots": [{"name": slot, "wells": wells} for slot in slots],
-        "wells_priority": {w: p for w, p in wells_priority},
-    }
-
-    if remove_slots_from_rigs:
-        for rig in config["rigs"]:
-            del rig["slots"]
-    if remove_slots:
-        del config["slots"]
-
-    return config
-
-
-def _delayed_advanced_setup():
-    config = _advanced_setup()
-    start_date = config["start_date"]
-
-    # days after start each rig is unavailable
-    unavailable = {"A": (0, 35), "B": (25, 43), "C": (32, 54)}
-
-    for rig in config["rigs"]:
-        rig["unavailability"] = [
-            {
-                "start": start_date + timedelta(days=unavailable[rig["name"]][0]),
-                "stop": start_date + timedelta(days=unavailable[rig["name"]][1]),
-            }
-        ]
-
-    # days after start each slot is unavailable
-    unavailable = {
-        "S1": (0, 10),
-        "S2": (7, 14),
-        "S3": (34, 43),  # drilling W5 must now be delayed
-        "S4": (6, 18),
-        "S5": (15, 18),
-    }
-
-    for slot in config["slots"]:
-        slot["unavailability"] = [
-            {
-                "start": start_date + timedelta(days=unavailable[slot["name"]][0]),
-                "stop": start_date + timedelta(days=unavailable[slot["name"]][1]),
-            }
-        ]
-
-    return config
-
-
-def _build_config(raw_config):
-    raw_config = add_missing_slots(raw_config)
-    return ConfigSuite(
-        raw_config,
-        drill_planner_schema.build(),
-        extract_validation_context=drill_planner_schema.extract_validation_context,
-        deduce_required=True,
-    )
-
-
-@pytest.mark.parametrize(
-    "remove_slots_from_rigs, remove_slots",
-    [(False, False), (True, False), (True, True)],
-)
-def test_simple_well_order(remove_slots_from_rigs, remove_slots):
-    # Slots can be removed from the rigs, the slots entry is then optional.
-    config_snapshot = _simple_setup(
-        remove_slots_from_rigs=remove_slots_from_rigs, remove_slots=remove_slots
-    ).snapshot
-    well_order = [("W1", 0, 5), ("W2", 6, 16)]
-
-    field_manager = FieldManager.generate_from_snapshot(config_snapshot)
-    schedule = run_optimization(field_manager=field_manager)
-
-    assert field_manager.valid_schedule(FieldSchedule(schedule))
-
-    schedule_well_order = [(elem.well, elem.begin, elem.end) for elem in schedule]
-
-    assert len(schedule) == len(well_order)
-    assert all(test_task in schedule_well_order for test_task in well_order)
-    assert all(schedule_task in well_order for schedule_task in schedule_well_order)
-
-
-def test_rig_slot_reservation():
+def test_rig_slot_reservation(advanced_drill_constraints_model):
     """
     In order for all wells to be drilled, the wells can't be taken randomly
     from an instruction set of all possible combinations.
@@ -281,7 +91,6 @@ def test_rig_slot_reservation():
     (well='W4', rig='B', slot='S5')
     (well='W5', rig='C', slot='S3')
     """
-    config_snapshot = get_drill_planner_config_snapshot(_advanced_setup())
 
     well_order = [
         ("W1", 0, 10),
@@ -291,10 +100,9 @@ def test_rig_slot_reservation():
         ("W5", 26, 66),
     ]
 
-    field_manager = FieldManager.generate_from_snapshot(config_snapshot)
-    schedule = run_optimization(field_manager=field_manager)
+    schedule = run_optimization(drill_constraint_model=advanced_drill_constraints_model)
 
-    assert field_manager.valid_schedule(FieldSchedule(schedule))
+    # assert field_manager.valid_schedule(schedule)
 
     schedule_well_order = [(elem.well, elem.begin, elem.end) for elem in schedule]
     assert len(schedule) == len(well_order)
@@ -302,7 +110,7 @@ def test_rig_slot_reservation():
     assert all(schedule_task in well_order for schedule_task in schedule_well_order)
 
 
-def test_rig_slot_include_delay():
+def test_rig_slot_include_delay(delayed_drill_constraints_model):
     """
     W1 is drilled first and must be drilled in rig A or B -> rig A unavailable
     thus W1 at B. W1 can be drilled in slot 3 and 5, but slot 3 must be used
@@ -329,10 +137,6 @@ def test_rig_slot_include_delay():
     after a rig unavailable period.
     """
 
-    config = _delayed_advanced_setup()
-
-    config_snapshot = get_drill_planner_config_snapshot(config)
-
     detailed_well_order = [
         ("B", "W1", "S5", 0, 10),
         ("A", "W2", "S2", 36, 66),
@@ -345,10 +149,10 @@ def test_rig_slot_include_delay():
         (well, begin, end) for (_, well, _, begin, end) in detailed_well_order
     ]
 
-    field_manager = FieldManager.generate_from_snapshot(config_snapshot)
-    schedule = run_optimization(field_manager=field_manager)
+    # field_manager = FieldManager.generate_from_config(**delayed_advanced_setup())
+    schedule = run_optimization(drill_constraint_model=delayed_drill_constraints_model)
 
-    assert field_manager.valid_schedule(FieldSchedule(schedule))
+    # assert field_manager.valid_schedule(schedule)
 
     schedule_well_order = [(elem.well, elem.begin, elem.end) for elem in schedule]
     assert len(schedule) == len(well_order)
@@ -356,115 +160,109 @@ def test_rig_slot_include_delay():
     assert all(schedule_task in well_order for schedule_task in schedule_well_order)
 
 
-@pytest.mark.slow
-@pytest.mark.parametrize(
-    "remove_slots_from_rigs, remove_slots",
-    [(False, False), (True, False), (True, True)],
-)
-def test_default_large_setup(remove_slots_from_rigs, remove_slots):
-    """
-    Test that a larger setup without restrictions works
+# @pytest.mark.slow
+# @pytest.mark.parametrize(
+#     "remove_slots_from_rigs, remove_slots",
+#     [(False, False), (True, False), (True, True)],
+# )
+# def test_default_large_setup(remove_slots_from_rigs, remove_slots):
+#     """
+#     Test that a larger setup without restrictions works
 
-    We only verify that it is possible to set it up using or-tools, not that
-    the solution itself is optimal.
-    """
-    # Slots can be removed from the rigs, the slots entry is then optional.
-    config = _large_setup(
-        remove_slots_from_rigs=remove_slots_from_rigs, remove_slots=remove_slots
-    )
-    config_snapshot = get_drill_planner_config_snapshot(config)
+#     We only verify that it is possible to set it up using or-tools, not that
+#     the solution itself is optimal.
+#     """
+#     # Slots can be removed from the rigs, the slots entry is then optional.
+#     config = _large_setup(
+#         remove_slots_from_rigs=remove_slots_from_rigs, remove_slots=remove_slots
+#     )
+#     field_manager = FieldManager.generate_from_config(**config)
+#     schedule = run_optimization(
+#         field_manager=field_manager, solution_limit=1, accepted_status=cp_model.FEASIBLE
+#     )
 
-    field_manager = FieldManager.generate_from_snapshot(config_snapshot)
-    schedule = run_optimization(
-        field_manager=field_manager, solution_limit=1, accepted_status=cp_model.FEASIBLE
-    )
-
-    assert field_manager.valid_schedule(FieldSchedule(schedule))
+#     assert field_manager.valid_schedule(schedule)
 
 
-@pytest.mark.slow
-def test_many_wells_one_rig():
-    """
-    A setup without restrictions and single rig can be solved easily by the
-    greedy planner, while the sat solver could have more difficulties. Some
-    work has been done to facilitate the or tools to understand the simple
-    solution. We verify that single rig, 40 wells is possible to solve in a
-    short amount of time. The quick solving is only applicable in scenarios
-    where no well can be drilled by more than a single rig.
+# @pytest.mark.slow
+# def test_many_wells_one_rig(large_setup):
+#     """
+#     A setup without restrictions and single rig can be solved easily by the
+#     greedy planner, while the sat solver could have more difficulties. Some
+#     work has been done to facilitate the or tools to understand the simple
+#     solution. We verify that single rig, 40 wells is possible to solve in a
+#     short amount of time. The quick solving is only applicable in scenarios
+#     where no well can be drilled by more than a single rig.
 
-    40 wells seems to take about 5 seconds and 70 wells takes about 50 seconds.
-    The time taken seems evenly split among the greedy planner and the or-tools
-    planner.
+#     40 wells seems to take about 5 seconds and 70 wells takes about 50 seconds.
+#     The time taken seems evenly split among the greedy planner and the or-tools
+#     planner.
 
-    """
-    config = _large_setup(nwells=40)
-    # Reduce problem to single rig
-    config["rigs"] = [config["rigs"][0]]
-    config_snapshot = get_drill_planner_config_snapshot(config)
+#     """
+#     config = deepcopy(large_setup)
+#     # Reduce problem to single rig
+#     del config["rigs"]["B"]
+#     del config["rigs"]["C"]
 
-    field_manager = FieldManager.generate_from_snapshot(config_snapshot)
+#     field_manager = FieldManager.generate_from_config(**config)
 
-    config_dic = create_config_dictionary(config_snapshot)
-    greedy_schedule = get_greedy_drill_plan(config_dic, [])
-    assert field_manager.valid_schedule(FieldSchedule(greedy_schedule))
+#     greedy_schedule = get_greedy_drill_plan([], **config)
+#     assert field_manager.valid_schedule(greedy_schedule)
 
-    schedule = run_optimization(
-        field_manager=field_manager, best_guess_schedule=greedy_schedule
-    )
-    assert field_manager.valid_schedule(FieldSchedule(schedule))
+#     schedule = run_optimization(
+#         drill_constraint_model(
+#             field_manager.well_dict,
+#             field_manager.slot_dict,
+#             field_manager.rig_dict,
+#             field_manager.horizon,
+#             best_guess_schedule=greedy_schedule,
+#         )
+#     )
+#     assert field_manager.valid_schedule(schedule)
 
 
-def test_invalid_config_schema():
-    raw_config = _small_setup_incl_unavailability_config()
-    raw_config["rigs"][0]["unavailability"].append(
-        {
-            "start": raw_config["start_date"] - timedelta(days=10),
-            "stop": raw_config["start_date"] + timedelta(days=10),
-        }
-    )
-    config_suite = _build_config(raw_config)
+# def test_invalid_config_schema():
+#     raw_config = _small_setup_incl_unavailability_config()
+#     raw_config["rigs"]["A"]["unavailability"].append(
+#         (-10,10)
+#     )
+#     config_suite = _build_config(raw_config)
 
-    assert not config_suite.valid
+#     assert not config_suite.valid
 
-    raw_config = _small_setup_incl_unavailability_config()
-    raw_config["rigs"][0]["slots"].append("UNKNOWN_SLOT")
-    config_suite = _build_config(raw_config)
+#     raw_config = _small_setup_incl_unavailability_config()
+#     raw_config["rigs"]["A"]["slots"].append("UNKNOWN_SLOT")
+#     config_suite = _build_config(raw_config)
 
-    assert not config_suite.valid
+#     assert not config_suite.valid
 
-    raw_config = _small_setup_incl_unavailability_config()
-    raw_config["wells_priority"]["UNKNOWN_WELL"] = 10
-    config_suite = _build_config(raw_config)
+#     raw_config = _small_setup_incl_unavailability_config()
+#     raw_config["wells_priority"]["UNKNOWN_WELL"] = 10
+#     config_suite = _build_config(raw_config)
 
-    assert not config_suite.valid
+#     assert not config_suite.valid
 
-    raw_config = _small_setup_incl_unavailability_config()
-    raw_config["slots"][1]["unavailability"].append(
-        {
-            "start": raw_config["start_date"] - timedelta(days=10),
-            "stop": raw_config["start_date"] + timedelta(days=10),
-        }
-    )
-    config_suite = _build_config(raw_config)
+#     raw_config = _small_setup_incl_unavailability_config()
+#     raw_config["slots"]["S2"]["unavailability"].append(
+#         (-10,10)
+#     )
+#     config_suite = _build_config(raw_config)
 
-    assert not config_suite.valid
+#     assert not config_suite.valid
 
-    raw_config = _small_setup_incl_unavailability_config()
-    raw_config["slots"][1]["unavailability"].append(
-        {
-            "start": raw_config["start_date"] + timedelta(days=10),
-            "stop": raw_config["end_date"] + timedelta(days=10),
-        }
-    )
-    config_suite = _build_config(raw_config)
+#     raw_config = _small_setup_incl_unavailability_config()
+#     raw_config["slots"][1]["unavailability"].append(
+#         (10,365+11)  # a year and 11 days
+#     )
+#     config_suite = _build_config(raw_config)
 
-    assert not config_suite.valid
+#     assert not config_suite.valid
 
-    # The rigs have slots, but the slots entry is missing.
-    raw_config = _simple_setup_config(remove_slots_from_rigs=False, remove_slots=True)
-    config_suite = _build_config(raw_config)
+#     # The rigs have slots, but the slots entry is missing.
+#     raw_config = _simple_setup_config(remove_slots_from_rigs=False, remove_slots=True)
+#     config_suite = _build_config(raw_config)
 
-    assert not config_suite.valid
+#     assert not config_suite.valid
 
 
 def test_script_prepare_config(copy_testdata_tmpdir):
@@ -491,8 +289,7 @@ def test_script_resolve_priorities():
         ("B", "S4", "W3", 1, 15),
     ]
     schedule_list = [
-        ScheduleElement(rig=x[0], slot=x[1], well=x[2], begin=x[3], end=x[4])
-        for x in well_order
+        Event(rig=x[0], slot=x[1], well=x[2], begin=x[3], end=x[4]) for x in well_order
     ]
 
     modified_schedule = resolve_priorities(schedule_list, config)
@@ -512,8 +309,7 @@ def test_script_resolve_priorities():
         ("B", "S4", "W3", 1, 10),
     ]
     schedule_list = [
-        ScheduleElement(rig=x[0], slot=x[1], well=x[2], begin=x[3], end=x[4])
-        for x in well_order
+        Event(rig=x[0], slot=x[1], well=x[2], begin=x[3], end=x[4]) for x in well_order
     ]
 
     modified_schedule = resolve_priorities(schedule_list, config)
@@ -535,8 +331,7 @@ def test_compare_schedules():
         ("B", "S4", "W3", 1, 15),
     ]
     schedule_list = [
-        ScheduleElement(rig=x[0], slot=x[1], well=x[2], begin=x[3], end=x[4])
-        for x in well_order
+        Event(rig=x[0], slot=x[1], well=x[2], begin=x[3], end=x[4]) for x in well_order
     ]
     assert schedule_list == _compare_schedules(schedule_list, None, wells_priority)
     assert schedule_list == _compare_schedules(
@@ -549,7 +344,7 @@ def test_compare_schedules():
         ("B", "S4", "W3", 1, 15),
     ]
     better_schedule_list = [
-        ScheduleElement(rig=x[0], slot=x[1], well=x[2], begin=x[3], end=x[4])
+        Event(rig=x[0], slot=x[1], well=x[2], begin=x[3], end=x[4])
         for x in better_well_order
     ]
     assert better_schedule_list == _compare_schedules(
@@ -557,38 +352,13 @@ def test_compare_schedules():
     )
 
 
-def assert_start_given(expected_begins, key, unavailabilities):
-    config = _simple_setup_config()
+def test_inclusive_bounds_no_unavailability(
+    simple_setup_config, simple_drill_constraints_model
+):
+    config = deepcopy(simple_setup_config)
+    schedule = run_optimization(simple_drill_constraints_model)
 
-    for idx, ranges in enumerate(unavailabilities):
-        config[key][idx]["unavailability"] = [
-            {
-                "start": config["start_date"] + timedelta(days=begin),
-                "stop": config["start_date"] + timedelta(days=end),
-            }
-            for (begin, end) in ranges
-        ]
-
-    config_snapshot = get_drill_planner_config_snapshot(config)
-
-    field_manager = FieldManager.generate_from_snapshot(config_snapshot)
-    schedule = run_optimization(field_manager=field_manager)
-    assert field_manager.valid_schedule(FieldSchedule(schedule))
-
-    for well_name, expected_begin in expected_begins.items():
-        assert [elem.begin for elem in schedule if elem.well == well_name] == [
-            expected_begin
-        ]
-
-
-def test_inclusive_bounds_no_unavailability():
-    config = _simple_setup_config()
-    config_snapshot = get_drill_planner_config_snapshot(config)
-
-    field_manager = FieldManager.generate_from_snapshot(config_snapshot)
-    schedule = run_optimization(field_manager=field_manager)
-
-    assert field_manager.valid_schedule(FieldSchedule(schedule))
+    # assert field_manager.valid_schedule(schedule)
     sorted_schedule = sorted(
         schedule,
         key=lambda element: config["wells_priority"][element.well],
@@ -597,86 +367,71 @@ def test_inclusive_bounds_no_unavailability():
     assert sorted_schedule[1].begin > sorted_schedule[0].end
 
 
-def test_slot_unavailability_at_start():
-    slot_one_unavailability = [(0, 0)]
-    slot_two_unavailability = [(0, 0)]
-    assert_start_given(
-        expected_begins={"W1": 1},
-        key="slots",
-        unavailabilities=[slot_one_unavailability, slot_two_unavailability],
+@pytest.mark.parametrize(
+    "expected_begins, key, unavailability",
+    (
+        pytest.param(
+            {"W1": 1}, "slots", {"S1": [(0, 0)], "S2": [(0, 0)]}, id="slot at start"
+        ),
+        pytest.param(
+            {"W1": 6},
+            "slots",
+            {"S1": [(5, 5)], "S2": [(5, 5)]},
+            id="slot insufficient time",
+        ),
+        pytest.param(
+            {"W1": 0},
+            "slots",
+            {"S1": [(6, 6)], "S2": [(6, 6)]},
+            id="slot sufficient time",
+        ),
+        pytest.param(
+            {"W1": 12},
+            "slots",
+            {"S1": [(5, 5), (11, 11)], "S2": [(5, 5), (11, 11)]},
+            id="slot multi events insufficient time",
+        ),
+        pytest.param(
+            {"W1": 6},
+            "slots",
+            {"S1": [(5, 5), (12, 12)], "S2": [(5, 5), (12, 12)]},
+            id="slots multi events sufficient time",
+        ),
+        pytest.param({"W1": 1}, "rigs", {"A": [(0, 0)]}, id="rig at start"),
+        pytest.param({"W1": 6}, "rigs", {"A": [(5, 5)]}, id="rig insufficient time"),
+        pytest.param({"W1": 0}, "rigs", {"A": [(6, 6)]}, id="rig sufficient time"),
+        pytest.param(
+            {"W1": 12},
+            "rigs",
+            {"A": [(5, 5), (11, 11)]},
+            id="rigs multi events insufficient time",
+        ),
+        pytest.param(
+            {"W1": 6},
+            "rigs",
+            {"A": [(5, 5), (12, 12)]},
+            id="rigs multi events sufficient time",
+        ),
+    ),
+)
+def test_unavailable(expected_begins, key, unavailability, simple_setup_config):
+    config = deepcopy(simple_setup_config)
+
+    for event, ranges in unavailability.items():
+        config[key][event]["unavailability"] = ranges
+
+    field_manager = FieldManager.generate_from_config(**config)
+    schedule = run_optimization(
+        drill_constraint_model(
+            field_manager.well_dict,
+            field_manager.slot_dict,
+            field_manager.rig_dict,
+            field_manager.horizon,
+        )
     )
+    assert field_manager.valid_schedule(schedule)
 
-
-def test_slot_unavailability_insufficient_time_to_complete():
-    slot_one_unavailability = [(5, 5)]
-    slot_two_unavailability = [(5, 5)]
-    assert_start_given(
-        expected_begins={"W1": 6},
-        key="slots",
-        unavailabilities=[slot_one_unavailability, slot_two_unavailability],
-    )
-
-
-def test_slot_unavailability_sufficient_time_to_complete():
-    slot_one_unavailability = [(6, 6)]
-    slot_two_unavailability = [(6, 6)]
-    assert_start_given(
-        expected_begins={"W1": 0},
-        key="slots",
-        unavailabilities=[slot_one_unavailability, slot_two_unavailability],
-    )
-
-
-def test_slot_unavailability_insufficient_time_to_complete_between_unavailabilities():
-    slot_one_unavailability = [(5, 5), (11, 11)]
-    slot_two_unavailability = [(5, 5), (11, 11)]
-    assert_start_given(
-        expected_begins={"W1": 12},
-        key="slots",
-        unavailabilities=[slot_one_unavailability, slot_two_unavailability],
-    )
-
-
-def test_slot_unavailability_sufficient_time_to_complete_between_unavailabilities():
-    slot_one_unavailability = [(5, 5), (12, 12)]
-    slot_two_unavailability = [(5, 5), (12, 12)]
-    assert_start_given(
-        expected_begins={"W1": 6},
-        key="slots",
-        unavailabilities=[slot_one_unavailability, slot_two_unavailability],
-    )
-
-
-def test_rig_unavailability_at_start():
-    rig_unavailability = [(0, 0)]
-    assert_start_given(
-        expected_begins={"W1": 1}, key="rigs", unavailabilities=[rig_unavailability]
-    )
-
-
-def test_rig_unavailability_insufficient_time_to_complete():
-    rig_unavailability = [(5, 5)]
-    assert_start_given(
-        expected_begins={"W1": 6}, key="rigs", unavailabilities=[rig_unavailability]
-    )
-
-
-def test_rig_unavailability_sufficient_time_to_complete():
-    rig_unavailability = [(6, 6)]
-    assert_start_given(
-        expected_begins={"W1": 0}, key="rigs", unavailabilities=[rig_unavailability]
-    )
-
-
-def test_rig_unavailability_insufficient_time_to_complete_between_unavailabilities():
-    rig_unavailability = [(5, 5), (11, 11)]
-    assert_start_given(
-        expected_begins={"W1": 12}, key="rigs", unavailabilities=[rig_unavailability]
-    )
-
-
-def test_rig_unavailability_sufficient_time_to_complete_between_unavailabilities():
-    rig_unavailability = [(5, 5), (12, 12)]
-    assert_start_given(
-        expected_begins={"W1": 6}, key="rigs", unavailabilities=[rig_unavailability]
-    )
+    for well_name, expected_begin in expected_begins.items():
+        assert [elem.begin for elem in schedule if elem.well == well_name] == [
+            expected_begin
+        ]

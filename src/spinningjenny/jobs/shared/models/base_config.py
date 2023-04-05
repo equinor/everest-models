@@ -15,6 +15,7 @@ class BaseConfig(BaseModel):
     class Config:
         validate_assignment = True
         arbitrary_types_allowed = False
+        underscore_attrs_are_private = True
         extra = Extra.forbid
         json_encoders = {
             pathlib.Path: path_to_str,

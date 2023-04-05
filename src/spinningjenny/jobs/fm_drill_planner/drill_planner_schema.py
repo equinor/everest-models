@@ -7,13 +7,10 @@ from configsuite import types
 
 @configsuite.validator_msg("Should have a valid combination")
 def _valid_combination_exists(elem, context):
-    rigs_with_well = set([rig for rig in context.rigs if elem in rig.wells])
-    slots_with_well = set([slot.name for slot in context.slots if elem in slot.wells])
-    valid_combinations = [
-        set(rig.slots).intersection(slots_with_well) for rig in rigs_with_well
-    ]
-
-    return any(valid_combinations)
+    slots = {slot.name for slot in context.slots if elem in slot.wells}
+    return any(
+        slots.intersection(rig.slots) for rig in context.rigs if elem in rig.wells
+    )
 
 
 @configsuite.validator_msg("Should be a defined slot")
@@ -42,33 +39,17 @@ def _is_within_time_period(elem, context):
 
 
 def extract_validation_context(configuration):
-    rigs = configuration.rigs if configuration.rigs else ()
-
-    slot_names = (
-        tuple([slot.name for slot in configuration.slots])
-        if configuration.slots
-        else ()
-    )
-
-    slots = configuration.slots if configuration.slots else ()
-
-    prioritized_wells = (
-        tuple([well_name for well_name, _ in configuration.wells_priority])
-        if configuration.wells_priority
-        else ()
-    )
-
-    Context = collections.namedtuple(
+    # sourcery skip: comprehension-to-generator
+    return collections.namedtuple(
         "Context",
         ("rigs", "slots", "slot_names", "start_date", "end_date", "prioritized_wells"),
-    )
-    return Context(
-        rigs,
-        slots,
-        slot_names,
+    )(
+        configuration.rigs or (),
+        configuration.slots or (),
+        tuple(slot.name for slot in configuration.slots),
         configuration.start_date,
         configuration.end_date,
-        prioritized_wells,
+        tuple(well_name for well_name, _ in configuration.wells_priority),
     )
 
 

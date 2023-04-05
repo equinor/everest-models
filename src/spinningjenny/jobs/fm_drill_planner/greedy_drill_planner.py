@@ -2,96 +2,104 @@ import logging
 from itertools import product
 
 from spinningjenny.jobs.fm_drill_planner.utils import (
-    ScheduleElement,
+    Event,
     combine_slot_rig_unavailability,
+    get_unavailability,
     valid_drill_combination,
 )
 
 logger = logging.getLogger(__name__)
 
 
-def _get_next_event(config):
+def _get_next_event(wells, slots, rigs, horizon, **kwargs):
     """
     This function filters out the mechanically impossible events (given by constraints in config)
     Then the best event is chosen from the filtered events.
     """
-    valid_events = _valid_events(config)
 
-    next_event = _next_best_event(config, valid_events)
-    if not next_event:
-        uncompleted_wells = config["wells"].keys()
+    if not (
+        next_event := _next_best_event(
+            _valid_events(wells, slots, rigs, horizon),
+            wells,
+            well_slots=[
+                [name for name, slot in slots.items() if well in slot["wells"]]
+                for well in wells
+            ],
+        )
+    ):
         logger.info(
-            "wells {} were unable to be drilled due to constraints".format(
-                ", ".join(uncompleted_wells)
-            )
+            f'wells {", ".join(wells.keys())} were unable to be drilled due to constraints'
         )
 
     return next_event
 
 
-def _valid_events(config):
+def _valid_events(wells, slots, rigs, horizon):
     """
     Applies various constraints to return only valid events
     """
-    for well, slot, rig in product(
-        sorted(config["wells"].keys()),
-        sorted(config["slots"].keys()),
-        sorted(config["rigs"].keys()),
-    ):
-        if valid_drill_combination(config, well, slot, rig):
-            valid_timebox = _first_valid_timebox(config, well, slot, rig)
-            if valid_timebox:
-                begin, end = valid_timebox
-                yield ScheduleElement(rig, slot, well, begin, end)
+    return [
+        Event(rig_name, slot_name, well_name, *valid_time_box)
+        for (well_name, well), (slot_name, slot), (rig_name, rig) in product(
+            sorted(wells.items()),
+            sorted(slots.items()),
+            sorted(rigs.items()),
+        )
+        if valid_drill_combination(well_name, slot_name, slot, rig)
+        and (
+            valid_time_box := _first_valid_timebox(
+                well["drill_time"],
+                rig["delay"],
+                horizon,
+                combine_slot_rig_unavailability(get_unavailability(horizon, slot, rig)),
+            )
+        )
+    ]
 
 
-def _first_valid_timebox(config, well, slot, rig):
-    event_unavailability = combine_slot_rig_unavailability(config, slot, rig)
-    drilling_time = config["wells"][well]["drill_time"]
-    drill_delay = config["rigs"][rig]["delay"]
-    available_start = drill_delay
+def _first_valid_timebox(drilling_time, drill_delay, horizon, unavailability):
+    def get_available_start(begin, end, available=drill_delay):
+        if begin is None or begin > horizon or available + drilling_time <= begin:
+            return available
+        return get_available_start(
+            *next(unavailability, (None, None)), end + drill_delay + 1
+        )
 
-    for begin, end in event_unavailability:
-        if begin > config["horizon"]:
-            break
-        if available_start + drilling_time <= begin:
-            return [available_start, available_start + drilling_time]
-        else:
-            available_start = end + drill_delay + 1
-    if available_start + drilling_time <= config["horizon"]:
-        return [available_start, available_start + drilling_time]
-    return None
+    if (
+        available_start := get_available_start(*next(unavailability, (None, None)))
+    ) + drilling_time <= horizon:
+        return available_start, available_start + drilling_time
 
 
-def _next_best_event(config, events):
+def _next_best_event(events, wells, well_slots):
     """
     Determines the "best" event to select based on some heuristics in order:
         - The well priority: highest first
         - The slot-well specificity: highest first
         - The event's starting date: lowest first
     """
-    slots_for_wells = {
-        well: [
-            slot for slot in config["slots"] if well in config["slots"][slot]["wells"]
-        ]
-        for well in config["wells"]
-    }
-
-    def slot_well_specificity(slot):
-        return min([len(slots) for slots in slots_for_wells.values() if slot in slots])
-
-    sorted_events = sorted(
-        events,
-        key=lambda event: (
-            -config["wells_priority"][event.well],
-            -slot_well_specificity(event.slot),
-            event.begin,
+    return next(
+        iter(
+            sorted(
+                events,
+                key=lambda event: (
+                    -wells[event.well]["priority"],
+                    -min(len(slots) for slots in well_slots if event.slot in slots),
+                    event.begin,
+                ),
+            )
         ),
+        None,
     )
-    return next(iter(sorted_events), None)
 
 
-def get_greedy_drill_plan(config, schedule):
+def _remove_event_from_config(event, wells, slots, rigs, **kwargs):
+    wells.pop(event.well)
+    slots.pop(event.slot)
+    rigs[event.rig].get("unavailability", []).append([event.begin, event.end])
+
+
+def get_greedy_drill_plan(schedule, wells, **config):
     """
     Recursive function that eventually returns a well order schedule.
 
@@ -100,18 +108,13 @@ def get_greedy_drill_plan(config, schedule):
     - Append it to the schedule process the event in its configuration.
     - Start the next iteration with updated config and schedule
     """
-    if not config["wells"]:
+    if not wells:
         return schedule
 
-    event = _get_next_event(config)
-    if event:
-        config["wells"].pop(event.well)
-        config["wells_priority"].pop(event.well)
-        config["slots"].pop(event.slot)
-        config["rigs"][event.rig]["unavailability"].append([event.begin, event.end])
-
+    if event := _get_next_event(wells, **config):
+        _remove_event_from_config(event, wells, **config)
         schedule.append(event)
     else:
-        config["wells"] = {}
+        wells = {}
 
-    return get_greedy_drill_plan(config, schedule)
+    return get_greedy_drill_plan(schedule, wells, **config)

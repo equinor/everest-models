@@ -6,12 +6,15 @@ from datetime import date, timedelta
 import configsuite
 
 from spinningjenny.jobs.fm_drill_planner import drill_planner_schema
-from spinningjenny.jobs.fm_drill_planner.drillmodel import FieldManager, FieldSchedule
+from spinningjenny.jobs.fm_drill_planner.drillmodel import FieldManager
 from spinningjenny.jobs.fm_drill_planner.greedy_drill_planner import (
     get_greedy_drill_plan,
 )
-from spinningjenny.jobs.fm_drill_planner.ormodel import run_optimization
-from spinningjenny.jobs.fm_drill_planner.parser import args_parser
+from spinningjenny.jobs.fm_drill_planner.ormodel import (
+    drill_constraint_model,
+    run_optimization,
+)
+from spinningjenny.jobs.fm_drill_planner.parser import build_argument_parser
 from spinningjenny.jobs.fm_drill_planner.utils import (
     add_missing_slots,
     append_data,
@@ -26,28 +29,18 @@ logger = logging.getLogger(__name__)
 def _log_detailed_result(schedule, start_date):
     logger.info("Scheduler result:")
     for task in schedule:
-        msg = (
-            "Well {} is drilled at rig {} through slot {}, "
-            "starting on date: {}, completed on date: {}"
-        )
         logger.info(
-            msg.format(
-                task.well,
-                task.rig,
-                task.slot,
-                start_date + timedelta(task.begin),
-                start_date + timedelta(task.end),
-            )
+            f"Well {task.well} is drilled at rig {task.rig} through slot {task.slot}, "
+            f"starting on date: {start_date + timedelta(task.begin)}, "
+            f"completed on date: {start_date + timedelta(task.end)}"
         )
 
 
 def _prepare_config(config, optimizer_values, input_values):
     config["wells_priority"] = optimizer_values
     config["wells"] = input_values
-
     # By default, if there are no slots defined in the rig entry, add slots corresponding to wells.
-    config = add_missing_slots(config)
-
+    add_missing_slots(config)
     return configsuite.ConfigSuite(
         config,
         drill_planner_schema.build(),
@@ -57,77 +50,94 @@ def _prepare_config(config, optimizer_values, input_values):
 
 
 def _compare_schedules(or_schedule, greedy_schedule, wells_priority):
+    """given a greedy- and or-schedule pick one of the two"""
+
+    # if one of the two of the schedule are not present return the other
     if not (or_schedule and greedy_schedule):
         return or_schedule or greedy_schedule
 
+    # if length of the schedule are not the same return the max of the two
     if len(or_schedule) != len(greedy_schedule):
         return max([or_schedule, greedy_schedule])
 
-    sorted_or_schedule = sorted(
-        or_schedule, key=lambda element: wells_priority[element.well], reverse=True
-    )
-    sorted_greedy_schedule = sorted(
-        greedy_schedule, key=lambda element: wells_priority[element.well], reverse=True
-    )
+    def sorted_schedule(schedule):
+        return sorted(
+            schedule,
+            key=lambda element: wells_priority[element.well],
+            reverse=True,
+        )
 
-    for or_element, greedy_element in zip(sorted_or_schedule, sorted_greedy_schedule):
-        if or_element.end < greedy_element.end:
-            return or_schedule
-        if greedy_element.end < or_element.end:
-            return greedy_schedule
-    return or_schedule
+    return next(
+        (
+            or_schedule if or_element.end < greedy_element.end else greedy_schedule
+            for or_element, greedy_element in zip(
+                sorted_schedule(or_schedule), sorted_schedule(greedy_schedule)
+            )
+            if or_element.end != greedy_element.end
+        ),
+        or_schedule,
+    )
 
 
 def _run_drill_planner(config, time_limit):
     config_dic = create_config_dictionary(config.snapshot)
-    drill_delays = [rig["delay"] for rig in config_dic["rigs"].values()]
-    field_manager = FieldManager.generate_from_snapshot(config.snapshot)
-
-    if any(drill_delays):
-        schedule = get_greedy_drill_plan(deepcopy(config_dic), [])
-    else:
-        greedy_schedule = get_greedy_drill_plan(deepcopy(config_dic), [])
-        or_tools_schedule = run_optimization(
-            field_manager,
-            best_guess_schedule=greedy_schedule,
-            max_solver_time=time_limit,
+    field_manager = FieldManager.generate_from_config(**config_dic)
+    greedy_schedule = get_greedy_drill_plan([], **deepcopy(config_dic))
+    field_schedule = (
+        greedy_schedule
+        if any(rig["delay"] for rig in config_dic["rigs"].values())
+        else _compare_schedules(
+            run_optimization(
+                drill_constraint_model=drill_constraint_model(
+                    field_manager.well_dict,
+                    field_manager.slot_dict,
+                    field_manager.rig_dict,
+                    field_manager.horizon,
+                    greedy_schedule,
+                ),
+                max_solver_time=time_limit,
+            ),
+            greedy_schedule,
+            config_dic["wells_priority"],
         )
+    )
 
-        schedule = _compare_schedules(
-            or_tools_schedule, greedy_schedule, config_dic["wells_priority"]
-        )
-
-    field_schedule = FieldSchedule(schedule)
     if not field_manager.valid_schedule(field_schedule):
         raise RuntimeError(
             "Schedule created was not valid according to the constraints"
         )
 
-    schedule = resolve_priorities(field_schedule.elements, config.snapshot)
-    return schedule
+    return resolve_priorities(field_schedule, config.snapshot)
 
 
 def main_entry_point(args=None):
-    args = args_parser.parse_args(args)
+    args_parser = build_argument_parser()
+    options = args_parser.parse_args(args)
 
     logger.info("Validating config file")
 
-    if args.ignore_end_date and "end_date" in args.config:
-        args.config["end_date"] = date(3000, 1, 1)
+    if options.ignore_end_date and "end_date" in options.config:
+        options.config["end_date"] = date(3000, 1, 1)
+
+    # for field, alias in (("optimizer", "well_priority"), ("input", "wells")):
+    #     if (value := getattr(options, field, None)) is not None:
+    #         setattr(options.config, alias or field, value)
 
     config = _prepare_config(
-        config=args.config, optimizer_values=args.optimizer, input_values=args.input
+        config=options.config,
+        optimizer_values=options.optimizer,
+        input_values=options.input,
     )
 
     if not config.valid:
         args_parser.error(
             "Invalid config file: {}\n{}".format(
-                args.config, "\n".join([err.msg for err in config.errors])
+                options.config, "\n".join([err.msg for err in config.errors])
             )
         )
 
     logger.info("Initializing drill planner")
-    schedule = _run_drill_planner(config=config, time_limit=args.time_limit)
+    schedule = _run_drill_planner(config=config, time_limit=options.time_limit)
 
     start_date = config.snapshot.start_date
     _log_detailed_result(schedule, start_date)
@@ -140,8 +150,8 @@ def main_entry_point(args=None):
         for elem in schedule
     }
 
-    result = append_data(input_values=args.input, schedule=schedule)
-    write_json_to_file(result, args.output)
+    result = append_data(input_values=options.input, schedule=schedule)
+    write_json_to_file(result, options.output)
 
 
 if __name__ == "__main__":

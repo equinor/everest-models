@@ -1,72 +1,76 @@
-from collections import namedtuple
 from itertools import combinations, product
+from typing import Iterable, NamedTuple, Tuple
+
+from spinningjenny.jobs.fm_drill_planner.utils import Event
 
 
-class Rig:
-    def __init__(self, name, unavailable_ranges, slot_wells):
+def get_named_item_from_iterable(name, iterable):
+    return next(filter(lambda x: x.name == name, iterable), None)
+
+
+class Base:
+    def __init__(self, name, unavailable_ranges):
         self.name = name
         self.unavailable_ranges = unavailable_ranges
-        self.slot_wells = slot_wells
 
     def available(self, day):
-        for r in self.unavailable_ranges:
-            if r.contains(day):
-                return False
-        return True
+        return not any(range_.contains(day) for range_ in self.unavailable_ranges)
+
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        return f"name={self.name}"
+
+    def __eq__(self, other):
+        if isinstance(other, str):
+            return self.name == other
+        return self.name == other.name
+
+    def __hash__(self):
+        return hash(self.name)
+
+
+class Rig(Base):
+    def __init__(self, name, unavailable_ranges, slot_wells):
+        self.slot_wells = slot_wells
+        super().__init__(name, unavailable_ranges)
 
     def can_drill(self, slot, well):
         return (slot, well) in self.slot_wells
 
-    def __repr__(self):
-        return str(self)
+    @property
+    def wells(self) -> Tuple[str, ...]:
+        return {well_name for _, well_name in self.slot_wells}
 
     def __str__(self):
-        return "Rig(name='{}', Slot_well pairs={}, unavailabilites={})".format(
-            self.name, len(self.slot_wells), len(self.unavailable_ranges)
-        )
+        return f"Rig({super().__str__()}, slot_wells={self.slot_wells})"
 
-    def __eq__(self, other):
-        if isinstance(other, str):
-            return self.name == other
-        return self.name == other.name
-
-    def __hash__(self):
-        return hash(self.name)
+    #         f"Rig(name='{self.name}', Slot_well pairs={len(self.slot_wells)}, "
+    #         f"unavailabilites={len(self.unavailable_ranges)})"
+    #     )
 
 
-class Slot:
+class Slot(Base):
     def __init__(self, name, unavailable_ranges, wells):
-        self.name = name
-        self.unavailable_ranges = unavailable_ranges
         self.wells = wells
-
-    def available(self, day):
-        for r in self.unavailable_ranges:
-            if r.contains(day):
-                return False
-        return True
+        super().__init__(name, unavailable_ranges)
 
     def has_well(self, well):
         return well in self.wells
 
-    def __repr__(self):
-        return str(self)
-
     def __str__(self):
-        return "Slot(name='{}', wells={}, unavailabilites={})".format(
-            self.name, len(self.wells), len(self.unavailable_ranges)
-        )
+        return f"Slot({super().__str__()}, wells={self.wells})"
 
-    def __eq__(self, other):
-        if isinstance(other, str):
-            return self.name == other
-        return self.name == other.name
-
-    def __hash__(self):
-        return hash(self.name)
+    #         f"Slot(name='{self.name}', wells={len(self.wells)}, "
+    #         f"unavailabilites={len(self.unavailable_ranges)})"
+    #     )
 
 
-Well = namedtuple("Well", ["name", "priority", "drill_time"])
+class Well(NamedTuple):
+    name: str
+    priority: int
+    drill_time: int
 
 
 class DayRange:
@@ -84,198 +88,168 @@ class DayRange:
         start_before = self.begin <= other.end
         return end_after and start_before
 
+    def overlaps_(self, begin, end):
+        return self.end >= begin and self.begin <= end
+
 
 class FieldManager:
     def __init__(self, rigs, slots, wells, horizon):
         self.wells = wells
+        self.well_dict = {well.name: well for well in wells}
         self.rigs = rigs
+        self.rig_dict = {rig.name: rig for rig in rigs}
         self.slots = slots
+        self.slot_dict = {slot.name: slot for slot in slots}
         self.horizon = horizon
 
-    @staticmethod
-    def generate_from_snapshot(config):
-        """
-        This function only exists to generate the necessary initialization elements
-        from a ConfigSuite snapshot, while having the FieldManager class as simple
-        as possible which helps a great deal when testing.
+    @classmethod
+    def generate_from_config(cls, rigs, slots, wells, horizon, **kwargs):
+        def get_ranges(unavailability=None):
+            if unavailability is None:
+                unavailability = []
+            return [DayRange(begin, end) for begin, end in unavailability]
 
-        field_manager = FieldManager.generate_from_snapshot(config)
-
-        """
-
-        def _create_dayranges(key):
-            # Should be refactored once ConfigSuite has default values
-            if key.unavailability is None:
-                return []
-
-            return [
-                DayRange(
-                    (period.start - config.start_date).days,
-                    (period.stop - config.start_date).days,
+        return cls(
+            rigs=[
+                Rig(
+                    name=name,
+                    unavailable_ranges=get_ranges(rig.get("unavailability")),
+                    slot_wells=list(product(rig["slots"], rig["wells"])),
                 )
-                for period in key.unavailability
-            ]
+                for name, rig in rigs.items()
+            ],
+            slots=[
+                Slot(
+                    name=name,
+                    unavailable_ranges=get_ranges(slot.get("unavailability")),
+                    wells=slot["wells"],
+                )
+                for name, slot in slots.items()
+            ],
+            wells=[Well(name=name, **well) for name, well in wells.items()],
+            horizon=horizon,
+        )
 
-        wells_priority = {k: v for k, v in config.wells_priority}
-
-        wells = [
-            Well(name=w.name, priority=wells_priority[w.name], drill_time=w.drill_time)
-            for w in config.wells
-        ]
-
-        slots = [
-            Slot(name=s.name, unavailable_ranges=_create_dayranges(s), wells=s.wells)
-            for s in config.slots
-        ]
-
-        rigs = [
-            Rig(
-                name=r.name,
-                unavailable_ranges=_create_dayranges(r),
-                slot_wells=list(product(r.slots, r.wells)),
-            )
-            for r in config.rigs
-        ]
-        horizon = (config.end_date - config.start_date).days
-
-        return FieldManager(rigs=rigs, slots=slots, wells=wells, horizon=horizon)
+    @classmethod
+    def set_schedule(cls, schedule):
+        cls._schedule = schedule
 
     def get_well(self, name):
-        return next((w for w in self.wells if w.name == name), None)
+        return self.well_dict.get(name)
 
     def get_rig(self, name):
-        return next((r for r in self.rigs if r.name == name), None)
+        return self.rig_dict.get(name)
 
     def get_slot(self, name):
-        return next((s for s in self.slots if s.name == name), None)
+        return self.slot_dict.get(name)
 
-    def within_horizon(self, schedule):
+    def valid_schedule(self, schedule: Iterable[Event]):
         return all(
-            [elem.begin >= 0 and elem.end <= self.horizon for elem in schedule.elements]
+            (
+                within_horizon(schedule, self.horizon),
+                uses_same_wells(schedule, self.well_dict),
+                uses_rigs_subset(schedule, self.rig_dict),
+                uses_slots_subset(schedule, self.slot_dict),
+                all_wells_drilled_once(schedule, self.wells),
+                all_drill_times_valid(schedule, self.well_dict),
+                no_rig_overlapping(schedule, self.rigs),
+                all_rigs_available(schedule, self.rigs),
+                all_slots_available(schedule, self.slots),
+                all_elements_drillable(schedule, self.slot_dict, self.rig_dict),
+                all_slots_atmost_once(schedule, self.slots),
+            )
         )
 
-    def uses_same_wells(self, schedule):
-        scheduled_wells = {self.get_well(w) for w in schedule.scheduled_wells}
-        return set(self.wells) == scheduled_wells
+    # def __repr__(self):
+    #     return str(self)
 
-    def uses_rigs_subset(self, schedule):
-        scheduled_rigs = {self.get_rig(r) for r in schedule.scheduled_rigs}
-        return scheduled_rigs.issubset(set(self.rigs))
-
-    def uses_slots_subset(self, schedule):
-        scheduled_slots = {self.get_slot(r) for r in schedule.scheduled_slots}
-        return scheduled_slots.issubset(set(self.slots))
-
-    def all_wells_drilled_once(self, schedule):
-        return all(
-            len(list(schedule.well_elements(well.name))) == 1 for well in self.wells
-        )
-
-    def all_slots_atmost_once(self, schedule):
-        return all(
-            len(list(schedule.slot_elements(slot.name))) <= 1 for slot in self.slots
-        )
-
-    def all_drill_times_valid(self, schedule):
-        def _valid_time(elem):
-            well = self.get_well(elem.well)
-            if well:
-                return elem.end - elem.begin == well.drill_time
-            return False
-
-        return all(_valid_time(elem) for elem in schedule.elements)
-
-    def all_rigs_available(self, schedule):
-        for rig in self.rigs:
-            for elem in schedule.rig_elements(rig):
-                period = DayRange(elem.begin, elem.end)
-                if any(
-                    unavailable.overlaps(period)
-                    for unavailable in rig.unavailable_ranges
-                ):
-                    return False
-        return True
-
-    def all_slots_available(self, schedule):
-        for slot in self.slots:
-            for elem in schedule.slot_elements(slot):
-                period = DayRange(elem.begin, elem.end)
-                if any(
-                    unavailable.overlaps(period)
-                    for unavailable in slot.unavailable_ranges
-                ):
-                    return False
-        return True
-
-    def all_elements_drillable(self, schedule):
-        for elem in schedule.elements:
-            rig = self.get_rig(elem.rig)
-            slot = self.get_slot(elem.slot)
-
-            if not all([rig, slot]):
-                return False
-
-            if not rig.can_drill(elem.slot, elem.well) or not slot.has_well(elem.well):
-                return False
-        return True
-
-    def no_rig_overlapping(self, schedule):
-        for rig in self.rigs:
-            elements = schedule.rig_elements(rig)
-            for elem1, elem2 in combinations(elements, 2):
-                period1 = DayRange(elem1.begin, elem1.end)
-                period2 = DayRange(elem2.begin, elem2.end)
-                if period1.overlaps(period2):
-                    return False
-        return True
-
-    def valid_schedule(self, schedule):
-        return all(
-            [
-                self.within_horizon(schedule),
-                self.uses_same_wells(schedule),
-                self.uses_rigs_subset(schedule),
-                self.uses_slots_subset(schedule),
-                self.all_wells_drilled_once(schedule),
-                self.all_drill_times_valid(schedule),
-                self.all_rigs_available(schedule),
-                self.all_slots_available(schedule),
-                self.all_elements_drillable(schedule),
-                self.no_rig_overlapping(schedule),
-                self.all_slots_atmost_once(schedule),
-            ]
-        )
-
-    def __repr__(self):
-        return str(self)
-
-    def __str__(self):
-        return "RigModel({} Rigs, {} Slots, {} wells)".format(
-            len(self.rigs), len(self.slots), len(self.wells)
-        )
+    # def __str__(self):
+    #     return (
+    #         f"RigModel({len(self.rigs)} Rigs, {len(self.slots)} Slots, "
+    #         f"{len(self.wells)} wells)"
+    #     )
 
 
-class FieldSchedule:
-    def __init__(self, elements):
-        self.elements = elements
+def within_horizon(schedule: Iterable[Event], horizon: int):
+    return all(event.begin >= 0 and event.end <= horizon for event in schedule)
 
-    @property
-    def scheduled_rigs(self):
-        return list(set(x.rig for x in self.elements))
 
-    @property
-    def scheduled_slots(self):
-        return list(set(x.slot for x in self.elements))
+def uses_same_wells(schedule: Iterable[Event], well_dict: dict):
+    return set(well_dict) == {event.well for event in schedule}
 
-    @property
-    def scheduled_wells(self):
-        return list(set(x.well for x in self.elements))
 
-    def rig_elements(self, rig):
-        return (x for x in self.elements if x.rig == rig)
+def uses_rigs_subset(schedule: Iterable[Event], rig_dict: dict):
+    return {event.rig for event in schedule}.issubset(rig_dict)
 
-    def slot_elements(self, slot):
-        return (x for x in self.elements if x.slot == slot)
 
-    def well_elements(self, well):
-        return (x for x in self.elements if x.well == well)
+def uses_slots_subset(schedule: Iterable[Event], slot_dict: dict):
+    return {event.slot for event in schedule}.issubset(slot_dict)
+
+
+def all_wells_drilled_once(schedule: Iterable[Event], wells: Iterable):
+    return all(
+        sum(element.well == well.name for element in schedule) == 1 for well in wells
+    )
+
+
+def all_slots_atmost_once(schedule: Iterable[Event], slots):
+    return all(
+        sum(element.slot == slot.name for element in schedule) <= 1 for slot in slots
+    )
+
+
+def all_drill_times_valid(schedule: Iterable[Event], well_dict):
+    def _valid_time(elem):
+        return (
+            well := well_dict.get(elem.well)
+        ) and elem.end - elem.begin == well.drill_time
+
+    return all(_valid_time(elem) for elem in schedule)
+
+
+def _is_available(begin, end, unavailable_ranges):
+    return any(unavailable.overlaps_(begin, end) for unavailable in unavailable_ranges)
+
+
+def all_rigs_available(schedule: Iterable[Event], rigs):
+    return not any(
+        _is_available(element.begin, element.end, rig.unavailable_ranges)
+        for element in schedule
+        for rig in rigs
+        if element.rig == rig.name
+    )
+
+
+def all_slots_available(schedule: Iterable[Event], slots):
+    return not any(
+        _is_available(event.begin, event.end, slot.unavailable_ranges)
+        for event in schedule
+        for slot in slots
+        if event.slot == slot.name
+    )
+
+
+def _is_drillable(rig, slot, event):
+    return (
+        all([rig, slot])
+        and rig.can_drill(event.slot, event.well)
+        and slot.has_well(event.well)
+    )
+
+
+def all_elements_drillable(schedule: Iterable[Event], slot_dict, rig_dict):
+    return all(
+        _is_drillable(rig_dict.get(elem.rig), slot_dict.get(elem.slot), elem)
+        for elem in schedule
+    )
+
+
+def _is_rig_overlapping(rig, schedule: Iterable[Event]):
+    return any(
+        DayRange(elem1.begin, elem1.end).overlaps_(elem2.begin, elem2.end)
+        for elem1, elem2 in combinations(filter(lambda x: x.rig == rig, schedule), 2)
+    )
+
+
+def no_rig_overlapping(schedule, rigs):
+    return not any(_is_rig_overlapping(rig, schedule) for rig in rigs)
