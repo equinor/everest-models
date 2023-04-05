@@ -4,6 +4,7 @@ import pytest
 from sub_testdata import DRILL_PLANNER as TEST_DATA
 
 from spinningjenny.jobs.fm_drill_planner.cli import main_entry_point
+from spinningjenny.jobs.fm_drill_planner.manager import ScheduleError
 
 OUTPUT_FILENAME = "out.json"
 
@@ -22,7 +23,7 @@ def drill_planner_arguments():
     ]
 
 
-def test_main_entry_point(drill_planner_arguments, copy_testdata_tmpdir):
+def test_drill_planner_main_entry_point(drill_planner_arguments, copy_testdata_tmpdir):
     copy_testdata_tmpdir(TEST_DATA)
     main_entry_point(drill_planner_arguments)
 
@@ -32,7 +33,9 @@ def test_main_entry_point(drill_planner_arguments, copy_testdata_tmpdir):
     )
 
 
-def test_main_entry_point_partial_wells(drill_planner_arguments, copy_testdata_tmpdir):
+def test_drill_planner_main_entry_point_partial_wells(
+    drill_planner_arguments, copy_testdata_tmpdir
+):
     copy_testdata_tmpdir(TEST_DATA)
     main_entry_point(
         [
@@ -47,7 +50,9 @@ def test_main_entry_point_partial_wells(drill_planner_arguments, copy_testdata_t
     )
 
 
-def test_main_entry_point_no_slots(drill_planner_arguments, copy_testdata_tmpdir):
+def test_drill_planner_main_entry_point_no_slots(
+    drill_planner_arguments, copy_testdata_tmpdir
+):
     copy_testdata_tmpdir(TEST_DATA)
     main_entry_point([*drill_planner_arguments[:-1], "config_no_slots.yml"])
     main_entry_point(
@@ -66,7 +71,7 @@ def test_main_entry_point_no_slots(drill_planner_arguments, copy_testdata_tmpdir
 
 
 @pytest.mark.parametrize("config_argument", ("config.yml", "config_early_end_date.yml"))
-def test_main_entry_point_ignore_end_date_no_effect(
+def test_drill_planner_main_entry_point_ignore_end_date_no_effect(
     config_argument, drill_planner_arguments, copy_testdata_tmpdir
 ):
     copy_testdata_tmpdir(TEST_DATA)
@@ -80,9 +85,17 @@ def test_main_entry_point_ignore_end_date_no_effect(
     )
 
 
-def test_main_entry_point_ignore_end_date(
+def test_drill_planner_main_entry_point_ignore_end_date(
     drill_planner_arguments, copy_testdata_tmpdir
 ):
     copy_testdata_tmpdir(TEST_DATA)
-    with pytest.raises(AttributeError, match="is well drilled once"):
+    with pytest.raises(ScheduleError, match="is well drilled once"):
         main_entry_point([*drill_planner_arguments[:-1], "config_early_end_date.yml"])
+
+
+def test_drill_planner_main_entry_point_lint(
+    drill_planner_arguments, copy_testdata_tmpdir
+):
+    copy_testdata_tmpdir(TEST_DATA)
+    with pytest.raises(SystemExit) as e:
+        main_entry_point([*drill_planner_arguments, "--lint"])

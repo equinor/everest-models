@@ -1,136 +1,97 @@
-import functools
+import string
 
 from hypothesis import strategies
 
-from spinningjenny.jobs.fm_drill_planner.drillmodel import (
+# from spinningjenny.jobs.fm_drill_planner.manager import get_field_manager
+from spinningjenny.jobs.fm_drill_planner.data import (
     DayRange,
-    FieldManager,
+    Event,
     Rig,
     Slot,
-    Well,
+    WellPriority,
 )
-from spinningjenny.jobs.fm_drill_planner.ormodel import DrillConstraints
-from spinningjenny.jobs.fm_drill_planner.utils import Event
+from spinningjenny.jobs.fm_drill_planner.planner.optimized import DrillConstraints
 
-SAMPLE_RANGE = 10
 MAX_SIZE = 3
+MIN_SIZE = 1
 
 begin_day = strategies.integers(min_value=0, max_value=50)
 end_day = strategies.integers(min_value=50, max_value=100)
 
-unavailable_days = strategies.lists(
+day_ranges = strategies.lists(
     strategies.builds(DayRange, begin_day, end_day),
     min_size=0,
     max_size=10,
     unique=True,
 )
 
-rig_name_samples, slot_name_samples, well_name_samples = (
-    strategies.sampled_from([f"{prefix}{postfix}" for postfix in range(SAMPLE_RANGE)])
-    for prefix in "RSW"
-)
 
-event = strategies.builds(
-    Event,
-    rig=rig_name_samples,
-    slot=slot_name_samples,
-    well=well_name_samples,
-    begin=begin_day,
-    end=end_day,
-)
-
-schedule = strategies.lists(event, unique_by=lambda x: (x.well, x.rig, x.slot))
-
-
-def _parameter_strategies(max_size=3):
-    return (
-        strategies.builds(
-            Rig,
-            name=rig_name_samples,
-            unavailable_ranges=unavailable_days,
-            slot_wells=strategies.lists(
-                strategies.tuples(
-                    well_name_samples,
-                    slot_name_samples,
+@strategies.composite
+def constraints_schedule(draw):
+    wells = draw(
+        strategies.dictionaries(
+            keys=strategies.text(string.ascii_letters, max_size=8, min_size=6),
+            values=strategies.builds(
+                WellPriority,
+                priority=strategies.integers(min_value=0, max_value=1000),
+                drill_time=strategies.integers(min_value=1, max_value=15),
+            ),
+            max_size=MAX_SIZE,
+            min_size=MAX_SIZE,
+        )
+    )
+    well_names = tuple(wells)
+    slots = draw(
+        strategies.dictionaries(
+            keys=strategies.text(string.ascii_letters, max_size=8, min_size=6),
+            values=strategies.builds(
+                Slot,
+                wells=strategies.lists(
+                    strategies.sampled_from(well_names), max_size=3, min_size=1
                 ),
-                min_size=1,
-                max_size=max_size,
-                unique=True,
+                day_ranges=day_ranges,
             ),
-        ),
-        strategies.builds(
-            Slot,
-            name=slot_name_samples,
-            unavailable_ranges=unavailable_days,
-            wells=strategies.lists(
-                well_name_samples, min_size=1, max_size=max_size, unique=True
-            ),
-        ),
-        strategies.builds(
-            Well,
-            name=well_name_samples,
-            priority=strategies.integers(min_value=0, max_value=1000),
-            drill_time=strategies.integers(min_value=1, max_value=15),
-        ),
-    )
-
-
-list_strategy = functools.partial(
-    strategies.lists,
-    min_size=1,
-    unique_by=lambda x: x.name,
-    max_size=MAX_SIZE,
-)
-
-
-@strategies.composite
-def field_manager(draw):
-    rig, slot, well = _parameter_strategies()
-    return draw(
-        strategies.builds(
-            FieldManager,
-            rigs=list_strategy(elements=rig),
-            slots=list_strategy(elements=slot),
-            wells=list_strategy(elements=well),
-            horizon=strategies.just(100),
+            min_size=MIN_SIZE,
+            max_size=MAX_SIZE,
         )
     )
-
-
-def create_event(rig, slot, well, begin_day):
-    return Event(rig, slot, well.name, begin_day, begin_day + well.drill_time)
-
-
-def create_drill_constraints(rigs, slots, wells, horizon):
-    return DrillConstraints(
-        wells={well.name: well for well in wells},
-        slots={slot.name: slot for slot in slots},
-        rigs={rig.name: rig for rig in rigs},
-        horizon=horizon,
-    )
-
-
-@strategies.composite
-def constraints_assignment_pair(draw):
-    rig, slot, well = _parameter_strategies()
-    constraints = draw(
-        strategies.builds(
-            create_drill_constraints,
-            wells=list_strategy(elements=well),
-            slots=list_strategy(elements=slot),
-            rigs=list_strategy(elements=rig),
-            horizon=strategies.just(100),
+    slot_names = tuple(slots)
+    rigs = draw(
+        strategies.dictionaries(
+            keys=strategies.text(string.ascii_letters, max_size=8, min_size=6),
+            values=strategies.builds(
+                Rig,
+                wells=strategies.lists(
+                    strategies.sampled_from(slot_names), max_size=3, min_size=1
+                ),
+                slots=strategies.lists(
+                    strategies.sampled_from(slot_names), max_size=3, min_size=1
+                ),
+                day_ranges=day_ranges,
+            ),
+            min_size=MIN_SIZE,
+            max_size=MAX_SIZE,
         )
     )
-    schedule = strategies.lists(
-        strategies.builds(
-            create_event,
-            rig=strategies.sampled_from(list(constraints.rigs)),
-            slot=strategies.sampled_from(list(constraints.slots)),
-            well=strategies.sampled_from(list(constraints.wells.values())),
-            begin_day=begin_day,
-        ),
-        unique_by=(lambda x: (x.rig, x.slot, x.well)),
-    )
+    rig_names = tuple(rigs)
 
-    return constraints, draw(schedule)
+    def create_event(rig, slot, well, begin_day):
+        _well = wells[well]
+        return Event(rig, slot, well, begin_day, begin_day + _well.drill_time)
+
+    schedule = draw(
+        strategies.lists(
+            strategies.builds(
+                create_event,
+                rig=strategies.sampled_from(rig_names),
+                slot=strategies.sampled_from(slot_names),
+                well=strategies.sampled_from(well_names),
+                begin_day=begin_day,
+            ),
+            unique_by=(lambda x: (x.rig, x.slot, x.well)),
+        )
+    )
+    return (
+        DrillConstraints(wells, rigs, slots, horizon=draw(strategies.just(100))),
+        schedule,
+    )

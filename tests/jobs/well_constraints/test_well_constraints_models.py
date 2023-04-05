@@ -191,4 +191,4 @@ def test_constraint_tolerance_model_optimum_value(optimizer_value, expected):
 
 def test_constraint_tolerance_model_optimum_value_none():
     assert Tolerance.parse_obj({"value": 314}).optimum_value(None) == 314
-    assert Tolerance().optimum_value(None) == None
+    assert Tolerance().optimum_value(None) is None

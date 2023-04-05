@@ -29,11 +29,11 @@
     "name": "w3",
     "ops": [
       {
-        "date": "2000-03-30",
+        "date": "2000-04-14",
         "opname": "open"
       }
     ],
-    "readydate": "2000-03-30"
+    "readydate": "2000-04-14"
   },
   {
     "completion_date": "2000-01-24",
@@ -41,11 +41,11 @@
     "name": "w4",
     "ops": [
       {
-        "date": "2000-01-24",
+        "date": "2000-04-14",
         "opname": "open"
       }
     ],
-    "readydate": "2000-01-24"
+    "readydate": "2000-04-14"
   },
   {
     "completion_date": "2000-05-06",

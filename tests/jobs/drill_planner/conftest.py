@@ -1,15 +1,11 @@
-import copy
 import datetime
-import functools
-from copy import deepcopy
 
 import pytest
-from configsuite import ConfigSuite
+from sub_testdata import DRILL_PLANNER as TEST_DATA
 
-from spinningjenny.jobs.fm_drill_planner import drill_planner_schema
-from spinningjenny.jobs.fm_drill_planner.drillmodel import FieldManager
-from spinningjenny.jobs.fm_drill_planner.ormodel import drill_constraint_model
-from spinningjenny.jobs.fm_drill_planner.utils import Event
+from spinningjenny.jobs.fm_drill_planner.manager.builder import FieldManagerBuilder
+from spinningjenny.jobs.fm_drill_planner.models import Wells
+from spinningjenny.jobs.shared.validators import valid_input_file
 
 WELL_NAMES, SLOT_NAMES = ["W1", "W2"], ["S1", "S2"]
 START_DATE, END_DATE = datetime.date(2000, 1, 1), datetime.date(2001, 1, 1)
@@ -24,23 +20,44 @@ MIN_CONFIG = {
     "horizon": (END_DATE - START_DATE).days,
 }
 
-config_suite = functools.partial(
-    ConfigSuite,
-    schema=drill_planner_schema.build(),
-    extract_validation_context=drill_planner_schema.extract_validation_context,
-    deduce_required=True,
-)
+
+@pytest.fixture(scope="module")
+def builder() -> FieldManagerBuilder:
+    return FieldManagerBuilder()
+
+
+@pytest.fixture(scope="module")
+def small_wells_and_priority():
+    return (
+        Wells.parse_obj(
+            [{"name": "W1", "drill_time": 5}, {"name": "W2", "drill_time": 10}]
+        ),
+        WELL_PRIORITIES,
+    )
+
+
+@pytest.fixture(scope="module")
+def wells_and_priority(path_test_data):
+    return (
+        Wells.parse_obj(valid_input_file(path_test_data / TEST_DATA / "wells.json")),
+        {"w1": 5, "w2": 4, "w3": 3, "w4": 2, "w5": 1},
+    )
+
+
+@pytest.fixture(scope="module")
+def drill_planner_config(path_test_data):
+    return valid_input_file(path_test_data / TEST_DATA / "config.yml")
 
 
 @pytest.fixture(scope="session")
-def simple_setup_config():
+def simple_config():
     return {
         **MIN_CONFIG,
         "wells": WELLS,
         "rigs": {
             "A": {
                 "wells": WELL_NAMES,
-                "unavailability": [],
+                "day_ranges": [],
                 "delay": 0,
                 "slots": SLOT_NAMES,
             }
@@ -48,23 +65,22 @@ def simple_setup_config():
         "slots": {
             slot: {
                 "wells": WELL_NAMES,
-                "unavailability": [],
+                "day_ranges": [],
             }
             for slot in SLOT_NAMES
         },
-        "wells_priority": WELL_PRIORITIES,
     }
 
 
 @pytest.fixture(scope="session")
-def small_setup_incl_unavailability_config():
+def small_config_include_day_ranges():
     return {
         **MIN_CONFIG,
         "rigs": {
             "A": {
                 "wells": WELL_NAMES,
                 "slots": SLOT_NAMES,
-                "unavailability": [
+                "day_ranges": [
                     (
                         (datetime.date(2000, 1, 3) - START_DATE).days,
                         (datetime.date(2000, 1, 5) - START_DATE).days,
@@ -75,7 +91,7 @@ def small_setup_incl_unavailability_config():
             "B": {
                 "wells": WELL_NAMES,
                 "slots": SLOT_NAMES,
-                "unavailability": [
+                "day_ranges": [
                     (
                         (datetime.date(2000, 2, 4) - START_DATE).days,
                         (datetime.date(2000, 2, 7) - START_DATE).days,
@@ -87,11 +103,11 @@ def small_setup_incl_unavailability_config():
         "slots": {
             "S1": {
                 "wells": WELL_NAMES,
-                "unavailability": [],
+                "day_ranges": [],
             },
             "S2": {
                 "wells": WELL_NAMES,
-                "unavailability": [
+                "day_ranges": [
                     (
                         (datetime.date(2000, 2, 4) - START_DATE).days,
                         (datetime.date(2000, 2, 7) - START_DATE).days,
@@ -100,12 +116,11 @@ def small_setup_incl_unavailability_config():
             },
         },
         "wells": WELLS,
-        "wells_priority": WELL_PRIORITIES,
     }
 
 
 @pytest.fixture(scope="session")
-def advanced_setup():
+def advanced_config():
     """
     Five wells should be drilled, there are three available rigs and a total of five slots
 
@@ -136,34 +151,33 @@ def advanced_setup():
                 "wells": wells[:3],
                 "slots": slots,
                 "delay": 0,
-                "unavailability": [],
+                "day_ranges": [],
             },
             "B": {
                 "wells": wells[:4],
                 "slots": slots,
                 "delay": 0,
-                "unavailability": [],
+                "day_ranges": [],
             },
             "C": {
                 "wells": wells[2:],
                 "slots": slots,
                 "delay": 0,
-                "unavailability": [],
+                "day_ranges": [],
             },
         },
         "slots": {
-            "S1": {"wells": wells[:4], "unavailability": []},
-            "S2": {"wells": wells[:4], "unavailability": []},
-            "S3": {"wells": wells, "unavailability": []},
-            "S4": {"wells": wells[:4], "unavailability": []},
-            "S5": {"wells": wells[:4], "unavailability": []},
+            "S1": {"wells": wells[:4], "day_ranges": []},
+            "S2": {"wells": wells[:4], "day_ranges": []},
+            "S3": {"wells": wells, "day_ranges": []},
+            "S4": {"wells": wells[:4], "day_ranges": []},
+            "S5": {"wells": wells[:4], "day_ranges": []},
         },
-        "wells_priority": well_priority,
     }
 
 
 @pytest.fixture(scope="session")
-def large_setup():
+def large_config():
     end_date = datetime.date(2025, 1, 1)
     wells = [f"W{i}" for i in range(1, 30)]
     slots = [f"S{i}" for i in range(1, 30)]
@@ -175,177 +189,20 @@ def large_setup():
         "end_date": end_date,
         "horizon": (end_date - START_DATE).days,
         "wells": {
-            w: {
+            well: {
                 "drill_time": drill_times[i % len(drill_times)],
-                "priority": wells_priority[w],
+                "priority": wells_priority[well],
             }
-            for i, w in enumerate(wells)
+            for i, well in enumerate(wells)
         },
         "rigs": {
             rig: {
                 "wells": wells,
                 "slots": slots,
                 "delay": 0,
-                "unavailability": [],
+                "day_ranges": [],
             }
             for rig in rigs
         },
-        "slots": {slot: {"wells": wells, "unavailability": []} for slot in slots},
-        "wells_priority": wells_priority,
+        "slots": {slot: {"wells": wells, "day_ranges": []} for slot in slots},
     }
-
-
-@pytest.fixture(scope="session")
-def delayed_advanced_setup(advanced_setup):
-    config = deepcopy(advanced_setup)
-
-    # days after start each rig is unavailable
-    unavailable = {"A": (0, 35), "B": (25, 43), "C": (32, 54)}
-
-    for name, rig in config["rigs"].items():
-        rig["unavailability"] = [(unavailable[name][0], unavailable[name][1])]
-
-    # days after start each slot is unavailable
-    unavailable = {
-        "S1": (0, 10),
-        "S2": (7, 14),
-        "S3": (34, 43),  # drilling W5 must now be delayed
-        "S4": (6, 18),
-        "S5": (15, 18),
-    }
-
-    for name, slot in config["slots"].items():
-        slot["unavailability"] = [(unavailable[name][0], unavailable[name][1])]
-
-    return config
-
-
-@pytest.fixture
-def advanced_field_manager(advanced_setup):
-    return FieldManager.generate_from_config(**advanced_setup)
-
-
-@pytest.fixture
-def advanced_drill_constraints_model(advanced_field_manager):
-    return drill_constraint_model(
-        advanced_field_manager.well_dict,
-        advanced_field_manager.slot_dict,
-        advanced_field_manager.rig_dict,
-        advanced_field_manager.horizon,
-    )
-
-
-@pytest.fixture
-def simple_field_manager(simple_setup_config):
-    return FieldManager.generate_from_config(**simple_setup_config)
-
-
-@pytest.fixture
-def simple_drill_constraints_model(simple_field_manager):
-    return drill_constraint_model(
-        simple_field_manager.well_dict,
-        simple_field_manager.slot_dict,
-        simple_field_manager.rig_dict,
-        simple_field_manager.horizon,
-    )
-
-
-@pytest.fixture
-def large_field_manager(large_setup):
-    return FieldManager.generate_from_config(**large_setup)
-
-
-@pytest.fixture
-def large_drill_constraints_model(large_field_manager):
-    return drill_constraint_model(
-        large_field_manager.well_dict,
-        large_field_manager.slot_dict,
-        large_field_manager.rig_dict,
-        large_field_manager.horizon,
-    )
-
-
-@pytest.fixture
-def delayed_field_manager(delayed_advanced_setup):
-    return FieldManager.generate_from_config(**delayed_advanced_setup)
-
-
-@pytest.fixture
-def delayed_drill_constraints_model(delayed_field_manager):
-    return drill_constraint_model(
-        delayed_field_manager.well_dict,
-        delayed_field_manager.slot_dict,
-        delayed_field_manager.rig_dict,
-        delayed_field_manager.horizon,
-    )
-
-
-@pytest.fixture(scope="module")
-def simple_config():
-    wells = ["W1", "W2"]
-    slots = ["S1", "S2"]
-    return {
-        "start_date": datetime.date(2000, 1, 1),
-        "end_date": datetime.date(2001, 1, 1),
-        "wells": [{"name": "W1", "drill_time": 5}, {"name": "W2", "drill_time": 10}],
-        "rigs": [{"name": "A", "wells": wells, "slots": slots}],
-        "slots": [{"name": slot, "wells": wells} for slot in slots],
-        "wells_priority": {"W1": 1, "W2": 0.5},
-    }
-
-
-@pytest.fixture(scope="module")
-def config_unavailable(simple_config):
-    config = copy.deepcopy(simple_config)
-    wells = [well["name"] for well in config["wells"]]
-    start = datetime.date(2000, 2, 4)
-    stop = datetime.date(2000, 2, 7)
-    config["rigs"][0]["unavailability"] = [
-        {
-            "start": datetime.date(2000, 1, 3),
-            "stop": datetime.date(2000, 1, 5),
-        }
-    ]
-    config["rigs"].append(
-        {
-            "name": "B",
-            "wells": wells,
-            "slots": [slot["name"] for slot in simple_config["slots"]],
-            "unavailability": [
-                {
-                    "start": start,
-                    "stop": stop,
-                }
-            ],
-        }
-    )
-    config["slots"][1]["unavailability"] = [
-        {
-            "start": start,
-            "stop": stop,
-        }
-    ]
-    return config
-
-
-@pytest.fixture(scope="module")
-def config_snapshot_unavailable(config_unavailable):
-    return config_suite(config_unavailable).snapshot
-
-
-@pytest.fixture(scope="module")
-def config_snapshot(simple_config):
-    return config_suite(simple_config).snapshot
-
-
-@pytest.fixture(scope="module")
-def simple_config_wells(config_snapshot):
-    return {well.name: well for well in config_snapshot.wells}
-
-
-@pytest.fixture(scope="module")
-def rig_schedule():
-    return [
-        Event(rig="A", slot="S1", well="W1", begin=0, end=5),
-        Event(rig="A", slot="S2", well="W2", begin=6, end=16),
-    ]

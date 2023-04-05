@@ -1,12 +1,12 @@
 import functools
 import itertools
 import logging
-from typing import Dict, Iterable, NamedTuple, Set, Tuple
+from typing import Dict, Iterable, NamedTuple, Tuple
 
 from ortools.sat.python import cp_model
 
-from spinningjenny.jobs.fm_drill_planner.drillmodel import Well
-from spinningjenny.jobs.fm_drill_planner.utils import Event
+from spinningjenny.jobs.fm_drill_planner.data import Event, Rig, Slot, WellPriority
+from spinningjenny.jobs.fm_drill_planner.data.validators import can_be_drilled
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,14 @@ def _well_costs(wells: Iterable[str]) -> Dict[str, int]:
 
 class DrillConstraints(cp_model.CpModel):
     def __init__(
-        self, wells, rigs, slots, horizon, best_guess_schedule=None, *args, **kwargs
+        self,
+        wells: Dict[str, WellPriority],
+        rigs: Dict[str, Rig],
+        slots: Dict[str, Slot],
+        horizon: int,
+        best_guess_schedule: Iterable[Event] = None,
+        *args,
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.wells = wells
@@ -40,7 +47,7 @@ class DrillConstraints(cp_model.CpModel):
         self.best_guess_schedule = best_guess_schedule
         self.tasks = self.create_tasks()
         self.well_cost = _well_costs(
-            key for key, _ in sorted(wells.items(), key=lambda item: item[1].priority)
+            key for key, _ in sorted(wells.items(), key=lambda well: well[1].priority)
         )
         new_int_var = functools.partial(
             self.NewIntVar,
@@ -53,7 +60,7 @@ class DrillConstraints(cp_model.CpModel):
         self.objective = new_int_var("total_cost")
         self.single_wells_at_rig = self.create_single_rig_wells()
 
-    def create_single_rig_wells(self) -> Dict[str, Set[Well]]:
+    def create_single_rig_wells(self) -> Dict[str, Tuple[str, ...]]:
         """
         Sets up the self.single_rig_tasks property.
         for each rig, self.single_rig_tasks[rig] is the list of
@@ -61,7 +68,7 @@ class DrillConstraints(cp_model.CpModel):
         """
 
         return {
-            name: (well_names if len(well_names := rig.wells) == 1 else {})
+            name: (well_names if len(well_names := rig.wells) == 1 else tuple())
             for name, rig in self.rigs.items()
         }
 
@@ -133,7 +140,7 @@ class DrillConstraints(cp_model.CpModel):
         for key, value in items:
             unavailable_intervals = [
                 self._unavailable_interval(key, r.begin, r.end)
-                for r in value.unavailable_ranges
+                for r in value.day_ranges
             ]
 
             for task in tasks(key):
@@ -167,10 +174,8 @@ class DrillConstraints(cp_model.CpModel):
         Adds constraint enforcing that the well is drilled at
         a valid slot/rig combination
         """
-        for (well_name, rig_name, slot_name), task in self.tasks.items():
-            if not self.rigs[rig_name].can_drill(
-                slot_name, well_name
-            ) or not self.slots[slot_name].has_well(well_name):
+        for key, task in self.tasks.items():
+            if not can_be_drilled(*key, self.rigs, self.slots):
                 self.Add(task.presence == 0)
 
     def apply_constraints(self):
@@ -243,10 +248,10 @@ class DrillConstraints(cp_model.CpModel):
 
 
 class SolutionCallback(cp_model.CpSolverSolutionCallback):
-    def __init__(self, limit):
+    def __init__(self):
         cp_model.CpSolverSolutionCallback.__init__(self)
         self.__solution_count = 0
-        self.__solution_limit = limit
+        self.__solution_limit = None
 
     def on_solution_callback(self):
         self.__solution_count += 1
@@ -279,18 +284,32 @@ def drill_constraint_model(wells, slots, rigs, horizon, best_guess_schedule=None
     return model
 
 
+def create_schedule_elements(tasks, solution):
+    return [
+        Event(
+            rig=rig_name,
+            slot=slot_name,
+            well=well_name,
+            begin=solution.Value(task.begin),
+            end=solution.Value(task.end) - 1,
+        )
+        for (well_name, rig_name, slot_name), task in tasks.items()
+        if solution.Value(task.presence)
+    ]
+
+
 def run_optimization(
     drill_constraint_model,
-    max_solver_time=3600,
+    max_time_seconds=3600,
 ):
     solver = cp_model.CpSolver()
-    solver.parameters.max_time_in_seconds = max_solver_time
-    logger.debug("Solver set with maximum solve time of %f seconds", max_solver_time)
+    solver.parameters.max_time_in_seconds = max_time_seconds
+    logger.debug("Solver set with maximum solve time of %f seconds", max_time_seconds)
 
     logger.info("Model statistics: %s", drill_constraint_model.ModelStats())
     logger.info("Optimization solver starting..")
 
-    solution_printer = SolutionCallback(None)
+    solution_printer = SolutionCallback()
     status = solver.Solve(drill_constraint_model, solution_callback=solution_printer)
 
     logger.debug("Solver completed with status: %s", solver.StatusName(status))
@@ -310,17 +329,3 @@ def run_optimization(
         if status == cp_model.OPTIMAL
         else []
     )
-
-
-def create_schedule_elements(tasks, solution):
-    return [
-        Event(
-            rig=rig_name,
-            slot=slot_name,
-            well=well_name,
-            begin=solution.Value(task.begin),
-            end=solution.Value(task.end) - 1,
-        )
-        for (well_name, rig_name, slot_name), task in tasks.items()
-        if solution.Value(task.presence)
-    ]
