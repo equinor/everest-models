@@ -25,24 +25,24 @@ def test_is_writable_valid(copy_testdata_tmpdir):
     copy_testdata_tmpdir()
     mock_parser = MockParser()
 
-    _ = is_writable("non_existing_valid_filename", mock_parser)
+    is_writable("non_existing_valid_filename", mock_parser)
     assert mock_parser.get_error() is None
 
     with open("existing_file", "a") as _:
         pass
 
-    _ = is_writable("existing_file", mock_parser)
+    is_writable("existing_file", mock_parser)
     assert mock_parser.get_error() is None
 
     os.mkdir("existing_dir")
 
-    _ = is_writable("existing_dir/valid_filename", mock_parser)
+    is_writable("existing_dir/valid_filename", mock_parser)
     assert mock_parser.get_error() is None
 
     with open("existing_dir/existing_file", "a") as _:
         pass
 
-    _ = is_writable("existing_dir/existing_file", mock_parser)
+    is_writable("existing_dir/existing_file", mock_parser)
     assert mock_parser.get_error() is None
 
 
@@ -133,19 +133,19 @@ def test_valid_input_file_error(path, func, match, switch_cwd_tmp_path):
         valid_input_file(path)
 
 
-class TestModel(BaseModel):
+class Model(BaseModel):
     class Config:
         frozen = True
         extra = "forbid"
 
 
-class TestModelB(TestModel):
+class ModelB(Model):
     test_field_1: float
 
 
-class TestModelA(TestModel):
+class ModelA(Model):
     test_field_a: FilePath
-    test_field_b: TestModelB
+    test_field_b: ModelB
 
 
 def test_parse_file_error(switch_cwd_tmp_path):
@@ -155,7 +155,7 @@ def test_parse_file_error(switch_cwd_tmp_path):
     )()
     print(pathlib.Path("test.json").read_text())
     with pytest.raises(argparse.ArgumentTypeError) as e:
-        parse_file("test.json", TestModelA)
+        parse_file("test.json", ModelA)
 
     assert (
         str(e.value)
