@@ -1,46 +1,156 @@
+import datetime
+import logging
+import pathlib
+
+import pytest
 from ecl.summary import EclSum
-from utils import MockParser
 
-from spinningjenny.jobs.fm_rf.cli import main_entry_point
-from spinningjenny.jobs.shared.validators import valid_ecl_file
+from spinningjenny.jobs.fm_rf import cli
+from spinningjenny.jobs.fm_rf.parser import args_parser
+
+ARGUMENTS = ["-s", "TEST", "-o", "rf_result"]
+
+RANGE_SIZE = 10 + 1
 
 
-def test_entry_point(copy_testdata_tmpdir, ecl_sum):
-    copy_testdata_tmpdir()
-    EclSum.fwrite(ecl_sum)
+@pytest.fixture(scope="module")
+def ecl_summary_rf():
+    ecl_sum = EclSum.writer("TEST", datetime.date(2000, 1, 1), *[RANGE_SIZE - 1] * 3)
+    sum_keys = {
+        "FOPT": list(range(RANGE_SIZE)),
+        "FOIP": [100] * RANGE_SIZE,
+        "GOPT:G1": [i / 2.0 for i in range(RANGE_SIZE)],
+        "ROIP:1": [50] * RANGE_SIZE,
+    }
 
-    arguments = ["-s", "TEST", "-o", "rf_result"]
+    for key in sum_keys:
+        name, sub_name = key.split(":") if ":" in key else (key, None)
+        num, wgname = (
+            (int(sub_name), None)
+            if sub_name and sub_name.isnumeric()
+            else (0, sub_name)
+        )
+        ecl_sum.add_variable(name, wgname=wgname, num=num)
 
-    main_entry_point(arguments)
+    for index in range(RANGE_SIZE):
+        t_step = ecl_sum.add_t_step(index, index)
+        for key, item in sum_keys.items():
+            t_step[key] = item[index]
 
-    with open("rf_result") as f:
-        rf_result = f.read()
+    return ecl_sum
 
-    assert float(rf_result) == 0.1
 
-    arguments = [
-        "-s",
-        "TEST",
-        "-pk",
-        "GOPT:G1",
-        "-tvk",
-        "ROIP:1",
-        "-sd",
-        "2000-01-03",
-        "-ed",
-        "2000-01-07",
-        "-o",
-        "rf_result",
-    ]
+@pytest.fixture
+def mock_rf_parser(ecl_summary_rf, monkeypatch):
+    def build_argument_parser():
+        parser = args_parser
+        parser._actions[1].type = lambda *x, **y: ecl_summary_rf
+        return parser
 
-    main_entry_point(arguments)
+    monkeypatch.setattr(
+        cli,
+        "args_parser",
+        build_argument_parser(),
+    )
 
-    with open("rf_result") as f:
-        rf_result = f.read()
 
-    assert float(rf_result) == 0.04
+@pytest.mark.parametrize(
+    "more_args, expected",
+    (
+        pytest.param((), b"0.100000", id="required only"),
+        pytest.param(
+            (
+                "-pk",
+                "GOPT:G1",
+            ),
+            b"0.050000",
+            id="production key",
+        ),
+        pytest.param(
+            (
+                "-ed",
+                "2000-01-06",
+            ),
+            b"0.050000",
+            id="end date",
+        ),
+        pytest.param(
+            (
+                "-sd",
+                "2000-01-03",
+                "-ed",
+                "2000-01-07",
+            ),
+            b"0.040000",
+            id="start and end date",
+        ),
+        pytest.param(
+            (
+                "-pk",
+                "GOPT:G1",
+                "-sd",
+                "2000-01-03",
+                "-ed",
+                "2000-01-07",
+            ),
+            b"0.020000",
+            id="production key and dates",
+        ),
+        pytest.param(
+            (
+                "-pk",
+                "GOPT:G1",
+                "-tvk",
+                "ROIP:1",
+                "-sd",
+                "2000-01-03",
+                "-ed",
+                "2000-01-07",
+            ),
+            b"0.040000",
+            id="all arguments",
+        ),
+    ),
+)
+def test_rf_entry_point(more_args, expected, switch_cwd_tmp_path, mock_rf_parser):
+    cli.main_entry_point((*ARGUMENTS, *more_args))
+    assert pathlib.Path("rf_result").read_bytes() == expected
 
-    mock_parser = MockParser()
-    _ = valid_ecl_file("non_existing", mock_parser)
 
-    assert "Could not load eclipse summary from file" in mock_parser.get_error()
+@pytest.mark.parametrize(
+    "args, expected, log",
+    (
+        pytest.param(
+            ("-sd", "1999-01-01", "-ed", "2000-01-06"),
+            b"0.050000",
+            "The date range 1999-01-01 - 2000-01-06 exceeds the simulation time, "
+            "clamping to simulation time: 2000-01-01 - 2000-01-11",
+            id="end and start date",
+        ),
+        pytest.param(
+            ("-ed", "2001-01-01"),
+            b"0.100000",
+            "The date range 2000-01-01 - 2001-01-01 exceeds the simulation time, "
+            "clamping to simulation time: 2000-01-01 - 2000-01-11",
+            id="end date",
+        ),
+    ),
+)
+def test_rf_entry_point_date_out_of_simulation_bounds(
+    args, expected, log, switch_cwd_tmp_path, mock_rf_parser, caplog
+):
+    with caplog.at_level(logging.WARNING):
+        cli.main_entry_point((*ARGUMENTS, *args))
+    assert log in caplog.text
+    assert pathlib.Path("rf_result").read_bytes() == expected
+
+
+def test_rf_lint(
+    switch_cwd_tmp_path,
+    mock_rf_parser,
+):
+    with pytest.raises(SystemExit) as e:
+        cli.main_entry_point([*ARGUMENTS, "--lint"])
+
+    assert e.value.code == 0
+    assert not pathlib.Path("rf_result").exists()

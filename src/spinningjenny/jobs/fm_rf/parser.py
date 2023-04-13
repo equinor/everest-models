@@ -1,26 +1,23 @@
-import argparse
-from functools import partial
-
-from spinningjenny.jobs.shared.validators import is_writable, valid_date, valid_ecl_file
+from spinningjenny.jobs.shared.arguments import (
+    add_lint_argument,
+    add_output_argument,
+    add_summary_argument,
+    get_parser,
+)
+from spinningjenny.jobs.shared.validators import valid_iso_date
 
 
 def build_argument_parser():
-    description = (
-        "Calculates the recovery factor given summary keys and dates.\n"
+    parser, required_group = get_parser(
+        description="Calculates the recovery factor given summary keys and dates.\n"
         "Requires an EclSum instance to retrieve the volumes from. The summary "
         "keys requested must be in the EclSum instance. If the dates are outside "
         "the simulation range, they will be clamped to nearest. Will throw an "
-        "error if the entire date range is outside the simulation range\n\n"
-        "It is up to the caller to use sane combinations of summary keys."
+        "error if the entire date range is outside the simulation range."
     )
-    parser = argparse.ArgumentParser(description=description)
-    parser.add_argument(
-        "-s",
-        "--summary",
-        required=True,
-        type=partial(valid_ecl_file, parser=parser),
-        help="Eclipse summary file",
-    )
+    add_summary_argument(required_group)
+    add_lint_argument(parser)
+    add_output_argument(parser, required=False, help="Filename of the output file. ")
     parser.add_argument(
         "-pk",
         "--production_key",
@@ -38,23 +35,14 @@ def build_argument_parser():
     parser.add_argument(
         "-sd",
         "--start_date",
-        default=None,
-        type=partial(valid_date, parser=parser),
+        type=valid_iso_date,
         help="Start date - As ISO8601 formatted date (YYYY-MM-DD)",
     )
     parser.add_argument(
         "-ed",
         "--end_date",
-        default=None,
-        type=partial(valid_date, parser=parser),
+        type=valid_iso_date,
         help="Start date - As ISO8601 formatted date (YYYY-MM-DD)",
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        type=partial(is_writable, parser=parser),
-        required=False,
-        help="Filename of the output file. ",
     )
     return parser
 

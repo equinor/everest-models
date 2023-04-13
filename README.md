@@ -234,8 +234,34 @@ fields:
 
 ### rf
 ```bash
-rf -s SUMMARY [-pk PRODUCTION_KEY] [-tvk TOTAL_VOLUME_KEY]
-             [-sd START_DATE] [-ed END_DATE] [-o OUTPUT]
+usage: rf [-h] -s SUMMARY [--lint] [-o OUTPUT]
+                       [-pk PRODUCTION_KEY] [-tvk TOTAL_VOLUME_KEY]
+                       [-sd START_DATE] [-ed END_DATE]
+
+Calculates the recovery factor given summary keys and dates. Requires an
+EclSum instance to retrieve the volumes from. The summary keys requested must
+be in the EclSum instance. If the dates are outside the simulation range, they
+will be clamped to nearest. Will throw an error if the entire date range is
+outside the simulation range.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --lint                Lints all given input (file) arguments with no data
+                        transformation.
+  -o OUTPUT, --output OUTPUT
+                        Filename of the output file.
+  -pk PRODUCTION_KEY, --production_key PRODUCTION_KEY
+                        Production key - a valid summary key (default: FOPT)
+  -tvk TOTAL_VOLUME_KEY, --total_volume_key TOTAL_VOLUME_KEY
+                        Total volume key - a valid summary key (default: FOIP)
+  -sd START_DATE, --start_date START_DATE
+                        Start date - As ISO8601 formatted date (YYYY-MM-DD)
+  -ed END_DATE, --end_date END_DATE
+                        Start date - As ISO8601 formatted date (YYYY-MM-DD)
+
+required named arguments:
+  -s SUMMARY, --summary SUMMARY
+                        Ecl summary file
 ```
 
 ### schmerge
