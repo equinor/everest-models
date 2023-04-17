@@ -1,77 +1,20 @@
 import argparse
 import datetime
-import os
 import pathlib
-import stat
 
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 from pydantic import BaseModel, FilePath
-from utils import MockParser
 
 from spinningjenny.jobs.shared.validators import (
     _prettify_validation_error_message,
     is_gt_zero,
-    is_writable,
     is_writable_path,
     parse_file,
     valid_input_file,
     valid_iso_date,
 )
-
-
-def test_is_writable_valid(copy_testdata_tmpdir):
-    copy_testdata_tmpdir()
-    mock_parser = MockParser()
-
-    is_writable("non_existing_valid_filename", mock_parser)
-    assert mock_parser.get_error() is None
-
-    with open("existing_file", "a") as _:
-        pass
-
-    is_writable("existing_file", mock_parser)
-    assert mock_parser.get_error() is None
-
-    os.mkdir("existing_dir")
-
-    is_writable("existing_dir/valid_filename", mock_parser)
-    assert mock_parser.get_error() is None
-
-    with open("existing_dir/existing_file", "a") as _:
-        pass
-
-    is_writable("existing_dir/existing_file", mock_parser)
-    assert mock_parser.get_error() is None
-
-
-def test_is_writable_non_existing_dir(copy_testdata_tmpdir):
-    copy_testdata_tmpdir()
-    mock_parser = MockParser()
-
-    _ = is_writable("non_existing_dir/valid_filename", mock_parser)
-    assert "Can not write to directory" in mock_parser.get_error()
-
-
-def test_is_writable_write_to_dir(copy_testdata_tmpdir):
-    copy_testdata_tmpdir()
-    mock_parser = MockParser()
-    os.mkdir("existing_dir")
-
-    _ = is_writable("existing_dir", mock_parser)
-    assert "Path 'existing_dir' is a directory" in mock_parser.get_error()
-
-
-def test_is_writable_no_write_permissions(copy_testdata_tmpdir):
-    copy_testdata_tmpdir()
-    mock_parser = MockParser()
-
-    os.mkdir("existing_dir")
-    os.chmod("existing_dir", stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
-
-    _ = is_writable("existing_dir/valid_filename", mock_parser)
-    assert "Can not write to directory" in mock_parser.get_error()
 
 
 def write_file(path, txt):
