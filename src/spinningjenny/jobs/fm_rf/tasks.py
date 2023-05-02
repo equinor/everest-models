@@ -29,40 +29,24 @@ def recovery_factor(
     summary: EclSum,
     start_date: datetime.date,
     end_date: datetime.date,
-    production_key: str = None,
-    total_volume_key: str = None,
+    production_key: str,
+    total_volume_key: str,
 ) -> float:
-    """
-    Calculates the recovery factor given summary keys and dates.
-    Requires an EclSum instance to retrieve the volumes from. The summary
-    keys requested must be in the EclSum instance. If the dates are outside
-    the simulation range, they will be clamped to nearest. Will throw an
-    error if the entire date range is outside the simulation range.
+    """Given summary keys and dates, calculate recovery factor.
 
-    It is up to the caller to use sane combinations of summary keys.
+    - Keys given must be present in the eclipse summary file.
+    - If dates are outside simulation range, they will be clamped to the nearest summary date.
+    - An error occurs if the entire date range is outside simulation range.
 
-    Parameters
-    ----------
-    ecl_sum : <EclSum>
-        An EclSum instance
-    production_key : <string>
-        A valid summary key.
-        Default: FOPT
-    total_volume_key : <string>
-        A valid summary key.
-        Default: FOIP
-    start_date: <datetime.date>
-        A datetime.date object.
-        Default: First date in the summary
-    end_date: <datetime.date>
-        A datetime.date object.
-        Default: Last date in the summary
+    Args:
+        summary (EclSum): Eclipse summary
+        start_date (datetime.date): First date in the summary
+        end_date (datetime.date): Last date in the summary
+        production_key (str, optional): A valid summary key.
+        total_volume_key (str, optional): A valid summary key.
 
     Returns:
-    ----------
-    float
-        The fraction of fluid recovered
-
+        float: The fraction of fluid recovered
     """
     start_date, end_date = _evaluate_dates(
         start_date, end_date, summary.start_date, summary.end_date

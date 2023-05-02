@@ -167,14 +167,6 @@ def _remove_event_from_config(
 
 
 def _get_greedy_drill_plan(schedule, wells, **config) -> List[Event]:
-    """
-    Recursive function that eventually returns a well order schedule.
-
-    This function should:
-    - Retrieve the next best event
-    - Append it to the schedule process the event in its configuration.
-    - Start the next iteration with updated config and schedule
-    """
     if not wells:
         return schedule
 
@@ -193,6 +185,25 @@ def get_greedy_drill_plan(
     rigs: Dict[str, Rig],
     horizon: int,
 ) -> List[Event]:
+    """Recursively build a well order schedule with parameters' copy.
+
+    if wells is empty return schedule
+    if next event is None: set wells to empty
+
+    This function should:
+    - Retrieve the next best greedy event
+    - Append Event to the schedule
+    - Start the next updated config iteration
+
+    Args:
+        wells (Dict[str, WellPriority]): well's drill time and priority
+        slots (Dict[str, Slot]): all rigs' slots
+        rigs (Dict[str, Rig]): rigs metadata
+        horizon (int): date period
+
+    Returns:
+        List[Event]: a greedy rendition of event schedule
+    """
     return _get_greedy_drill_plan(
         [],
         wells=copy.deepcopy(wells),

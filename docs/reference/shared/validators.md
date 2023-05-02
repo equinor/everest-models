@@ -1,0 +1,1 @@
+::: spinningjenny.jobs.shared.validators

@@ -1,4 +1,4 @@
-from spinningjenny.jobs.fm_extract_summary_data.utils import CalculationType
+from spinningjenny.jobs.fm_extract_summary_data.tasks import CalculationType
 from spinningjenny.jobs.shared.arguments import (
     add_lint_argument,
     add_output_argument,

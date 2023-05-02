@@ -16,11 +16,12 @@ def strip_dates(
     dates: List[datetime.date],
     summary_path: str,
 ):
-    """Strip all other dates except the ones given
+    """Strip all other dates except the ones given from eclipse summary.
 
     Args:
-        summary (EclSum): Eclipse summary
+        summary_dates (EclSum): Eclipse summary dates
         dates (List[datetime.date]): dates to whitelist from strip
+        summary_path (str): eclipse summary filepath
     """
     base_path, extension = os.path.splitext(summary_path)
     temp_path = f"{base_path}_BAK.{extension}"

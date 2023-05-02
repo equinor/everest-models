@@ -42,7 +42,7 @@ def test_add_templates(path_test_data, caplog):
     operation = Operation(**dict(date="2020-12-12", opname="tester"))
     assert operation.template is None
     assert not template.is_utilized
-    add_templates(well_name="t1", op=operation, template=template)
+    add_templates(well_name="t1", operation=operation, template=template)
     assert operation.template == template_path
     assert template.is_utilized
     assert len(caplog.records) == 1

@@ -1,4 +1,4 @@
-from spinningjenny.jobs.fm_schmerge.well_model import WellListModel
+from spinningjenny.jobs.fm_schmerge.well_model import Wells
 from spinningjenny.jobs.shared.arguments import (
     add_output_argument,
     add_wells_input_argument,
@@ -27,7 +27,7 @@ def build_argument_parser():
     )
     add_wells_input_argument(
         required_group,
-        schema=WellListModel,
+        schema=Wells,
         help="Json file that specifies which templates to inject where."
         "The file is structured as a list of dictionaries, each containing"
         " information regarding one well. The name defines the name of the well,"

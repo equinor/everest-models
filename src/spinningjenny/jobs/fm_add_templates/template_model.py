@@ -24,5 +24,5 @@ class Template(BaseConfig):
     is_utilized: bool = Field(default=False, allow_mutation=True, exclude=True)
 
 
-class TemplateConfigModel(BaseFrozenConfig):
+class TemplateConfig(BaseFrozenConfig):
     templates: Tuple[Template, ...]

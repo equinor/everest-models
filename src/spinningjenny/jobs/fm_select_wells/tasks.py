@@ -49,6 +49,15 @@ def _equidistant_range(
 def get_well_number(
     options: argparse.Namespace, error_msgr: Callable[[str], None]
 ) -> Optional[int]:
+    """Collect well number from job session context
+
+    Args:
+        options (argparse.Namespace): job session context
+        error_msgr (Callable[[str], None]): standard output/error writer
+
+    Returns:
+        Optional[int]: well number
+    """
     if hasattr(options, "file_path"):
         _check_bounds(options, error_msgr)
         if options.lint:
@@ -57,9 +66,7 @@ def get_well_number(
             options.file_path, options.scaled_bounds, options.real_bounds
         )
     if hasattr(options, "well_number"):
-        if options.lint:
-            return options.well_number
-        return round(options.well_number)
+        return options.well_number if options.lint else round(options.well_number)
     return None
 
 
@@ -68,7 +75,18 @@ def select_wells(
     max_date: datetime.date,
     number_of_wells: int,
 ) -> None:
-    if max_date is not None:
+    """Select wells.
+
+    - Wells will first be filter by the max_date
+    - If number of wells is smaller than the size of the wells,
+      then reduce wells by the number of wells
+
+    Args:
+        wells (WellListModel):
+        max_date (datetime.date): max allowed time for ready date
+        number_of_wells (int): number of wells to be selected
+    """
+    if max_date:
         wells.set_wells(well for well in wells if well.readydate <= max_date)
 
     if not number_of_wells or len(wells) < number_of_wells:

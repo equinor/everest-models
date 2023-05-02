@@ -1,0 +1,40 @@
+---
+arguments: -c/--config
+fields:
+   end_date: {format: date, required: true, type: string}
+   rigs:
+   - delay: {required: false, type: integer}
+     name: {required: true, type: string}
+     slots: [string]
+     unavailability:
+     - start: {format: date, required: true, type: string}
+       stop: {format: date, required: true, type: string}
+     wells: [string]
+   slots:
+   - name: {required: true, type: string}
+     unavailability:
+     - start: {format: date, required: true, type: string}
+       stop: {format: date, required: true, type: string}
+     wells: [string]
+   start_date: {format: date, required: true, type: string}
+...
+---
+arguments: -opt/--optimizer
+fields: {string: float}
+...
+---
+arguments: -i/--input
+fields:
+- completion_date: {format: date, required: false, type: string}
+  drill_time: {required: false, type: integer}
+  name: {required: true, type: string}
+  ops:
+  - date: {format: date, required: true, type: string}
+    opname: {required: true, type: string}
+    phase:
+       choices: [WATER, GAS, OIL]
+       type: string
+    rate: {required: false, type: number}
+    template: {format: file-path, required: false, type: string}
+  readydate: {format: date, required: false, type: string}
+...

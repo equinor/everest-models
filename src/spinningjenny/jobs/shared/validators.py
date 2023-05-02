@@ -3,6 +3,7 @@ import datetime
 import json
 import pathlib
 from os import W_OK, access
+from typing import Any, Dict
 
 import ruamel.yaml as yaml
 from ecl.summary import EclSum
@@ -10,6 +11,19 @@ from pydantic import BaseModel, ValidationError
 
 
 def is_writable_path(value: str) -> pathlib.Path:
+    """Validate if given value is a writable filepath.
+
+    Args:
+        value (str): filepath to be validated
+
+    Raises:
+        argparse.ArgumentTypeError: Is a directory
+        argparse.ArgumentTypeError: No access to Directory
+        argparse.ArgumentTypeError: No access to File
+
+    Returns:
+        pathlib.Path: valid filepath
+    """
     path = pathlib.Path(value)
     if not (path.exists() or access(parent := path.parent, W_OK)):
         raise argparse.ArgumentTypeError(f"Can not write to directory: {parent}")
@@ -24,6 +38,14 @@ def is_writable_path(value: str) -> pathlib.Path:
 
 
 def valid_ecl_summary(file_path: str) -> EclSum:
+    """Validate eclipse summary file is correct.
+
+    Args:
+        file_path (str): Eclips summary filepath
+
+    Returns:
+        EclSum: Eclipse summary instance
+    """
     try:
         return EclSum(file_path)
     except (IOError, OSError):
@@ -32,7 +54,18 @@ def valid_ecl_summary(file_path: str) -> EclSum:
         )
 
 
-def valid_iso_date(value):
+def valid_iso_date(value: str) -> datetime.date:
+    """Validate that value is ISO date string.
+
+    Args:
+        value (str): date string
+
+    Raises:
+        argparse.ArgumentTypeError: not a ISO date string
+
+    Returns:
+        datetime.date: Date instance
+    """
     try:
         return datetime.date.fromisoformat(value)
     except ValueError as e:
@@ -41,11 +74,19 @@ def valid_iso_date(value):
         ) from e
 
 
-def valid_schedule_template(value: str):
+def valid_schedule_template(value: str) -> str:
+    """collect eclipse file content.
+
+    Args:
+        value (str): eclipse filepath
+
+    Returns:
+        str: eclipse content
+    """
     return pathlib.Path(value).read_text(encoding="utf-8")
 
 
-def _valid_yaml(path: pathlib.Path):
+def _valid_yaml(path: pathlib.Path) -> Any:
     try:
         return yaml.YAML(typ="safe", pure=True).load(path.read_bytes())
     except yaml.YAMLError as e:
@@ -64,7 +105,19 @@ def _valid_json(path: pathlib.Path):
             ) from e
 
 
-def valid_input_file(value: str):
+def valid_input_file(value: str) -> Dict[str, Any]:
+    """validate YAML/JSON filepath.
+
+    Args:
+        value (str): filepath
+
+    Raises:
+        argparse.ArgumentTypeError: Directory or not Found
+        argparse.ArgumentTypeError: Unsupported file type
+
+    Returns:
+        Dict[str, Any]: Dictionary representation of file content
+    """
     path = pathlib.Path(value)
     if not path.exists() or path.is_dir():
         raise argparse.ArgumentTypeError(
@@ -84,6 +137,19 @@ def valid_input_file(value: str):
 
 
 def is_gt_zero(value: str, msg: str) -> int:
+    """Is string value greater than zero
+
+    Args:
+        value (str): numeric string
+        msg (str): error message if less
+
+    Raises:
+        argparse.ArgumentTypeError: Not a Number
+        argparse.ArgumentTypeError: less than zero
+
+    Returns:
+        int: integer casted value
+    """
     if not value.lstrip("+-").isnumeric():
         raise argparse.ArgumentTypeError(f"Value '{value}' is not a number")
     if (num := int(value)) <= 0:
@@ -103,7 +169,19 @@ def _prettify_validation_error_message(error: ValidationError) -> str:
     )
 
 
-def parse_file(value: str, schema: "BaseModel"):
+def parse_file(value: str, schema: "BaseModel") -> "BaseModel":
+    """Parse filepath content by given schema
+
+    Args:
+        value (str): filepath
+        schema (BaseModel): schema to use for validation and parsing
+
+    Raises:
+        argparse.ArgumentTypeError: Failed to adhere to schema specifications
+
+    Returns:
+        pydantic.BaseModel: a schema instance
+    """
     value = valid_input_file(value)
     try:
         return schema.parse_obj(value)

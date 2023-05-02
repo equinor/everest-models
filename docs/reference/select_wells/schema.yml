@@ -1,0 +1,21 @@
+---
+arguments: file
+fields:
+   scaled_number_of_wells: {required: true, type: number}
+...
+---
+arguments: -i/--input
+fields:
+- completion_date: {format: date, required: false, type: string}
+  drill_time: {required: false, type: integer}
+  name: {required: true, type: string}
+  ops:
+  - date: {format: date, required: true, type: string}
+    opname: {required: true, type: string}
+    phase:
+       choices: [WATER, GAS, OIL]
+       type: string
+    rate: {required: false, type: number}
+    template: {format: file-path, required: false, type: string}
+  readydate: {format: date, required: false, type: string}
+...

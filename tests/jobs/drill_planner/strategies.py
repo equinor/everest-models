@@ -10,7 +10,7 @@ from spinningjenny.jobs.fm_drill_planner.data import (
     Slot,
     WellPriority,
 )
-from spinningjenny.jobs.fm_drill_planner.planner.optimized import DrillConstraints
+from spinningjenny.jobs.fm_drill_planner.planner.optimized import _DrillConstraints
 
 MAX_SIZE = 3
 MIN_SIZE = 1
@@ -92,6 +92,6 @@ def constraints_schedule(draw):
         )
     )
     return (
-        DrillConstraints(wells, rigs, slots, horizon=draw(strategies.just(100))),
+        _DrillConstraints(wells, rigs, slots, horizon=draw(strategies.just(100))),
         schedule,
     )

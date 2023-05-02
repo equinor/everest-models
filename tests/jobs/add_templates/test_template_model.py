@@ -8,7 +8,7 @@ from sub_testdata import ADD_TEMPLATE as TEST_DATA
 from spinningjenny.jobs.fm_add_templates.template_model import (
     Key,
     Template,
-    TemplateConfigModel,
+    TemplateConfig,
 )
 from spinningjenny.jobs.shared.models import Operation, PhaseEnum
 
@@ -52,23 +52,23 @@ def test_template_model_fields(add_tmpl_config):
 
 
 def test_template_model_minimum_fields(template_dict):
-    assert TemplateConfigModel.parse_obj(template_dict)
+    assert TemplateConfig.parse_obj(template_dict)
     with pytest.raises(ValidationError, match="field required"):
-        TemplateConfigModel.parse_obj({})
+        TemplateConfig.parse_obj({})
 
 
 def test_template_model_file(template_dict):
     template_dict = deepcopy(template_dict)
     template_dict["templates"][0]["file"] = "does_not_exist.txt"
     with pytest.raises(ValidationError, match="does not exist"):
-        TemplateConfigModel.parse_obj(template_dict)
+        TemplateConfig.parse_obj(template_dict)
     template_dict["templates"][0]["file"] = pathlib.Path().parent
     with pytest.raises(ValidationError, match="does not point to a file"):
-        TemplateConfigModel.parse_obj(template_dict)
+        TemplateConfig.parse_obj(template_dict)
 
 
 def test_key_equal_operator(template_dict):
-    templates = TemplateConfigModel.parse_obj(template_dict)
+    templates = TemplateConfig.parse_obj(template_dict)
     keys = templates.templates[0].keys
     assert keys == Key(opname="open")
     assert keys != Key(opname="not_open")

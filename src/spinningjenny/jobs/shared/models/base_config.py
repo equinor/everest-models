@@ -12,6 +12,8 @@ from spinningjenny.jobs.shared.models.phase import BaseEnum
 
 
 class BaseConfig(BaseModel):
+    """Mutable custom pydantic BaseModel configuration with schema specification renderer."""
+
     class Config:
         validate_assignment = True
         arbitrary_types_allowed = False
@@ -22,6 +24,11 @@ class BaseConfig(BaseModel):
         }
 
     def json_dump(self, output: pathlib.Path) -> None:
+        """Write instance state to a JSON file.
+
+        Args:
+            output (pathlib.Path): file to write to
+        """
         output.write_text(
             self.json(
                 indent=2,
@@ -91,6 +98,14 @@ class BaseConfig(BaseModel):
 
     @classmethod
     def help_schema(cls, argument_name: str = None) -> typing.Union[dict, list]:
+        """Generate a dictionary representation of the class specification schema.
+
+        Args:
+            argument_name (str, optional): Argument name that this schema belongs to. Defaults to None.
+
+        Returns:
+            typing.Union[dict, list]: Class specification schema
+        """
         fields = dict(cls._help_fields_schema())
         if (root := fields.pop("__root__", None)) is not None:
             fields = root
@@ -100,6 +115,11 @@ class BaseConfig(BaseModel):
 
     @classmethod
     def help_schema_yaml(cls, argument_name: str = None) -> None:
+        """Output class specification schema to standard out.
+
+        Args:
+            argument_name (str, optional): Argument name that this schema belongs to. Defaults to None.
+        """
         yml = yaml.YAML(typ="safe", pure=True)
         yml.explicit_start = True
         yml.indent(mapping=3, sequence=2, offset=0)
@@ -108,11 +128,15 @@ class BaseConfig(BaseModel):
 
 
 class BaseFrozenConfig(BaseConfig):
+    """Frozen custom pydantic BaseModel Configuration with schema specification renderer."""
+
     class Config:
         frozen = True
 
 
 class DictRootMixin:
+    """Dictionary mixin functions for pydantic models with dictionary __root__ fields"""
+
     def get(self, value, default=None):
         return self.__root__.get(value, default)
 

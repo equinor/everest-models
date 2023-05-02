@@ -4,14 +4,14 @@ import logging
 
 from spinningjenny.jobs.fm_add_templates import tasks
 from spinningjenny.jobs.fm_add_templates.parser import build_argument_parser
-from spinningjenny.jobs.fm_add_templates.template_model import TemplateConfigModel
+from spinningjenny.jobs.fm_add_templates.template_model import TemplateConfig
 from spinningjenny.jobs.shared.converters import path_to_str
 from spinningjenny.jobs.shared.models import WellListModel
 
 logger = logging.getLogger(__name__)
 
 
-def _duplicate_template_msg(templates: TemplateConfigModel) -> str:
+def _duplicate_template_msg(templates: TemplateConfig) -> str:
     return "\n".join(
         f"Found duplicate template file path {path_to_str(path)} in config file!"
         for path, count in collections.Counter(

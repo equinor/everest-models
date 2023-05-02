@@ -1,0 +1,26 @@
+usage: well_filter [-h] [--lint] [--schemas] -i INPUT -o OUTPUT
+                   (-k KEEP | -r REMOVE)
+
+This module filters out wells using a json string.Either the --keep or the
+--remove flag needs to be set to a json file namecontaining a list of well
+names that are in the keep/remove file, but not in the input file will be
+ignored.If both or none of the flags are set, the job give an error.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --lint                Lints all given input (file) arguments with no data
+                        transformation.
+  --schemas             Output all file schemas that are taken as input
+                        parameters.
+
+required named arguments:
+  -i INPUT, --input INPUT
+                        Json file that contains a list of dictionaries
+                        containing well information.
+  -o OUTPUT, --output OUTPUT
+                        File path to write the resulting wells file to.
+  -k KEEP, --keep KEEP  JSON/Y(A)ML file that contains a list of well names to
+                        keep.
+  -r REMOVE, --remove REMOVE
+                        JSON/Y(A)ML file that contains a list of well names to
+                        remove.

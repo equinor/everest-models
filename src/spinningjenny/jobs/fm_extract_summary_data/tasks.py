@@ -12,10 +12,20 @@ logger = logging.getLogger(__name__)
 def extract_value(
     summary: EclSum, key: str, end_date: datetime.date, **kwargs
 ) -> float:
+    """Extract interpreted eclipse summary value for given key and end date.
+
+    Args:
+        summary (EclSum): eclipse summary
+        key (str): eclipse summary key
+        end_date (datetime.date): summary key interval end date
+
+    Returns:
+        float: interpreted value
+    """
     return summary.get_interp(key, date=end_date)
 
 
-def extract_max(
+def _extract_max(
     summary: EclSum, key: str, start_date: datetime.date, end_date: datetime.date
 ) -> float:
     return np.max(
@@ -28,7 +38,7 @@ def extract_max(
     )
 
 
-def extract_diff(
+def _extract_diff(
     summary: EclSum, key: str, start_date: datetime.date, end_date: datetime.date
 ) -> float:
     return summary.get_interp(key, date=end_date) - summary.get_interp(
@@ -51,9 +61,9 @@ class CalculationType(Enum):
         end_date: datetime.date,
     ) -> float:
         if self == self.MAX:
-            return extract_max(summary, key, start_date, end_date)
+            return _extract_max(summary, key, start_date, end_date)
         if self == self.DIFF:
-            return extract_diff(summary, key, start_date, end_date)
+            return _extract_diff(summary, key, start_date, end_date)
 
     @classmethod
     def types(cls):
@@ -61,19 +71,33 @@ class CalculationType(Enum):
 
 
 def validate_arguments(options: argparse.Namespace) -> argparse.Namespace:
+    """Validate that given arguments in Namespace are valid.
+
+    Compare standalone argument values to eclipse summary data
+
+    Args:
+        options (argparse.Namespace): Program session context
+
+    Raises:
+        argparse.ArgumentTypeError: If any argument value fails validation
+
+    Returns:
+        argparse.Namespace: Program session context
+    """
     errors = []
     available_dates = [d.date() for d in options.summary.dates]
 
     if options.key not in options.summary:
         errors.append(f"Missing required data {options.key} in summary file.")
-    if options.start_date is not None and options.start_date > options.end_date:
-        errors.append(
-            f"Start date '{options.start_date}' is after end date '{options.end_date}'."
-        )
-    if not (options.start_date is None or options.start_date in available_dates):
-        errors.append(
-            f"Start date '{options.start_date}' is not part of the simulation report dates"
-        )
+    if options.start_date is not None:
+        if options.start_date > options.end_date:
+            errors.append(
+                f"Start date '{options.start_date}' is after end date '{options.end_date}'."
+            )
+        if options.start_date not in available_dates:
+            errors.append(
+                f"Start date '{options.start_date}' is not part of the simulation report dates"
+            )
     if options.end_date not in available_dates:
         errors.append(
             f"End date '{options.end_date}' is not part of the simulation report dates"

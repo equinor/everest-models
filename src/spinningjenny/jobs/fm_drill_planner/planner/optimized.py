@@ -1,7 +1,7 @@
 import functools
 import itertools
 import logging
-from typing import Dict, Iterable, NamedTuple, Tuple
+from typing import Dict, Iterable, List, NamedTuple, Tuple
 
 from ortools.sat.python import cp_model
 
@@ -28,7 +28,7 @@ def _well_costs(wells: Iterable[str]) -> Dict[str, int]:
     return {key: (index + 1) ** 4 for index, key in enumerate(wells)}
 
 
-class DrillConstraints(cp_model.CpModel):
+class _DrillConstraints(cp_model.CpModel):
     def __init__(
         self,
         wells: Dict[str, WellPriority],
@@ -68,7 +68,7 @@ class DrillConstraints(cp_model.CpModel):
         """
 
         return {
-            name: (well_names if len(well_names := rig.wells) == 1 else tuple())
+            name: (well_names if len(well_names := rig.wells) == 1 else ())
             for name, rig in self.rigs.items()
         }
 
@@ -268,7 +268,7 @@ class SolutionCallback(cp_model.CpSolverSolutionCallback):
 
 
 def drill_constraint_model(wells, slots, rigs, horizon, best_guess_schedule=None):
-    model = DrillConstraints(
+    model = _DrillConstraints(
         wells=wells,
         slots=slots,
         rigs=rigs,
@@ -284,7 +284,7 @@ def drill_constraint_model(wells, slots, rigs, horizon, best_guess_schedule=None
     return model
 
 
-def create_schedule_elements(tasks, solution):
+def _create_event_schedule(tasks, solution):
     return [
         Event(
             rig=rig_name,
@@ -301,7 +301,16 @@ def create_schedule_elements(tasks, solution):
 def run_optimization(
     drill_constraint_model,
     max_time_seconds=3600,
-):
+) -> List[Event]:
+    """Build a optimized list of events.
+
+    Args:
+        drill_constraint_model (_type_): CP-STAT model
+        max_time_seconds (int, optional): solver's max time limit. Defaults to 3600.
+
+    Returns:
+        List[Event]: constraint optimized list of events
+    """
     solver = cp_model.CpSolver()
     solver.parameters.max_time_in_seconds = max_time_seconds
     logger.debug("Solver set with maximum solve time of %f seconds", max_time_seconds)
@@ -325,7 +334,7 @@ def run_optimization(
         solver.WallTime(),
     )
     return (
-        create_schedule_elements(drill_constraint_model.tasks, solver)
+        _create_event_schedule(drill_constraint_model.tasks, solver)
         if status == cp_model.OPTIMAL
         else []
     )

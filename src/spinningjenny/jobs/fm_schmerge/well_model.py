@@ -3,21 +3,19 @@ from typing import Tuple
 
 from pydantic import FilePath
 
-from spinningjenny.jobs.shared.models.wells import Operation
-from spinningjenny.jobs.shared.models.wells import WellListModel as _WellListModel
-from spinningjenny.jobs.shared.models.wells import WellModel
+from spinningjenny.jobs.shared.models.wells import Operation, WellListModel, WellModel
 
 
 class _Operation(Operation):
     template: FilePath
 
 
-class _WellModel(WellModel):
+class Well(WellModel):
     ops: Tuple[_Operation, ...]
 
 
-class WellListModel(_WellListModel):
-    __root__: Tuple[_WellModel, ...]
+class Wells(WellListModel):
+    __root__: Tuple[Well, ...]
 
     def dated_operations(self):
         operations_dict = defaultdict(list)

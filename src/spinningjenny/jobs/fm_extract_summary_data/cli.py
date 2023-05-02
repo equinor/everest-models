@@ -1,7 +1,7 @@
 import logging
 
 from spinningjenny.jobs.fm_extract_summary_data.parser import args_parser
-from spinningjenny.jobs.fm_extract_summary_data.utils import (
+from spinningjenny.jobs.fm_extract_summary_data.tasks import (
     extract_value,
     validate_arguments,
 )

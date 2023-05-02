@@ -1,0 +1,28 @@
+---
+arguments: -c/--config
+fields:
+   templates:
+   - file: {format: file-path, required: true, type: string}
+     is_utilized: {required: false, type: boolean}
+     keys:
+        opname: {required: true, type: string}
+        phase:
+           choices: [WATER, GAS, OIL]
+           type: string
+...
+---
+arguments: -i/--input
+fields:
+- completion_date: {format: date, required: false, type: string}
+  drill_time: {required: false, type: integer}
+  name: {required: true, type: string}
+  ops:
+  - date: {format: date, required: true, type: string}
+    opname: {required: true, type: string}
+    phase:
+       choices: [WATER, GAS, OIL]
+       type: string
+    rate: {required: false, type: number}
+    template: {format: file-path, required: false, type: string}
+  readydate: {format: date, required: false, type: string}
+...

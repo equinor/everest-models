@@ -48,7 +48,10 @@ test = [
 docs = [
     "mkdocs",
     "mkdocs-material",
-    "mkdocstrings",
+    "mkdocstrings[python]",
+    "mdx_include",
+    "pygments",
+    "mdantic"
 ]
 
 [project.entry-points."everest"]

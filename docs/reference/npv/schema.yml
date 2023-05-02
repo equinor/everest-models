@@ -1,0 +1,50 @@
+---
+arguments: -c/--config
+fields:
+   costs:
+   - currency: {required: false, type: string}
+     date: {format: date, required: true, type: string}
+     value: {required: true, type: number}
+   dates:
+      end_date: {format: date, required: false, type: string}
+      ref_date: {format: date, required: false, type: string}
+      start_date: {format: date, required: false, type: string}
+   default_discount_rate: {default: 0.08, required: false, type: number}
+   default_exchange_rate: {default: 1, required: false, type: number}
+   discount_rates:
+   - currency: {required: false, type: string}
+     date: {format: date, required: true, type: string}
+     value: {required: true, type: number}
+   exchange_rates:
+      string:
+      - currency: {required: false, type: string}
+        date: {format: date, required: true, type: string}
+        value: {required: true, type: number}
+   multiplier: {default: 1, required: false, type: number}
+   prices:
+      string:
+      - currency: {required: false, type: string}
+        date: {format: date, required: true, type: string}
+        value: {required: true, type: number}
+   summary_keys: [string]
+   well_costs:
+   - currency: {required: false, type: string}
+     value: {required: true, type: number}
+     well: {required: true, type: string}
+...
+---
+arguments: -i/--input
+fields:
+- completion_date: {format: date, required: false, type: string}
+  drill_time: {required: false, type: integer}
+  name: {required: true, type: string}
+  ops:
+  - date: {format: date, required: true, type: string}
+    opname: {required: true, type: string}
+    phase:
+       choices: [WATER, GAS, OIL]
+       type: string
+    rate: {required: false, type: number}
+    template: {format: file-path, required: false, type: string}
+  readydate: {format: date, required: false, type: string}
+...

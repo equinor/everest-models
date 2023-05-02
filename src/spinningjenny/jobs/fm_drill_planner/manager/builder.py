@@ -139,13 +139,25 @@ def get_field_manager(
     wells: Wells,
     optimizer: Dict[str, int],
     ignore_end_date: bool,
-    lint: bool,
+    skip_creation: bool,
 ) -> FieldManager:
+    """Construct a parsed and valid FieldManager.
+
+    Args:
+        config (DrillPlanConfig): parsed and validated drill plan configuration
+        wells (Wells): parsed and validated wells.json
+        optimizer (Dict[str, int]): wells priorities
+        ignore_end_date (bool): ignore drill plan configuration end date
+        skip_creation (bool): terminate build process, without FieldManager creation
+
+    Returns:
+        FieldManager: A rig field event manager
+    """
     return (
         FieldManagerBuilder()
         .parse_well_priority(wells, optimizer)
         .parse_config(config, ignore_end_date)
         .add_missing_slots()
-        .build(lint)
+        .build(skip_creation)
         .manager
     )

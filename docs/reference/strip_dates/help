@@ -1,0 +1,20 @@
+usage: strip_dates [-h] -s SUMMARY [--lint] [-d DATE1 [DATE2 ...]]
+          [--allow-missing-dates]
+
+Makes sure a given summary file contains only report steps at the list of
+dates given as an argument
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --lint                Lints all given input (file) arguments with no data
+                        transformation.
+  -d DATE1 [DATE2 ...], --dates DATE1 [DATE2 ...]
+                        List of date to remain in the summary file (default:
+                        [])
+  --allow-missing-dates
+                        Do not fail if any requested dates are missing in the
+                        file
+
+required named arguments:
+  -s SUMMARY, --summary SUMMARY
+                        Ecl summary file

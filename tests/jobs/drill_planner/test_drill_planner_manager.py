@@ -34,7 +34,10 @@ def test_drill_planner_get_field_manager_lint(
 ):
     assert isinstance(
         get_field_manager(
-            drill_plan_config, *wells_and_priority, ignore_end_date=False, lint=lint
+            drill_plan_config,
+            *wells_and_priority,
+            ignore_end_date=False,
+            skip_creation=lint,
         ),
         expected,
     )
@@ -42,7 +45,10 @@ def test_drill_planner_get_field_manager_lint(
 
 def test_drill_planner_manager_greedy_schedule(drill_plan_config, wells_and_priority):
     manager = get_field_manager(
-        drill_plan_config, *wells_and_priority, ignore_end_date=False, lint=False
+        drill_plan_config,
+        *wells_and_priority,
+        ignore_end_date=False,
+        skip_creation=False,
     )
     assert not manager._optimize_schedule
     assert manager._greedy_schedule == [
@@ -68,7 +74,7 @@ def test_drill_planner_manager_optimized_schedule(
         DrillPlanConfig.parse_obj(drill_planner_config),
         *wells_and_priority,
         ignore_end_date=False,
-        lint=False,
+        skip_creation=False,
     )
     assert not manager._optimize_schedule
     manager.run_schedule_optimization(3600)

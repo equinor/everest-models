@@ -1,6 +1,6 @@
 import datetime
 import logging
-from typing import Dict
+from typing import Dict, List
 
 from spinningjenny.jobs.fm_well_constraints.models import Constraints
 from spinningjenny.jobs.fm_well_constraints.models.config import (
@@ -16,7 +16,18 @@ def create_well_operations(
     well_name: str,
     start_date: datetime.date,
     constraints: Dict[str, Constraints],
-):
+) -> List[Operation]:
+    """Create Well Operation based on the constraints
+
+    Args:
+        events (Dict[int, ConfigConstraints]): indexed well constraint configuration
+        well_name (str): Well name
+        start_date (datetime.date): start date
+        constraints (Dict[str, Constraints]): well constraints
+
+    Returns:
+        List[Operation]: List of newly created well operation
+    """
     operations = []
     for index, event in events.items():
         operation = Operation.parse_obj(
