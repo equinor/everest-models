@@ -8,7 +8,7 @@ def test_hooks_registered(plugin_manager):
     assert sys.modules["spinningjenny.everest_hooks"] in plugin_manager.get_plugins()
 
 
-def test_everest_hooks(plugin_manager):
+def test_get_forward_models_hook(plugin_manager):
     jobs = {
         "stea": f"{FORWARD_MODEL_DIR}/stea",
         "drill_planner": f"{FORWARD_MODEL_DIR}/drill_planner",
@@ -29,4 +29,19 @@ def test_everest_hooks(plugin_manager):
         for job in itertools.chain.from_iterable(
             plugin_manager.hook.get_forward_models()
         )
+    )
+
+
+def test_get_forward_model_schemas_hook(plugin_manager):
+    assert not {
+        "drill_planner",
+        "schmerge",
+        "drill_date_planner",
+        "select_wells",
+        "npv",
+        "add_templates",
+        "well_filter",
+        "interpret_well_drill",
+    }.difference(
+        itertools.chain.from_iterable(plugin_manager.hook.get_forward_model_schemas())
     )

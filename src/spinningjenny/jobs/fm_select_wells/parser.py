@@ -8,11 +8,15 @@ from spinningjenny.jobs.shared.arguments import (
     add_wells_input_argument,
     bootstrap_parser,
 )
+from spinningjenny.jobs.shared.models.wells import WellListModel
 from spinningjenny.jobs.shared.validators import is_gt_zero, parse_file
 
 
 def scaled_well_number(value: str) -> float:
     return parse_file(value, WellNumber).scaled_number_of_wells
+
+
+SCHEMAS = {"config": WellNumber, "input": WellListModel}
 
 
 def build_argument_parser():

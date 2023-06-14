@@ -7,7 +7,10 @@ from spinningjenny.jobs.shared.arguments import (
     add_wells_input_argument,
     bootstrap_parser,
 )
+from spinningjenny.jobs.shared.models.wells import WellListModel
 from spinningjenny.jobs.shared.validators import parse_file
+
+SCHEMAS = {"config": TemplateConfig, "input": WellListModel}
 
 
 def build_argument_parser():

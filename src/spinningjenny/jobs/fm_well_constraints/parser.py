@@ -13,11 +13,20 @@ from spinningjenny.jobs.shared.arguments import (
     bootstrap_parser,
     parse_file,
 )
+from spinningjenny.jobs.shared.models.wells import WellListModel
 
 CONFIG_ARG_KEY = ["--config", "-c"]
 RATE_CONSTRAINTS_ARG_KEY = ["--rate-constraints", "-rc"]
 PHASE_CONSTRAINTS_ARG_KEY = ["--phase-constraints", "-pc"]
 DURATION_CONSTRAINTS_ARG_KEY = ["--duration-constraints", "-dc"]
+
+SCHEMAS = {
+    "config": WellConstraintConfig,
+    "rate-constraints": Constraints,
+    "phase-constraints": Constraints,
+    "duration-constraints": Constraints,
+    "input": WellListModel,
+}
 
 
 def _join_argument_key(key: Iterable[str]) -> str:

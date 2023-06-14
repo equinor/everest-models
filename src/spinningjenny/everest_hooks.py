@@ -6,8 +6,10 @@ to expose its functions
 """
 import logging
 import sys
-from importlib import resources
-from typing import Dict, List
+from importlib import import_module, resources
+from typing import Dict, List, Type
+
+from pydantic import BaseModel
 
 try:
     from everest.plugins import hookimpl
@@ -20,6 +22,11 @@ logger = logging.getLogger(__name__)
 
 FORWARD_MODEL_DIR = "forward_models"
 PACKAGE = "spinningjenny"
+JOBS = f"{PACKAGE}.jobs"
+
+
+def _get_jobs():
+    return (job for job in resources.contents(JOBS) if job.startswith("fm_"))
 
 
 @hookimpl
@@ -37,6 +44,14 @@ def get_forward_models() -> List[Dict[str, str]]:
 
     return [
         {"name": (job_name := job.lstrip("fm_")), "path": str(jobs / job_name)}
-        for job in resources.contents(f"{PACKAGE}.jobs")
-        if job.startswith("fm_")
+        for job in _get_jobs()
     ]
+
+
+@hookimpl
+def get_forward_model_schemas() -> Dict[str, Dict[str, Type[BaseModel]]]:
+    return {
+        job.lstrip("fm_"): schemas
+        for job in _get_jobs()
+        if (schemas := getattr(import_module(f"{JOBS}.{job}.parser"), "SCHEMAS", None))
+    }
