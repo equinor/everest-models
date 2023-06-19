@@ -43,5 +43,5 @@ def test_get_forward_model_schemas_hook(plugin_manager):
         "well_filter",
         "interpret_well_drill",
     }.difference(
-        itertools.chain.from_iterable(plugin_manager.hook.get_forward_model_schemas())
+        itertools.chain.from_iterable(plugin_manager.hook.get_forward_models_schemas())
     )

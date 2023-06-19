@@ -49,7 +49,7 @@ def get_forward_models() -> List[Dict[str, str]]:
 
 
 @hookimpl
-def get_forward_model_schemas() -> Dict[str, Dict[str, Type[BaseModel]]]:
+def get_forward_models_schemas() -> Dict[str, Dict[str, Type[BaseModel]]]:
     return {
         job.lstrip("fm_"): schemas
         for job in _get_jobs()
