@@ -22,7 +22,7 @@ dependencies = [
     "ecl>=2.13.2",
     "Jinja2>=3.1.2",
     "numpy>=1.23.2",
-    "ortools==9.4.1874",
+    "ortools>=9.5.2237",
     "ruamel.yaml>=0.17.21",
     "stea>=0.5.2",
     "pydantic >= 1.10.2",
