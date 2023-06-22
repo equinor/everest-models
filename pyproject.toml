@@ -18,7 +18,6 @@ classifiers = [
     "Programming language :: Python :: 3.10",
 ]
 dependencies = [
-    "configsuite>=0.6.6",
     "ecl>=2.13.2",
     "Jinja2>=3.1.2",
     "numpy>=1.23.2",
