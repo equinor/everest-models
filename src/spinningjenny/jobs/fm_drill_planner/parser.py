@@ -7,14 +7,14 @@ from spinningjenny.jobs.shared.arguments import (
     add_wells_input_argument,
     bootstrap_parser,
 )
-from spinningjenny.jobs.shared.models.wells import WellListModel
+from spinningjenny.jobs.shared.models.wells import WellConfig
 from spinningjenny.jobs.shared.validators import parse_file, valid_input_file
 
 _CONFIG_ARGUMENT = "-c/--config"
 SCHEMAS = {
     "config": DrillPlanConfig,
     "optimizer": Optimizer,
-    "input": WellListModel,
+    "input": WellConfig,
 }
 
 

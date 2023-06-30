@@ -3,7 +3,7 @@ import datetime
 import logging
 import pathlib
 import re
-from typing import Dict, List, Union
+from typing import Any, Dict, List, Union
 
 from jinja2 import Template
 
@@ -26,17 +26,17 @@ ECLIPSE_DATE_REGEX = re.compile(
 
 
 def _render_parameter_data(
-    date: datetime.date, template: pathlib.Path, phase: PhaseEnum = None, **kwargs
+    date: datetime.date, template: pathlib.Path, template_map: Dict[str, Any]
 ):
-    if phase is not None:
-        kwargs["phase"] = phase.value
+    if phase := template_map.pop("phase", None):
+        template_map["phase"] = phase.value
 
     logger.info(
-        f"Inserting {template} with params {kwargs} at {date.strftime('%d %b %Y').upper()}"
+        f"Inserting {template} with params {template_map} at {date.strftime('%d %b %Y').upper()}"
     )
     return (
         f"--start {template}\n\n"
-        f"{Template(template.read_text()).render(**kwargs)}\n\n"
+        f"{Template(template.read_text()).render(**template_map)}\n\n"
         f"--end {template}\n\n"
     )
 

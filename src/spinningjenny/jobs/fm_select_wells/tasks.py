@@ -4,7 +4,7 @@ import logging
 from typing import Callable, Optional, Tuple
 
 from spinningjenny.jobs.shared.converters import rescale_value
-from spinningjenny.jobs.shared.models import WellListModel
+from spinningjenny.jobs.shared.models import WellConfig
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +71,7 @@ def get_well_number(
 
 
 def select_wells(
-    wells: WellListModel,
+    wells: WellConfig,
     max_date: datetime.date,
     number_of_wells: int,
 ) -> None:

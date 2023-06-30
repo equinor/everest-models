@@ -11,6 +11,12 @@ from spinningjenny.jobs.shared.converters import path_to_str
 from spinningjenny.jobs.shared.models.phase import BaseEnum
 
 
+def _is_complex_field(value: typing.Any) -> bool:
+    return inspect.isclass(value) and any(
+        issubclass(value, klass) for klass in (BaseEnum, dict)
+    )
+
+
 class BaseConfig(BaseModel):
     """Mutable custom pydantic BaseModel configuration with schema specification renderer."""
 
@@ -19,9 +25,7 @@ class BaseConfig(BaseModel):
         arbitrary_types_allowed = False
         underscore_attrs_are_private = True
         extra = Extra.forbid
-        json_encoders = {
-            pathlib.Path: path_to_str,
-        }
+        json_encoders = {pathlib.Path: path_to_str}
 
     def json_dump(self, output: pathlib.Path) -> None:
         """Write instance state to a JSON file.
@@ -61,7 +65,7 @@ class BaseConfig(BaseModel):
     @classmethod
     def _unravel_nested(cls, typ):
         def builtin_types_to_string(builtin):
-            if inspect.isclass(builtin) and issubclass(builtin, BaseEnum):
+            if _is_complex_field(builtin):
                 return builtin.value_type()
             return {int: "integer", str: "string"}.get(builtin) or builtin.__name__
 
@@ -87,11 +91,7 @@ class BaseConfig(BaseModel):
         for field, model in cls.__fields__.items():
             value = (
                 cls._unravel_nested(model.outer_type_)
-                if model.is_complex()
-                or (
-                    inspect.isclass(model.outer_type_)
-                    and issubclass(model.outer_type_, BaseEnum)
-                )
+                if model.is_complex() or _is_complex_field(model.outer_type_)
                 else cls._field_properties(model)
             )
             yield field, value

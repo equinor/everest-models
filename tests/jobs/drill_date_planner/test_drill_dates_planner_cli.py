@@ -7,7 +7,7 @@ import pytest
 from sub_testdata import DRILL_DATE_PLANNER as TEST_DATA
 
 from spinningjenny.jobs.fm_drill_date_planner import cli
-from spinningjenny.jobs.shared.models import WellListModel
+from spinningjenny.jobs.shared.models import WellConfig
 
 
 @pytest.fixture(scope="module")
@@ -27,7 +27,7 @@ def missing_controls(*args, **kwargs):
 
 
 def missing_well(*args, **kwargs):
-    wells = WellListModel.parse_file("wells.json")
+    wells = WellConfig.parse_file("wells.json")
     wells.__root__ = (well for well in wells if int(well.name[-1]) % 2)
     return wells
 
@@ -54,7 +54,7 @@ def test_drill_date_planner_lint(drill_date_planner_args, copy_testdata_tmpdir):
 
 
 class Options(NamedTuple):
-    input: WellListModel
+    input: WellConfig
     optimizer: Dict[str, float]
     bounds: Tuple[float, float] = (0.1, 1.0)
     max_days: int = 300
@@ -105,7 +105,7 @@ def test_drill_date_planner_missing_well(
         "build_argument_parser",
         lambda: MockParser(
             Options(
-                input=WellListModel.parse_file("wells.json"),
+                input=WellConfig.parse_file("wells.json"),
                 optimizer=missing_controls(),
             )
         ),

@@ -13,7 +13,7 @@ from spinningjenny.jobs.shared.arguments import (
     bootstrap_parser,
     parse_file,
 )
-from spinningjenny.jobs.shared.models.wells import WellListModel
+from spinningjenny.jobs.shared.models.wells import WellConfig
 
 CONFIG_ARG_KEY = ["--config", "-c"]
 RATE_CONSTRAINTS_ARG_KEY = ["--rate-constraints", "-rc"]
@@ -25,7 +25,7 @@ SCHEMAS = {
     "rate-constraints": Constraints,
     "phase-constraints": Constraints,
     "duration-constraints": Constraints,
-    "input": WellListModel,
+    "input": WellConfig,
 }
 
 
@@ -54,6 +54,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     )
     add_wells_input_argument(
         required_group,
+        schema=WellConfig,
         help="""
         File in json format containing well names and well opening times,
         should be specified in Everest config (wells.json).

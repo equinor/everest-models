@@ -5,8 +5,8 @@ import pytest
 from pydantic import ValidationError
 from sub_testdata import ADD_TEMPLATE as TEST_DATA
 
-from spinningjenny.jobs.fm_add_templates.template_model import (
-    Key,
+from spinningjenny.jobs.fm_add_templates.config_model import (
+    Keys,
     Template,
     TemplateConfig,
 )
@@ -32,23 +32,17 @@ def test_template_model_fields(add_tmpl_config):
     template = add_tmpl_config.templates[0]
     assert isinstance(template, Template)
     assert isinstance(template.file, pathlib.Path)
-    assert isinstance(template.keys, Key)
-    assert isinstance(template.keys.opname, str)
-    assert isinstance(add_tmpl_config.templates[3].keys.phase, PhaseEnum)
+    assert isinstance(template.keys, dict)
+    assert isinstance(template.keys["opname"], str)
+    assert isinstance(add_tmpl_config.templates[3].keys["phase"], PhaseEnum)
 
-    with pytest.raises(TypeError, match="allow_mutation set to False"):
-        template.file = "does_not_exist.txt"
-        template.keys = Key(opname="str")
-
-    with pytest.raises(TypeError, match="immutable"):
+    with pytest.raises(
+        TypeError, match="is immutable and does not support item assignment"
+    ):
         add_tmpl_config.templates = ()
-        template.keys.opname = "str"
-        template.keys.phase = "str"
-
-    assert isinstance(template.is_utilized, bool)
-    assert not template.is_utilized
-    template.is_utilized = True
-    assert template.is_utilized
+        template.file = "does_not_exist.txt"
+        template.keys = Keys(opname="str")
+        template.keys["opname"] = "str"
 
 
 def test_template_model_minimum_fields(template_dict):
@@ -68,14 +62,10 @@ def test_template_model_file(template_dict):
 
 
 def test_key_equal_operator(template_dict):
-    templates = TemplateConfig.parse_obj(template_dict)
-    keys = templates.templates[0].keys
-    assert keys == Key(opname="open")
-    assert keys != Key(opname="not_open")
-    assert keys != Key(opname="open", phase="water")
+    template = TemplateConfig.parse_obj(template_dict).templates[0]
     op = Operation(date="2000-12-23", opname="open")
-    assert keys == op
-    op.rate = 2.0
-    assert keys == op
-    op.phase = "water"
-    assert keys != op
+    assert template.matching_keys(op)
+    op.tokens["rate"] = 2.0
+    assert template.matching_keys(op)
+    op.tokens["phase"] = "water"
+    assert not template.matching_keys(op)

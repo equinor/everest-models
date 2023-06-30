@@ -5,10 +5,10 @@ from spinningjenny.jobs.shared.arguments import (
     add_wells_input_argument,
     bootstrap_parser,
 )
-from spinningjenny.jobs.shared.models.wells import WellListModel
+from spinningjenny.jobs.shared.models.wells import WellConfig
 from spinningjenny.jobs.shared.validators import is_gt_zero, valid_input_file
 
-SCHEMAS = {"input": WellListModel}
+SCHEMAS = {"input": WellConfig}
 
 
 def build_argument_parser():

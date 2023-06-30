@@ -1,16 +1,16 @@
 from functools import partial
 
-from spinningjenny.jobs.fm_add_templates.template_model import TemplateConfig
+from spinningjenny.jobs.fm_add_templates.config_model import TemplateConfig
 from spinningjenny.jobs.shared.arguments import (
     SchemaAction,
     add_output_argument,
     add_wells_input_argument,
     bootstrap_parser,
 )
-from spinningjenny.jobs.shared.models.wells import WellListModel
+from spinningjenny.jobs.shared.models import WellConfig
 from spinningjenny.jobs.shared.validators import parse_file
 
-SCHEMAS = {"config": TemplateConfig, "input": WellListModel}
+SCHEMAS = {"config": TemplateConfig, "input": WellConfig}
 
 
 def build_argument_parser():
@@ -24,6 +24,7 @@ def build_argument_parser():
     )
     add_wells_input_argument(
         required_group,
+        schema=WellConfig,
         help="Input file that requires template paths. Json file expected ex: wells.json",
     )
     add_output_argument(required_group, help="Output file")

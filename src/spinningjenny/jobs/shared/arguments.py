@@ -112,7 +112,7 @@ def add_wells_input_argument(
     parser: argparse.ArgumentParser,
     *,
     required: bool = True,
-    schema: models.BaseConfig = models.WellListModel,
+    schema: models.BaseConfig = models.WellConfig,
     **kwargs,
 ) -> None:
     """Add wells argument to parser
@@ -131,7 +131,7 @@ def add_wells_input_argument(
         required=required,
         **kwargs,
     )
-    SchemaAction.register_single_model("/".join(arg), models.WellListModel)
+    SchemaAction.register_single_model("/".join(arg), models.WellConfig)
 
 
 def add_output_argument(

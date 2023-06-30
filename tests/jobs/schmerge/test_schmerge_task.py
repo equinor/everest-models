@@ -40,9 +40,11 @@ RPTRST
                 datetime.date(2000, 1, 1): [
                     {
                         "template": pathlib.Path("wconinje.jinja"),
-                        "name": "SINGLE",
-                        "phase": PhaseEnum.WATER,
-                        "rate": 300.4,
+                        "template_map": {
+                            "name": "SINGLE",
+                            "phase": PhaseEnum.WATER,
+                            "rate": 300.4,
+                        },
                     }
                 ]
             },
@@ -57,9 +59,11 @@ RPTRST
                 datetime.date(2000, 3, 1): [
                     {
                         "template": pathlib.Path("wconinje.jinja"),
-                        "name": "SINGLE",
-                        "phase": PhaseEnum.WATER,
-                        "rate": 300.4,
+                        "template_map": {
+                            "name": "SINGLE",
+                            "phase": PhaseEnum.WATER,
+                            "rate": 300.4,
+                        },
                     }
                 ]
             },
@@ -75,13 +79,17 @@ RPTRST
                 datetime.date(2000, 3, 1): [
                     {
                         "template": pathlib.Path("wconinje.jinja"),
-                        "name": "MULTI1",
-                        "phase": PhaseEnum.WATER,
-                        "rate": 300.4,
+                        "template_map": {
+                            "name": "MULTI1",
+                            "phase": PhaseEnum.WATER,
+                            "rate": 300.4,
+                        },
                     },
                     {
                         "template": pathlib.Path("welopen.jinja"),
-                        "name": "MULTI2",
+                        "template_map": {
+                            "name": "MULTI2",
+                        },
                     },
                 ]
             },

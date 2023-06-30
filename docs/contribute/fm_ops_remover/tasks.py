@@ -1,9 +1,9 @@
 from typing import Iterable
 
-from spinningjenny.jobs.shared.models import WellListModel
+from spinningjenny.jobs.shared.models import WellConfig
 
 
-def remove_operations(wells: WellListModel, well_names: Iterable[str]) -> None:
+def remove_operations(wells: WellConfig, well_names: Iterable[str]) -> None:
     """Set well operations to None for well's name in `well_names`.
 
     Args:

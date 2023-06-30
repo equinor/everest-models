@@ -5,8 +5,7 @@ from typing import Dict
 import pytest
 from pydantic import ValidationError
 
-from spinningjenny.jobs.shared.models import PhaseEnum, WellListModel
-from spinningjenny.jobs.shared.models.wells import Operation, WellModel
+from spinningjenny.jobs.shared.models import Operation, PhaseEnum, Well, WellConfig
 
 
 @pytest.fixture(scope="module")
@@ -50,13 +49,26 @@ def well_dict(path_test_data) -> Dict:
 
 @pytest.fixture(scope="module")
 def well_model(well_dict):
-    return WellListModel.parse_obj(well_dict)
+    return WellConfig.parse_obj(well_dict)
+
+
+def test_operation_model_field():
+    data = {
+        "date": "2019-09-15",
+        "opname": "open",
+        "tokens": {"s": 12, "phase": "water"},
+    }
+    operation = Operation.parse_obj(data)
+    assert operation
+    assert isinstance(operation.tokens["phase"], PhaseEnum)
+    with pytest.raises(ValidationError):
+        Operation.parse_obj({"z": 3.3, **data})
 
 
 def test_well_model_fields(well_model):
     assert isinstance(well_model.__root__, tuple)
     well = well_model[0]
-    assert isinstance(well, WellModel)
+    assert isinstance(well, Well)
     assert isinstance(well.name, str)
     assert well.name == "WELL1"
     with pytest.raises(TypeError, match="allow_mutation set to False"):
@@ -74,19 +86,19 @@ def test_well_model_fields(well_model):
     with pytest.raises(ValidationError):
         ops2[0].template = "does_not_exist.txt"  # file does not exist
         ops2[0].template = "src"  # not a file
-    assert isinstance(ops2[1].phase, PhaseEnum)
-    assert isinstance(ops2[1].rate, float)
+    assert isinstance(ops2[1].tokens["phase"], PhaseEnum)
+    assert isinstance(ops2[1].tokens["rate"], float)
 
 
 def test_well_model_minimum_fields():
-    assert not WellListModel.parse_obj([])  # does not throw error
-    assert WellListModel.parse_obj([dict(name="WELL", drill_time=23)])
+    assert not WellConfig.parse_obj([])  # does not throw error
+    assert WellConfig.parse_obj([dict(name="WELL", drill_time=23)])
 
 
 def test_well_model_is_subscribable(well_model):
-    wells = WellListModel.parse_obj([])
+    wells = WellConfig.parse_obj([])
     assert not wells.__root__
-    assert len([well for well in wells]) == 0
+    assert not list(wells)
     assert well_model[1]
 
 
@@ -95,11 +107,11 @@ def test_well_model_to_dict(well_model):
     assert tuple(well_dict.keys()) == ("WELL1", "INJECT1")
     for index, (name, value) in enumerate(well_dict.items()):
         assert name == value.name
-        assert isinstance(value, WellModel)
+        assert isinstance(value, Well)
         assert well_model[index] == value
 
 
-def test_well_model_missing_templates(well_model):
+def test_legacy_well_model_missing_templates(well_model):
     assert not tuple(well_model[0].missing_templates())
     assert tuple(well_model[1].missing_templates()) == (
         ("open", datetime.date.fromisoformat("2019-05-12")),

@@ -1,16 +1,17 @@
 import itertools
 import logging
+import pathlib
 from typing import Iterator, Tuple
 
-from spinningjenny.jobs.fm_add_templates.template_model import Template, TemplateConfig
+from spinningjenny.jobs.fm_add_templates.config_model import Template, TemplateConfig
 from spinningjenny.jobs.shared.converters import path_to_str
-from spinningjenny.jobs.shared.models import Operation, WellListModel
+from spinningjenny.jobs.shared.models import Operation, WellConfig
 
 logger = logging.getLogger(__name__)
 
 
 def collect_matching(
-    templates: TemplateConfig, wells: WellListModel
+    templates: TemplateConfig, wells: WellConfig
 ) -> Iterator[Tuple[str, Operation, TemplateConfig]]:
     """Collect data from template and well model, where template's keys and well's operation match.
 
@@ -23,12 +24,16 @@ def collect_matching(
     """
     for well in wells:
         for op, template in (
-            (x, y) for x, y in itertools.product(well.ops, templates) if y.keys == x
+            (x, y)
+            for x, y in itertools.product(well.ops, templates)
+            if y.matching_keys(x)
         ):
             yield well.name, op, template
 
 
-def add_templates(well_name: str, operation: Operation, template: Template) -> None:
+def add_templates(
+    well_name: str, operation: Operation, template: Template
+) -> pathlib.Path:
     """Set well operation template variable to template filepath.
 
     Mark template as used.
@@ -43,4 +48,13 @@ def add_templates(well_name: str, operation: Operation, template: Template) -> N
         f"Template '{path_to_str(template.file)}' was inserted for "
         f"well '{well_name}' date '{operation.date}' operation '{operation.opname}'"
     )
-    template.is_utilized = True
+    return template.file
+
+
+def insert_template_with_matching_well_operation(
+    templates: TemplateConfig, wells: WellConfig
+) -> Iterator[pathlib.Path]:
+    return (
+        add_templates(well_name, operation, template)
+        for well_name, operation, template in collect_matching(templates, wells)
+    )

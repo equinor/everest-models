@@ -1,34 +1,43 @@
 from collections import defaultdict
-from typing import Tuple
+from typing import Tuple, TypeVar
 
 from pydantic import FilePath
 
-from spinningjenny.jobs.shared.models.wells import Operation, WellListModel, WellModel
+from spinningjenny.jobs.shared.models import Operation, Well, WellConfig
+from spinningjenny.jobs.shared.models.operation import LegacyOperation
 
 
 class _Operation(Operation):
     template: FilePath
 
 
-class Well(WellModel):
-    ops: Tuple[_Operation, ...]
+class _LegacyOperation(LegacyOperation):
+    template: FilePath
 
 
-class Wells(WellListModel):
+OperationType = TypeVar("OperationType", _Operation, _LegacyOperation)
+
+
+class Well(Well):
+    ops: Tuple[OperationType, ...]
+
+
+class Wells(WellConfig):
     __root__: Tuple[Well, ...]
 
     def dated_operations(self):
         operations_dict = defaultdict(list)
         for well in self:
-            for operations in well.ops:
-                operations_dict[operations.date].append(
+            for operation in well.ops:
+                operations_dict[operation.date].append(
                     {
-                        **operations.dict(
-                            include={"rate", "phase", "template"},
-                            exclude_none=True,
-                            exclude_unset=True,
+                        "template_map": dict(
+                            filter(
+                                lambda x: x[1] is not None,
+                                {"name": well.name, **operation.tokens}.items(),
+                            )
                         ),
-                        "name": well.name,
+                        "template": operation.template,
                     }
                 )
         return operations_dict

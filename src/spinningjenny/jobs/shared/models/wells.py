@@ -1,25 +1,22 @@
 import datetime
 from typing import Dict, Iterable, Iterator, Optional, Tuple
 
-from pydantic import Field, FilePath, ValidationError, validator
+from pydantic import Field, validator
 
-from spinningjenny.jobs.shared.models import BaseConfig, PhaseEnum
-
-
-class Operation(BaseConfig):
-    date: datetime.date
-    opname: str
-    phase: Optional[PhaseEnum] = None
-    template: Optional[FilePath] = None
-    rate: Optional[float] = None
+from spinningjenny.jobs.shared.models import BaseConfig
+from spinningjenny.jobs.shared.models.operation import (
+    Operation,
+    OperationType,
+    update_legacy_operations,
+)
 
 
-class WellModel(BaseConfig):
+class Well(BaseConfig):
     readydate: Optional[datetime.date] = None
     completion_date: Optional[datetime.date] = None
     drill_time: Optional[int] = None
     name: str = Field(..., allow_mutation=False)
-    ops: Tuple[Operation, ...] = Field(default_factory=tuple)
+    ops: Tuple[OperationType, ...] = Field(default_factory=tuple)
 
     def missing_templates(self) -> Iterator[Operation]:
         return ((op.opname, op.date) for op in self.ops if op.template is None)
@@ -28,22 +25,27 @@ class WellModel(BaseConfig):
         return hash(self.name)
 
     @validator("drill_time")
-    def is_positive_drill_time(cls, drill_time):
+    def is_positive_drill_time(cls, drill_time: Optional[int]) -> Optional[int]:
         if drill_time is not None and drill_time <= 0:
-            ValidationError("Drill_time must be greater than 0")
+            ValueError("Drill_time must be greater than 0")
         return drill_time
 
+    # remove ones deprecation event is over
+    @validator("ops")
+    def legacy_operations(cls, ops):
+        return update_legacy_operations(ops)
 
-class WellListModel(BaseConfig):
-    __root__: Tuple[WellModel, ...]
 
-    def __iter__(self) -> Iterator[WellModel]:
+class WellConfig(BaseConfig):
+    __root__: Tuple[Well, ...]
+
+    def __iter__(self) -> Iterator[Well]:
         return iter(self.__root__)
 
-    def __getitem__(self, item) -> WellModel:
+    def __getitem__(self, item) -> Well:
         return self.__root__[item]
 
-    def to_dict(self) -> Dict[str, WellModel]:
+    def to_dict(self) -> Dict[str, Well]:
         return {well.name: well for well in self}
 
     def set_wells(self, value: Iterable):

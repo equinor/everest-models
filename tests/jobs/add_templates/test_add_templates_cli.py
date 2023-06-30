@@ -33,7 +33,8 @@ def test_main_entry_point(copy_testdata_tmpdir, add_template_args, caplog):
 
     # Check job gives warning for unused template
     assert (
-        "Template ./templates/notused.tmpl was not inserted, check insertion keys!"
+        "Template(s) not inserted:\n\t./templates/notused.tmpl\n\tPlease, check insertion keys!"
+        # "Template ./templates/notused.tmpl was not inserted, check insertion keys!"
         in log_messages
     )
 

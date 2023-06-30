@@ -3,7 +3,7 @@ import datetime
 import json
 import pathlib
 from os import W_OK, access
-from typing import Any, Dict
+from typing import Any, Dict, Iterable
 
 import ruamel.yaml as yaml
 from ecl.summary import EclSum
@@ -155,6 +155,12 @@ def is_gt_zero(value: str, msg: str) -> int:
     if (num := int(value)) <= 0:
         raise argparse.ArgumentTypeError(msg)
     return num
+
+
+def validate_no_extra_fields(*fields, values: Iterable[str]):
+    if extra := ", ".join(set(values) - set(fields)):
+        raise ValueError(f"Extra field(s) not allowed: {extra}")
+    return values
 
 
 def _prettify_validation_error_message(error: ValidationError) -> str:

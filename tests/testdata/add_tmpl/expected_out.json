@@ -23,20 +23,26 @@
       {
         "date": "2000-04-13",
         "opname": "rate",
-        "phase": "WATER",
-        "template": "./templates/template_water_inject.tmpl"
+        "template": "./templates/template_water_inject.tmpl",
+        "tokens": {
+          "phase": "WATER"
+        }
       },
       {
         "date": "2000-05-13",
         "opname": "rate",
-        "phase": "OIL",
-        "template": "./templates/template_oil_prod.tmpl"
+        "template": "./templates/template_oil_prod.tmpl",
+        "tokens": {
+          "phase": "OIL"
+        }
       },
       {
         "date": "2000-06-13",
         "opname": "rate",
-        "phase": "WATER",
-        "template": "./templates/template_water_inject.tmpl"
+        "template": "./templates/template_water_inject.tmpl",
+        "tokens": {
+          "phase": "WATER"
+        }
       },
       {
         "date": "2000-07-13",
@@ -58,8 +64,10 @@
       {
         "date": "2000-05-26",
         "opname": "rate",
-        "phase": "WATER",
-        "template": "./templates/template_water_inject.tmpl"
+        "template": "./templates/template_water_inject.tmpl",
+        "tokens": {
+          "phase": "WATER"
+        }
       }
     ],
     "readydate": "2000-05-26"
@@ -76,14 +84,18 @@
       {
         "date": "2000-05-13",
         "opname": "rate",
-        "phase": "OIL",
-        "template": "./templates/template_oil_prod.tmpl"
+        "template": "./templates/template_oil_prod.tmpl",
+        "tokens": {
+          "phase": "OIL"
+        }
       },
       {
         "date": "2000-06-13",
         "opname": "rate",
-        "phase": "WATER",
-        "template": "./templates/template_water_inject.tmpl"
+        "template": "./templates/template_water_inject.tmpl",
+        "tokens": {
+          "phase": "WATER"
+        }
       }
     ],
     "readydate": "2000-05-06"

@@ -4,9 +4,9 @@ from spinningjenny.jobs.shared.arguments import (
     add_output_argument,
     get_parser,
 )
-from spinningjenny.jobs.shared.models.wells import WellListModel
+from spinningjenny.jobs.shared.models.wells import WellConfig
 
-SCHEMAS = {"input": WellListModel}
+SCHEMAS = {"input": WellConfig}
 
 
 def build_argument_parser():

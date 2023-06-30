@@ -1,7 +1,7 @@
 import pytest
 from sub_testdata import ADD_TEMPLATE as TEST_DATA
 
-from spinningjenny.jobs.fm_add_templates.template_model import TemplateConfig
+from spinningjenny.jobs.fm_add_templates.config_model import TemplateConfig
 from spinningjenny.jobs.shared.validators import parse_file
 
 

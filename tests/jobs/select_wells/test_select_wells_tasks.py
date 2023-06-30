@@ -5,7 +5,7 @@ from typing import NamedTuple, Tuple
 import pytest
 
 from spinningjenny.jobs.fm_select_wells.tasks import get_well_number, select_wells
-from spinningjenny.jobs.shared.models import WellListModel
+from spinningjenny.jobs.shared.models import WellConfig
 
 
 class FileOptions(NamedTuple):
@@ -22,7 +22,7 @@ class ValueOptions(NamedTuple):
 
 @pytest.fixture(scope="module")
 def well_list(path_test_data):
-    return WellListModel.parse_file(path_test_data / "select_wells/input.json")
+    return WellConfig.parse_file(path_test_data / "select_wells/input.json")
 
 
 def test_get_well_number_no_well_number():

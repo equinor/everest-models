@@ -32,7 +32,7 @@ def create_well_operations(
     for index, event in events.items():
         operation = Operation.parse_obj(
             {
-                **{
+                "tokens": {
                     constraint_type: constraint.optimum_value(
                         constraints[constraint_type].get(well_name, {}).get(index)
                         if constraint_type in constraints
