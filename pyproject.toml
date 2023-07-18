@@ -16,6 +16,7 @@ classifiers = [
     "Programming language :: Python :: 3.8",
     "Programming language :: Python :: 3.9",
     "Programming language :: Python :: 3.10",
+    "Programming language :: Python :: 3.11",
 ]
 dependencies = [
     "ecl>=2.13.2",
@@ -24,7 +25,7 @@ dependencies = [
     "ortools>=9.5.2237",
     "ruamel.yaml>=0.17.21",
     "stea>=0.5.2",
-    "pydantic >= 1.10.2",
+    "pydantic < 2",
 ]
 dynamic = [
     "version",
