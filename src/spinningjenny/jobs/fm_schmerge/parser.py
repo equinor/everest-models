@@ -4,10 +4,9 @@ from spinningjenny.jobs.shared.arguments import (
     add_wells_input_argument,
     bootstrap_parser,
 )
-from spinningjenny.jobs.shared.models.wells import WellListModel
 from spinningjenny.jobs.shared.validators import valid_schedule_template
 
-SCHEMAS = {"input": WellListModel}
+SCHEMAS = {"input": Wells}
 
 
 def build_argument_parser():

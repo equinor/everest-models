@@ -1,7 +1,7 @@
 import logging
 
 from spinningjenny.jobs.fm_schmerge.parser import build_argument_parser
-from spinningjenny.jobs.fm_schmerge.tasks import ScheduleInserter
+from spinningjenny.jobs.fm_schmerge.tasks import merge_operations_onto_schedule
 
 logger = logging.getLogger(__name__)
 
@@ -13,10 +13,10 @@ def main_entry_point(args=None):
     if options.lint:
         args_parser.exit()
 
-    inserter = ScheduleInserter(options.schedule)
-    inserter.insert_operations(options.input.dated_operations())
-
-    options.output.write_text(inserter.schedule)
+    schedule = merge_operations_onto_schedule(
+        options.input.dated_operations(), options.schedule
+    )
+    options.output.write_text(schedule)
 
 
 if __name__ == "__main__":

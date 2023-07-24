@@ -4,7 +4,7 @@ import pathlib
 import pytest
 from sub_testdata import SCHMERGE as TEST_DATA
 
-from spinningjenny.jobs.fm_schmerge.tasks import ScheduleInserter
+from spinningjenny.jobs.fm_schmerge.tasks import merge_operations_onto_schedule
 from spinningjenny.jobs.shared.models.phase import PhaseEnum
 
 SCHEDULE_HEAD = """
@@ -31,7 +31,8 @@ RPTRST
         ),
         pytest.param(
             {datetime.date(2000, 1, 1): []},
-            "\n\nDATES\n 01 JAN 2000 /\n/\n\nDATES\n 01 JAN 2001 /\n/\n",
+            "\n\n-- MODIFIED by schmerge forward model\n\n"
+            "DATES\n 01 JAN 2000 /\n/\n\nDATES\n 01 JAN 2001 /\n/\n",
             id="existing_date",
         ),
         pytest.param(
@@ -96,19 +97,20 @@ RPTRST
 )
 def test_insert_operations(copy_testdata_tmpdir, operations, expected):
     copy_testdata_tmpdir(f"{TEST_DATA}/files")
-    inserter = ScheduleInserter(
-        f"{SCHEDULE_HEAD}\n\nDATES\n 01 JAN 2000 /\n/\n\nDATES\n 01 JAN 2001 /\n/\n"
+    assert (
+        merge_operations_onto_schedule(
+            operations,
+            f"{SCHEDULE_HEAD}\n\nDATES\n 01 JAN 2000 /\n/\n\nDATES\n 01 JAN 2001 /\n/\n",
+        )
+        == SCHEDULE_HEAD + expected
     )
-    inserter.insert_operations(operations)
-    assert inserter.schedule == SCHEDULE_HEAD + expected
 
 
 def test_insert_operations_no_initial_date():
-    inserter = ScheduleInserter(f"{SCHEDULE_HEAD}\n")
-    inserter.insert_operations(
-        {datetime.date(2000, 3, 1): [], datetime.date(2005, 1, 1): []}
-    )
-    assert inserter.schedule == (
+    assert merge_operations_onto_schedule(
+        {datetime.date(2000, 3, 1): [], datetime.date(2005, 1, 1): []},
+        f"{SCHEDULE_HEAD}\n",
+    ) == (
         f"{SCHEDULE_HEAD}\n\n-- MODIFIED by schmerge forward model\n\n"
         "DATES\n 01 MAR 2000 / --ADDED\n/\n\n"
         "DATES\n 01 JAN 2005 / --ADDED\n/\n\n"

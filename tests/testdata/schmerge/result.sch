@@ -167,6 +167,14 @@ DATES
  28 JLY 2020 /
 /
 
+--start files/welopen.jinja
+
+WELOPEN
+  'PROD4' 'OPEN' /
+/
+
+--end files/welopen.jinja
+
 DATES
  25 OCT 2020 /
 /

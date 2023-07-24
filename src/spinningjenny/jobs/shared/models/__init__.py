@@ -3,7 +3,6 @@ from spinningjenny.jobs.shared.models.base_config import (
     BaseFrozenConfig,
     DictRootMixin,
 )
-from spinningjenny.jobs.shared.models.eclipse import EclipseDateMatch, eclipse_dates
 from spinningjenny.jobs.shared.models.phase import BaseEnum, PhaseEnum
 from spinningjenny.jobs.shared.models.wells import Operation, WellListModel, WellModel
 
@@ -16,6 +15,4 @@ __all__ = [
     "Operation",
     "DictRootMixin",
     "PhaseEnum",
-    "EclipseDateMatch",
-    "eclipse_dates",
 ]
