@@ -3,14 +3,16 @@ from spinningjenny.jobs.shared.arguments import (
     add_output_argument,
     add_wells_input_argument,
     bootstrap_parser,
+    get_parser,
 )
 from spinningjenny.jobs.shared.validators import valid_schedule_template
 
 SCHEMAS = {"input": Wells}
 
 
+@bootstrap_parser
 def build_argument_parser():
-    parser, required_group = bootstrap_parser(
+    parser, required_group = get_parser(
         description="This module works on a schedule file intended for reservoir simulation"
         "(e.g. eclipse or flow), and injects templates at given dates. If the report"
         "date does not exist in advance it will be added as an independent step. "

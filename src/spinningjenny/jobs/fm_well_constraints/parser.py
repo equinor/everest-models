@@ -8,9 +8,11 @@ from spinningjenny.jobs.fm_well_constraints.models import (
 )
 from spinningjenny.jobs.shared.arguments import (
     SchemaAction,
+    add_file_schemas,
+    add_lint_argument,
     add_output_argument,
     add_wells_input_argument,
-    bootstrap_parser,
+    get_parser,
     parse_file,
 )
 from spinningjenny.jobs.shared.models.wells import WellConfig
@@ -28,6 +30,8 @@ SCHEMAS = {
     "input": WellConfig,
 }
 
+constraint_parameters = dict(default=None, type=partial(parse_file, schema=Constraints))
+
 
 def _join_argument_key(key: Iterable[str]) -> str:
     return "/".join(key)
@@ -44,7 +48,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
             ): Constraints,
         }
     )
-    parser, required_group = bootstrap_parser(
+    parser, required_group = get_parser(
         description="""
         A module that given a list of boundaries and well constraints creates a list of 
         well events. Varying phase, rate and time of each event is supported. Rate and 
@@ -60,6 +64,8 @@ def build_argument_parser() -> argparse.ArgumentParser:
         should be specified in Everest config (wells.json).
         """,
     )
+    add_file_schemas(parser)
+    add_lint_argument(parser)
     add_output_argument(
         required_group,
         help="Name of the output file. The format will be yaml.",
@@ -72,9 +78,6 @@ def build_argument_parser() -> argparse.ArgumentParser:
         Configuration file in yaml format with names, events and boundaries for
         constraints
         """,
-    )
-    constraint_parameters = dict(
-        default=None, type=partial(parse_file, schema=Constraints)
     )
     parser.add_argument(
         *RATE_CONSTRAINTS_ARG_KEY,

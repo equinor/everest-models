@@ -7,6 +7,7 @@ from spinningjenny.jobs.shared.arguments import (
     add_summary_argument,
     add_wells_input_argument,
     bootstrap_parser,
+    get_parser,
 )
 from spinningjenny.jobs.shared.models.wells import WellConfig
 from spinningjenny.jobs.shared.validators import parse_file, valid_iso_date
@@ -16,9 +17,10 @@ CONFIG_ARGUMENT = ["-c", "--config"]
 SCHEMAS = {"config": NPVConfig, "input": WellConfig}
 
 
+@bootstrap_parser
 def build_argument_parser():
     SchemaAction.register_single_model("/".join(CONFIG_ARGUMENT), NPVConfig)
-    parser, required_group = bootstrap_parser(
+    parser, required_group = get_parser(
         description="Module to calculate the NPV based on an eclipse simulation. "
         "All optional args, except: lint, schemas, input and output, is also configurable through the config file."
     )

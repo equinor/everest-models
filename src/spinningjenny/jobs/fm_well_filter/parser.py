@@ -2,6 +2,7 @@ from spinningjenny.jobs.shared.arguments import (
     add_output_argument,
     add_wells_input_argument,
     bootstrap_parser,
+    get_parser,
 )
 from spinningjenny.jobs.shared.models.wells import WellConfig
 from spinningjenny.jobs.shared.validators import valid_input_file
@@ -9,16 +10,15 @@ from spinningjenny.jobs.shared.validators import valid_input_file
 SCHEMAS = {"input": WellConfig}
 
 
+@bootstrap_parser
 def build_argument_parser():
-    description = (
-        "This module filters out wells using a json string."
+    parser, required_group = get_parser(
+        description="This module filters out wells using a json string."
         "Either the --keep or the --remove flag needs to be set to a json file name"
         "containing a list of well names that are in the keep/remove file, "
         "but not in the input file will be ignored."
         "If both or none of the flags are set, the job give an error."
     )
-
-    parser, required_group = bootstrap_parser(description=description)
     add_wells_input_argument(
         required_group,
         help=(

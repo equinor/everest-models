@@ -6,6 +6,7 @@ from spinningjenny.jobs.shared.arguments import (
     add_output_argument,
     add_wells_input_argument,
     bootstrap_parser,
+    get_parser,
 )
 from spinningjenny.jobs.shared.models.wells import WellConfig
 from spinningjenny.jobs.shared.validators import parse_file, valid_input_file
@@ -18,11 +19,12 @@ SCHEMAS = {
 }
 
 
+@bootstrap_parser
 def build_argument_parser():
     SchemaAction.register_models(
         {_CONFIG_ARGUMENT: DrillPlanConfig, "-opt/--optimizer": Optimizer}
     )
-    parser, required_group = bootstrap_parser(
+    parser, required_group = get_parser(
         description="A module that given a well priority list and a set of constraints, "
         "creates a list of dates for each well to be completed. "
         "Any well may have multiple options as to where it can be drilled, "

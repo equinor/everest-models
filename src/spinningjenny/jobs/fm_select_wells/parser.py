@@ -7,6 +7,7 @@ from spinningjenny.jobs.shared.arguments import (
     add_output_argument,
     add_wells_input_argument,
     bootstrap_parser,
+    get_parser,
 )
 from spinningjenny.jobs.shared.models.wells import WellConfig
 from spinningjenny.jobs.shared.validators import is_gt_zero, parse_file
@@ -19,9 +20,10 @@ def scaled_well_number(value: str) -> float:
 SCHEMAS = {"config": WellNumber, "input": WellConfig}
 
 
+@bootstrap_parser
 def build_argument_parser():
     SchemaAction.register_single_model("file", WellNumber)
-    parser, required_named_arguments = bootstrap_parser(
+    parser, required_named_arguments = get_parser(
         description="Select the first wells from a drill planner output file."
     )
     sub_parser = parser.add_subparsers(

@@ -4,6 +4,7 @@ from spinningjenny.jobs.shared.arguments import (
     add_output_argument,
     add_wells_input_argument,
     bootstrap_parser,
+    get_parser,
 )
 from spinningjenny.jobs.shared.models.wells import WellConfig
 from spinningjenny.jobs.shared.validators import is_gt_zero, valid_input_file
@@ -11,8 +12,9 @@ from spinningjenny.jobs.shared.validators import is_gt_zero, valid_input_file
 SCHEMAS = {"input": WellConfig}
 
 
+@bootstrap_parser
 def build_argument_parser():
-    parser, required_group = bootstrap_parser(
+    parser, required_group = get_parser(
         description="Calculate and write drill times from scaled controls.",
     )
     add_wells_input_argument(
