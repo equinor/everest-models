@@ -43,3 +43,9 @@ def test_well_trajectory_main_entry_point_lint(
         main_entry_point([*well_trajectory_arguments, "--lint"])
 
     assert not any(path.exists() for path in map(Path, well_trajectory_output_files))
+
+
+@pytest.mark.resinsight
+def test_well_trajectory_main_entry_point_resinsight():
+    #  TODO: @verveerpj replace this greenlight test
+    assert True

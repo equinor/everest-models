@@ -1,0 +1,132 @@
+name: Test ResInsight
+
+on:
+ push:
+   branches:
+     - main
+   tags: "*"
+ pull_request:
+
+
+env:
+  ERT_SHOW_BACKTRACE: 1
+  RESINSIGHT_VERSION: "2023.10"
+  INSTALL_DIR: local
+
+jobs:
+  build_dependencies:
+    name: "build-deps_${{ matrix.os }}_py-${{ matrix.python-version }}"
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.8]
+        os: [ubuntu-22.04]
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - uses: "actions/setup-python@v4"
+        with:
+          python-version: "${{ matrix.python-version }}"
+      - uses: "actions/cache@v3"
+        id: cache-package
+        with:
+          key: ${{ matrix.os }}_python-${{ matrix.python-version }}_resinsight_${{ env.RESINSIGHT_VERSION }}
+          path: ${{ github.workspace }}/resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
+      - name: Install dependencies
+        if: steps.cache-package.outputs.cache-hit != 'true'
+        run: |
+          sudo apt update
+          sudo apt -y install \
+          build-essential \
+          gcc-12 g++-12 \
+          curl zip unzip tar \
+          qtbase5-dev libqt5svg5-dev qtbase5-private-dev \
+          pip install -U pip
+          pip install cmake aqtinstall
+      - name: Install Qt
+        if: steps.cache-package.outputs.cache-hit != 'true'
+        run: |
+          aqt install-qt linux desktop 5.15.2 -m qtcharts -O ${{ github.workspace }}/Qt
+      - name: Switch cpp compiler
+        if: steps.cache-package.outputs.cache-hit != 'true'
+        run: |
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 12
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 12
+          sudo update-alternatives --auto g++
+          sudo update-alternatives --auto gcc
+      - name: Clone ResInsight
+        if: steps.cache-package.outputs.cache-hit != 'true'
+        run: |
+          git clone -b v${{ env.RESINSIGHT_VERSION }} https://github.com/OPM/ResInsight.git
+          cd ResInsight
+          git submodule update --init
+          ThirdParty/vcpkg/bootstrap-vcpkg.sh
+          ThirdParty/vcpkg/vcpkg install grpc boost-filesystem boost-spirit eigen3
+          pip install -r GrpcInterface/Python/requirements.txt
+          # add missing directory that cause resinsight installation to fail
+          mkdir -p GrpcInterface/Python/rips/generated
+      - name: Build ResInsight
+        if: steps.cache-package.outputs.cache-hit != 'true'
+        run: |
+          mkdir ${{ github.workspace }}/ResInsight/cmakebuild
+          cd ${{ github.workspace }}/ResInsight/cmakebuild
+          cmake \
+          -DCMAKE_PREFIX_PATH=${{ github.workspace }}/Qt/5.15.2/gcc_64/lib/cmake \
+          -DRESINSIGHT_ENABLE_GRPC=true \
+          -DVCPKG_TARGET_TRIPLET=x64-linux \
+          -DCMAKE_TOOLCHAIN_FILE=../ThirdParty/vcpkg/scripts/buildsystems/vcpkg.cmake \
+          -DRESINSIGHT_GRPC_PYTHON_EXECUTABLE=$( which python ) \
+          -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/${{ env.INSTALL_DIR }} \
+          ..
+
+          make -j$( nproc ) install
+      - name: Package ResInsight
+        if: steps.cache-package.outputs.cache-hit != 'true'
+        run: |
+          tar zcf ${{ github.workspace }}/resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz ${{ github.workspace }}/${{ env.INSTALL_DIR }}
+      - name: Archive ResInsight
+        uses: actions/upload-artifact@v3
+        with:
+          name: resinsight_${{ env.RESINSIGHT_VERSION }}
+          path: ${{ github.workspace }}/resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
+          retention-days: 5
+
+  tests:
+    needs: build_dependencies
+    if: ${{ always() && needs.build_dependencies.result != 'failed' }}
+    name: "tests_${{ matrix.os }}_py-${{ matrix.python-version }}_${{ matrix.test_type }}"
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.8]
+        os: [ubuntu-22.04]
+        test_type: ['resinsight']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/cache/restore@v3
+        id: restore-cached-package
+        with:
+          key: ${{ matrix.os }}_python-${{ matrix.python-version }}_resinsight_${{ env.RESINSIGHT_VERSION }}
+          path: ${{ github.workspace }}/resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
+
+      - name: Unpack ResInsight
+        run: |
+          cd $HOME
+          tar zxf ${{ github.workspace }}/resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
+          echo "PATH=${PATH}:${HOME}/${INSTALL_DIR}/bin" >> ${GITHUB_ENV}
+
+      - uses: "actions/checkout@v2"
+        with:
+          fetch-depth: 0
+
+      - name: "Install dependencies"
+        run: |
+          pip install --upgrade pip setuptools
+
+      - name: "Install package"
+        run: |
+          pip install .[test]
+
+      - name: "Test package spinningjenny"
+        run: |
+          pytest -m "${{ matrix.test_type }}" -sv --hypothesis-profile ci

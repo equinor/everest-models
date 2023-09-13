@@ -93,6 +93,7 @@ testpaths = [
 ]
 markers = [
     "slow",
+    "resinsight"
 ]
 
 log_cli = 0
