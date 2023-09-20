@@ -5,6 +5,7 @@ import logging
 from .outputs import write_guide_points
 from .parser import build_argument_parser
 from .read_trajectories import read_trajectories
+from .well_trajectory_resinsight import well_trajectory_resinsight
 from .well_trajectory_simple import well_trajectory_simple
 
 logger = logging.getLogger(__name__)
@@ -32,6 +33,19 @@ def main_entry_point(args=None):
             options.config.wells,
             options.config.interpolation,
             options.config.outputs,
+            guide_points,
+        )
+
+    if options.config.connections:
+        if (
+            eclipse_model := options.eclipse_model or options.config.eclipse_model
+        ) is None:
+            args_parser.error("missing eclipse model")
+        if options.config.resinsight_binary is None:
+            args_parser.error("missing ResInsight binary path")
+        well_trajectory_resinsight(
+            options.config,
+            eclipse_model,
             guide_points,
         )
 
