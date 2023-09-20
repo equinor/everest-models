@@ -3,10 +3,10 @@ import pathlib
 import sys
 import typing
 
-import ruamel.yaml as yaml
 from pydantic import BaseModel, Extra
 from pydantic.fields import ModelField
 
+from spinningjenny.jobs.shared import io_utils as io
 from spinningjenny.jobs.shared.converters import path_to_str
 from spinningjenny.jobs.shared.models.phase import BaseEnum
 
@@ -44,13 +44,15 @@ class BaseConfig(BaseModel):
         )
 
     @classmethod
-    def _field_properties(cls, model: ModelField):
-        field_property = cls._get_field_property(model.name)
+    def _field_properties(cls, model: ModelField) -> typing.Dict[str, typing.Any]:
         return {
             "required": model.required,
-            "type": field_property["type"],
             **({"default": model.default} if model.default else {}),
-            **({"format": format} if (format := field_property.get("format")) else {}),
+            **{
+                field: value
+                for field, value in cls._get_field_property(model.name).items()
+                if field in ("type", "oneOf", "format")
+            },
         }
 
     @classmethod
@@ -78,6 +80,12 @@ class BaseConfig(BaseModel):
             return {builtin_types_to_string(key): cls._unravel_nested(value)}
         if origin in (tuple, list):
             return [cls._unravel_nested(arg) for arg in args if arg is not Ellipsis]
+        if origin is typing.Union:
+            return {
+                "one of": [
+                    cls._unravel_nested(arg) for arg in args if arg is not Ellipsis
+                ]
+            }
         if origin is set:
             return [
                 {"unique": True, "value": cls._unravel_nested(arg)}
@@ -91,9 +99,20 @@ class BaseConfig(BaseModel):
         for field, model in cls.__fields__.items():
             value = (
                 cls._unravel_nested(model.outer_type_)
-                if model.is_complex() or _is_complex_field(model.outer_type_)
+                if model.is_complex()
+                or _is_complex_field(model.outer_type_)
+                or (
+                    inspect.isclass(model.outer_type_)
+                    and issubclass(model.outer_type_, BaseEnum)
+                )
+                or typing.get_origin(model.outer_type_) == typing.Union
                 else cls._field_properties(model)
             )
+            if typing.get_origin(model.outer_type_) == typing.Literal:
+                literals = typing.get_args(model.outer_type_)
+                if len(literals) == 1:
+                    literals = literals[0]
+                value["literal"] = literals
             yield field, value
 
     @classmethod
@@ -120,11 +139,7 @@ class BaseConfig(BaseModel):
         Args:
             argument_name (str, optional): Argument name that this schema belongs to. Defaults to None.
         """
-        yml = yaml.YAML(typ="safe", pure=True)
-        yml.explicit_start = True
-        yml.indent(mapping=3, sequence=2, offset=0)
-        yml.explicit_end = True
-        yml.dump(cls.help_schema(argument_name), sys.stdout)
+        io.dump_yaml(cls.help_schema(argument_name), sys.stdout, explicit=True)
 
 
 class BaseFrozenConfig(BaseConfig):

@@ -104,7 +104,7 @@ def add_summary_argument(
         "--summary",
         type=func or valid_ecl_summary,
         required=True,
-        help="Ecl summary file",
+        help="Eclipse summary file",
     )
 
 

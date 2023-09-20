@@ -9,6 +9,8 @@ import ruamel.yaml as yaml
 from ecl.summary import EclSum
 from pydantic import BaseModel, ValidationError
 
+from spinningjenny.jobs.shared import io_utils as io
+
 
 def is_writable_path(value: str) -> pathlib.Path:
     """Validate if given value is a writable filepath.
@@ -41,7 +43,7 @@ def valid_ecl_summary(file_path: str) -> EclSum:
     """Validate eclipse summary file is correct.
 
     Args:
-        file_path (str): Eclips summary filepath
+        file_path (str): Eclipse summary filepath
 
     Returns:
         EclSum: Eclipse summary instance
@@ -52,6 +54,34 @@ def valid_ecl_summary(file_path: str) -> EclSum:
         argparse.ArgumentTypeError(
             f"Could not load eclipse summary from file: {file_path}"
         )
+
+
+def validate_eclipse_path(path: pathlib.Path) -> pathlib.Path:
+    if path is None:
+        raise ValueError("No Eclipse model path given")
+    if not path.parent.exists():
+        raise ValueError(f"Directory {path.parent} not found")
+    if not any(path.parent.glob(f"{path.stem}.*")):
+        raise ValueError(f"Model '{path.stem}' not present in directory: {path.parent}")
+    return path
+
+
+def validate_eclipse_path_argparse(path: pathlib.Path) -> pathlib.Path:
+    """Validate model filepath is correctly formatted.
+
+    Args:
+        path (pathlib.Path): path to eclipse model file path
+
+    Raises:
+        argparse.ArgumentTypeError: fail to meet the filepath constraints
+
+    Returns:
+        pathlib.Path: validated eclipse model filepath
+    """
+    try:
+        return validate_eclipse_path(pathlib.Path(path))
+    except ValueError as e:
+        raise argparse.ArgumentTypeError(str(e)) from e
 
 
 def valid_iso_date(value: str) -> datetime.date:
@@ -88,21 +118,18 @@ def valid_schedule_template(value: str) -> str:
 
 def _valid_yaml(path: pathlib.Path) -> Any:
     try:
-        return yaml.YAML(typ="safe", pure=True).load(path.read_bytes())
+        return io.load_yaml(path)
     except yaml.YAMLError as e:
-        raise argparse.ArgumentTypeError(
-            f"The file: '{path}' contains invalid YAML syntax.\n\t<{e}>"
-        ) from e
+        raise argparse.ArgumentTypeError(f"Invalid YAML syntax. {e}") from e
 
 
 def _valid_json(path: pathlib.Path):
-    with path.open("r", encoding="utf-8") as fp:
-        try:
-            return json.load(fp)
-        except json.JSONDecodeError as e:
-            raise argparse.ArgumentTypeError(
-                f"The file: '{path}' is not a valid json file.\n\t<{e}>"
-            ) from e
+    try:
+        return io.load_json(path)
+    except json.JSONDecodeError as e:
+        raise argparse.ArgumentTypeError(
+            f"The file: '{path}' is not a valid json file.\n\t<{e}>"
+        ) from e
 
 
 def valid_input_file(value: str) -> Dict[str, Any]:

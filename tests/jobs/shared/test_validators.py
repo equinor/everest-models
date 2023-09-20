@@ -1,6 +1,7 @@
 import argparse
 import datetime
 import pathlib
+import re
 
 import pytest
 from hypothesis import given
@@ -58,13 +59,17 @@ def write_file(path, txt):
         pytest.param(
             "bad.yaml",
             write_file("bad.yaml", "{"),
-            "The file: 'bad.yaml' contains invalid YAML syntax.\n\t",
+            re.escape(
+                "Invalid YAML syntax. Error in file 'bad.yaml' (line 1):\n\t{\n\t ^"
+            ),
             id="bad yaml",
         ),
         pytest.param(
             "bad.yml",
             write_file("bad.yml", "{"),
-            "The file: 'bad.yml' contains invalid YAML syntax.\n\t",
+            re.escape(
+                "Invalid YAML syntax. Error in file 'bad.yml' (line 1):\n\t{\n\t ^"
+            ),
             id="bad yml",
         ),
     ],
