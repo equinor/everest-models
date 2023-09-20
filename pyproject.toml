@@ -72,6 +72,7 @@ fm_stea = "spinningjenny.jobs.fm_stea.cli:main_entry_point"
 fm_strip_dates = "spinningjenny.jobs.fm_strip_dates.cli:main_entry_point"
 fm_well_constraints = "spinningjenny.jobs.fm_well_constraints.cli:main_entry_point"
 fm_well_filter = "spinningjenny.jobs.fm_well_filter.cli:main_entry_point"
+fm_well_trajectory = "spinningjenny.jobs.fm_well_trajectory.cli:main_entry_point"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -23,6 +23,7 @@ def test_get_forward_models_hook(plugin_manager):
         "rf": f"{FORWARD_MODEL_DIR}/rf",
         "well_filter": f"{FORWARD_MODEL_DIR}/well_filter",
         "interpret_well_drill": f"{FORWARD_MODEL_DIR}/interpret_well_drill",
+        "well_trajectory": f"{FORWARD_MODEL_DIR}/well_trajectory",
     }
     assert all(
         jobs[job["name"]] in job["path"]
