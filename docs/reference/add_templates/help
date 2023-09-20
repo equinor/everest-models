@@ -1,4 +1,4 @@
-usage: add_templates [-h] [--lint] [--schemas] -i INPUT -o OUTPUT -c CONFIG
+usage: add_templates [-h] -i INPUT -o OUTPUT -c CONFIG [--lint] [--schemas]
 
 Inserts template file paths for all well operations in the given input file
 where the config keys match the operation information. If key sets associated
@@ -9,8 +9,7 @@ optional arguments:
   -h, --help            show this help message and exit
   --lint                Lints all given input (file) arguments with no data
                         transformation.
-  --schemas             Output all file schemas that are taken as input
-                        parameters.
+  --schemas             Output schemas for file parameters
 
 required named arguments:
   -i INPUT, --input INPUT

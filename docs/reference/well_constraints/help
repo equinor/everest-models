@@ -1,7 +1,8 @@
-usage: well_constraints [-h] [--lint] [--schemas] -i INPUT -o OUTPUT --config
-                   CONFIG [--rate-constraints RATE_CONSTRAINTS]
-                   [--phase-constraints PHASE_CONSTRAINTS]
-                   [--duration-constraints DURATION_CONSTRAINTS]
+usage: well_constraints [-h] -i INPUT [--schemas] [--lint] -o OUTPUT
+                           --config CONFIG
+                           [--rate-constraints RATE_CONSTRAINTS]
+                           [--phase-constraints PHASE_CONSTRAINTS]
+                           [--duration-constraints DURATION_CONSTRAINTS]
 
 A module that given a list of boundaries and well constraints creates a list
 of well events. Varying phase, rate and time of each event is supported. Rate
@@ -11,10 +12,9 @@ replaced by value.
 
 optional arguments:
   -h, --help            show this help message and exit
+  --schemas             Output schemas for file parameters
   --lint                Lints all given input (file) arguments with no data
                         transformation.
-  --schemas             Output all file schemas that are taken as input
-                        parameters.
   --rate-constraints RATE_CONSTRAINTS, -rc RATE_CONSTRAINTS
                         Rate constraints file in json format, from controls
                         section of Everest config, must be indexed format.

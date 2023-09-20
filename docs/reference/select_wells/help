@@ -1,16 +1,16 @@
-usage: select_wells [-h] [--lint] [--schemas] -i INPUT -o OUTPUT [-m MAX_DATE]
-                   {value,file} ...
+usage: select_wells [-h] -i INPUT -o OUTPUT [-m MAX_DATE] [--lint]
+                       [--schemas]
+                       {value,file} ...
 
 Select the first wells from a drill planner output file.
 
 optional arguments:
   -h, --help            show this help message and exit
-  --lint                Lints all given input (file) arguments with no data
-                        transformation.
-  --schemas             Output all file schemas that are taken as input
-                        parameters.
   -m MAX_DATE, --max-date MAX_DATE
                         Maximum allowed date
+  --lint                Lints all given input (file) arguments with no data
+                        transformation.
+  --schemas             Output schemas for file parameters
 
 required named arguments:
   -i INPUT, --input INPUT

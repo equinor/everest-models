@@ -1,5 +1,5 @@
 usage: strip_dates [-h] -s SUMMARY [--lint] [-d DATE1 [DATE2 ...]]
-          [--allow-missing-dates]
+                      [--allow-missing-dates]
 
 Makes sure a given summary file contains only report steps at the list of
 dates given as an argument
@@ -17,4 +17,4 @@ optional arguments:
 
 required named arguments:
   -s SUMMARY, --summary SUMMARY
-                        Ecl summary file
+                        Eclipse summary file

@@ -1,0 +1,17 @@
+usage: well_trajectory [-h] --config CONFIG [--eclipse-model ECLIPSE_MODEL]
+                          [--lint] [--schema]
+
+Design a well trajectory.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --eclipse-model ECLIPSE_MODEL, -E ECLIPSE_MODEL
+                        Path to Eclipse model: '/path/to/model'; extension not
+                        needed
+  --lint                Lints all given input (file) arguments with no data
+                        transformation.
+  --schema              Output schema for file parameter
+
+required named arguments:
+  --config CONFIG, -c CONFIG
+                        forward model configuration file.

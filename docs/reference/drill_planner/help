@@ -1,5 +1,6 @@
-usage: drill_planner [-h] [--lint] [--schemas] -i INPUT -o OUTPUT -c CONFIG -opt
-                   OPTIMIZER [-tl TIME_LIMIT] [--ignore-end-date]
+usage: drill_planner [-h] -i INPUT -o OUTPUT -c CONFIG -opt OPTIMIZER
+                        [-tl TIME_LIMIT] [--ignore-end-date] [--lint]
+                        [--schemas]
 
 A module that given a well priority list and a set of constraints, creates a
 list of dates for each well to be completed. Any well may have multiple
@@ -10,15 +11,14 @@ that the dates that are output will be a valid drill plan.
 
 optional arguments:
   -h, --help            show this help message and exit
-  --lint                Lints all given input (file) arguments with no data
-                        transformation.
-  --schemas             Output all file schemas that are taken as input
-                        parameters.
   -tl TIME_LIMIT, --time-limit TIME_LIMIT
                         Maximum time limit for the solver in seconds.If a
                         solution has not been reached within this time, a
                         greedyapproach will be used instead. (default: 3600)
   --ignore-end-date     Ignore the end date in the config file.
+  --lint                Lints all given input (file) arguments with no data
+                        transformation.
+  --schemas             Output schemas for file parameters
 
 required named arguments:
   -i INPUT, --input INPUT

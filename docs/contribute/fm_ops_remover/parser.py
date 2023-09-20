@@ -2,11 +2,13 @@ from spinningjenny.jobs.shared.arguments import (
     add_output_argument,
     add_wells_input_argument,
     bootstrap_parser,
+    get_parser,
 )
 
 
+@bootstrap_parser
 def build_argument_parser():
-    parser, required_group = bootstrap_parser(
+    parser, required_group = get_parser(
         description="Given everest generated wells.json file"
         "and a list of well names. remove the intersecting names' operations."
     )

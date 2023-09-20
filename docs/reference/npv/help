@@ -1,7 +1,7 @@
-usage: npv [-h] [--lint] [--schemas] -s SUMMARY [-i INPUT] [-o OUTPUT]
-                   -c CONFIG [-sd START_DATE] [-ed END_DATE] [-rd REF_DATE]
-                   [-ddr DEFAULT_DISCOUNT_RATE] [-der DEFAULT_EXCHANGE_RATE]
-                   [--multiplier MULTIPLIER]
+usage: npv [-h] -s SUMMARY [-i INPUT] [-o OUTPUT] -c CONFIG
+              [-sd START_DATE] [-ed END_DATE] [-rd REF_DATE]
+              [-ddr DEFAULT_DISCOUNT_RATE] [-der DEFAULT_EXCHANGE_RATE]
+              [--multiplier MULTIPLIER] [--lint] [--schemas]
 
 Module to calculate the NPV based on an eclipse simulation. All optional args,
 except: lint, schemas, input and output, is also configurable through the
@@ -9,10 +9,6 @@ config file.
 
 optional arguments:
   -h, --help            show this help message and exit
-  --lint                Lints all given input (file) arguments with no data
-                        transformation.
-  --schemas             Output all file schemas that are taken as input
-                        parameters.
   -i INPUT, --input INPUT
                         Path to input file containing information related to
                         wells. The format is consistent with the wells.json
@@ -37,9 +33,12 @@ optional arguments:
                         Default exchange rate you want to use.
   --multiplier MULTIPLIER
                         Multiplier you want to use.
+  --lint                Lints all given input (file) arguments with no data
+                        transformation.
+  --schemas             Output schemas for file parameters
 
 required named arguments:
   -s SUMMARY, --summary SUMMARY
-                        Ecl summary file
+                        Eclipse summary file
   -c CONFIG, --config CONFIG
                         Path to config file containing at least prices

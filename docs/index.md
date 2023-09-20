@@ -31,6 +31,7 @@ of the following:
         - [Strip Dates](reference/strip_dates/reference.md)
         - [Well Constraints](reference/well_constraints/reference.md)
         - [Well Filter](reference/well_filter/reference.md)
+        - [Well Trajectory](reference/well_trajectory/reference.md)
     - Shared Functions:
         - [Validators](reference/shared/validators.md)
         - [Models](reference/shared/models.md)

@@ -1,5 +1,5 @@
-usage: well_filter [-h] [--lint] [--schemas] -i INPUT -o OUTPUT
-                   (-k KEEP | -r REMOVE)
+usage: well_filter [-h] -i INPUT -o OUTPUT (-k KEEP | -r REMOVE) [--lint]
+                      [--schema]
 
 This module filters out wells using a json string.Either the --keep or the
 --remove flag needs to be set to a json file namecontaining a list of well
@@ -10,8 +10,7 @@ optional arguments:
   -h, --help            show this help message and exit
   --lint                Lints all given input (file) arguments with no data
                         transformation.
-  --schemas             Output all file schemas that are taken as input
-                        parameters.
+  --schema              Output schema for file parameter
 
 required named arguments:
   -i INPUT, --input INPUT

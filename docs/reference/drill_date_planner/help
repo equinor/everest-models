@@ -1,5 +1,5 @@
-usage: drill_date_planner [-h] [--lint] [--schemas] -i INPUT -o OUTPUT -opt OPTIMIZER
-                   -b UPPER LOWER -m MAX_DAYS
+usage: drill_date_planner [-h] -i INPUT -o OUTPUT -opt OPTIMIZER -b UPPER
+                             LOWER -m MAX_DAYS [--lint] [--schema]
 
 Calculate and write drill times from scaled controls.
 
@@ -7,8 +7,7 @@ optional arguments:
   -h, --help            show this help message and exit
   --lint                Lints all given input (file) arguments with no data
                         transformation.
-  --schemas             Output all file schemas that are taken as input
-                        parameters.
+  --schema              Output schema for file parameter
 
 required named arguments:
   -i INPUT, --input INPUT

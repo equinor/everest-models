@@ -3,7 +3,6 @@ import contextlib
 import pathlib
 import re
 import subprocess
-import sys
 from importlib import resources
 
 _FILEPATH = pathlib.Path(__file__)
@@ -17,18 +16,17 @@ SCHEMA_ARGUMENT = f"{ARGUMENT_PREFIX}schema"
 
 
 def write_to_doc(job: str, argument: str, encoding: str = "utf-8") -> None:
-    job_id = job.lstrip(JOB_PREFIX)
     info = subprocess.check_output(
-        [sys.executable, "-m", f"{JOBS_MODULE}.{job}", argument],
+        [job, argument],
         stderr=subprocess.STDOUT,
     )
     if argument == HELP_ARGUMENT:
         info = re.sub(
-            bytes(r"(?<=usage: )(__main__.py|-m)", encoding),
-            bytes(job_id, encoding),
+            bytes(r"(?<=usage: )(fm_)", encoding),
+            bytes("", encoding),
             info,
         )
-    job_directory = REFERENCE_DIR / job_id
+    job_directory = REFERENCE_DIR / job.lstrip(JOB_PREFIX)
     job_directory.mkdir(exist_ok=True)
 
     (

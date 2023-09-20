@@ -1,4 +1,4 @@
-usage: schmerge [-h] [--lint] [--schemas] -s SCHEDULE -i INPUT -o OUTPUT
+usage: schmerge [-h] -s SCHEDULE -i INPUT -o OUTPUT [--lint] [--schema]
 
 This module works on a schedule file intended for reservoir simulation(e.g.
 eclipse or flow), and injects templates at given dates. If the reportdate does
@@ -9,8 +9,7 @@ optional arguments:
   -h, --help            show this help message and exit
   --lint                Lints all given input (file) arguments with no data
                         transformation.
-  --schemas             Output all file schemas that are taken as input
-                        parameters.
+  --schema              Output schema for file parameter
 
 required named arguments:
   -s SCHEDULE, --schedule SCHEDULE

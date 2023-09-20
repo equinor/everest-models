@@ -1,5 +1,6 @@
-usage: extract_summary_data [-h] -s SUMMARY -o OUTPUT [--lint] [-sd START_DATE] -ed END_DATE -k
-          KEY [-t {max,diff}] [-m MULTIPLIER]
+usage: extract_summary_data [-h] -s SUMMARY -o OUTPUT [--lint]
+                               [-sd START_DATE] -ed END_DATE -k KEY
+                               [-t {max,diff}] [-m MULTIPLIER]
 
 Module to extract Eclipse Summary keyword data for single date or date
 interval
@@ -19,7 +20,7 @@ optional arguments:
 
 required named arguments:
   -s SUMMARY, --summary SUMMARY
-                        Ecl summary file
+                        Eclipse summary file
   -o OUTPUT, --output OUTPUT
                         Output file
   -ed END_DATE, --end-date END_DATE, --date END_DATE
