@@ -1,5 +1,12 @@
 import itertools
+import re
 import sys
+
+import pytest
+import ruamel.yaml as yaml
+from pydantic import BaseModel, Extra
+from everest_models.jobs.fm_add_templates.config_model import TemplateConfig
+from sub_testdata import ADD_TEMPLATE as TEST_DATA
 
 FORWARD_MODEL_DIR = "forward_models"
 
@@ -35,16 +42,19 @@ def test_get_forward_models_hook(plugin_manager):
 
 
 def test_get_forward_model_schemas_hook(plugin_manager):
-    assert not {
-        "drill_planner",
-        "schmerge",
-        "drill_date_planner",
-        "compute_economics",
-        "select_wells",
-        "npv",
+    assert not set(plugin_manager.hook.get_forward_models_schemas()[0]) - {
         "add_templates",
-        "well_filter",
-        "interpret_well_drill",
-    }.difference(
-        itertools.chain.from_iterable(plugin_manager.hook.get_forward_models_schemas())
+        "drill_planner",
+        "npv",
+        "well_trajectory",
+        "well_constraints",
+    }
+
+
+def test_get_forward_model_schemas_hook_keys_are_options(plugin_manager):
+    assert all(
+        re.match(r"^-\w{1,3}/-(-\w+)*$", option)
+        for job, schemas in plugin_manager.hook.get_forward_models_schemas()[0].items()
+        for option in set(schemas)
+        if job != "select_wells"
     )

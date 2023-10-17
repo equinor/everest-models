@@ -66,7 +66,7 @@ def validate_eclipse_path(path: pathlib.Path) -> pathlib.Path:
     return path
 
 
-def validate_eclipse_path_argparse(path: pathlib.Path) -> pathlib.Path:
+def validate_eclipse_path_argparse(path: str) -> pathlib.Path:
     """Validate model filepath is correctly formatted.
 
     Args:

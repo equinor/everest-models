@@ -1,5 +1,7 @@
 from functools import partial
 
+from everest_models.jobs.shared.validators import parse_file, valid_input_file
+
 from everest_models.jobs.fm_drill_planner.models import (
     DrillPlanConfig,
     Optimizer,
@@ -12,22 +14,19 @@ from everest_models.jobs.shared.arguments import (
     bootstrap_parser,
     get_parser,
 )
-from everest_models.jobs.shared.models.wells import WellConfig
-from everest_models.jobs.shared.validators import parse_file, valid_input_file
+from spinningjenny.jobs.shared.validators import parse_file, valid_input_file
 
 _CONFIG_ARGUMENT = "-c/--config"
+_OPTIMIZER_ARGUMENT = "-opt/--optimizer"
 SCHEMAS = {
-    "config": DrillPlanConfig,
-    "optimizer": Optimizer,
-    "input": WellConfig,
+    _CONFIG_ARGUMENT: DrillPlanConfig,
+    _OPTIMIZER_ARGUMENT: Optimizer,
 }
 
 
 @bootstrap_parser
 def build_argument_parser():
-    SchemaAction.register_models(
-        {_CONFIG_ARGUMENT: DrillPlanConfig, "-opt/--optimizer": Optimizer}
-    )
+    SchemaAction.register_models(SCHEMAS)
     parser, required_group = get_parser(
         description="A module that given a well priority list and a set of constraints, "
         "creates a list of dates for each well to be completed. "
@@ -62,8 +61,7 @@ def build_argument_parser():
         "when rigs and slots are available is also added here.",
     )
     required_group.add_argument(
-        "-opt",
-        "--optimizer",
+        *_OPTIMIZER_ARGUMENT.split("/"),
         required=True,
         type=valid_input_file,
         help="The optimizer file in yaml format is the file output from everest that "

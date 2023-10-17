@@ -1,6 +1,5 @@
 import argparse
 from functools import partial
-from typing import Iterable
 
 from everest_models.jobs.fm_well_constraints.models import (
     Constraints,
@@ -17,37 +16,23 @@ from everest_models.jobs.shared.arguments import (
 )
 from everest_models.jobs.shared.models.wells import WellConfig
 
-CONFIG_ARG_KEY = ["--config", "-c"]
-RATE_CONSTRAINTS_ARG_KEY = ["--rate-constraints", "-rc"]
-PHASE_CONSTRAINTS_ARG_KEY = ["--phase-constraints", "-pc"]
-DURATION_CONSTRAINTS_ARG_KEY = ["--duration-constraints", "-dc"]
+CONFIG_ARG_KEY = "-c/--config"
+RATE_CONSTRAINTS_ARG_KEY = "-rc/--rate-constraints"
+PHASE_CONSTRAINTS_ARG_KEY = "-pc/--phase-constraints"
+DURATION_CONSTRAINTS_ARG_KEY = "-dc/--duration-constraints"
 
 SCHEMAS = {
-    "config": WellConstraintConfig,
-    "rate-constraints": Constraints,
-    "phase-constraints": Constraints,
-    "duration-constraints": Constraints,
-    "input": WellConfig,
+    CONFIG_ARG_KEY: WellConstraintConfig,
+    RATE_CONSTRAINTS_ARG_KEY: Constraints,
+    PHASE_CONSTRAINTS_ARG_KEY: Constraints,
+    DURATION_CONSTRAINTS_ARG_KEY: Constraints,
 }
 
 constraint_parameters = dict(default=None, type=partial(parse_file, schema=Constraints))
 
 
-def _join_argument_key(key: Iterable[str]) -> str:
-    return "/".join(key)
-
-
 def build_argument_parser() -> argparse.ArgumentParser:
-    SchemaAction.register_models(
-        {
-            _join_argument_key(CONFIG_ARG_KEY): WellConstraintConfig,
-            (
-                _join_argument_key(RATE_CONSTRAINTS_ARG_KEY),
-                _join_argument_key(PHASE_CONSTRAINTS_ARG_KEY),
-                _join_argument_key(DURATION_CONSTRAINTS_ARG_KEY),
-            ): Constraints,
-        }
-    )
+    SchemaAction.register_models(SCHEMAS)
     parser, required_group = get_parser(
         description="""
         A module that given a list of boundaries and well constraints creates a list of 
@@ -71,7 +56,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
         help="Name of the output file. The format will be yaml.",
     )
     required_group.add_argument(
-        *CONFIG_ARG_KEY,
+        *CONFIG_ARG_KEY.split("/"),
         required=True,
         type=partial(parse_file, schema=WellConstraintConfig),
         help="""
@@ -80,7 +65,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
         """,
     )
     parser.add_argument(
-        *RATE_CONSTRAINTS_ARG_KEY,
+        *RATE_CONSTRAINTS_ARG_KEY.split("/"),
         help="""
         Rate constraints file in json format, from controls section of Everest config,
         must be indexed format. Values must be in the interval [0, 1],
@@ -91,7 +76,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
         **constraint_parameters,
     )
     parser.add_argument(
-        *PHASE_CONSTRAINTS_ARG_KEY,
+        *PHASE_CONSTRAINTS_ARG_KEY.split("/"),
         help="""
         Phase constraints file in json format, from controls section of Everest config,
         must be indexed format. Values must be in the interval [0,1], i.e
@@ -102,7 +87,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
         **constraint_parameters,
     )
     parser.add_argument(
-        *DURATION_CONSTRAINTS_ARG_KEY,
+        *DURATION_CONSTRAINTS_ARG_KEY.split("/"),
         help="""
         Duration constraints file in json format, from controls section of Everest
         config, must be indexed format. Values must be in the interval [0, 1],

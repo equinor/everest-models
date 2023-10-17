@@ -1,6 +1,5 @@
 import argparse
 from functools import partial
-from typing import Iterable
 
 from everest_models.jobs.shared.arguments import (
     SchemaAction,
@@ -14,33 +13,27 @@ from everest_models.jobs.shared.validators import (
 
 from .models.config import ConfigSchema
 
-CONFIG_ARG_KEY = ["--config", "-c"]
-ECLIPSE_FILES_ARG_KEY = ["--eclipse-model", "-E"]
+CONFIG_ARG_KEY = "-c/--config"
+ECLIPSE_FILES_ARG_KEY = "-E/--eclipse-model"
 
-
-def _join_argument_key(key: Iterable[str]) -> str:
-    return "/".join(key)
+SCHEMAS = {CONFIG_ARG_KEY: ConfigSchema}
 
 
 @bootstrap_parser
 def build_argument_parser() -> argparse.ArgumentParser:
     SchemaAction.register_single_model(
-        _join_argument_key(CONFIG_ARG_KEY),
+        CONFIG_ARG_KEY,
         ConfigSchema,
     )
-    parser, required_group = get_parser(
-        description="""
-        Design a well trajectory.
-        """
-    )
+    parser, required_group = get_parser(description="Design a well trajectory.")
     required_group.add_argument(
-        *CONFIG_ARG_KEY,
+        *CONFIG_ARG_KEY.split("/"),
         required=True,
         type=partial(parse_file, schema=ConfigSchema),
         help="forward model configuration file.",
     )
     parser.add_argument(
-        *ECLIPSE_FILES_ARG_KEY,
+        *ECLIPSE_FILES_ARG_KEY.split("/"),
         type=validate_eclipse_path_argparse,
         help="Path to Eclipse model: '/path/to/model'; extension not needed",
     )

@@ -11,12 +11,13 @@ from everest_models.jobs.shared.arguments import (
 from everest_models.jobs.shared.models import WellConfig
 from everest_models.jobs.shared.validators import parse_file
 
-SCHEMAS = {"config": TemplateConfig, "input": WellConfig}
+_CONFIG_ARGUMENT = "-c/--config"
+SCHEMAS = {_CONFIG_ARGUMENT: TemplateConfig}
 
 
 @bootstrap_parser
 def build_argument_parser():
-    SchemaAction.register_single_model("-c/--config", TemplateConfig)
+    SchemaAction.register_single_model(_CONFIG_ARGUMENT, TemplateConfig)
     parser, required_group = get_parser(
         description="Inserts template file paths for all well operations in the "
         " given input file where the config keys match the operation"
@@ -31,8 +32,7 @@ def build_argument_parser():
     )
     add_output_argument(required_group, help="Output file")
     required_group.add_argument(
-        "-c",
-        "--config",
+        *_CONFIG_ARGUMENT.split("/"),
         type=partial(parse_file, schema=TemplateConfig),
         required=True,
         help="Config file containing list of template file paths to be injected.",

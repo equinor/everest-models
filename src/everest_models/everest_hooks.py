@@ -10,6 +10,7 @@ from importlib import import_module, resources
 from typing import Dict, List, Type
 
 from pydantic import BaseModel
+from everest_models.jobs.shared.validators import parse_file
 
 try:
     from everest.plugins import hookimpl

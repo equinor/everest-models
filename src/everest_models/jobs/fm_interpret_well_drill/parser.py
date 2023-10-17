@@ -4,9 +4,6 @@ from everest_models.jobs.shared.arguments import (
     add_output_argument,
     get_parser,
 )
-from everest_models.jobs.shared.models.wells import WellConfig
-
-SCHEMAS = {"input": WellConfig}
 
 
 def build_argument_parser():

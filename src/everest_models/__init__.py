@@ -1,6 +1,10 @@
 import pathlib
 
-from everest_models.everest_hooks import get_forward_models
+from everest_models.everest_hooks import (
+    get_forward_models,
+    get_forward_models_schemas,
+    parse_forward_model_schema,
+)
 from everest_models.logger import set_up_logger
 
 __all__ = [

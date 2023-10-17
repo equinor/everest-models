@@ -7,8 +7,6 @@ from everest_models.jobs.shared.arguments import (
 )
 from everest_models.jobs.shared.validators import valid_schedule_template
 
-SCHEMAS = {"input": Wells}
-
 
 @bootstrap_parser
 def build_argument_parser():
