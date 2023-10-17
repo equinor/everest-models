@@ -1,7 +1,7 @@
 import argparse
 import functools
 from functools import partial
-from typing import Callable, Dict, Optional, Tuple
+from typing import Callable, Dict, Optional, Tuple, Type, TypeVar, Union
 
 from everest_models.jobs.shared.models import BaseConfig, WellConfig
 from everest_models.jobs.shared.validators import (
@@ -10,6 +10,8 @@ from everest_models.jobs.shared.validators import (
     valid_ecl_summary,
     valid_input_file,
 )
+
+T = TypeVar("T", bound=BaseConfig)
 
 
 class classproperty(property):
@@ -21,15 +23,15 @@ class SchemaAction(argparse.Action):
     _models = {}
 
     @classproperty
-    def models(self) -> Dict[str, BaseConfig]:
+    def models(self) -> Dict[str, Type[T]]:
         return self._models
 
     @classmethod
-    def register_single_model(cls, argument: str, model: BaseConfig):
+    def register_single_model(cls, argument: str, model: Type[T]):
         cls._models.update({argument: model})
 
     @classmethod
-    def register_models(cls, items: Dict[str, BaseConfig]):
+    def register_models(cls, items: Dict[str, Type[T]]):
         cls._models.update(items)
 
     def __call__(self, parser, namespace, values, option_string):
@@ -47,7 +49,9 @@ class ArgumentDefaultsHelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
         )
 
 
-def add_input_argument(parser: argparse.ArgumentParser, *args, **kwargs) -> None:
+def add_input_argument(
+    parser: Union[argparse.ArgumentParser, argparse._ArgumentGroup], *args, **kwargs
+) -> None:
     """Add input argument to parser.
 
     - Set type to 'valid_input_file' function caller
@@ -66,7 +70,9 @@ def add_input_argument(parser: argparse.ArgumentParser, *args, **kwargs) -> None
     )
 
 
-def add_lint_argument(parser: argparse.ArgumentParser) -> None:
+def add_lint_argument(
+    parser: Union[argparse.ArgumentParser, argparse._ArgumentGroup]
+) -> None:
     """Add optional lint argument to parser.
 
     - Set action to 'store_true'
@@ -81,7 +87,9 @@ def add_lint_argument(parser: argparse.ArgumentParser) -> None:
     )
 
 
-def add_file_schemas(parser: argparse.ArgumentParser) -> None:
+def add_file_schemas(
+    parser: Union[argparse.ArgumentParser, argparse._ArgumentGroup]
+) -> None:
     """Add optional schema argument to parser
 
     - Set action to 'SchemaAction'
@@ -99,7 +107,9 @@ def add_file_schemas(parser: argparse.ArgumentParser) -> None:
 
 
 def add_summary_argument(
-    parser: argparse.ArgumentParser, *, func: Optional[Callable] = None
+    parser: Union[argparse.ArgumentParser, argparse._ArgumentGroup],
+    *,
+    func: Optional[Callable] = None,
 ) -> None:
     """Add summary argument to parser.
 
@@ -120,10 +130,10 @@ def add_summary_argument(
 
 
 def add_wells_input_argument(
-    parser: argparse.ArgumentParser,
+    parser: Union[argparse.ArgumentParser, argparse._ArgumentGroup],
     *,
     required: bool = True,
-    schema: BaseConfig = WellConfig,
+    schema: Type[T] = WellConfig,
     **kwargs,
 ) -> None:
     """Add wells argument to parser
@@ -147,7 +157,10 @@ def add_wells_input_argument(
 
 
 def add_output_argument(
-    parser: argparse.ArgumentParser, *, required: bool = True, **kwargs
+    parser: Union[argparse.ArgumentParser, argparse._ArgumentGroup],
+    *,
+    required: bool = True,
+    **kwargs,
 ) -> None:
     """Add output argument to parser
 

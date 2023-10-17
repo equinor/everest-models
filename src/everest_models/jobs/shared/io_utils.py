@@ -1,7 +1,7 @@
 import json
 import linecache
 from pathlib import Path
-from typing import TextIO
+from typing import Any, TextIO
 
 import ruamel.yaml as yaml
 
@@ -21,8 +21,19 @@ def load_yaml(path: Path):
                 f"\n\t{linecache.getline(str(path), mark.line + 1)}"
                 f"\t{' ' * mark.column}^"
             ) from ye
-        else:
-            raise yaml.YAMLError(str(ye)) from ye
+        raise yaml.YAMLError(str(ye)) from ye
+
+
+def load_supported_file_encoding(path: Path) -> Any:
+    if (
+        loader := {
+            ".json": load_json,
+            ".yaml": load_yaml,
+            ".yml": load_yaml,
+        }.get(path.suffix)
+    ) is None:
+        raise ValueError(f"Unsupported file encoding:\n\t{path.absolute()}")
+    return loader(path)
 
 
 def dump_json(data: dict, path: Path):

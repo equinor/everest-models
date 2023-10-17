@@ -85,14 +85,15 @@ def test_add_template_lint(add_template_args, copy_testdata_tmpdir):
 
 def test_add_template_empty_input_file(add_template_args, copy_testdata_tmpdir, capsys):
     copy_testdata_tmpdir(TEST_DATA)
-    pathlib.Path("empty.json").touch()
+    path = pathlib.Path("empty.json")
+    path.touch()
     with pytest.raises(SystemExit) as e:
         main_entry_point([*add_template_args, "empty.json"])
 
     assert e.value.code == 2
     _, err = capsys.readouterr()
     assert (
-        "The file: 'empty.json' is not a valid json file.\n\t<Expecting value: line 1 column 1 (char 0)>\n"
+        f"\nInvalid file syntax:\n{path.absolute()}\nExpecting value: line 1 column 1 (char 0)\n"
         in err
     )
     assert not pathlib.Path("out_test.json").exists()

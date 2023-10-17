@@ -1,12 +1,15 @@
+import argparse
 import itertools
+import pathlib
 import re
 import sys
 
 import pytest
 import ruamel.yaml as yaml
-from pydantic import BaseModel, Extra
-from everest_models.jobs.fm_add_templates.config_model import TemplateConfig
+from pydantic import BaseModel, Extra, ValidationError
 from sub_testdata import ADD_TEMPLATE as TEST_DATA
+
+from everest_models.jobs.fm_add_templates.config_model import TemplateConfig
 
 FORWARD_MODEL_DIR = "forward_models"
 
@@ -44,6 +47,7 @@ def test_get_forward_models_hook(plugin_manager):
 def test_get_forward_model_schemas_hook(plugin_manager):
     assert not set(plugin_manager.hook.get_forward_models_schemas()[0]) - {
         "add_templates",
+        "compute_economics",
         "drill_planner",
         "npv",
         "well_trajectory",
@@ -57,4 +61,47 @@ def test_get_forward_model_schemas_hook_keys_are_options(plugin_manager):
         for job, schemas in plugin_manager.hook.get_forward_models_schemas()[0].items()
         for option in set(schemas)
         if job != "select_wells"
+    )
+
+
+class SchemaModel(BaseModel):
+    content: str
+
+    class Config:
+        extra = Extra.forbid
+
+
+def test_parse_forward_model_schema_hook(switch_cwd_tmp_path, plugin_manager):
+    path = "config.yml"
+    with open(path, "w") as fd:
+        yaml.YAML(typ="safe", pure=True).dump({"content": "good"}, fd)
+    assert plugin_manager.hook.parse_forward_model_schema(
+        path=path,
+        schema=SchemaModel,
+    )
+
+
+def test_parse_forward_model_schema_hook_error(switch_cwd_tmp_path, plugin_manager):
+    path = "config.yml"
+    with open(path, "w") as fd:
+        yaml.YAML(typ="safe", pure=True).dump({"contents": "bad"}, fd)
+    with pytest.raises(ValidationError):
+        plugin_manager.hook.parse_forward_model_schema(
+            path=path,
+            schema=SchemaModel,
+        )
+
+
+def test_multi_hook_calls(copy_testdata_tmpdir, plugin_manager):
+    copy_testdata_tmpdir(TEST_DATA)
+    schema = plugin_manager.hook.get_forward_models_schemas()[0]["add_templates"][
+        "-c/--config"
+    ]
+    assert schema == TemplateConfig
+    assert isinstance(
+        plugin_manager.hook.parse_forward_model_schema(
+            path="config.yml",
+            schema=schema,
+        ).pop(),
+        schema,
     )

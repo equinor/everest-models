@@ -9,6 +9,8 @@ from everest_models.logger import set_up_logger
 
 __all__ = [
     "get_forward_models",
+    "get_forward_models_schemas",
+    "parse_forward_model_schema",
 ]
 
 set_up_logger(__name__)

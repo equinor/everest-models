@@ -1,12 +1,6 @@
 from functools import partial
 
-from everest_models.jobs.shared.validators import parse_file, valid_input_file
-
-from everest_models.jobs.fm_drill_planner.models import (
-    DrillPlanConfig,
-    Optimizer,
-    Wells,
-)
+from everest_models.jobs.fm_drill_planner.models import DrillPlanConfig, Wells
 from everest_models.jobs.shared.arguments import (
     SchemaAction,
     add_output_argument,
@@ -14,13 +8,12 @@ from everest_models.jobs.shared.arguments import (
     bootstrap_parser,
     get_parser,
 )
-from spinningjenny.jobs.shared.validators import parse_file, valid_input_file
+from everest_models.jobs.shared.validators import parse_file, valid_input_file
 
 _CONFIG_ARGUMENT = "-c/--config"
 _OPTIMIZER_ARGUMENT = "-opt/--optimizer"
 SCHEMAS = {
     _CONFIG_ARGUMENT: DrillPlanConfig,
-    _OPTIMIZER_ARGUMENT: Optimizer,
 }
 
 
@@ -28,8 +21,8 @@ SCHEMAS = {
 def build_argument_parser():
     SchemaAction.register_models(SCHEMAS)
     parser, required_group = get_parser(
-        description="A module that given a well priority list and a set of constraints, "
-        "creates a list of dates for each well to be completed. "
+        description="A module that given a well priority list and a set of "
+        "constraints, creates a list of dates for each well to be completed. "
         "Any well may have multiple options as to where it can be drilled, "
         "both for different slots and rigs. The module will try to find the "
         "optimum event combinations that allows for the wells to be completed "
@@ -55,8 +48,8 @@ def build_argument_parser():
         *_CONFIG_ARGUMENT.split("/"),
         required=True,
         type=partial(parse_file, schema=DrillPlanConfig),
-        help="Configuration file in yaml format describing the constraints of the field "
-        "development. The file must contain information about rigs and slots "
+        help="Configuration file in yaml format describing the constraints of the "
+        "field development. The file must contain information about rigs and slots "
         "that the wells can be drilled through. Additional information, such as "
         "when rigs and slots are available is also added here.",
     )

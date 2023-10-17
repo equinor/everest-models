@@ -1,8 +1,6 @@
 import datetime
 from functools import partial
 
-from everest_models.jobs.shared.validators import is_gt_zero, parse_file
-
 from everest_models.jobs.fm_select_wells.well_number_model import WellNumber
 from everest_models.jobs.shared.arguments import (
     SchemaAction,
@@ -11,7 +9,7 @@ from everest_models.jobs.shared.arguments import (
     bootstrap_parser,
     get_parser,
 )
-from spinningjenny.jobs.shared.validators import is_gt_zero, parse_file
+from everest_models.jobs.shared.validators import is_gt_zero, parse_file
 
 
 def scaled_well_number(value: str) -> float:

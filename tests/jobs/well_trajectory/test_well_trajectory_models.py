@@ -5,12 +5,12 @@ from pydantic import ValidationError
 from sub_testdata import WELL_TRAJECTORY as TEST_DATA
 
 from everest_models.jobs.fm_well_trajectory.models.config import ConfigSchema
-from everest_models.jobs.shared.validators import _valid_yaml
+from everest_models.jobs.shared.io_utils import load_yaml
 
 
 @pytest.fixture(scope="module")
 def well_trajectory_config(path_test_data):
-    return _valid_yaml(path_test_data / TEST_DATA / "config.yml")
+    return load_yaml(path_test_data / TEST_DATA / "config.yml")
 
 
 def test_parameters_config(well_trajectory_config):

@@ -11,11 +11,11 @@ from everest_models.jobs.shared.arguments import (
 )
 from everest_models.jobs.shared.validators import parse_file, valid_iso_date
 
-CONFIG_ARGUMENT = ["-c", "--config"]
+CONFIG_ARGUMENT = "-c/--config"
 
 CALCULATION_CHOICES = ["npv", "bep"]
 
-SCHEMAS = {"config": EconomicIndicatorConfig}
+SCHEMAS = {CONFIG_ARGUMENT: EconomicIndicatorConfig}
 
 
 @bootstrap_parser

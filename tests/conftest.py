@@ -26,11 +26,15 @@ class TestSpec:
     hookspec = pluggy.HookspecMarker("test")
 
     @hookspec
-    def get_forward_models():
+    def get_forward_models(self):
         ...
 
     @hookspec
-    def get_forward_models_schemas():
+    def get_forward_models_schemas(self):
+        ...
+
+    @hookspec
+    def parse_forward_model_schema(self, path, schema):
         ...
 
 

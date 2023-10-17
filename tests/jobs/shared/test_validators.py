@@ -32,7 +32,7 @@ def write_file(path, txt):
         pytest.param(
             "empty.json",
             pathlib.Path("empty.json").touch,
-            "The file: 'empty.json' is not a valid json file.\n\t",
+            r"\sInvalid file syntax:\s.*empty.json\s",
             id="empty json",
         ),
         pytest.param(
@@ -47,29 +47,25 @@ def write_file(path, txt):
         pytest.param(
             "empty.ou",
             pathlib.Path("empty.ou").touch,
-            "Input file extension '.ou' not supported",
+            r"Unsupported file encoding:\s\s.*empty.ou",
             id="unsupported extension",
         ),
         pytest.param(
             "bad.json",
             write_file("bad.json", "{"),
-            "The file: 'bad.json' is not a valid json file.\n\t",
+            r"\sInvalid file syntax:\s.*bad.json\s",
             id="bad json",
         ),
         pytest.param(
             "bad.yaml",
             write_file("bad.yaml", "{"),
-            re.escape(
-                "Invalid YAML syntax. Error in file 'bad.yaml' (line 1):\n\t{\n\t ^"
-            ),
+            r"\sInvalid file syntax:\s.*bad.yaml\s",
             id="bad yaml",
         ),
         pytest.param(
             "bad.yml",
             write_file("bad.yml", "{"),
-            re.escape(
-                "Invalid YAML syntax. Error in file 'bad.yml' (line 1):\n\t{\n\t ^"
-            ),
+            r"\sInvalid file syntax:\s.*bad.yml\s",
             id="bad yml",
         ),
     ],

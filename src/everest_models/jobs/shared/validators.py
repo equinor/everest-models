@@ -1,15 +1,17 @@
 import argparse
 import datetime
-import json
 import pathlib
+from json import JSONDecodeError
 from os import W_OK, access
-from typing import Any, Dict, Iterable
+from typing import Any, Iterable, Type, TypeVar
 
-import ruamel.yaml as yaml
 from pydantic import BaseModel, ValidationError
 from resdata.summary import Summary
+from ruamel.yaml.error import YAMLError
 
-from everest_models.jobs.shared import io_utils as io
+from everest_models.jobs.shared.io_utils import load_supported_file_encoding
+
+T = TypeVar("T", bound=BaseModel)
 
 
 def is_writable_path(value: str) -> pathlib.Path:
@@ -116,23 +118,7 @@ def valid_schedule_template(value: str) -> str:
     return pathlib.Path(value).read_text(encoding="utf-8")
 
 
-def _valid_yaml(path: pathlib.Path) -> Any:
-    try:
-        return io.load_yaml(path)
-    except yaml.YAMLError as e:
-        raise argparse.ArgumentTypeError(f"Invalid YAML syntax. {e}") from e
-
-
-def _valid_json(path: pathlib.Path):
-    try:
-        return io.load_json(path)
-    except json.JSONDecodeError as e:
-        raise argparse.ArgumentTypeError(
-            f"The file: '{path}' is not a valid json file.\n\t<{e}>"
-        ) from e
-
-
-def valid_input_file(value: str) -> Dict[str, Any]:
+def valid_input_file(value: str) -> Any:
     """validate YAML/JSON filepath.
 
     Args:
@@ -150,17 +136,14 @@ def valid_input_file(value: str) -> Dict[str, Any]:
         raise argparse.ArgumentTypeError(
             f"The path '{path}' is a directory or file not found."
         )
-    if (
-        get_content := {
-            ".yaml": _valid_yaml,
-            ".yml": _valid_yaml,
-            ".json": _valid_json,
-        }.get(path.suffix)
-    ) is None:
+    try:
+        return load_supported_file_encoding(path)
+    except (JSONDecodeError, YAMLError) as e:
         raise argparse.ArgumentTypeError(
-            f"Input file extension '{path.suffix}' not supported"
-        )
-    return get_content(path)
+            f"\nInvalid file syntax:\n{path.absolute()}\n{e}"
+        ) from e
+    except ValueError as ve:
+        raise argparse.ArgumentTypeError(str(ve)) from ve
 
 
 def is_gt_zero(value: str, msg: str) -> int:
@@ -202,7 +185,7 @@ def _prettify_validation_error_message(error: ValidationError) -> str:
     )
 
 
-def parse_file(value: str, schema: "BaseModel") -> "BaseModel":
+def parse_file(value: str, schema: Type[T]) -> T:
     """Parse filepath content by given schema
 
     Args:

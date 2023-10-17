@@ -1,7 +1,5 @@
 from functools import partial
 
-from everest_models.jobs.shared.validators import parse_file, valid_iso_date
-
 from everest_models.jobs.fm_npv.npv_config_model import NPVConfig
 from everest_models.jobs.shared.arguments import (
     SchemaAction,
@@ -11,7 +9,7 @@ from everest_models.jobs.shared.arguments import (
     bootstrap_parser,
     get_parser,
 )
-from spinningjenny.jobs.shared.validators import parse_file, valid_iso_date
+from everest_models.jobs.shared.validators import parse_file, valid_iso_date
 
 CONFIG_ARGUMENT = "-c/--config"
 
