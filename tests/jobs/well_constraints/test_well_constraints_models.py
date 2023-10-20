@@ -5,11 +5,11 @@ from hypothesis import given
 from hypothesis import strategies as st
 from pydantic import ValidationError
 
-from spinningjenny.jobs.fm_well_constraints.models import (
+from everest_models.jobs.fm_well_constraints.models import (
     Constraints,
     WellConstraintConfig,
 )
-from spinningjenny.jobs.fm_well_constraints.models.config import Phase, Tolerance
+from everest_models.jobs.fm_well_constraints.models.config import Phase, Tolerance
 
 _WELL_CONSTRAINTS_CONFIG = {
     "INJECT1": {

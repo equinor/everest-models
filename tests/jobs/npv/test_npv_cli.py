@@ -6,10 +6,10 @@ import pytest
 from jobs.npv.parser import MockParser, Options
 from sub_testdata import NPV as TEST_DATA
 
-from spinningjenny.jobs.fm_npv import cli
-from spinningjenny.jobs.fm_npv.npv_config_model import NPVConfig
-from spinningjenny.jobs.shared.models.wells import WellConfig
-from spinningjenny.jobs.shared.validators import parse_file
+from everest_models.jobs.fm_npv import cli
+from everest_models.jobs.fm_npv.npv_config_model import NPVConfig
+from everest_models.jobs.shared.models.wells import WellConfig
+from everest_models.jobs.shared.validators import parse_file
 
 _CONFIG_FILE = "input_data.yml"
 _CONFIG_FILE_NO_WELL_COSTS = "input_data_no_well_costs.yml"

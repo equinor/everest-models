@@ -4,4 +4,4 @@
 
 ## Tasks
 
-::: spinningjenny.jobs.fm_strip_dates.tasks
+::: everest_models.jobs.fm_strip_dates.tasks

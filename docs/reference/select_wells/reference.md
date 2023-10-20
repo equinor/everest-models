@@ -7,8 +7,8 @@
 
 ## Tasks
 
-::: spinningjenny.jobs.fm_select_wells.tasks
+::: everest_models.jobs.fm_select_wells.tasks
 
 ## Models
 
-$pydantic: spinningjenny.jobs.fm_select_wells.well_number_model.WellNumber
+$pydantic: everest_models.jobs.fm_select_wells.well_number_model.WellNumber

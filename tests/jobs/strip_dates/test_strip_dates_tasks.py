@@ -5,7 +5,7 @@ import pytest
 from ecl.summary import EclSum
 from sub_testdata import STRIP_DATES as TEST_DATA
 
-from spinningjenny.jobs.fm_strip_dates.tasks import strip_dates
+from everest_models.jobs.fm_strip_dates.tasks import strip_dates
 
 SUMMARY_CASE = "EGG.UNSMRY"
 

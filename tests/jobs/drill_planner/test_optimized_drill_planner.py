@@ -5,14 +5,14 @@ from hypothesis import assume, given
 from jobs.drill_planner.strategies import constraints_schedule
 from ortools.sat.python import cp_model
 
-from spinningjenny.jobs.fm_drill_planner.data import (
+from everest_models.jobs.fm_drill_planner.data import (
     DayRange,
     Rig,
     Slot,
     WellPriority,
     validators,
 )
-from spinningjenny.jobs.fm_drill_planner.planner.optimized import (
+from everest_models.jobs.fm_drill_planner.planner.optimized import (
     drill_constraint_model,
     run_optimization,
 )

@@ -2,10 +2,10 @@ import logging
 
 from sub_testdata import ADD_TEMPLATE as TEST_DATA
 
-from spinningjenny.jobs.fm_add_templates.config_model import Template
-from spinningjenny.jobs.fm_add_templates.tasks import add_templates, collect_matching
-from spinningjenny.jobs.shared.models import Operation, WellConfig
-from spinningjenny.jobs.shared.validators import parse_file
+from everest_models.jobs.fm_add_templates.config_model import Template
+from everest_models.jobs.fm_add_templates.tasks import add_templates, collect_matching
+from everest_models.jobs.shared.models import Operation, WellConfig
+from everest_models.jobs.shared.validators import parse_file
 
 
 def test_collect_matching(add_tmpl_config):

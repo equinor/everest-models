@@ -14,8 +14,8 @@ We will try as much as possible to adhere the existing [Project Structure](../ex
 
 ```bash
 # From project root
-mkdir src/spinningjenny/jobs/fm_ops_remover
-cd src/spinningjenny/jobs/fm_ops_remover
+mkdir src/everest_models/jobs/fm_ops_remover
+cd src/everest_models/jobs/fm_ops_remover
 touch __init__.py __main__.py tasks.py parser.py cli.py
 cd -
 ```
@@ -42,7 +42,7 @@ It can be argued that `tasks.py` is small enough that it can be moved to `cli.py
 #### CLI
 
 CLI, command line interface, is our forward model job main entry point to the rest of the job's functionality. Thus all other relevant job functionality should be referenced within this module's `main_entry_point` function.
-This function is what is going to be exposed to `Spinningjenny` plugin.
+This function is what is going to be exposed to `Everest-models` plugin.
 
 `main_entry_point` includes:
 
@@ -72,12 +72,12 @@ make `main_entry_point` function the main entry point if module is referenced as
 #### Plugin Executable
 
 Add forward model job to `forward_models`. This directory is package as data files, 
-thus files is what is being executed by everest, or whomever is using `spinningjenny` plugin.
+thus files is what is being executed by everest, or whomever is using `everest-models` plugin.
 
 > The name of the `forward_models`' file should be the same as the job excluding the `fm_` prefix
 
 ```bash
-echo EXECUTABLE fm_ops_remover > src/spinningjenny/forward_models/ops_remover
+echo EXECUTABLE fm_ops_remover > src/everest_models/forward_models/ops_remover
 ```
 
 #### Standalone Script
@@ -88,7 +88,7 @@ Optional, but a plus, add job as a project script under `pyproject.toml`
 # pyproject.toml
 ...
 [project.scripts]
-fm_ops_remover = "spinningjenny.jobs.fm_ops_remover.cli:main_entry_point"
+fm_ops_remover = "everest_models.jobs.fm_ops_remover.cli:main_entry_point"
 ...
 ```
 
@@ -118,12 +118,12 @@ required named arguments:
 
 ### User Documentation
 
-Spinningjenny user documentation is build by [Everest](https://github.com/equinor/everest), As such it should be created, and modified over on that end. Please look to [Everest Tutorial](https://github.com/equinor/everest/tree/main/docs/source/tutorial)
+Everest-models user documentation is build by [Everest](https://github.com/equinor/everest), As such it should be created, and modified over on that end. Please look to [Everest Tutorial](https://github.com/equinor/everest/tree/main/docs/source/tutorial)
 directory to know more of where your forward model documentation should live.
 
 ### Dev Documentation
 
-Developer documentation lives here, in the `spinningjenny` project, Make sure **exposed** core function(s) have **docstring(s)**.
+Developer documentation lives here, in the `everest-models` project, Make sure **exposed** core function(s) have **docstring(s)**.
 
 ```python hl_lines="7-12"
 {!> contribute/fm_ops_remover/tasks.py!}
@@ -149,11 +149,11 @@ Once you've build the documentation resources, you can add them to the reference
 ```\
 
 ## Tasks
-::: spinningjenny.jobs.fm_ops_remover.tasks
+::: everest_models.jobs.fm_ops_remover.tasks
 
 <!--If you have custom models specific to the job-->
 ## Models
-$pydanic: spinningjenny.jbbs.fm_ops_remover.<module>
+$pydanic: everest_models.jobs.fm_ops_remover.<module>
 ```
 
 ```yaml hl_lines="9"

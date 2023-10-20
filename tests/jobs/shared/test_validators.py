@@ -8,7 +8,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 from pydantic import BaseModel, FilePath
 
-from spinningjenny.jobs.shared.validators import (
+from everest_models.jobs.shared.validators import (
     _prettify_validation_error_message,
     is_gt_zero,
     is_writable_path,

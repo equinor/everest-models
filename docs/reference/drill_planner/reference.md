@@ -6,19 +6,19 @@
 ```
 ## Builder
 
-::: spinningjenny.jobs.fm_drill_planner.manager.builder
+::: everest_models.jobs.fm_drill_planner.manager.builder
 
 ## Planner
 
-::: spinningjenny.jobs.fm_drill_planner.planner.greedy
-::: spinningjenny.jobs.fm_drill_planner.planner.optimized
+::: everest_models.jobs.fm_drill_planner.planner.greedy
+::: everest_models.jobs.fm_drill_planner.planner.optimized
 
 ## Models
 
 ### Wells
 
-$pydantic: spinningjenny.jobs.fm_drill_planner.models.wells.Wells
+$pydantic: everest_models.jobs.fm_drill_planner.models.wells.Wells
 
 ### Drill Planner Configuration
 
-$pydantic: spinningjenny.jobs.fm_drill_planner.models.config.DrillPlanConfig
+$pydantic: everest_models.jobs.fm_drill_planner.models.config.DrillPlanConfig

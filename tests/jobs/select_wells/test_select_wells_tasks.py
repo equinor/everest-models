@@ -4,8 +4,8 @@ from typing import NamedTuple, Tuple
 
 import pytest
 
-from spinningjenny.jobs.fm_select_wells.tasks import get_well_number, select_wells
-from spinningjenny.jobs.shared.models import WellConfig
+from everest_models.jobs.fm_select_wells.tasks import get_well_number, select_wells
+from everest_models.jobs.shared.models import WellConfig
 
 
 class FileOptions(NamedTuple):

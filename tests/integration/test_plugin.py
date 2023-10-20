@@ -5,7 +5,7 @@ FORWARD_MODEL_DIR = "forward_models"
 
 
 def test_hooks_registered(plugin_manager):
-    assert sys.modules["spinningjenny.everest_hooks"] in plugin_manager.get_plugins()
+    assert sys.modules["everest_models.everest_hooks"] in plugin_manager.get_plugins()
 
 
 def test_get_forward_models_hook(plugin_manager):

@@ -2,15 +2,15 @@ import string
 
 from hypothesis import strategies
 
-# from spinningjenny.jobs.fm_drill_planner.manager import get_field_manager
-from spinningjenny.jobs.fm_drill_planner.data import (
+# from everest_models.jobs.fm_drill_planner.manager import get_field_manager
+from everest_models.jobs.fm_drill_planner.data import (
     DayRange,
     Event,
     Rig,
     Slot,
     WellPriority,
 )
-from spinningjenny.jobs.fm_drill_planner.planner.optimized import _DrillConstraints
+from everest_models.jobs.fm_drill_planner.planner.optimized import _DrillConstraints
 
 MAX_SIZE = 3
 MIN_SIZE = 1

@@ -1,7 +1,7 @@
 ## Installation
 
 ```bash
-pip install git+{GH_TOKEN}@https://github.com/equinor/spinningjenny.git
+pip install git+{GH_TOKEN}@https://github.com/equinor/everest-models.git
 ```
 
 ## Local Test
@@ -10,7 +10,7 @@ Make sure you have access and permission to the Equinor github organization.
 clone the project to your local repository.
 
 ```bash
-git clone https://github.com/equinor/spinningjenny.git
+git clone https://github.com/equinor/everest-models.git
 ```
 
 > It is a good idea to create an SSH key and authorize it as an Equinor Single sign-on (SSO) key

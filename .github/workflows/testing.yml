@@ -41,6 +41,6 @@ jobs:
         run: |
           pip install .[test]
 
-      - name: "Test package spinningjenny"
+      - name: "Test package everest-models"
         run: |
           python -m pytest -sv --hypothesis-profile ci

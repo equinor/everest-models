@@ -4,7 +4,7 @@ from typing import Tuple
 import pytest
 from sub_testdata import SCHMERGE as TEST_DATA
 
-from spinningjenny.jobs.fm_schmerge.cli import main_entry_point
+from everest_models.jobs.fm_schmerge.cli import main_entry_point
 
 
 @pytest.fixture(scope="module")

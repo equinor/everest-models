@@ -4,7 +4,7 @@ import pathlib
 from textwrap import dedent
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from spinningjenny.jobs.shared.models import BaseConfig, BaseEnum
+from everest_models.jobs.shared.models import BaseConfig, BaseEnum
 
 
 class ABEnum(BaseEnum):

@@ -1,10 +1,10 @@
 import json
 import os
 
-from spinningjenny.jobs.fm_interpret_well_drill.cli import (
+from everest_models.jobs.fm_interpret_well_drill.cli import (
     main_entry_point as interpret_entry,
 )
-from spinningjenny.jobs.fm_well_filter.cli import main_entry_point as well_filter_entry
+from everest_models.jobs.fm_well_filter.cli import main_entry_point as well_filter_entry
 
 
 def test_drill_plan_filter_entry(copy_testdata_tmpdir):

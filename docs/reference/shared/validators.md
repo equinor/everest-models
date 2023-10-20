@@ -1,1 +1,1 @@
-::: spinningjenny.jobs.shared.validators
+::: everest_models.jobs.shared.validators

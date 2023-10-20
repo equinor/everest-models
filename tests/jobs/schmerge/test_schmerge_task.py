@@ -4,8 +4,8 @@ import pathlib
 import pytest
 from sub_testdata import SCHMERGE as TEST_DATA
 
-from spinningjenny.jobs.fm_schmerge.tasks import merge_operations_onto_schedule
-from spinningjenny.jobs.shared.models.phase import PhaseEnum
+from everest_models.jobs.fm_schmerge.tasks import merge_operations_onto_schedule
+from everest_models.jobs.shared.models.phase import PhaseEnum
 
 SCHEDULE_HEAD = """
 RPTRST

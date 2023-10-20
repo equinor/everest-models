@@ -2,7 +2,7 @@ import datetime
 
 from ecl.summary import EclSum
 
-from spinningjenny.jobs.fm_extract_summary_data.parser import args_parser
+from everest_models.jobs.fm_extract_summary_data.parser import args_parser
 
 
 def ecl_summary(*args, **kwargs):

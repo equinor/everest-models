@@ -7,4 +7,4 @@
 
 ## Models
 
-$pydantic: spinningjenny.jobs.fm_npv.npv_config_model.NPVConfig
+$pydantic: everest_models.jobs.fm_npv.npv_config_model.NPVConfig

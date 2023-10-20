@@ -65,4 +65,4 @@ venv.bak/
 .vscode
 
 # version
-src/spinningjenny/version.py
+src/everest_models/version.py

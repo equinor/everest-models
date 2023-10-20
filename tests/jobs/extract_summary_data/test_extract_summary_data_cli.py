@@ -4,8 +4,8 @@ import pathlib
 import pytest
 from jobs.extract_summary_data.parser import build_argument_parser
 
-from spinningjenny.jobs.fm_extract_summary_data import cli
-from spinningjenny.jobs.fm_extract_summary_data.tasks import CalculationType
+from everest_models.jobs.fm_extract_summary_data import cli
+from everest_models.jobs.fm_extract_summary_data.tasks import CalculationType
 
 
 @pytest.fixture()

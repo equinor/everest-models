@@ -5,9 +5,9 @@ import pytest
 from jobs.npv.parser import ecl_summary_npv
 from sub_testdata import NPV as TEST_DATA
 
-from spinningjenny.jobs.fm_npv.manager import NPVCalculator
-from spinningjenny.jobs.fm_npv.npv_config_model import NPVConfig
-from spinningjenny.jobs.shared.validators import valid_input_file
+from everest_models.jobs.fm_npv.manager import NPVCalculator
+from everest_models.jobs.fm_npv.npv_config_model import NPVConfig
+from everest_models.jobs.shared.validators import valid_input_file
 
 
 @pytest.fixture(scope="module")

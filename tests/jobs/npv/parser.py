@@ -5,8 +5,8 @@ from typing import NamedTuple
 
 from ecl.summary import EclSum
 
-from spinningjenny.jobs.fm_npv.npv_config_model import NPVConfig
-from spinningjenny.jobs.shared.models import WellConfig
+from everest_models.jobs.fm_npv.npv_config_model import NPVConfig
+from everest_models.jobs.shared.models import WellConfig
 
 
 def ecl_summary_npv(*args, **kwargs):

@@ -1,5 +1,5 @@
-from spinningjenny.jobs.fm_ops_remover.parser import build_argument_parser
-from spinningjenny.jobs.fm_ops_remover.tasks import remove_operations
+from everest_models.jobs.fm_ops_remover.parser import build_argument_parser
+from everest_models.jobs.fm_ops_remover.tasks import remove_operations
 
 
 def main_entry_point(args=None):

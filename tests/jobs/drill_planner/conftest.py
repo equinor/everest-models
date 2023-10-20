@@ -3,9 +3,9 @@ import datetime
 import pytest
 from sub_testdata import DRILL_PLANNER as TEST_DATA
 
-from spinningjenny.jobs.fm_drill_planner.manager.builder import FieldManagerBuilder
-from spinningjenny.jobs.fm_drill_planner.models import Wells
-from spinningjenny.jobs.shared.validators import valid_input_file
+from everest_models.jobs.fm_drill_planner.manager.builder import FieldManagerBuilder
+from everest_models.jobs.fm_drill_planner.models import Wells
+from everest_models.jobs.shared.validators import valid_input_file
 
 WELL_NAMES, SLOT_NAMES = ["W1", "W2"], ["S1", "S2"]
 START_DATE, END_DATE = datetime.date(2000, 1, 1), datetime.date(2001, 1, 1)

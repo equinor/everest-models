@@ -8,7 +8,7 @@ from importlib import resources
 _FILEPATH = pathlib.Path(__file__)
 REFERENCE_DIR = _FILEPATH.parent
 CURRENT_FILENAME = _FILEPATH.name
-JOBS_MODULE = "spinningjenny.jobs"
+JOBS_MODULE = "everest_models.jobs"
 JOB_PREFIX = "fm_"
 ARGUMENT_PREFIX = "--"
 HELP_ARGUMENT = f"{ARGUMENT_PREFIX}help"

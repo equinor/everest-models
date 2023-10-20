@@ -4,7 +4,7 @@ requires = ["setuptools>=45", "setuptools-scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "spinningjenny"
+name = "everest-models"
 description = "Module containing a collection of jobs for ERT"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -35,7 +35,7 @@ dynamic = [
 ]
 
 [project.urls]
-"Repository" = "https://github.com/equinor/spinningjenny"
+"Repository" = "https://github.com/equinor/everest-models"
 
 [project.optional-dependencies]
 test = [
@@ -58,32 +58,32 @@ docs = [
 ]
 
 [project.entry-points."everest"]
-spinningjenny = "spinningjenny.everest_hooks"
+everest-models = "everest_models.everest_hooks"
 
 [project.scripts]
-fm_add_templates = "spinningjenny.jobs.fm_add_templates.cli:main_entry_point"
-fm_drill_date_planner = "spinningjenny.jobs.fm_drill_date_planner.cli:main_entry_point"
-fm_drill_planner = "spinningjenny.jobs.fm_drill_planner.cli:main_entry_point"
-fm_npv = "spinningjenny.jobs.fm_npv.cli:main_entry_point"
-fm_extract_summary_data = "spinningjenny.jobs.fm_extract_summary_data.cli:main_entry_point"
-fm_interpret_well_drill = "spinningjenny.jobs.fm_interpret_well_drill.cli:main_entry_point"
-fm_rf = "spinningjenny.jobs.fm_rf.cli:main_entry_point"
-fm_schmerge = "spinningjenny.jobs.fm_schmerge.cli:main_entry_point"
-fm_select_wells = "spinningjenny.jobs.fm_select_wells.cli:main_entry_point"
-fm_stea = "spinningjenny.jobs.fm_stea.cli:main_entry_point"
-fm_strip_dates = "spinningjenny.jobs.fm_strip_dates.cli:main_entry_point"
-fm_well_constraints = "spinningjenny.jobs.fm_well_constraints.cli:main_entry_point"
-fm_well_filter = "spinningjenny.jobs.fm_well_filter.cli:main_entry_point"
-fm_well_trajectory = "spinningjenny.jobs.fm_well_trajectory.cli:main_entry_point"
+fm_add_templates = "everest_models.jobs.fm_add_templates.cli:main_entry_point"
+fm_drill_date_planner = "everest_models.jobs.fm_drill_date_planner.cli:main_entry_point"
+fm_drill_planner = "everest_models.jobs.fm_drill_planner.cli:main_entry_point"
+fm_npv = "everest_models.jobs.fm_npv.cli:main_entry_point"
+fm_extract_summary_data = "everest_models.jobs.fm_extract_summary_data.cli:main_entry_point"
+fm_interpret_well_drill = "everest_models.jobs.fm_interpret_well_drill.cli:main_entry_point"
+fm_rf = "everest_models.jobs.fm_rf.cli:main_entry_point"
+fm_schmerge = "everest_models.jobs.fm_schmerge.cli:main_entry_point"
+fm_select_wells = "everest_models.jobs.fm_select_wells.cli:main_entry_point"
+fm_stea = "everest_models.jobs.fm_stea.cli:main_entry_point"
+fm_strip_dates = "everest_models.jobs.fm_strip_dates.cli:main_entry_point"
+fm_well_constraints = "everest_models.jobs.fm_well_constraints.cli:main_entry_point"
+fm_well_filter = "everest_models.jobs.fm_well_filter.cli:main_entry_point"
+fm_well_trajectory = "everest_models.jobs.fm_well_trajectory.cli:main_entry_point"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools_scm]
-write_to = "src/spinningjenny/version.py"
+write_to = "src/everest_models/version.py"
 
 [tool.setuptools.dynamic]
-version = {attr = "spinningjenny.version.__version__"}
+version = {attr = "everest_models.version.__version__"}
 
 [tool.pytest.ini_options]
 minversion = "6.0"

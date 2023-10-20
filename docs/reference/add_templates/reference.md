@@ -6,8 +6,8 @@
 ```
 ## Tasks
 
-::: spinningjenny.jobs.fm_add_templates.tasks
+::: everest_models.jobs.fm_add_templates.tasks
 
 ## Models
 
-$pydantic: spinningjenny.jobs.fm_add_templates.template_model.TemplateConfig
+$pydantic: everest_models.jobs.fm_add_templates.template_model.TemplateConfig

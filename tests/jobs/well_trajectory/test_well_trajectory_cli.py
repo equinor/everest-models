@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from sub_testdata import WELL_TRAJECTORY as TEST_DATA
 
-from spinningjenny.jobs.fm_well_trajectory.cli import main_entry_point
+from everest_models.jobs.fm_well_trajectory.cli import main_entry_point
 
 
 @pytest.fixture(scope="module")

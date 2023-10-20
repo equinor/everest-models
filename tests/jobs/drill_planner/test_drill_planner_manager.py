@@ -2,15 +2,15 @@ from copy import deepcopy
 
 import pytest
 
-from spinningjenny.jobs.fm_drill_planner.data import (
+from everest_models.jobs.fm_drill_planner.data import (
     DayRange,
     Event,
     Rig,
     Slot,
     WellPriority,
 )
-from spinningjenny.jobs.fm_drill_planner.manager import FieldManager, get_field_manager
-from spinningjenny.jobs.fm_drill_planner.models import DrillPlanConfig
+from everest_models.jobs.fm_drill_planner.manager import FieldManager, get_field_manager
+from everest_models.jobs.fm_drill_planner.models import DrillPlanConfig
 
 COMMANDS = {
     "well": "parse_well_priority(*wells_and_priority)",

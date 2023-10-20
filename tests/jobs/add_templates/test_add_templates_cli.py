@@ -4,7 +4,7 @@ import typing
 import pytest
 from sub_testdata import ADD_TEMPLATE as TEST_DATA
 
-from spinningjenny.jobs.fm_add_templates.cli import main_entry_point
+from everest_models.jobs.fm_add_templates.cli import main_entry_point
 
 
 @pytest.fixture(scope="module")

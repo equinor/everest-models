@@ -4,8 +4,8 @@ from copy import deepcopy
 import pytest
 from pydantic import ValidationError
 
-from spinningjenny.jobs.fm_drill_planner.models import DrillPlanConfig
-from spinningjenny.jobs.fm_drill_planner.models.config import _Unavailability
+from everest_models.jobs.fm_drill_planner.models import DrillPlanConfig
+from everest_models.jobs.fm_drill_planner.models.config import _Unavailability
 
 
 def test_drill_planner_config_mismatch_slots(drill_planner_config):

@@ -1,4 +1,4 @@
-from spinningjenny.jobs.shared.arguments import (
+from everest_models.jobs.shared.arguments import (
     add_output_argument,
     add_wells_input_argument,
     bootstrap_parser,

@@ -5,7 +5,7 @@ from typing import Dict
 import pytest
 from pydantic import ValidationError
 
-from spinningjenny.jobs.shared.models import Operation, PhaseEnum, Well, WellConfig
+from everest_models.jobs.shared.models import Operation, PhaseEnum, Well, WellConfig
 
 
 @pytest.fixture(scope="module")

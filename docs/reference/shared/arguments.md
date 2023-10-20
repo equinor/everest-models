@@ -1,1 +1,1 @@
-::: spinningjenny.jobs.shared.arguments
+::: everest_models.jobs.shared.arguments

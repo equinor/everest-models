@@ -5,12 +5,12 @@ import pytest
 from pydantic import ValidationError
 from sub_testdata import ADD_TEMPLATE as TEST_DATA
 
-from spinningjenny.jobs.fm_add_templates.config_model import (
+from everest_models.jobs.fm_add_templates.config_model import (
     Keys,
     Template,
     TemplateConfig,
 )
-from spinningjenny.jobs.shared.models import Operation, PhaseEnum
+from everest_models.jobs.shared.models import Operation, PhaseEnum
 
 
 @pytest.fixture(scope="module")

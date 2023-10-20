@@ -5,8 +5,8 @@ import pathlib
 import pytest
 from ecl.summary import EclSum
 
-from spinningjenny.jobs.fm_rf import cli
-from spinningjenny.jobs.fm_rf.parser import args_parser
+from everest_models.jobs.fm_rf import cli
+from everest_models.jobs.fm_rf.parser import args_parser
 
 ARGUMENTS = ["-s", "TEST", "-o", "rf_result"]
 

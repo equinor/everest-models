@@ -5,7 +5,7 @@ from collections import namedtuple
 import pytest
 from summary import ecl_summary
 
-from spinningjenny.jobs.fm_extract_summary_data.tasks import (
+from everest_models.jobs.fm_extract_summary_data.tasks import (
     CalculationType,
     extract_value,
     validate_arguments,

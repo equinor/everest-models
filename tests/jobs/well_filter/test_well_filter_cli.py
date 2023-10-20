@@ -4,7 +4,7 @@ import pathlib
 import pytest
 from sub_testdata import WELL_FILTER as TEST_DATA
 
-from spinningjenny.jobs.fm_well_filter.cli import main_entry_point
+from everest_models.jobs.fm_well_filter.cli import main_entry_point
 
 
 @pytest.fixture(scope="module")

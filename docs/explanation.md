@@ -3,7 +3,7 @@
 ```bash
 > tree -Id __pycache__ src
 src
-└── spinningjenny
+└── everest_models
     ├── forward_models
     └── jobs
         ├── fm_add_templates
@@ -28,13 +28,13 @@ src
 
 ### Module and Directory Usage
 
-The most alter sections of the `spinningjenny` project is `jobs` and `forward_models`. For adding, maintaining, or refactoring of a forward model behavior, all will need to be done within the scope of the `jobs` module. This module holds all the TNO and Equinor maintained forward models. Each forward model is prefixed with `fm_*` (forward model) key. Whenever you wish to add this job to the `spinnigjenny` plugin, you do so by adding its calling signature to the `forward_models` directory. This directory is packaged within `spinnigjenny` as package [data files](https://setuptools.pypa.io/en/latest/userguide/datafiles.html)
+The most alter sections of the `everest_models` project is `jobs` and `forward_models`. For adding, maintaining, or refactoring of a forward model behavior, all will need to be done within the scope of the `jobs` module. This module holds all the TNO and Equinor maintained forward models. Each forward model is prefixed with `fm_*` (forward model) key. Whenever you wish to add this job to the `spinnigjenny` plugin, you do so by adding its calling signature to the `forward_models` directory. This directory is packaged within `spinnigjenny` as package [data files](https://setuptools.pypa.io/en/latest/userguide/datafiles.html)
 
 ### Forward Model Job Module Layout
 
 ```bash
-> tree -I __pycache__ src/spinningjenny/jobs/fm_well_constraints/
-src/spinningjenny/jobs/fm_well_constraints/
+> tree -I __pycache__ src/everest_models/jobs/fm_well_constraints/
+src/everest_models/jobs/fm_well_constraints/
 ├── __init__.py
 ├── __main__.py
 ├── cli.py
@@ -60,7 +60,7 @@ wells.json is an I/O file expected to have a specific structure through out mult
 
 #### Parser
 
-This module is simple and straight forward, we use this section of the package to build the argument parser for forward model job user interface. To reduce the amount of spinningjenny dependencies we opted to stick to with [argparse](https://docs.python.org/3/library/argparse.html), So please do the same.
+This module is simple and straight forward, we use this section of the package to build the argument parser for forward model job user interface. To reduce the amount of everest-models dependencies we opted to stick to with [argparse](https://docs.python.org/3/library/argparse.html), So please do the same.
 
 > Function `build_argument_parser` must be implemented and exposed
 
@@ -71,8 +71,8 @@ Tasks holds the core functionality/tasks of the forward model job, but this is o
 > It is better to be readable, maintainable, and/or logical. then to adhere to bureaucracy; please use your best judgment.
 
 ```bash hl_lines="10-13 19-22 28"
-> tree -I __pycache__ src/spinningjenny/jobs/fm_drill_planner src/spinningjenny/jobs/fm_well_filter
-src/spinningjenny/jobs/fm_drill_planner
+> tree -I __pycache__ src/everest_models/jobs/fm_drill_planner src/everest_models/jobs/fm_well_filter
+src/everest_models/jobs/fm_drill_planner
 ├── __init__.py
 ├── __main__.py
 ├── cli.py
@@ -93,7 +93,7 @@ src/spinningjenny/jobs/fm_drill_planner
     ├── __init__.py
     ├── greedy.py
     └── optimized.py
-src/spinningjenny/jobs/fm_well_filter
+src/everest_models/jobs/fm_well_filter
 ├── __init__.py
 ├── __main__.py
 ├── cli.py
@@ -118,11 +118,11 @@ But I would also add the lesser known `__main__.py`, a file that tells the pytho
 Thus the following would mostly be the same for all forward models, just make sure the imports are correct
 
 ```python hl_lines="1"
-{!> ../src/spinningjenny/jobs/fm_npv/__init__.py!}
+{!> ../src/everest_models/jobs/fm_npv/__init__.py!}
 ```
 
 ``` python hl_lines="1"
-{!> ../src/spinningjenny/jobs/fm_npv/__main__.py!}
+{!> ../src/everest_models/jobs/fm_npv/__main__.py!}
 ``` 
 
 ##Plugin Flow
@@ -148,9 +148,9 @@ flowchart BT
         share_models ---> tasks
     end
     subgraph Pluggable
-    spinningjenny[/spinningjenny\] ---|plugged in| everest{Everest}
+    everest_models[/everest_models\] ---|plugged in| everest{Everest}
     end
-    Job ---> spinningjenny
+    Job ---> everest_models
 ```
 
 > This is an example for one job but there can be multiple jobs called by Everest

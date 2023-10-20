@@ -1,9 +1,9 @@
-site_name: Spinningjenny
-repo_url: https://github.com/equinor/spinningjenny
+site_name: Everest-models
+repo_url: https://github.com/equinor/everest-models
 site_description: Forward models and workflows to be used with Ert and Everest
 site_author: Equinor and TNO
 edit_uri: edit/main/docs
-repo_name: equinor/spinningjenny
+repo_name: equinor/everest-models
 
 nav:
   - Home: index.md
@@ -83,5 +83,5 @@ extra:
     - icon: fontawesome/brands/slack
       link: https://join.slack.com/share/enQtNTE1MTAwNTI0NDg5Ny03ZmNmNzVmODQ2MGEzNjdmMDI5YTM5OWYyZWVlMjQ4OGU3NDgyNmFmZDNlZTZiZmYzMTg1MzA3OGI3NmZjMGE4
     - icon: fontawesome/brands/github
-      link: https://github.com/equinor/spinningjenny/issues
+      link: https://github.com/equinor/everest-models/issues
       name: Issue Tracker

@@ -4,8 +4,8 @@ import pytest
 from pydantic import ValidationError
 from sub_testdata import WELL_TRAJECTORY as TEST_DATA
 
-from spinningjenny.jobs.fm_well_trajectory.models.config import ConfigSchema
-from spinningjenny.jobs.shared.validators import _valid_yaml
+from everest_models.jobs.fm_well_trajectory.models.config import ConfigSchema
+from everest_models.jobs.shared.validators import _valid_yaml
 
 
 @pytest.fixture(scope="module")

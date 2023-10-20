@@ -1,6 +1,6 @@
 from typing import Iterable
 
-from spinningjenny.jobs.shared.models import WellConfig
+from everest_models.jobs.shared.models import WellConfig
 
 
 def remove_operations(wells: WellConfig, well_names: Iterable[str]) -> None:
