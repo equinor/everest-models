@@ -2,7 +2,7 @@ import datetime
 import logging
 from typing import Tuple
 
-from ecl.summary import EclSum
+from resdata.summary import Summary
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ def _evaluate_dates(
 
 
 def recovery_factor(
-    summary: EclSum,
+    summary: Summary,
     start_date: datetime.date,
     end_date: datetime.date,
     production_key: str,
@@ -39,7 +39,7 @@ def recovery_factor(
     - An error occurs if the entire date range is outside simulation range.
 
     Args:
-        summary (EclSum): Eclipse summary
+        summary (Summary): Eclipse summary
         start_date (datetime.date): First date in the summary
         end_date (datetime.date): Last date in the summary
         production_key (str, optional): A valid summary key.

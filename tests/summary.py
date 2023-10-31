@@ -1,6 +1,6 @@
 import datetime
 
-from ecl.summary import EclSum
+from resdata.summary import Summary
 
 
 def ecl_summary(*args, **kwargs):
@@ -10,14 +10,14 @@ def ecl_summary(*args, **kwargs):
         "FGPT": [2, 4, 6, 6, 8, 10],
     }
     dimensions = [10, 10, 10]
-    ecl_sum = EclSum.writer("TEST", datetime.date(2000, 1, 1), *dimensions)
+    summary = Summary.writer("TEST", datetime.date(2000, 1, 1), *dimensions)
 
     for key in sum_keys:
-        ecl_sum.add_variable(key, wgname=None, num=0)
+        summary.add_variable(key, wgname=None, num=0)
 
     for idx in range(6):
-        t_step = ecl_sum.add_t_step(idx, 5 * idx)
+        t_step = summary.add_t_step(idx, 5 * idx)
         for key, item in sum_keys.items():
             t_step[key] = item[idx]
 
-    return ecl_sum
+    return summary

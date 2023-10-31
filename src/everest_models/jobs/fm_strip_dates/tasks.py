@@ -4,7 +4,7 @@ import os
 import shutil
 from typing import List
 
-from ecl.eclfile import EclFile, FortIO
+from resdata.resfile import FortIO, ResdataFile
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ def strip_dates(
     """Strip all other dates except the ones given from eclipse summary.
 
     Args:
-        summary_dates (EclSum): Eclipse summary dates
+        summary_dates: Eclipse summary dates
         dates (List[datetime.date]): dates to whitelist from strip
         summary_path (str): eclipse summary filepath
     """
@@ -29,7 +29,7 @@ def strip_dates(
     shutil.move(summary_path, temp_path)
     shutil.copy(f"{base_path}.{SPEC_EXTENSION}", f"{base_path}_BAK.{SPEC_EXTENSION}")
 
-    ecl_file = EclFile(temp_path)
+    ecl_file = ResdataFile(temp_path)
     fort_io = FortIO(summary_path, mode=2)
 
     valid_date = True

@@ -6,8 +6,8 @@ from os import W_OK, access
 from typing import Any, Dict, Iterable
 
 import ruamel.yaml as yaml
-from ecl.summary import EclSum
 from pydantic import BaseModel, ValidationError
+from resdata.summary import Summary
 
 from everest_models.jobs.shared import io_utils as io
 
@@ -39,17 +39,17 @@ def is_writable_path(value: str) -> pathlib.Path:
     return path
 
 
-def valid_ecl_summary(file_path: str) -> EclSum:
+def valid_ecl_summary(file_path: str) -> Summary:
     """Validate eclipse summary file is correct.
 
     Args:
         file_path (str): Eclipse summary filepath
 
     Returns:
-        EclSum: Eclipse summary instance
+        Summary: Eclipse summary instance
     """
     try:
-        return EclSum(file_path)
+        return Summary(file_path)
     except (IOError, OSError):
         argparse.ArgumentTypeError(
             f"Could not load eclipse summary from file: {file_path}"

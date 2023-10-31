@@ -1,6 +1,6 @@
 import datetime
 
-from ecl.summary import EclSum
+from resdata.summary import Summary
 
 from everest_models.jobs.fm_extract_summary_data.parser import args_parser
 
@@ -12,7 +12,7 @@ def ecl_summary(*args, **kwargs):
         "FGPT": [2, 4, 6, 6, 8, 10],
     }
     dimensions = [10, 10, 10]
-    ecl_sum = EclSum.writer("TEST", datetime.date(2000, 1, 1), *dimensions)
+    ecl_sum = Summary.writer("TEST", datetime.date(2000, 1, 1), *dimensions)
 
     for key in sum_keys:
         ecl_sum.add_variable(key, wgname=None, num=0)

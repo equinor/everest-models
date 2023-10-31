@@ -4,18 +4,18 @@ import logging
 from enum import Enum
 
 import numpy as np
-from ecl.summary import EclSum
+from resdata.summary import Summary
 
 logger = logging.getLogger(__name__)
 
 
 def extract_value(
-    summary: EclSum, key: str, end_date: datetime.date, **kwargs
+    summary: Summary, key: str, end_date: datetime.date, **kwargs
 ) -> float:
     """Extract interpreted eclipse summary value for given key and end date.
 
     Args:
-        summary (EclSum): eclipse summary
+        summary (Summary): eclipse summary
         key (str): eclipse summary key
         end_date (datetime.date): summary key interval end date
 
@@ -26,7 +26,7 @@ def extract_value(
 
 
 def _extract_max(
-    summary: EclSum, key: str, start_date: datetime.date, end_date: datetime.date
+    summary: Summary, key: str, start_date: datetime.date, end_date: datetime.date
 ) -> float:
     return np.max(
         summary.numpy_vector(
@@ -39,7 +39,7 @@ def _extract_max(
 
 
 def _extract_diff(
-    summary: EclSum, key: str, start_date: datetime.date, end_date: datetime.date
+    summary: Summary, key: str, start_date: datetime.date, end_date: datetime.date
 ) -> float:
     return summary.get_interp(key, date=end_date) - summary.get_interp(
         key, date=start_date
@@ -55,7 +55,7 @@ class CalculationType(Enum):
 
     def extract(
         self,
-        summary: EclSum,
+        summary: Summary,
         key: str,
         start_date: datetime.date,
         end_date: datetime.date,

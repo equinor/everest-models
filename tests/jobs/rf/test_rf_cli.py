@@ -3,7 +3,7 @@ import logging
 import pathlib
 
 import pytest
-from ecl.summary import EclSum
+from resdata.summary import Summary
 
 from everest_models.jobs.fm_rf import cli
 from everest_models.jobs.fm_rf.parser import args_parser
@@ -15,7 +15,7 @@ RANGE_SIZE = 10 + 1
 
 @pytest.fixture(scope="module")
 def ecl_summary_rf():
-    ecl_sum = EclSum.writer("TEST", datetime.date(2000, 1, 1), *[RANGE_SIZE - 1] * 3)
+    ecl_sum = Summary.writer("TEST", datetime.date(2000, 1, 1), *[RANGE_SIZE - 1] * 3)
     sum_keys = {
         "FOPT": list(range(RANGE_SIZE)),
         "FOIP": [100] * RANGE_SIZE,

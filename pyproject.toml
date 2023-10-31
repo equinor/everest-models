@@ -19,11 +19,11 @@ classifiers = [
     "Programming language :: Python :: 3.11",
 ]
 dependencies = [
-    "ecl>=2.13.2",
+    "resdata",
     "Jinja2>=3.1.2",
     "numpy>=1.23.2",
     "ruamel.yaml>=0.17.21",
-    "stea>=0.5.2",
+    "stea @ git+https://github.com/equinor/fmu-steaclient.git",
     "pydantic < 2",
     "ortools>=9.3",
     "rips>=2023.01.0.1",

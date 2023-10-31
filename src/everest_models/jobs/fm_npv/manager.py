@@ -3,8 +3,8 @@ import itertools
 import logging
 from typing import Callable, Dict, Iterable, Protocol, Tuple
 
-from ecl.summary import EclSum
-from ecl.util.util import TimeVector
+from resdata.summary import Summary
+from resdata.util.util import TimeVector
 
 from everest_models.jobs.fm_npv.npv_config_model import NPVConfig
 
@@ -48,7 +48,7 @@ def _get_ref_date(summary_start_date: datetime.date, start_date: datetime.date):
 
 
 class NPVCalculator:
-    def __init__(self, config: NPVConfig, summary: EclSum) -> None:
+    def __init__(self, config: NPVConfig, summary: Summary) -> None:
         self.config = config
         self.summary = summary
         self.keywords = _get_keywords(

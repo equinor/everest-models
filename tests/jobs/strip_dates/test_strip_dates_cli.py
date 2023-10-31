@@ -2,7 +2,7 @@ import filecmp
 import logging
 
 import pytest
-from ecl.summary import EclSum
+from resdata.summary import Summary
 from sub_testdata import STRIP_DATES as TEST_DATA
 
 from everest_models.jobs.fm_strip_dates.cli import main_entry_point
@@ -64,7 +64,7 @@ def test_strip_date_entry_point_preserves_last_date(
 
     main_entry_point(strip_dates_base_args[:-1])
 
-    ecl_sum_result = EclSum("EGG.UNSMRY")
+    ecl_sum_result = Summary("EGG.UNSMRY")
 
     # The stripped summary file should only contain the last report date
     # from the original summary file

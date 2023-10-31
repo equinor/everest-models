@@ -10,8 +10,8 @@ from everest_models.jobs.shared.validators import valid_iso_date
 def build_argument_parser():
     parser, required_group = get_parser(
         description="Calculates the recovery factor given summary keys and dates.\n"
-        "Requires an EclSum instance to retrieve the volumes from. The summary "
-        "keys requested must be in the EclSum instance. If the dates are outside "
+        "Requires a Summary instance to retrieve the volumes from. The summary "
+        "keys requested must be in the Summary instance. If the dates are outside "
         "the simulation range, they will be clamped to nearest. Will throw an "
         "error if the entire date range is outside the simulation range."
     )
