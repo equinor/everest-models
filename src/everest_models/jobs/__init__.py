@@ -1,5 +1,6 @@
 from everest_models.jobs import (
     fm_add_templates,
+    fm_compute_economics,
     fm_drill_date_planner,
     fm_drill_planner,
     fm_extract_summary_data,
@@ -19,6 +20,7 @@ __all__ = [
     "fm_add_templates",
     "fm_drill_date_planner",
     "fm_drill_planner",
+    "fm_compute_economics",
     "fm_extract_summary_data",
     "fm_interpret_well_drill",
     "fm_npv",

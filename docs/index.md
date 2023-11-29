@@ -21,6 +21,7 @@ of the following:
         - [Add Templates](reference/add_templates/reference.md)
         - [Drill Date Planner](reference/drill_date_planner/reference.md)
         - [Drill Planner](reference/drill_planner/reference.md)
+        - [Compute Economics](reference/compute_economics/reference.md)
         - [Extract Summary Date](reference/extract_summary_data/reference.md)
         - [Interpret Well Drill](reference/interpret_well_drill/reference.md)
         - [Net Present Value](reference/npv/reference.md)

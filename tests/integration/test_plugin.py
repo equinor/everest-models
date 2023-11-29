@@ -12,6 +12,7 @@ def test_get_forward_models_hook(plugin_manager):
     jobs = {
         "stea": f"{FORWARD_MODEL_DIR}/stea",
         "drill_planner": f"{FORWARD_MODEL_DIR}/drill_planner",
+        "compute_economics": f"{FORWARD_MODEL_DIR}/compute_economics",
         "schmerge": f"{FORWARD_MODEL_DIR}/schmerge",
         "extract_summary_data": f"{FORWARD_MODEL_DIR}/extract_summary_data",
         "drill_date_planner": f"{FORWARD_MODEL_DIR}/drill_date_planner",
@@ -38,6 +39,7 @@ def test_get_forward_model_schemas_hook(plugin_manager):
         "drill_planner",
         "schmerge",
         "drill_date_planner",
+        "compute_economics",
         "select_wells",
         "npv",
         "add_templates",

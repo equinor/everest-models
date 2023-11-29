@@ -19,6 +19,7 @@ nav:
         - Add Templates: reference/add_templates/reference.md
         - Drill Date Planner: reference/drill_date_planner/reference.md
         - Drill Planner: reference/drill_planner/reference.md
+        - Compute Economics: reference/compute_economics/reference.md
         - Extract Summary Date: reference/extract_summary_data/reference.md
         - Interpret Well Drill: reference/interpret_well_drill/reference.md
         - Net Present Value: reference/npv/reference.md
@@ -66,6 +67,7 @@ theme:
 markdown_extensions:
   - toc:
       permalink: true
+  - pymdownx.details
   - pymdownx.arithmatex:
       generic: true      
   - pymdownx.superfences:
@@ -77,6 +79,7 @@ markdown_extensions:
       base_path: docs
   - codehilite
   - mdantic
+  - admonition
 
 extra:
   social:
@@ -85,3 +88,8 @@ extra:
     - icon: fontawesome/brands/github
       link: https://github.com/equinor/everest-models/issues
       name: Issue Tracker
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js

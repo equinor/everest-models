@@ -1,6 +1,7 @@
 ADD_TEMPLATE = "add_tmpl"
 DRILL_DATE_PLANNER = "drill_date_planner"
 DRILL_PLANNER = "drill_planner"
+ECONOMIC_INDICATOR = "compute_economics"
 INTERPRET_WELL_DRILL = "interpret_well_drill"
 NPV = "npv"
 SCHMERGE = "schmerge"

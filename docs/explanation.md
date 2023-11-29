@@ -7,8 +7,13 @@ src
     ├── forward_models
     └── jobs
         ├── fm_add_templates
+        ├── fm_compute_economics        
         ├── fm_drill_date_planner
         ├── fm_drill_planner
+        │   ├── data
+        │   ├── manager
+        │   ├── models
+        │   └── planner        
         ├── fm_extract_summary_data
         ├── fm_interpret_well_drill
         ├── fm_npv
@@ -20,15 +25,17 @@ src
         ├── fm_well_constraints
         │   └── models
         ├── fm_well_filter
+        ├── fm_well_trajectory
+        |   └── models
         └── shared
             └── models
 
-19 directories
+26 directories
 ```
 
 ### Module and Directory Usage
 
-The most alter sections of the `everest_models` project is `jobs` and `forward_models`. For adding, maintaining, or refactoring of a forward model behavior, all will need to be done within the scope of the `jobs` module. This module holds all the TNO and Equinor maintained forward models. Each forward model is prefixed with `fm_*` (forward model) key. Whenever you wish to add this job to the `spinnigjenny` plugin, you do so by adding its calling signature to the `forward_models` directory. This directory is packaged within `spinnigjenny` as package [data files](https://setuptools.pypa.io/en/latest/userguide/datafiles.html)
+The most alter sections of the `everest_models` project is `jobs` and `forward_models`. For adding, maintaining, or refactoring of a forward model behavior, all will need to be done within the scope of the `jobs` module. This module holds all the TNO and Equinor maintained forward models. Each forward model is prefixed with `fm_*` (forward model) key. Whenever you wish to add this job to the `everest_models` plugin, you do so by adding its calling signature to the `forward_models` directory. This directory is packaged within `everest_models` as package [data files](https://setuptools.pypa.io/en/latest/userguide/datafiles.html)
 
 ### Forward Model Job Module Layout
 
@@ -125,7 +132,17 @@ Thus the following would mostly be the same for all forward models, just make su
 {!> ../src/everest_models/jobs/fm_npv/__main__.py!}
 ``` 
 
-##Plugin Flow
+
+#### Compute Economics forward model vs. NPV forward model
+
+Several economical indicators are possible either as an objective function or as optimization constraints. For example, we may want to optimize the NPV while ensuring a break-even price under a given value. 
+
+Economical indicators may share most of their features such a prices, discount rates, dates, ... and may be seen as such as several variants of the calculation of an indicator. In that respect, it was decided to extend the NPV forward model in a more general approach. 
+
+This extension allows for the implementation of future indicators by abstracting the calculator class and updates the command line inputs by gathering them all in the configuration file. As the existing NPV forward model is kept and a new module created, there is no break in compatibility.
+
+
+## Plugin Flow
 
 ```mermaid
 flowchart BT
