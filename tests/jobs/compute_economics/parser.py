@@ -4,7 +4,7 @@ import sys
 from types import SimpleNamespace
 from typing import NamedTuple
 
-from ecl.summary import EclSum
+from resdata.summary import Summary
 
 from everest_models.jobs.fm_compute_economics.economic_indicator_config_model import (
     EconomicIndicatorConfig,
@@ -23,7 +23,7 @@ def ecl_summary_economic_indicator(*args, **kwargs):
     }
 
     dimensions = [10, 10, 10]
-    ecl_sum = EclSum.writer("TEST", datetime.date(1999, 12, 1), *dimensions)
+    ecl_sum = Summary.writer("TEST", datetime.date(1999, 12, 1), *dimensions)
 
     for key in sum_keys:
         sub_name = None
@@ -57,7 +57,7 @@ def ecl_reference_summary_economic_indicator(*args, **kwargs):
     }
 
     dimensions = [10, 10, 10]
-    ecl_sum = EclSum.writer("REFTEST", datetime.date(1999, 12, 1), *dimensions)
+    ecl_sum = Summary.writer("REFTEST", datetime.date(1999, 12, 1), *dimensions)
 
     for key in sum_keys:
         sub_name = None
@@ -90,7 +90,7 @@ def ecl_reference_summary_economic_indicator_not_consistent(*args, **kwargs):
     }
 
     dimensions = [10, 10, 10]
-    ecl_sum = EclSum.writer("BADREFTEST", datetime.date(1999, 12, 1), *dimensions)
+    ecl_sum = Summary.writer("BADREFTEST", datetime.date(1999, 12, 1), *dimensions)
 
     for key in sum_keys:
         sub_name = None

@@ -4,8 +4,8 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Callable, Dict, Iterable, Protocol, Tuple, Union
 
-from ecl.summary import EclSum
-from ecl.util.util import TimeVector
+from resdata.summary import Summary
+from resdata.util.util import TimeVector
 
 from everest_models.jobs.fm_compute_economics.economic_indicator_config_model import (
     EconomicIndicatorConfig,
@@ -62,8 +62,8 @@ class EclipseSummary:
             )
         return tuple(summary_keys)
 
-    def get_summary(self, filepath: Union[str, None]) -> Union[EclSum, None]:
-        return EclSum(str(filepath)) if filepath else None
+    def get_summary(self, filepath: Union[str, None]) -> Union[Summary, None]:
+        return Summary(str(filepath)) if filepath else None
 
     def get_keys(self, config_keys: Tuple[str, ...]) -> Tuple[str, ...]:
         main_keywords = EclipseSummary._get_keywords(
@@ -98,7 +98,7 @@ class EclipseSummary:
 
     def get_delta_blocked_productions(self, time_range: TimeVector):
         blocked_productions = self.get_blocked_production_main(time_range)
-        if isinstance(self.reference, EclSum):
+        if isinstance(self.reference, Summary):
             try:
                 ref_blocked_productions = self.get_blocked_production_reference(
                     time_range
