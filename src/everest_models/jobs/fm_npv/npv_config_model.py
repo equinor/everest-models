@@ -50,6 +50,8 @@ class NPVConfig(BaseConfig):
     @root_validator(pre=True)
     def populate_summary_keys(cls, values):
         if not ("summary_keys" in values and values["summary_keys"]):
+            if "prices" not in values:
+                raise ValueError("Both summary_keys and prices keys missing")
             values["summary_keys"] = tuple(values["prices"])
         return values
 
