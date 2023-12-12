@@ -71,11 +71,12 @@ def get_forward_models_schemas() -> Dict[str, Dict[str, Type[T]]]:
             ...
         }
     """
-    return {
-        job.lstrip("fm_"): schemas
-        for job in _get_jobs()
-        if (schemas := getattr(import_module(f"{JOBS}.{job}.parser"), "SCHEMAS", None))
-    }
+    res = {}
+    for job in _get_jobs():
+        schema = getattr(import_module(f"{JOBS}.{job}.parser"), "SCHEMAS", None)
+        if schema:
+            res[job.lstrip("fm_")] = schema.get("-c/--config")
+    return res
 
 
 @hookimpl

@@ -57,9 +57,8 @@ def test_get_forward_model_schemas_hook(plugin_manager):
 
 def test_get_forward_model_schemas_hook_keys_are_options(plugin_manager):
     assert all(
-        re.match(r"^-\w{1,3}/-(-\w+)*$", option)
-        for job, schemas in plugin_manager.hook.get_forward_models_schemas()[0].items()
-        for option in set(schemas)
+        schema is not None
+        for job, schema in plugin_manager.hook.get_forward_models_schemas()[0].items()
         if job != "select_wells"
     )
 
@@ -94,9 +93,7 @@ def test_parse_forward_model_schema_hook_error(switch_cwd_tmp_path, plugin_manag
 
 def test_multi_hook_calls(copy_testdata_tmpdir, plugin_manager):
     copy_testdata_tmpdir(TEST_DATA)
-    schema = plugin_manager.hook.get_forward_models_schemas()[0]["add_templates"][
-        "-c/--config"
-    ]
+    schema = plugin_manager.hook.get_forward_models_schemas()[0]["add_templates"]
     assert schema == TemplateConfig
     assert isinstance(
         plugin_manager.hook.parse_forward_model_schema(
