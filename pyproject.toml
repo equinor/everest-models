@@ -42,12 +42,17 @@ test = [
     "pytest",
     "decorator",
     "mock",
-    "black",
     "hypothesis",
     "pytest-runner",
     "pytest-timeout",
-    "isort",
 ]
+
+style = [
+  "pre-commit",
+  "pre-commit-hooks",
+  "ruff",
+]
+
 docs = [
     "mkdocs",
     "mkdocs-material",
@@ -100,5 +105,17 @@ markers = [
 log_cli = 0
 log_cli_level = "INFO"
 
-[tool.isort]
-profile = "black"
+[tool.ruff]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "C",  # flake8-comprehensions
+    "B",  # flake8-bugbear
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
