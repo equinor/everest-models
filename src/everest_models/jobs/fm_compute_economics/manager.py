@@ -242,7 +242,7 @@ class BEPCalculator(EconomicIndicatorCalculatorABC):
         self.oil_equivalent = self.config.oil_equivalent
 
     def _get_oil_equivalent(self, blocked_productions):
-        oil_equivalent = dict()
+        oil_equivalent = {}
         for input_phase, output_phases in self.oil_equivalent.remap.items():
             blocked_production = blocked_productions[input_phase]
             for output_phase, equivalent in output_phases.items():

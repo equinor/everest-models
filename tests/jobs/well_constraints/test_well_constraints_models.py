@@ -1,15 +1,14 @@
 import copy
 
 import pytest
-from hypothesis import given
-from hypothesis import strategies as st
-from pydantic import ValidationError
-
 from everest_models.jobs.fm_well_constraints.models import (
     Constraints,
     WellConstraintConfig,
 )
 from everest_models.jobs.fm_well_constraints.models.config import Phase, Tolerance
+from hypothesis import given
+from hypothesis import strategies as st
+from pydantic import ValidationError
 
 _WELL_CONSTRAINTS_CONFIG = {
     "INJECT1": {

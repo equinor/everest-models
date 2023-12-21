@@ -1,13 +1,12 @@
 import pathlib
 
 import pytest
-from pydantic import ValidationError
-
 from everest_models.jobs.fm_compute_economics.economic_indicator_config_model import (
     Capital,
     EconomicIndicatorConfig,
     OutputConfig,
 )
+from pydantic import ValidationError
 
 
 def test_economic_indicator_config_defaults():

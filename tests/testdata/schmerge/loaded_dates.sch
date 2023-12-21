@@ -1,6 +1,6 @@
 RPTRST
    BASIC=3 FREQ=3 /
-   
+
 DATES
  30 MAY 2014 /
 /

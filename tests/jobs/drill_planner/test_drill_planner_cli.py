@@ -1,10 +1,9 @@
 import pathlib
 
 import pytest
-from sub_testdata import DRILL_PLANNER as TEST_DATA
-
 from everest_models.jobs.fm_drill_planner.cli import main_entry_point
 from everest_models.jobs.fm_drill_planner.manager import ScheduleError
+from sub_testdata import DRILL_PLANNER as TEST_DATA
 
 OUTPUT_FILENAME = "out.json"
 
@@ -97,5 +96,5 @@ def test_drill_planner_main_entry_point_lint(
     drill_planner_arguments, copy_testdata_tmpdir
 ):
     copy_testdata_tmpdir(TEST_DATA)
-    with pytest.raises(SystemExit) as e:
+    with pytest.raises(SystemExit):
         main_entry_point([*drill_planner_arguments, "--lint"])

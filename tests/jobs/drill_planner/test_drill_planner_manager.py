@@ -1,7 +1,6 @@
 from copy import deepcopy
 
 import pytest
-
 from everest_models.jobs.fm_drill_planner.data import (
     DayRange,
     Event,
@@ -282,14 +281,16 @@ def _get_attributes(wells, rigs, horizon, slots=None, **_):
 
     if slots is None:
         slots = {}
-    return dict(
-        wells={name: WellPriority(**kwargs) for name, kwargs in wells.items()},
-        slots={
+    return {
+        "wells": {name: WellPriority(**kwargs) for name, kwargs in wells.items()},
+        "slots": {
             name: Slot(**set_day_ranges(**kwargs)) for name, kwargs in slots.items()
         },
-        rigs={name: Rig(**set_day_ranges(**kwargs)) for name, kwargs in rigs.items()},
-        horizon=horizon,
-    )
+        "rigs": {
+            name: Rig(**set_day_ranges(**kwargs)) for name, kwargs in rigs.items()
+        },
+        "horizon": horizon,
+    }
 
 
 def test_drill_planner_manager_rig_slot_include_delay(advanced_config):

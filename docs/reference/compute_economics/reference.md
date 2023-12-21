@@ -1,7 +1,7 @@
 
 ## Economical Indicators
 
-Below are given the general formula of the economical indicator using quite similar naming o the parameters as in the code implementation. Notice that those indicators can be multiplied by a user defined factor. 
+Below are given the general formula of the economical indicator using quite similar naming o the parameters as in the code implementation. Notice that those indicators can be multiplied by a user defined factor.
 
 First the definition of the discount and comments on the use of a reference case are given.
 
@@ -38,7 +38,7 @@ where $\text{gains}$ are the discounted gains due to production (e.g. oil and ga
 All quantities are interpolated at a daily rate between the start and end date. This means
 
 $$
-\text{gains} = \sum_{\text{index} \in \{ \text{time range} \} } \text{discount} \sum_{\text{key} \in  \{ \text{keywords} \} }  
+\text{gains} = \sum_{\text{index} \in \{ \text{time range} \} } \text{discount} \sum_{\text{key} \in  \{ \text{keywords} \} }
     \text{production}_{\text{key}, \text{index}}
     \times
     \text{price}_{\text{key}, \text{index}},
@@ -73,14 +73,14 @@ an oil equivalent production. The conversion is given by a set of parameters in 
 
 ```yaml
 oil_equivalent:
-    oil:  
+    oil:
         FOPT: 1.0
         FSGPT: 0.001
         FNLPT: 1.9
     remap:
         FOPT:
            FOPT: 1.0
-        FGPT: 
+        FGPT:
            FSGPT: 0.95
            FNLPT: 0.0001
 ```
@@ -88,26 +88,26 @@ oil_equivalent:
 This means the first while FOPT is kept as FOPT, FGPT is remapped as FSGPT and FNLPT with the given coefficients. Notice the keywords are not supposed to only be Eclipse keywords.
 Then, in a second step, FOPT, FSGPT and FNLPT are converted into the different contriobutions to a single profile, once more with the given coefficients. In the code implementation, the method `BEPCalculator._get_oil_equivalent`, would thus run for the above example
 
-\begin{align} 
+\begin{align}
 \text{oil_equivalent}_\text{FOPT}  & = 6.289814 \times \text{production}_\text{FOPT}, \\
 \text{oil_equivalent}_\text{FSGPT} & = 6.289814 \times 0.001 \times 0.95 \times \text{production}_\text{FGPT}, \\
 \text{oil_equivalent}_\text{FNLPT} & = 6.289814 \times 1.9 \times 0.0001 \times\text{production}_\text{FGPT},
-\end{align} 
+\end{align}
 
 where the factor $6.289814$ corresponds to the conversion from cubic meters to US barrels. Notice this conversion is ALWAYS applied. Then
 
 $$
-\text{production}_\text{oil_eq} = \sum_{\text{index} \in \{ \text{time range} \} } \text{discount} \sum_{\text{key} \in  \{ \text{keywords} \} }  
+\text{production}_\text{oil_eq} = \sum_{\text{index} \in \{ \text{time range} \} } \text{discount} \sum_{\text{key} \in  \{ \text{keywords} \} }
     \text{oil_equivalent}_{\text{key}, \text{index}}.
 $$
 
 Notice that the production can be a production difference in case a reference case is given,
 
 
-!!! danger 
+!!! danger
 
     The code has been tested and used only with the double conversion. No test have been done if for example the oil equivalent would depend only on FOPT and FGPT, nor
-    in case the only oil is produced from the field. 
+    in case the only oil is produced from the field.
 
 
 ### Observations
@@ -117,7 +117,7 @@ The NPV and BEP have been compared to estimation done in a spreadsheet for a giv
 
 ### Output currency
 
-The output currency is determined by both the existence of a default exchange rate and the given exchange rates. The given exchange rates indicate a rate from the given currency to the default one. This means that the output currency is the one not given in the exchange rate. For a case where both USD and NOK are used currencies in the configuration and that the following echange rate is given 
+The output currency is determined by both the existence of a default exchange rate and the given exchange rates. The given exchange rates indicate a rate from the given currency to the default one. This means that the output currency is the one not given in the exchange rate. For a case where both USD and NOK are used currencies in the configuration and that the following echange rate is given
 ```yaml
 exchange_rates:
     USD:

@@ -1,15 +1,11 @@
-import argparse
 import itertools
-import pathlib
-import re
 import sys
 
 import pytest
 import ruamel.yaml as yaml
+from everest_models.jobs.fm_add_templates.config_model import TemplateConfig
 from pydantic import BaseModel, Extra, ValidationError
 from sub_testdata import ADD_TEMPLATE as TEST_DATA
-
-from everest_models.jobs.fm_add_templates.config_model import TemplateConfig
 
 FORWARD_MODEL_DIR = "forward_models"
 

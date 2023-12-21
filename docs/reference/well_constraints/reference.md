@@ -15,4 +15,3 @@ $pydantic: everest_models.jobs.fm_well_constraints.models.config.WellConstraintC
 $pydantic: everest_models.jobs.fm_well_constraints.models.config.Tolerance
 $pydantic: everest_models.jobs.fm_well_constraints.models.config.Phase
 $pydantic: everest_models.jobs.fm_well_constraints.models.constraints.Constraints
-

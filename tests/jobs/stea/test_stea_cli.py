@@ -3,10 +3,9 @@ import os
 import pathlib
 
 import pytest
+from everest_models.jobs.fm_stea.cli import main_entry_point
 from stea import SteaInput, SteaKeys, SteaResult
 from sub_testdata import STEA as TEST_DATA
-
-from everest_models.jobs.fm_stea.cli import main_entry_point
 
 
 def test_import_stea():

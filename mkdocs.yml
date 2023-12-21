@@ -44,14 +44,14 @@ plugins:
 
 theme:
   name: material
-  font: 
+  font:
     code: Fira Code
   features:
     - tabs: true
     - navigation.footer
   palette:
     - media: "(prefers-color-scheme: light)"
-      scheme: default 
+      scheme: default
       toggle:
         icon: material/weather-sunny
         name: Switch to dark mode
@@ -69,7 +69,7 @@ markdown_extensions:
       permalink: true
   - pymdownx.details
   - pymdownx.arithmatex:
-      generic: true      
+      generic: true
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid

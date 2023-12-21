@@ -3,7 +3,6 @@ from copy import deepcopy
 from typing import NamedTuple, Tuple
 
 import pytest
-
 from everest_models.jobs.fm_select_wells.tasks import get_well_number, select_wells
 from everest_models.jobs.shared.models import WellConfig
 

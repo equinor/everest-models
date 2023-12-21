@@ -1,8 +1,7 @@
 import datetime
 
-from resdata.summary import Summary
-
 from everest_models.jobs.fm_extract_summary_data.parser import args_parser
+from resdata.summary import Summary
 
 
 def ecl_summary(*args, **kwargs):

@@ -5,13 +5,12 @@ from functools import partial
 
 import pytest
 import ruamel.yaml as yaml
-from sub_testdata import WELL_CONSTRAINTS as TEST_DATA
-
 from everest_models.jobs.fm_well_constraints import cli, parser
 from everest_models.jobs.fm_well_constraints.models import (
     Constraints,
     WellConstraintConfig,
 )
+from sub_testdata import WELL_CONSTRAINTS as TEST_DATA
 
 
 @pytest.fixture(scope="module")

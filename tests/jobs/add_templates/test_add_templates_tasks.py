@@ -1,11 +1,10 @@
 import logging
 
-from sub_testdata import ADD_TEMPLATE as TEST_DATA
-
 from everest_models.jobs.fm_add_templates.config_model import Template
 from everest_models.jobs.fm_add_templates.tasks import add_templates, collect_matching
 from everest_models.jobs.shared.models import Operation, WellConfig
 from everest_models.jobs.shared.validators import parse_file
+from sub_testdata import ADD_TEMPLATE as TEST_DATA
 
 
 def test_collect_matching(add_tmpl_config):
@@ -37,8 +36,8 @@ def test_collect_matching(add_tmpl_config):
 
 def test_add_templates(path_test_data, caplog):
     template_path = path_test_data / f"{TEST_DATA}/templates/template_open.tmpl"
-    template = Template(**dict(file=template_path, keys=dict(opname="tester")))
-    operation = Operation(**dict(date="2020-12-12", opname="tester"))
+    template = Template(**{"file": template_path, "keys": {"opname": "tester"}})
+    operation = Operation(**{"date": "2020-12-12", "opname": "tester"})
     assert operation.template is None
 
     consumed = add_templates(well_name="t1", operation=operation, template=template)

@@ -63,15 +63,15 @@ def add_input_argument(
     parser.add_argument(
         "-i",
         "--input",
+        *args,
         type=valid_input_file,
         required=True,
-        *args,
         **kwargs,
     )
 
 
 def add_lint_argument(
-    parser: Union[argparse.ArgumentParser, argparse._ArgumentGroup]
+    parser: Union[argparse.ArgumentParser, argparse._ArgumentGroup],
 ) -> None:
     """Add optional lint argument to parser.
 
@@ -88,7 +88,7 @@ def add_lint_argument(
 
 
 def add_file_schemas(
-    parser: Union[argparse.ArgumentParser, argparse._ArgumentGroup]
+    parser: Union[argparse.ArgumentParser, argparse._ArgumentGroup],
 ) -> None:
     """Add optional schema argument to parser
 

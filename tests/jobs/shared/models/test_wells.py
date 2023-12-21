@@ -3,9 +3,8 @@ import pathlib
 from typing import Dict
 
 import pytest
-from pydantic import ValidationError
-
 from everest_models.jobs.shared.models import Operation, PhaseEnum, Well, WellConfig
+from pydantic import ValidationError
 
 
 @pytest.fixture(scope="module")
@@ -92,7 +91,7 @@ def test_well_model_fields(well_model):
 
 def test_well_model_minimum_fields():
     assert not WellConfig.parse_obj([])  # does not throw error
-    assert WellConfig.parse_obj([dict(name="WELL", drill_time=23)])
+    assert WellConfig.parse_obj([{"name": "WELL", "drill_time": 23}])
 
 
 def test_well_model_is_subscribable(well_model):

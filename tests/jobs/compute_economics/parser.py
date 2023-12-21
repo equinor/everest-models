@@ -4,22 +4,21 @@ import sys
 from types import SimpleNamespace
 from typing import NamedTuple
 
-from resdata.summary import Summary
-
 from everest_models.jobs.fm_compute_economics.economic_indicator_config_model import (
     EconomicIndicatorConfig,
 )
+from resdata.summary import Summary
 
 
 def ecl_summary_economic_indicator(*args, **kwargs):
     num_element = 42
     sum_keys = {
         "FOPT": [10e4 * i for i in range(num_element)],
-        "FWPT": [i for i in range(num_element)],
-        "FGPT": [i for i in range(num_element)],
-        "FWIT": [i for i in range(num_element)],
-        "FGIT": [i for i in range(num_element)],
-        "GOPT:OP": [i for i in range(num_element)],
+        "FWPT": list(range(num_element)),
+        "FGPT": list(range(num_element)),
+        "FWIT": list(range(num_element)),
+        "FGIT": list(range(num_element)),
+        "GOPT:OP": list(range(num_element)),
     }
 
     dimensions = [10, 10, 10]
@@ -49,11 +48,11 @@ def ecl_reference_summary_economic_indicator(*args, **kwargs):
     num_element = 42
     sum_keys = {
         "FOPT": [5e4 * i for i in range(num_element)],
-        "FWPT": [i for i in range(num_element)],
-        "FGPT": [i for i in range(num_element)],
-        "FWIT": [i for i in range(num_element)],
-        "FGIT": [i for i in range(num_element)],
-        "GOPT:OP": [i for i in range(num_element)],
+        "FWPT": list(range(num_element)),
+        "FGPT": list(range(num_element)),
+        "FWIT": list(range(num_element)),
+        "FGIT": list(range(num_element)),
+        "GOPT:OP": list(range(num_element)),
     }
 
     dimensions = [10, 10, 10]
@@ -82,11 +81,11 @@ def ecl_reference_summary_economic_indicator(*args, **kwargs):
 def ecl_reference_summary_economic_indicator_not_consistent(*args, **kwargs):
     num_element = 42
     sum_keys = {
-        "FWPT": [i for i in range(num_element)],
-        "FGPT": [i for i in range(num_element)],
-        "FWIT": [i for i in range(num_element)],
-        "FGIT": [i for i in range(num_element)],
-        "GOPT:OP": [i for i in range(num_element)],
+        "FWPT": list(range(num_element)),
+        "FGPT": list(range(num_element)),
+        "FWIT": list(range(num_element)),
+        "FGIT": list(range(num_element)),
+        "GOPT:OP": list(range(num_element)),
     }
 
     dimensions = [10, 10, 10]

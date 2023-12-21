@@ -57,7 +57,7 @@ This function is what is going to be exposed to `Everest-models` plugin.
 
 #### Dunder Modules
 
-Expose main_entry_point 
+Expose main_entry_point
 
 ```python
 {!> contribute/fm_ops_remover/__init__.py!}
@@ -71,7 +71,7 @@ make `main_entry_point` function the main entry point if module is referenced as
 
 #### Plugin Executable
 
-Add forward model job to `forward_models`. This directory is package as data files, 
+Add forward model job to `forward_models`. This directory is package as data files,
 thus files is what is being executed by everest, or whomever is using `everest-models` plugin.
 
 > The name of the `forward_models`' file should be the same as the job excluding the `fm_` prefix

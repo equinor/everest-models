@@ -1,9 +1,8 @@
 import pathlib
 
 import pytest
-from sub_testdata import SELECT_WELLS as TEST_DATA
-
 from everest_models.jobs.fm_select_wells.cli import main_entry_point
+from sub_testdata import SELECT_WELLS as TEST_DATA
 
 
 @pytest.fixture(scope="module")
@@ -133,9 +132,6 @@ def test_select_wells_main_entry_point_value_with_scaled_bounds(
     copy_testdata_tmpdir, select_wells_base_args, select_wells_file_args, capsys
 ):
     copy_testdata_tmpdir(TEST_DATA)
-    arguments = (
-        "--input input.json --output output.json" " value 2 --scaled-bounds 0.0 1.0"
-    ).split()
     with pytest.raises(SystemExit) as exc:
         main_entry_point(
             [*select_wells_base_args, "value", "2", *select_wells_file_args[2:]]

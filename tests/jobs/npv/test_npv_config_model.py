@@ -1,7 +1,6 @@
 import pytest
-from pydantic import ValidationError
-
 from everest_models.jobs.fm_npv.npv_config_model import Capital, NPVConfig
+from pydantic import ValidationError
 
 
 def test_npv_config_defaults():

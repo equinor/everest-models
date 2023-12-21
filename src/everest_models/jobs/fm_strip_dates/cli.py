@@ -11,9 +11,7 @@ def main_entry_point(args=None):
     options = args_parser.parse_args(args)
     summary, summary_path = options.summary
     unique_dates = set(options.dates)
-    if missing_dates := unique_dates - set(
-        datetime.date() for datetime in summary.dates
-    ):
+    if missing_dates := unique_dates - {datetime.date() for datetime in summary.dates}:
         missing_dates_str = ", ".join(date.isoformat() for date in missing_dates)
         msg = (
             f"Missing date(s) in eclipse file {summary_path}:"

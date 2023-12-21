@@ -1,10 +1,6 @@
 from copy import deepcopy
 
 import pytest
-from hypothesis import assume, given
-from jobs.drill_planner.strategies import constraints_schedule
-from ortools.sat.python import cp_model
-
 from everest_models.jobs.fm_drill_planner.data import (
     DayRange,
     Rig,
@@ -16,6 +12,9 @@ from everest_models.jobs.fm_drill_planner.planner.optimized import (
     drill_constraint_model,
     run_optimization,
 )
+from hypothesis import assume, given
+from jobs.drill_planner.strategies import constraints_schedule
+from ortools.sat.python import cp_model
 
 
 def task_schedule(schedule, well, rig, slot, task):

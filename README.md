@@ -1,9 +1,9 @@
-# everest-models 
+# everest-models
 [![Everest-models](https://github.com/equinor/everest-models/workflows/Testing/badge.svg)](https://github.com/equinor/everest-models/actions?query=workflow%3A%22Testing%22)
 
 ## What is everest-models
 
-This project is a plugin for [Everest](https://github.com/equinor/everest) and [ERT](https://github.com/equinor/ert), that holds an amalgamation of 
+This project is a plugin for [Everest](https://github.com/equinor/everest) and [ERT](https://github.com/equinor/ert), that holds an amalgamation of
 forward models and workflows maintained and used by Equinor and TNO.
 
 ## Installation

@@ -24,5 +24,5 @@ class Constraints(BaseFrozenConfig, DictRootMixin):
                 for index, value in constraint.items()
                 if not 0 <= value <= 1
             ]
-        ), f"Value(s) are not within bounds [0, 1]:\n\t" + "\t".join(error)
+        ), "Value(s) are not within bounds [0, 1]:\n\t" + "\t".join(error)
         return root

@@ -4,10 +4,9 @@ import sys
 from typing import Dict, NamedTuple, Tuple
 
 import pytest
-from sub_testdata import DRILL_DATE_PLANNER as TEST_DATA
-
 from everest_models.jobs.fm_drill_date_planner import cli
 from everest_models.jobs.shared.models import WellConfig
+from sub_testdata import DRILL_DATE_PLANNER as TEST_DATA
 
 
 @pytest.fixture(scope="module")

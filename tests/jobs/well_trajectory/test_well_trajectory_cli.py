@@ -1,9 +1,8 @@
 from pathlib import Path
 
 import pytest
-from sub_testdata import WELL_TRAJECTORY as TEST_DATA
-
 from everest_models.jobs.fm_well_trajectory.cli import main_entry_point
+from sub_testdata import WELL_TRAJECTORY as TEST_DATA
 
 
 @pytest.fixture(scope="module")

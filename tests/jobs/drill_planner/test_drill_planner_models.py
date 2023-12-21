@@ -2,10 +2,9 @@ import datetime
 from copy import deepcopy
 
 import pytest
-from pydantic import ValidationError
-
 from everest_models.jobs.fm_drill_planner.models import DrillPlanConfig
 from everest_models.jobs.fm_drill_planner.models.config import _Unavailability
+from pydantic import ValidationError
 
 
 def test_drill_planner_config_mismatch_slots(drill_planner_config):
@@ -51,7 +50,7 @@ def test_drill_planner_config_missing_field(field, error, drill_planner_config):
     "field, default",
     (
         pytest.param("end_date", datetime.date(3000, 1, 1), id="end_date"),
-        pytest.param("slots", tuple(), id="slots"),
+        pytest.param("slots", (), id="slots"),
     ),
 )
 def test_drill_planner_config_defaults(field, default, drill_planner_config):

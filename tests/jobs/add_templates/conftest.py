@@ -1,8 +1,7 @@
 import pytest
-from sub_testdata import ADD_TEMPLATE as TEST_DATA
-
 from everest_models.jobs.fm_add_templates.config_model import TemplateConfig
 from everest_models.jobs.shared.validators import parse_file
+from sub_testdata import ADD_TEMPLATE as TEST_DATA
 
 
 @pytest.fixture()

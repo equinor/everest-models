@@ -7,13 +7,13 @@ src
     ├── forward_models
     └── jobs
         ├── fm_add_templates
-        ├── fm_compute_economics        
+        ├── fm_compute_economics
         ├── fm_drill_date_planner
         ├── fm_drill_planner
         │   ├── data
         │   ├── manager
         │   ├── models
-        │   └── planner        
+        │   └── planner
         ├── fm_extract_summary_data
         ├── fm_interpret_well_drill
         ├── fm_npv
@@ -59,7 +59,7 @@ A typical `fm_job` package would include the following modules: `cli`, `parser`,
 
 #### Models
 
-The model module holds the blueprint for all data objects that will be transacted within the job. If you have an you expecting a IO YAML and/or JSON file you can create the schema for that I/O file here within this module. There are times that the data transacted and the data input is not one in the same, Then a distinction should be made between your validation schema models and your transaction object. 
+The model module holds the blueprint for all data objects that will be transacted within the job. If you have an you expecting a IO YAML and/or JSON file you can create the schema for that I/O file here within this module. There are times that the data transacted and the data input is not one in the same, Then a distinction should be made between your validation schema models and your transaction object.
 
 Example:
 
@@ -130,14 +130,14 @@ Thus the following would mostly be the same for all forward models, just make su
 
 ``` python hl_lines="1"
 {!> ../src/everest_models/jobs/fm_npv/__main__.py!}
-``` 
+```
 
 
 #### Compute Economics forward model vs. NPV forward model
 
-Several economical indicators are possible either as an objective function or as optimization constraints. For example, we may want to optimize the NPV while ensuring a break-even price under a given value. 
+Several economical indicators are possible either as an objective function or as optimization constraints. For example, we may want to optimize the NPV while ensuring a break-even price under a given value.
 
-Economical indicators may share most of their features such a prices, discount rates, dates, ... and may be seen as such as several variants of the calculation of an indicator. In that respect, it was decided to extend the NPV forward model in a more general approach. 
+Economical indicators may share most of their features such a prices, discount rates, dates, ... and may be seen as such as several variants of the calculation of an indicator. In that respect, it was decided to extend the NPV forward model in a more general approach.
 
 This extension allows for the implementation of future indicators by abstracting the calculator class and updates the command line inputs by gathering them all in the configuration file. As the existing NPV forward model is kept and a new module created, there is no break in compatibility.
 

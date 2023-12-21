@@ -1,5 +1,5 @@
-This site contains the project documentation for the `Everest-models` project. 
-This project is a plugin for [Everest](https://github.com/equinor/everest) and [ERT](https://github.com/equinor/ert), that holds an amalgamation of 
+This site contains the project documentation for the `Everest-models` project.
+This project is a plugin for [Everest](https://github.com/equinor/everest) and [ERT](https://github.com/equinor/ert), that holds an amalgamation of
 forward models and workflows maintained and used by Equinor and TNO.
 
 ## Index

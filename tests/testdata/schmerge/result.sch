@@ -1,6 +1,5 @@
 RPTRST
    BASIC=3 FREQ=3 /
-   
 
 -- MODIFIED by schmerge forward model
 

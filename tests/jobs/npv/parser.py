@@ -3,21 +3,20 @@ import pathlib
 import sys
 from typing import NamedTuple
 
-from resdata.summary import Summary
-
 from everest_models.jobs.fm_npv.npv_config_model import NPVConfig
 from everest_models.jobs.shared.models import WellConfig
+from resdata.summary import Summary
 
 
 def ecl_summary_npv(*args, **kwargs):
     num_element = 42
     sum_keys = {
         "FOPT": [10e4 * i for i in range(num_element)],
-        "FWPT": [i for i in range(num_element)],
-        "FGPT": [i for i in range(num_element)],
-        "FWIT": [i for i in range(num_element)],
-        "FGIT": [i for i in range(num_element)],
-        "GOPT:OP": [i for i in range(num_element)],
+        "FWPT": list(range(num_element)),
+        "FGPT": list(range(num_element)),
+        "FWIT": list(range(num_element)),
+        "FGIT": list(range(num_element)),
+        "GOPT:OP": list(range(num_element)),
     }
 
     dimensions = [10, 10, 10]

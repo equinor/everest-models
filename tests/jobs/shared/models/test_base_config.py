@@ -106,7 +106,7 @@ def test_base_config_help_schema_list__root__():
     assert isinstance(schema[1][0], dict)
     assert isinstance(schema[1][0]["value"], dict)
     assert isinstance(schema[1][0]["value"]["d"], list)
-    assert schema[1][0]["unique"] == True
+    assert schema[1][0]["unique"] is True
 
 
 def test_base_config_help_schema_dict__root__():

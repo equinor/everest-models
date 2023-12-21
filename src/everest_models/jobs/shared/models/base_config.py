@@ -129,7 +129,7 @@ class BaseConfig(BaseModel):
         if (root := fields.pop("__root__", None)) is not None:
             fields = root
         if argument_name is not None:
-            fields = dict(arguments=argument_name, fields=fields)
+            fields = {"arguments": argument_name, "fields": fields}
         return fields
 
     @classmethod

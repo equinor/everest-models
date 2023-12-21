@@ -28,16 +28,19 @@ SCHEMAS = {
     DURATION_CONSTRAINTS_ARG_KEY: Constraints,
 }
 
-constraint_parameters = dict(default=None, type=partial(parse_file, schema=Constraints))
+constraint_parameters = {
+    "default": None,
+    "type": partial(parse_file, schema=Constraints),
+}
 
 
 def build_argument_parser() -> argparse.ArgumentParser:
     SchemaAction.register_models(SCHEMAS)
     parser, required_group = get_parser(
         description="""
-        A module that given a list of boundaries and well constraints creates a list of 
-        well events. Varying phase, rate and time of each event is supported. Rate and 
-        duration boundaries are given as min/max, and phase as a list of possibilities 
+        A module that given a list of boundaries and well constraints creates a list of
+        well events. Varying phase, rate and time of each event is supported. Rate and
+        duration boundaries are given as min/max, and phase as a list of possibilities
         to choose from. Also support constants if boundaries are replaced by value.
         """
     )

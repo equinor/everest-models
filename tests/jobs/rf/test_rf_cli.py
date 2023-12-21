@@ -3,10 +3,9 @@ import logging
 import pathlib
 
 import pytest
-from resdata.summary import Summary
-
 from everest_models.jobs.fm_rf import cli
 from everest_models.jobs.fm_rf.parser import args_parser
+from resdata.summary import Summary
 
 ARGUMENTS = ["-s", "TEST", "-o", "rf_result"]
 

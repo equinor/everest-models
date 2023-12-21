@@ -2,9 +2,8 @@ import pathlib
 from typing import Dict, NamedTuple
 
 import pytest
-from sub_testdata import INTERPRET_WELL_DRILL as TEST_DATA
-
 from everest_models.jobs.fm_interpret_well_drill import cli
+from sub_testdata import INTERPRET_WELL_DRILL as TEST_DATA
 
 
 @pytest.fixture(scope="module")

@@ -3,13 +3,12 @@ import datetime
 from collections import namedtuple
 
 import pytest
-from summary import ecl_summary
-
 from everest_models.jobs.fm_extract_summary_data.tasks import (
     CalculationType,
     extract_value,
     validate_arguments,
 )
+from summary import ecl_summary
 
 
 @pytest.fixture(scope="module")

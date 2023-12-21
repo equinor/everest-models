@@ -80,15 +80,17 @@ def _compute_dogleg_severities(
     return severities
 
 
-def _compute_dogleg_angles(I, A):
-    angles = numpy.empty(len(I), dtype=numpy.float64)
+def _compute_dogleg_angles(
+    inclanations: NDArray[numpy.float64], azimuths: NDArray[numpy.float64]
+):
+    angles = numpy.empty(len(inclanations), dtype=numpy.float64)
     angles[0] = 0.0
     angles[1:] = 2 * numpy.arcsin(
         numpy.sqrt(
-            numpy.sin((I[1:] - I[:-1]) / 2) ** 2
-            + numpy.sin(I[:-1])
-            * numpy.sin(I[1:])
-            * (numpy.sin((A[1:] - A[:-1]) / 2) ** 2)
+            numpy.sin((inclanations[1:] - inclanations[:-1]) / 2) ** 2
+            + numpy.sin(inclanations[:-1])
+            * numpy.sin(inclanations[1:])
+            * (numpy.sin((azimuths[1:] - azimuths[:-1]) / 2) ** 2)
         )
     )
     return angles

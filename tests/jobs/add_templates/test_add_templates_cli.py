@@ -2,9 +2,8 @@ import pathlib
 import typing
 
 import pytest
-from sub_testdata import ADD_TEMPLATE as TEST_DATA
-
 from everest_models.jobs.fm_add_templates.cli import main_entry_point
+from sub_testdata import ADD_TEMPLATE as TEST_DATA
 
 
 @pytest.fixture(scope="module")

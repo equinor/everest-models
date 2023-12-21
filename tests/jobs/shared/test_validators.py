@@ -1,13 +1,8 @@
 import argparse
 import datetime
 import pathlib
-import re
 
 import pytest
-from hypothesis import given
-from hypothesis import strategies as st
-from pydantic import BaseModel, FilePath
-
 from everest_models.jobs.shared.validators import (
     _prettify_validation_error_message,
     is_gt_zero,
@@ -16,6 +11,9 @@ from everest_models.jobs.shared.validators import (
     valid_input_file,
     valid_iso_date,
 )
+from hypothesis import given
+from hypothesis import strategies as st
+from pydantic import BaseModel, FilePath
 
 
 def write_file(path, txt):
@@ -73,7 +71,7 @@ def write_file(path, txt):
 def test_valid_input_file_error(path, func, match, switch_cwd_tmp_path):
     if func is not None:
         func()
-    with pytest.raises(argparse.ArgumentTypeError, match=match) as e:
+    with pytest.raises(argparse.ArgumentTypeError, match=match):
         valid_input_file(path)
 
 

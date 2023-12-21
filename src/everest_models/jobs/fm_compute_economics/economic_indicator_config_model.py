@@ -138,7 +138,7 @@ class EconomicIndicatorConfig(BaseConfig):
                     {"date": rate.date, "value": 1.0 / rate.value}
                     for rate in values["exchange_rates"][values["output"].currency]
                 )
-                setattr(values["output"], "currency_rate", currency_rate)
+                values["output"].currency_rate = currency_rate
 
         return values
 

@@ -31,21 +31,17 @@ def _overwrite_economic_indicator_config(
                 instance, field, value[index] if isinstance(value, tuple) else value
             )
         elif field == "output":
-            setattr(
-                options.config.output,
-                "file",
-                value[index] if isinstance(value, tuple) else value,
+            options.config.output.file = (
+                value[index] if isinstance(value, tuple) else value
             )
         elif field == "output_currency":
-            setattr(
-                options.config.output,
-                "currency",
-                value[index] if isinstance(value, tuple) else value,
+            options.config.output.currency = (
+                value[index] if isinstance(value, tuple) else value
             )
             currency_value = _set_output_currency(
                 options.config.output.currency, options.config.exchange_rates
             )
-            setattr(options.config.output, "currency_rate", currency_value)
+            options.config.output.currency_rate = currency_value
         else:
             instance = options.config
             setattr(
