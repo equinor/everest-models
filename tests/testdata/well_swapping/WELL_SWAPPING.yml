@@ -1,0 +1,204 @@
+# example configuration file for well swapping optimization: 5 wells + 4 swapping periods (3 wells selected to be open at each period)
+definitions:
+  eclbase: eclipse/model/r{{case_name}}
+  ecl_initial_data: r{{configpath}}/../../eclipse/realizations/real-r{{realization}}/Rr{{realization}}_ECL_MODEL # MIGHT NEED TO BE ADJUSTED WITH DUMMY MODEL
+  user_shortname: well_swapping_shortname
+  case_name: WELL_SWAPPING
+  realization_folder: r{{configpath}}/../../eclipse/realizations/real-r{{realization}}
+
+environment:
+  simulation_folder: r{{configpath}}/../output/r{{case_name}}/sim_output
+  output_folder: r{{configpath}}/../output/r{{case_name}}
+  random_seed: 32142021
+
+wells:
+  - { name: WELL-1, drill_time: 1}
+  - { name: WELL-2, drill_time: 1}
+  - { name: WELL-3, drill_time: 1}
+  - { name: WELL-4, drill_time: 1}
+  - { name: WELL-5, drill_time: 1}
+
+controls:
+  - # does everest do anything with these controls?
+    name: well_order_1
+    type: well_control
+    min: 0.01
+    max: 2
+    perturbation_magnitude: 0.05
+    variables:
+      - { name: WELL-1, initial_guess: 0.51 }
+      - { name: WELL-2, initial_guess: 0.50 }
+      - { name: WELL-3, initial_guess: 0.51 }
+      - { name: WELL-4, initial_guess: 0.51 }
+      - { name: WELL-5, initial_guess: 0.51 }
+  -
+    name: well_order_2
+    type: well_control
+    min: 0.01
+    max: 2
+    perturbation_magnitude: 0.05
+    variables:
+      - { name: WELL-1, initial_guess: 0.51 }
+      - { name: WELL-2, initial_guess: 0.51 }
+      - { name: WELL-3, initial_guess: 0.50 }
+      - { name: WELL-4, initial_guess: 0.51 }
+      - { name: WELL-5, initial_guess: 0.50 }
+  -
+    name: well_order_3
+    type: well_control
+    min: 0.01
+    max: 2
+    perturbation_magnitude: 0.05
+    variables:
+      - { name: WELL-1, initial_guess: 0.50 }
+      - { name: WELL-2, initial_guess: 0.51 }
+      - { name: WELL-3, initial_guess: 0.51 }
+      - { name: WELL-4, initial_guess: 0.51 }
+      - { name: WELL-5, initial_guess: 0.50 }
+  -
+    name: well_order_4
+    type: well_control
+    min: 0.01
+    max: 2
+    perturbation_magnitude: 0.05
+    variables:
+      - { name: WELL-1, initial_guess: 0.50 }
+      - { name: WELL-2, initial_guess: 0.51 }
+      - { name: WELL-3, initial_guess: 0.50 }
+      - { name: WELL-4, initial_guess: 0.51 }
+      - { name: WELL-5, initial_guess: 0.51 }
+
+#  -
+#    name: swap_times
+#    type: generic_control
+#    min: 0.0
+#    max: 1.0
+#    perturbation_magnitude: 0.01
+#    variables:
+#      - { name: SWAP-1, initial_guess: 0.5, min: 0.5, max: 0.5 }
+#      - { name: SWAP-2, initial_guess: 0.5, min: 0.5, max: 0.5 }
+#      - { name: SWAP-3, initial_guess: 0.5, min: 0.5, max: 0.5 }
+#      - { name: SWAP-4, initial_guess: 0.5, min: 0.5, max: 0.5 }
+
+objective_functions:
+  -
+    name: npv
+    weight: 1
+    normalization: 0.000000001
+
+optimization:
+  backend: scipy
+  algorithm: SLSQP
+  convergence_tolerance: 0.001
+  constraint_tolerance: 0.001
+  perturbation_num: 7
+  speculative: True
+  max_batch_num: 4
+  backend_options:
+    maxiter: 100
+
+# optimization:
+#   algorithm: optpp_q_newton
+#   min_realizations_success: 1
+#   min_pert_success: 1
+#   max_function_evaluations: 1000
+#   perturbation_num: 1
+# #  max_batch_num: 1
+#   max_iterations: 25
+#   speculative: True
+#   options:
+#     - "search_method value_based_line_search"
+#     - "max_step = 0.1"
+
+model:
+  realizations: [1]
+  data_file: r{{ecl_initial_data}}.DATA
+  report_steps: ['2021-01-01', '2022-01-01', '2023-01-01', '2024-01-01', '2025-01-01', '2026-01-01', '2027-01-01', '2028-01-01', '2029-01-01', '2030-01-01', '2031-01-01', '2032-01-01', '2033-01-01', '2034-01-01', '2035-01-01', '2036-01-01', '2037-01-01', '2038-01-01', '2039-01-01', '2040-01-01', '2041-01-01', '2042-01-01']
+
+# simulator:
+#   name: mr
+#   queue_system: lsf
+#   cores: 100
+#   max_runtime: 20000
+#   resubmit_limit: 0
+
+install_data:
+  -
+    link: False
+    source: r{{configpath}}/../../eclipse/realizations/real-r{{realization}}
+    target: eclipse/model
+  -
+    link: True
+    source: r{{ecl_initial_data}}.DATA
+    target: r{{eclbase}}.DATA
+  -
+    link: True
+    source: r{{configpath}}/../input/files/
+    target: files
+  -
+    link: True
+    source: r{{configpath}}/../input/templates/
+    target: templates
+
+install_jobs:
+  -
+    name: select_wells # SHOULD BE NOW AVAILABLE IN SPINNINGJENNY, NO NEED FOR INSTALL_JOBS
+    source: r{{configpath}}/../input/jobs/select_wells
+  -
+    name: drill_date_planner # SHOULD BE NOW AVAILABLE IN SPINNINGJENNY, NO NEED FOR INSTALL_JOBS
+    source: r{{configpath}}/../input/jobs/drill_date_planner
+  -
+    name: update_dates # NEW FOR WELL SWAPPING
+    source: r{{configpath}}/../input/jobs/update_dates
+  -
+    name: track_well_switch # NEW FOR WELL SWAPPING
+    source: r{{configpath}}/../input/jobs/track_well_switch
+  -
+    name: adjust_well_status # NEW FOR WELL SWAPPING
+    source: r{{configpath}}/../input/jobs/adjust_well_status
+
+forward_model:
+
+ # Update schedule
+ # select 14 wells (swap #1)
+  - drill_planner -i wells.json -c files/drill_planner_config_5wells.yml -opt well_order_1.json -o wells_ordered_1.json -tl 60 # define drill_planner_config_name in "definitions" section ?
+  - track_well_switch -i files/well_switch_5wells_0.json -p well_order_1.json -n files/number_switch_1.json -f True -o well_switch_1.json
+  - adjust_well_status -i well_switch_1.json -t files/swap_switch_dict.json -c wells_ordered_1.json -o well_switch_adjusted_1.json
+  - add_templates -i well_switch_adjusted_1.json -c files/template_config_switch.yml -o wells_1.json
+
+ # select 14 wells (swap #2)
+  - drill_planner -i wells.json -c files/drill_planner_config_5wells.yml -opt well_order_2.json -o wells_ordered_2.json -tl 60
+  - track_well_switch -i well_switch_1.json -p well_order_2.json -n files/number_switch_2.json -f True -o well_switch_2.json
+  - adjust_well_status -i well_switch_2.json -t files/swap_switch_dict.json -c wells_ordered_2.json -o well_switch_adjusted_2.json
+  - add_templates -i well_switch_adjusted_2.json -c files/template_config_switch.yml -o wells_2.json
+
+ # select 14 wells (swap #3)
+  - drill_planner -i wells.json -c files/drill_planner_config_5wells.yml -opt well_order_3.json -o wells_ordered_3.json -tl 60
+  - track_well_switch -i well_switch_2.json -p well_order_3.json -n files/number_switch_3.json -f True -o well_switch_3.json
+  - adjust_well_status -i well_switch_3.json -t files/swap_switch_dict.json -c wells_ordered_3.json -o well_switch_adjusted_3.json
+  - add_templates -i well_switch_adjusted_3.json -c files/template_config_switch.yml -o wells_3.json
+
+ # select 14 wells (swap #4)
+  - drill_planner -i wells.json -c files/drill_planner_config_5wells.yml -opt well_order_4.json -o wells_ordered_4.json -tl 60
+  - track_well_switch -i well_switch_3.json -p well_order_4.json -n files/number_switch_4.json -f True -o well_switch_4.json
+  - adjust_well_status -i well_switch_4.json -t files/swap_switch_dict.json -c wells_ordered_4.json -o well_switch_adjusted_4.json
+  - add_templates -i well_switch_adjusted_4.json -c files/template_config_switch.yml -o wells_4.json
+
+ # select 10 swap dates
+#  - drill_date_planner -i files/swap_4.json -opt swap_times.json -o days_shifts.json -m 1440 -b 0.0 1.0 # ONLY USED WHEN SWAPPING TIMES ARE BEING OPTIMIZED, NOT THE CASE IN THIS EXAMPLE
+  - drill_planner -i files/days_shifts_4.json -c files/drill_planner_config_swap_4.yml -opt files/swap_order_4.json -o swap_dates.json -tl 60
+
+ # add well controls to schedule
+  - update_dates  -i wells_1.json wells_2.json wells_3.json wells_4.json -d swap_dates.json -o well_swap_opt.json
+ ####################################
+ # FROM HERE ON, NOTHING NEW...
+ ####################################
+  - schmerge -i well_swap_opt.json -s r{{configpath}}/../../eclipse/model/WELL_SWAP.SCH -o eclipse/model/SCHEDULE_OPT.SCH
+
+ # Run Simulation
+  # - eclipse100 --version 2021.3 r{{eclbase}}.DATA
+
+ # Calculate the objective function
+  - npv -s r{{eclbase}}.UNSMRY -o npv_0 -c files/prices.yml -i swap_dates.json -sd 2022-06-01 -ed 2042-01-01
+  - rf -s r{{eclbase}}.UNSMRY -o rf_0 -pk FOPT -tvk FOIP -sd 2022-06-01 -ed 2042-01-01
+

@@ -48,9 +48,7 @@ class ArgumentDefaultsHelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
         )
 
 
-def add_input_argument(
-    parser: Union[argparse.ArgumentParser, argparse._ArgumentGroup], *args, **kwargs
-) -> None:
+def add_input_argument(parser: Parser, *args, **kwargs) -> None:
     """Add input argument to parser.
 
     - Set type to 'valid_input_file' function caller
@@ -69,9 +67,7 @@ def add_input_argument(
     )
 
 
-def add_lint_argument(
-    parser: Union[argparse.ArgumentParser, argparse._ArgumentGroup],
-) -> None:
+def add_lint_argument(parser: Parser) -> None:
     """Add optional lint argument to parser.
 
     - Set action to 'store_true'
@@ -86,9 +82,7 @@ def add_lint_argument(
     )
 
 
-def add_file_schemas(
-    parser: Union[argparse.ArgumentParser, argparse._ArgumentGroup],
-) -> None:
+def add_file_schemas(parser: Parser) -> None:
     """Add optional schema argument to parser
 
     - Set action to 'SchemaAction'
@@ -104,11 +98,7 @@ def add_file_schemas(
     )
 
 
-def add_summary_argument(
-    parser: Union[argparse.ArgumentParser, argparse._ArgumentGroup],
-    *,
-    func: Optional[Callable] = None,
-) -> None:
+def add_summary_argument(parser: Parser, *, func: Optional[Callable] = None) -> None:
     """Add summary argument to parser.
 
     - Set type to 'func' or 'valid_ecl_summary' function caller
@@ -128,7 +118,7 @@ def add_summary_argument(
 
 
 def add_wells_input_argument(
-    parser: Union[argparse.ArgumentParser, argparse._ArgumentGroup],
+    parser: Parser,
     *,
     required: bool = True,
     schema: Type[T] = Wells,
@@ -154,12 +144,7 @@ def add_wells_input_argument(
     SchemaAction.register_models({"/".join(arg): schema})
 
 
-def add_output_argument(
-    parser: Union[argparse.ArgumentParser, argparse._ArgumentGroup],
-    *,
-    required: bool = True,
-    **kwargs,
-) -> None:
+def add_output_argument(parser: Parser, *, required: bool = True, **kwargs) -> None:
     """Add output argument to parser
 
     - Set type to 'is_writable_path' function caller

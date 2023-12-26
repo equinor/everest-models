@@ -6,12 +6,13 @@ from typing import Any, Optional, TextIO
 import ruamel.yaml as yaml
 
 
-def load_json(path: Path):
-    with path.open("r", encoding="utf-8") as fd:
+def load_json(path: Union[Path, str]):
+    with Path(path).open("r", encoding="utf-8") as fd:
         return json.load(fd)
 
 
-def load_yaml(path: Path):
+def load_yaml(path: Union[Path, str]):
+    path = Path(path)
     try:
         return yaml.YAML(typ="safe", pure=True).load(path.read_bytes())
     except yaml.YAMLError as ye:
