@@ -1,0 +1,133 @@
+# example configuration file for well swapping optimization: 5 wells + 4 swapping periods (3 wells selected to be open at each period)
+definitions:
+  eclbase: eclipse/model/r{{case_name}}
+  ecl_initial_data: r{{configpath}}/../../eclipse/realizations/real-r{{realization}}/Rr{{realization}}_ECL_MODEL # MIGHT NEED TO BE ADJUSTED WITH DUMMY MODEL
+  user_shortname: well_swapping_shortname
+  case_name: WELL_SWAPPING
+  realization_folder: r{{configpath}}/../../eclipse/realizations/real-r{{realization}}
+
+environment:
+  simulation_folder: r{{configpath}}/../output/r{{case_name}}/sim_output
+  output_folder: r{{configpath}}/../output/r{{case_name}}
+  random_seed: 32142021
+
+wells:
+  - { name: WELL-1 }
+  - { name: WELL-2 }
+  - { name: WELL-3 }
+  - { name: WELL-4 }
+  - { name: WELL-5 }
+
+controls:
+  - name: well_swapping
+    type: priority # <- create our own type
+    min: 0.01
+    max: 2
+    perturbation_magnitude: 0.05
+    variables:
+      - { name: WELL-1, initial_guess: [.5, .51, .51, .5] }
+      - { name: WELL-2, initial_guess: [.5, .51, .51, .5] }
+      - { name: WELL-3, initial_guess: [.5, .51, .51, .5] }
+      - { name: WELL-4, initial_guess: [.5, .51, .51, .5] }
+      - { name: WELL-5, initial_guess: [.5, .51, .51, .5] }
+  - name: swapping_constraints
+    type: index # <- or using existing type
+    min: 0.001
+    max: 1
+    perturbation_magnitude: 0.05
+    variables:
+      - { name: n_open, initial_guess: [.33, .3, .3, .3] }
+      - { name: n_switch, initial_guess: [.23, .3, .3, .3] }
+      - { name: status_duration, initial_guess: [500, 500, 500, 500] }
+
+objective_functions:
+  - name: npv
+    weight: 1
+    normalization: 0.000000001
+
+optimization:
+  backend: scipy
+  algorithm: SLSQP
+  convergence_tolerance: 0.001
+  constraint_tolerance: 0.001
+  perturbation_num: 7
+  speculative: True
+  max_batch_num: 4
+  backend_options:
+    maxiter: 100
+
+# optimization:
+#   algorithm: optpp_q_newton
+#   min_realizations_success: 1
+#   min_pert_success: 1
+#   max_function_evaluations: 1000
+#   perturbation_num: 1
+# #  max_batch_num: 1
+#   max_iterations: 25
+#   speculative: True
+#   options:
+#     - "search_method value_based_line_search"
+#     - "max_step = 0.1"
+
+model:
+  realizations: [1]
+  data_file: r{{ecl_initial_data}}.DATA
+  report_steps:
+    [
+      "2021-01-01",
+      "2022-01-01",
+      "2023-01-01",
+      "2024-01-01",
+      "2025-01-01",
+      "2026-01-01",
+      "2027-01-01",
+      "2028-01-01",
+      "2029-01-01",
+      "2030-01-01",
+      "2031-01-01",
+      "2032-01-01",
+      "2033-01-01",
+      "2034-01-01",
+      "2035-01-01",
+      "2036-01-01",
+      "2037-01-01",
+      "2038-01-01",
+      "2039-01-01",
+      "2040-01-01",
+      "2041-01-01",
+      "2042-01-01",
+    ]
+
+# simulator:
+#   name: mr
+#   queue_system: lsf
+#   cores: 100
+#   max_runtime: 20000
+#   resubmit_limit: 0
+
+install_data:
+  - link: False
+    source: r{{configpath}}/../../eclipse/realizations/real-r{{realization}}
+    target: eclipse/model
+  - link: True
+    source: r{{ecl_initial_data}}.DATA
+    target: r{{eclbase}}.DATA
+  - link: True
+    source: r{{configpath}}/../input/files/
+    target: files
+  - link: True
+    source: r{{configpath}}/../input/templates/
+    target: templates
+
+forward_model:
+  # Update schedule
+  - well_swapping -i wells.json -c files/well_swap_config.yaml -opt well_swapping.json swapping_constraints.json -o well_swap_result.json
+  - add_templates -i well_swap_result.json -c files/template_config_switch.yml -o input_schmerge.json
+  - schmerge -i input_schmerge.json -s r{{configpath}}/../../eclipse/model/WELL_SWAP.SCH -o eclipse/model/SCHEDULE_OPT.SCH
+
+  # Run Simulation
+  # - eclipse100 --version 2021.3 r{{eclbase}}.DATA
+
+  # Calculate the objective function
+  - npv -s r{{eclbase}}.UNSMRY -o npv_0 -c files/prices.yml -i swap_dates.json -sd 2022-06-01 -ed 2042-01-01
+  - rf -s r{{eclbase}}.UNSMRY -o rf_0 -pk FOPT -tvk FOIP -sd 2022-06-01 -ed 2042-01-01
