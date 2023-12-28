@@ -1,0 +1,72 @@
+# config specification:
+# '...' are REQUIRED fields that needs replacing
+
+priorities:
+  # fallback priorities if a priorities file is not given
+  # Datatype: a mapping of (string, a array of number)
+  # Default: null
+  WELL-1: [.5, .5, .5, .5]
+  WELL-2: [.5, .5, .5, .5]
+  WELL-3: [.5, .5, .5, .5]
+  WELL-4: [.5, .5, .5, .5]
+  WELL-5: [.5, .5, .5, .5]
+
+# Datatype: Constraint map
+n_max_wells:
+  fallback_values: [2, 2, 2, 2]
+
+  # Datatype: Scaling map
+  scaling:
+    # Datatype: Bound
+    source: [0.001, 1]
+
+    # Datatype: Bound
+    target: [2, 5]
+
+# Datatype: Constraint map
+n_switch_states:
+  fallback_values: [300, 300, 300, 300]
+
+  # Datatype: Scaling map
+  scaling:
+    # Datatype: Bound
+    source: [0.001, 1]
+
+    # Datatype: Bound
+    target: [2, 5]
+
+# Datatype: Constraint map
+state_duration:
+  fallback_values: [300, 300, 300, 300]
+
+  # Datatype: Scaling map
+  scaling:
+    # Datatype: Bound
+    source: [0.001, 1]
+
+    # Datatype: Bound
+    target: [0, 500]
+
+# Datatype: date
+# Examples: 2024-01-31, 2024-01-31T11:06
+start_date: 2022-06-01
+
+# Datatype: State map
+state:
+  viable: [shut, open]
+  initial:
+    # States to set wells to at initial iteration
+    # Datatype: a mapping of (string, string)
+    # Default: null
+    WELL-1: shut
+    WELL-2: shut
+    WELL-3: shut
+    WELL-4: shut
+    WELL-5: shut
+  # True: 'actions' field are taken as allowed state actions.
+  # False: 'actions' field are taken as prohibited state actions.
+  # Note: if 'actions' is not given this value is ignored
+  # Datatype: boolean
+  # Choices: true, false
+  # Default: True
+  is_allow_action: true

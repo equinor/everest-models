@@ -74,7 +74,7 @@ def get_forward_models_schemas() -> Dict[str, Dict[str, Type[BaseModel]]]:
     for job in _get_jobs():
         schema = getattr(import_module(f"{JOBS}.{job}.parser"), "SCHEMAS", None)
         if schema:
-            res[job.lstrip("fm_")] = schema.get("-c/--config")
+            res[job.lstrip("fm_")] = schema.get("-c/--config") or schema.get("config")
     return res
 
 

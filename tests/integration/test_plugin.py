@@ -31,6 +31,7 @@ def test_get_forward_models_hook(plugin_manager):
         "well_filter": f"{FORWARD_MODEL_DIR}/well_filter",
         "interpret_well_drill": f"{FORWARD_MODEL_DIR}/interpret_well_drill",
         "well_trajectory": f"{FORWARD_MODEL_DIR}/well_trajectory",
+        "well_swapping": f"{FORWARD_MODEL_DIR}/well_swapping",
     }
     assert all(
         jobs[job["name"]] in job["path"]
@@ -48,6 +49,7 @@ def test_get_forward_model_schemas_hook(plugin_manager):
         "npv",
         "well_trajectory",
         "well_constraints",
+        "well_swapping",
     }
 
 

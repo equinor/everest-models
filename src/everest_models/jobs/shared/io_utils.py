@@ -1,7 +1,7 @@
 import json
 import linecache
 from pathlib import Path
-from typing import Any, Optional, TextIO
+from typing import Any, Optional, TextIO, Union
 
 import ruamel.yaml as yaml
 

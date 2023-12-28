@@ -1,0 +1,107 @@
+[
+  {
+    "name": "WELL-1",
+    "ops": [
+      {
+        "date": "2022-06-01",
+        "opname": "open"
+      },
+      {
+        "date": "2023-02-06",
+        "opname": "open"
+      },
+      {
+        "date": "2023-10-14",
+        "opname": "shut"
+      },
+      {
+        "date": "2024-06-20",
+        "opname": "shut"
+      }
+    ]
+  },
+  {
+    "name": "WELL-2",
+    "ops": [
+      {
+        "date": "2022-06-01",
+        "opname": "shut"
+      },
+      {
+        "date": "2023-02-06",
+        "opname": "open"
+      },
+      {
+        "date": "2023-10-14",
+        "opname": "open"
+      },
+      {
+        "date": "2024-06-20",
+        "opname": "open"
+      }
+    ]
+  },
+  {
+    "name": "WELL-3",
+    "ops": [
+      {
+        "date": "2022-06-01",
+        "opname": "open"
+      },
+      {
+        "date": "2023-02-06",
+        "opname": "shut"
+      },
+      {
+        "date": "2023-10-14",
+        "opname": "open"
+      },
+      {
+        "date": "2024-06-20",
+        "opname": "shut"
+      }
+    ]
+  },
+  {
+    "name": "WELL-4",
+    "ops": [
+      {
+        "date": "2022-06-01",
+        "opname": "open"
+      },
+      {
+        "date": "2023-02-06",
+        "opname": "open"
+      },
+      {
+        "date": "2023-10-14",
+        "opname": "open"
+      },
+      {
+        "date": "2024-06-20",
+        "opname": "open"
+      }
+    ]
+  },
+  {
+    "name": "WELL-5",
+    "ops": [
+      {
+        "date": "2022-06-01",
+        "opname": "shut"
+      },
+      {
+        "date": "2023-02-06",
+        "opname": "shut"
+      },
+      {
+        "date": "2023-10-14",
+        "opname": "shut"
+      },
+      {
+        "date": "2024-06-20",
+        "opname": "open"
+      }
+    ]
+  }
+]

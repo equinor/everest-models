@@ -11,7 +11,7 @@ from pydantic.fields import FieldInfo
 from pydantic_core import PydanticUndefined
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
-__all__ = ["builtin_datatypes", "build_yaml_structure"]
+__all__ = ["builtin_datatypes", "build_yaml_structure", "is_related"]
 
 
 INLINE_REPLACE = "← REPLACE"
@@ -24,27 +24,30 @@ class CommentedObject:
     inline_comment: Optional[str] = None
 
 
-def _is_related(value: Any, typ: Type) -> bool:
+def is_related(value: Any, typ: Type) -> bool:
     return (isclass(value) and issubclass(value, typ)) or isinstance(value, typ)
 
 
 def builtin_datatypes(value: Any) -> str:
-    if _is_related(value, bool):
+    if is_related(value, bool):
         return "boolean"
-    if _is_related(value, int):
+    if is_related(value, int):
         return "integer"
-    if _is_related(value, float):
+    if is_related(value, float):
         return "number"
-    if _is_related(value, str):
+    if is_related(value, str):
         return "string"
-    if _is_related(value, BaseModel):
+    if is_related(value, BaseModel):
         return f"{value.__name__} map"
-    if _is_related(value, Enum):
+    if is_related(value, Enum):
         try:
             value = value.value
         except AttributeError:
             value = next(iter(value)).value
         return builtin_datatypes(value)
+    # check for nametuples
+    if is_related(value, Sequence) and hasattr(value, "_field_types"):
+        return str([builtin_datatypes(type_) for type_ in value._field_types.values()])
     if origin := get_origin(value):
         string = (
             f"({items})"
@@ -58,30 +61,30 @@ def builtin_datatypes(value: Any) -> str:
             )
             else items
         )
-        if _is_related(origin, Sequence):
+        if is_related(origin, Sequence):
             return f"a array of {string}"
-        if _is_related(origin, Mapping):
+        if is_related(origin, Mapping):
             return f"a mapping of {string}"
-        if _is_related(origin, Collection):
+        if is_related(origin, Collection):
             return f"a collection of {string}"
     return value.__name__
 
 
 def _example_types(value: Any) -> str:
     prefix = "Examples"
-    if _is_related(value, int):
-        return f"{prefix}: 1, 1.34E5, 1.34e5"
-    if _is_related(value, float):
-        return f"{prefix}: .1, 1. 1 1.0, 1.34E-5, 1.34e-5"
-    if _is_related(value, str):
-        return f"{prefix}: a string value"
-    if _is_related(value, bool):
+    if is_related(value, bool):
         return "Choices: true, false"
-    if _is_related(value, Path):
+    if is_related(value, int):
+        return f"{prefix}: 1, 1.34E5, 1.34e5"
+    if is_related(value, float):
+        return f"{prefix}: .1, 1. 1 1.0, 1.34E-5, 1.34e-5"
+    if is_related(value, str):
+        return f"{prefix}: a string value"
+    if is_related(value, Path):
         return f"{prefix}: /path/to/file.ext, /path/to/dirictory/"
-    if _is_related(value, date) or _is_related(value, datetime):
+    if is_related(value, date) or is_related(value, datetime):
         return f"{prefix}: 2024-01-31, 2024-01-31T11:06"
-    if _is_related(value, Enum):
+    if is_related(value, Enum):
         return "Choices: " + ", ".join(str(entry.value) for entry in value)
     return ""
 
@@ -95,7 +98,7 @@ def _build_comment(info: FieldInfo) -> str:
     else:
         default = typ = info.default
 
-    default = default.value if _is_related(default, Enum) else default  # type: ignore
+    default = default.value if is_related(default, Enum) else default  # type: ignore
     typ = typ if typ is None else builtin_datatypes(typ)
     examples = (
         ("Examples: " + ", ".join(map(str, info.examples)))
@@ -151,34 +154,10 @@ def build_yaml_structure(data: Any, level: int = 0):
         return "null" if data is None else data() if callable(data) else data
 
 
-def _base_model_comment(arg: Any, comment: Optional[str]) -> CommentedObject:
-    return CommentedObject(
-        **(
-            {"value": arg.introspective_data()}
-            if _is_related(arg, BaseModel)  # TODO: ModelConfig
-            else {"value": "...", "inline_comment": INLINE_REPLACE}
-        ),
-        comment=comment,
-    )
-
-
 def parse_field_info(info: FieldInfo) -> Any:
     comment = _build_comment(info)
-    if origin := get_origin(info.annotation):
-        if _is_related(origin, Sequence):
-            return [
-                _base_model_comment(arg, comment)
-                for arg in get_args(info.annotation)
-                if arg is not Ellipsis
-            ]
-        if _is_related(origin, Mapping):
-            return {
-                field: _base_model_comment(model, comment)
-                for field, model in get_args(info.annotation)
-                if model is not Ellipsis
-            }
-    if _is_related(info.annotation, BaseModel):  # TODO: ModelConfig
-        return CommentedObject(info.annotation.introspective_data(), comment)  # type: ignore
+    if get_origin(info.annotation) or is_related(info.annotation, BaseModel):
+        return parse_annotation(info.annotation, comment)
     if info.default_factory is not None:
         return CommentedObject(info.default_factory, comment)
     if info.default is PydanticUndefined:
@@ -188,19 +167,23 @@ def parse_field_info(info: FieldInfo) -> Any:
     )
 
 
-def parse_annotation(annotation: Any) -> Any:
-    if _is_related(annotation, BaseModel):
-        return CommentedObject(annotation.introspective_data())
+def parse_annotation(annotation: Any, comment: Optional[str] = None) -> Any:
+    if is_related(annotation, BaseModel):
+        return CommentedObject(annotation.introspective_data(), comment)
 
     origin = get_origin(annotation)
     args = get_args(annotation)
 
-    if issubclass(origin, Mapping):
+    if is_related(origin, Mapping):
         key, value = args
-        return {f"<{builtin_datatypes(key)}>": CommentedObject(parse_annotation(value))}
-    if issubclass(origin, Sequence):
+        return {
+            f"<{builtin_datatypes(key)}>": CommentedObject(
+                parse_annotation(value), comment
+            )
+        }
+    if is_related(origin, Sequence):
         return [
-            CommentedObject(parse_annotation(arg))
+            CommentedObject(parse_annotation(arg), comment)
             for arg in args
             if arg is not Ellipsis
         ]
