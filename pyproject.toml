@@ -83,6 +83,10 @@ fm_strip_dates = "everest_models.jobs.fm_strip_dates.cli:main_entry_point"
 fm_well_constraints = "everest_models.jobs.fm_well_constraints.cli:main_entry_point"
 fm_well_filter = "everest_models.jobs.fm_well_filter.cli:main_entry_point"
 fm_well_trajectory = "everest_models.jobs.fm_well_trajectory.cli:main_entry_point"
+fm_well_swapping = "everest_models.jobs.fm_well_swapping.cli:main_entry_point"
+fm_track_well_switch = "everest_models.jobs.fm_track_well_switch.cli:main_entry_point"
+fm_update_dates = "everest_models.jobs.fm_update_dates.cli:main_entry_point"
+fm_adjust_well_status = "everest_models.jobs.fm_adjust_well_status.cli:main_entry_point"
 
 [tool.setuptools.packages.find]
 where = ["src"]

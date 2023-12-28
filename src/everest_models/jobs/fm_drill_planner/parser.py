@@ -57,7 +57,7 @@ def build_argument_parser():
         *_OPTIMIZER_ARGUMENT.split("/"),
         required=True,
         type=valid_input_file,
-        help="The optimizer file in yaml format is the file output from everest that "
+        help="The optimizer file is generated from everest it "
         "contains the well priority values - a float for each well.",
     )
     parser.add_argument(

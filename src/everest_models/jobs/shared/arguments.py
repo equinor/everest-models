@@ -1,10 +1,16 @@
 import argparse
 import functools
 from functools import partial
+from pathlib import Path
 from sys import stdout
-from typing import Callable, Dict, Optional, Tuple, Type, TypeVar, Union
+from typing import Callable, Dict, Iterator, Optional, Tuple, Type, TypeVar, Union
 
 from pydantic import BaseModel
+from ruamel.yaml.comments import CommentedMap, CommentedSeq
+from typing_extensions import TypeAlias
+
+from everest_models.jobs.shared.models.base_config.base import ModelConfig
+from everest_models.jobs.shared.models.base_config.introspective import is_related
 
 from .io_utils import dump_yaml
 from .models import Wells
@@ -16,6 +22,7 @@ from .validators import (
 )
 
 T = TypeVar("T", bound=BaseModel)
+Parser: TypeAlias = Union[argparse.ArgumentParser, argparse._ArgumentGroup]
 
 
 class SchemaAction(argparse.Action):
@@ -25,17 +32,46 @@ class SchemaAction(argparse.Action):
     def register_models(cls, models: Dict[str, Type[T]]) -> None:
         cls._models.update(models)
 
-    def __call__(self, parser, *_):
-        for argument, model in self._models.items():
-            print("\n\n")
-            if issubclass(model, Wells):
-                print(f"{argument} is Everest generated wells JSON file")
-                continue
-            data = model.commented_map()
-            data.yaml_set_start_comment(
-                f"{argument} specification:\n'...' are REQUIRED fields that needs replacing\n\n"
+    @staticmethod
+    def _model_specsifactions(
+        argument: str, model: ModelConfig
+    ) -> Union[CommentedSeq, CommentedMap]:
+        data = model.commented_map()
+        data.yaml_set_start_comment(
+            f"{argument} specification:\n'...' are REQUIRED fields that needs replacing\n\n"
+        )
+        return data
+
+    def _specification_iterator(
+        self,
+    ) -> Iterator[Tuple[str, ModelConfig, Union[CommentedSeq, CommentedMap]]]:
+        return (
+            (
+                argument.split("/")[-1].lstrip("-"),
+                model,
+                self._model_specsifactions(argument, model),
             )
-            dump_yaml(data, stdout, explicit=True, default_flow_style=False)
+            for argument, model in self._models.items()
+        )
+
+    def __call__(self, parser: argparse.ArgumentParser, *_):
+        for argument, model, data in self._specification_iterator():
+            if self.dest in ("show", "schema"):
+                print("\n\n")
+                if is_related(model, Wells):
+                    print(f"{argument} is Everest generated wells JSON file")
+                    continue
+                dump_yaml(data, stdout, explicit=True, default_flow_style=False)
+            if self.dest == "init":
+                if is_related(model, Wells):
+                    continue
+                path = Path(
+                    f"{'_'.join(parser.prog.split()[:-1]).lower()}_{argument}.yml"
+                )
+                with path.open(mode="w") as fd:
+                    dump_yaml(data, fd, default_flow_style=False)
+                print(f"file `{path.resolve()}` created")
+
         parser.exit()
 
 
