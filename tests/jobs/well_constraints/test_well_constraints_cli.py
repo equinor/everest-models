@@ -33,7 +33,7 @@ def _get_modified_constraints(path: pathlib.Path, key: str):
     with path.open(mode="r") as fp:
         data = json.load(fp)
     data[key] = data.pop("INJECT2")
-    return Constraints.parse_obj(data)
+    return Constraints.model_validate(data)
 
 
 @pytest.fixture(scope="module")
@@ -63,7 +63,7 @@ def well_config_parser_action_injector(path_test_data):
         (path_test_data / TEST_DATA / "well_constraint_input.yml").read_bytes()
     )
     data["PRODUCE1"] = data.pop("INJECT2")
-    return (5, WellConstraintConfig.parse_obj(data))
+    return (5, WellConstraintConfig.model_validate(data))
 
 
 def build_argument_parser(injections):

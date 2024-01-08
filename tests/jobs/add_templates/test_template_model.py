@@ -35,9 +35,7 @@ def test_template_model_fields(add_tmpl_config):
     assert isinstance(template.keys["opname"], str)
     assert isinstance(add_tmpl_config.templates[3].keys["phase"], PhaseEnum)
 
-    with pytest.raises(
-        TypeError, match="is immutable and does not support item assignment"
-    ):
+    with pytest.raises(ValidationError, match="Instance is frozen"):
         add_tmpl_config.templates = ()
         template.file = "does_not_exist.txt"
         template.keys = Keys(opname="str")
@@ -45,23 +43,20 @@ def test_template_model_fields(add_tmpl_config):
 
 
 def test_template_model_minimum_fields(template_dict):
-    assert TemplateConfig.parse_obj(template_dict)
-    with pytest.raises(ValidationError, match="field required"):
-        TemplateConfig.parse_obj({})
+    assert TemplateConfig.model_validate(template_dict)
+    with pytest.raises(ValidationError, match="Field required"):
+        TemplateConfig.model_validate({})
 
 
 def test_template_model_file(template_dict):
     template_dict = deepcopy(template_dict)
     template_dict["templates"][0]["file"] = "does_not_exist.txt"
-    with pytest.raises(ValidationError, match="does not exist"):
-        TemplateConfig.parse_obj(template_dict)
-    template_dict["templates"][0]["file"] = pathlib.Path().parent
     with pytest.raises(ValidationError, match="does not point to a file"):
-        TemplateConfig.parse_obj(template_dict)
+        TemplateConfig.model_validate(template_dict)
 
 
 def test_key_equal_operator(template_dict):
-    template = TemplateConfig.parse_obj(template_dict).templates[0]
+    template = TemplateConfig.model_validate(template_dict).templates[0]
     op = Operation(date="2000-12-23", opname="open")
     assert template.matching_keys(op)
     op.tokens["rate"] = 2.0

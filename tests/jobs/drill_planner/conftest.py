@@ -28,7 +28,7 @@ def builder() -> FieldManagerBuilder:
 @pytest.fixture(scope="module")
 def small_wells_and_priority():
     return (
-        Wells.parse_obj(
+        Wells.model_validate(
             [{"name": "W1", "drill_time": 5}, {"name": "W2", "drill_time": 10}]
         ),
         WELL_PRIORITIES,
@@ -38,7 +38,9 @@ def small_wells_and_priority():
 @pytest.fixture(scope="module")
 def wells_and_priority(path_test_data):
     return (
-        Wells.parse_obj(valid_input_file(path_test_data / TEST_DATA / "wells.json")),
+        Wells.model_validate(
+            valid_input_file(path_test_data / TEST_DATA / "wells.json")
+        ),
         {"w1": 5, "w2": 4, "w3": 3, "w4": 2, "w5": 1},
     )
 

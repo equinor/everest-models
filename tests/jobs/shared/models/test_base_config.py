@@ -5,6 +5,7 @@ from textwrap import dedent
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from everest_models.jobs.shared.models import BaseConfig, BaseEnum
+from pydantic import RootModel
 
 
 class ABEnum(BaseEnum):
@@ -22,16 +23,16 @@ class SubTester(BaseConfig):
 
 
 class MainTester(BaseConfig):
-    a: Optional[datetime.date]
+    a: Optional[datetime.date] = None
     b: SubTester
 
 
-class RootDictTester(BaseConfig):
-    __root__: Dict[str, Dict[int, SubTester]]
+class RootDictTester(BaseConfig, RootModel):
+    root: Dict[str, Dict[int, SubTester]]
 
 
-class RootListTester(BaseConfig):
-    __root__: Tuple[List[float], Set[SubTester]]
+class RootListTester(BaseConfig, RootModel):
+    root: Tuple[List[float], Set[SubTester]]
 
 
 class EllipsisTester(BaseConfig):
@@ -54,7 +55,7 @@ def test_base_config_json_dump(tmpdir):
     assert (
         output.read_bytes()
         == b"""{
-  "path": "./some/location.txt"
+  "path": "some/location.txt"
 }"""
     )
     test_model = Tester(path="/tmp/some/location.txt")
@@ -125,7 +126,7 @@ def test_base_config_help_schema_yaml(capsys):
 ---
 arguments: args
 fields:
-   a: {format: date, required: false, type: string}
+   a: {format: date, required: false}
    b:
       c: {default: 53, required: false, type: integer}
       d: [string]

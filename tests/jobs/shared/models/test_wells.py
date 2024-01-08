@@ -48,7 +48,7 @@ def well_dict(path_test_data) -> Dict:
 
 @pytest.fixture(scope="module")
 def well_model(well_dict):
-    return WellConfig.parse_obj(well_dict)
+    return WellConfig.model_validate(well_dict)
 
 
 def test_operation_model_field():
@@ -57,20 +57,20 @@ def test_operation_model_field():
         "opname": "open",
         "tokens": {"s": 12, "phase": "water"},
     }
-    operation = Operation.parse_obj(data)
+    operation = Operation.model_validate(data)
     assert operation
     assert isinstance(operation.tokens["phase"], PhaseEnum)
     with pytest.raises(ValidationError):
-        Operation.parse_obj({"z": 3.3, **data})
+        Operation.model_validate({"z": 3.3, **data})
 
 
 def test_well_model_fields(well_model):
-    assert isinstance(well_model.__root__, tuple)
+    assert isinstance(well_model.root, tuple)
     well = well_model[0]
     assert isinstance(well, Well)
     assert isinstance(well.name, str)
     assert well.name == "WELL1"
-    with pytest.raises(TypeError, match="allow_mutation set to False"):
+    with pytest.raises(ValidationError, match="Field is frozen"):
         well.name = "should not work"
     assert isinstance(well.readydate, datetime.date)
     assert isinstance(well.completion_date, datetime.date)
@@ -90,13 +90,13 @@ def test_well_model_fields(well_model):
 
 
 def test_well_model_minimum_fields():
-    assert not WellConfig.parse_obj([])  # does not throw error
-    assert WellConfig.parse_obj([{"name": "WELL", "drill_time": 23}])
+    assert not WellConfig.model_validate([])  # does not throw error
+    assert WellConfig.model_validate([{"name": "WELL", "drill_time": 23}])
 
 
 def test_well_model_is_subscribable(well_model):
-    wells = WellConfig.parse_obj([])
-    assert not wells.__root__
+    wells = WellConfig.model_validate([])
+    assert not wells.root
     assert not list(wells)
     assert well_model[1]
 

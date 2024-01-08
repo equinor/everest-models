@@ -58,7 +58,7 @@ def test_npv_base_case(
     config = copy.deepcopy(economic_indicator_input_dict)
     mocker.side_effect = [economic_indicator_summary, None]
     manager = NPVCalculator(
-        config=EconomicIndicatorConfig.parse_obj(config),
+        config=EconomicIndicatorConfig.model_validate(config),
     )
     assert manager.compute(economic_indicator_well_dates) == 691981114.68
 
@@ -82,7 +82,7 @@ def test_npv_base_case_with_reference_summary(
     # The test checks that the value is the one obtained at the first version of the function
     # It has been checked that this corresponds to the difference of production (FOPT) between the two EclSum data
     manager = NPVCalculator(
-        config=EconomicIndicatorConfig.parse_obj(config),
+        config=EconomicIndicatorConfig.model_validate(config),
     )
     assert manager.compute(economic_indicator_well_dates) == 156999155.17
 
@@ -104,7 +104,7 @@ def test_npv_base_case_with_reference_summary_failing(
         economic_indicator_reference_summary_not_consistent,
     ]
     manager = NPVCalculator(
-        config=EconomicIndicatorConfig.parse_obj(config),
+        config=EconomicIndicatorConfig.model_validate(config),
     )
     with pytest.raises(Exception) as exc_info:
         manager.compute(economic_indicator_well_dates)
@@ -123,7 +123,7 @@ def test_npv_base_case_no_input(
     config = copy.deepcopy(economic_indicator_input_dict)
     mocker.side_effect = [economic_indicator_summary, None]
     manager = NPVCalculator(
-        config=EconomicIndicatorConfig.parse_obj(config),
+        config=EconomicIndicatorConfig.model_validate(config),
     )
     assert manager.compute({}) == 865092178.9
 
@@ -144,7 +144,7 @@ def test_npv_base_case_omit_dates_summary_keys(
     mocker.side_effect = [economic_indicator_summary, None]
 
     manager = NPVCalculator(
-        config=EconomicIndicatorConfig.parse_obj(config),
+        config=EconomicIndicatorConfig.model_validate(config),
     )
     assert manager.compute(economic_indicator_well_dates) == 1323951495.03
 
@@ -166,7 +166,7 @@ def test_npv_base_case_modify_multiplier(
     mocker.side_effect = [economic_indicator_summary, None]
 
     manager = NPVCalculator(
-        config=EconomicIndicatorConfig.parse_obj(config),
+        config=EconomicIndicatorConfig.model_validate(config),
     )
     assert manager.compute(economic_indicator_well_dates) == 2647902990.07
 
@@ -190,7 +190,7 @@ def test_npv_base_case_modify_ref_date(
     mocker.side_effect = [economic_indicator_summary, None]
 
     manager = NPVCalculator(
-        config=EconomicIndicatorConfig.parse_obj(config),
+        config=EconomicIndicatorConfig.model_validate(config),
     )
     assert manager.compute(economic_indicator_well_dates) == 1344403927.71
 
@@ -258,7 +258,7 @@ def test_npv_base_case_modify_start_end_dates(
     mocker.side_effect = [economic_indicator_summary, None]
 
     manager = NPVCalculator(
-        config=EconomicIndicatorConfig.parse_obj(config),
+        config=EconomicIndicatorConfig.model_validate(config),
     )
     assert manager.compute(economic_indicator_well_dates) == expected
 
@@ -275,7 +275,7 @@ def test_npv_summary_keys_not_available(
     config = copy.deepcopy(economic_indicator_input_dict)
     mocker.side_effect = [economic_indicator_summary, None]
     config["summary"]["keys"] = ["NOT_EXISTING", "FAULTY_KEY"]
-    config_ = EconomicIndicatorConfig.parse_obj(config)
+    config_ = EconomicIndicatorConfig.model_validate(config)
 
     with pytest.raises(AttributeError) as e:
         NPVCalculator(config_)

@@ -94,4 +94,4 @@ def parse_forward_model_schema(path: str, schema: Type[T]) -> T:
     if not path_.exists() or path_.is_dir():
         raise ValueError(f"File does not exists or is a directory: {path_}")
 
-    return schema.parse_obj(load_supported_file_encoding(path_))
+    return schema.model_validate(load_supported_file_encoding(path_))

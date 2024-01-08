@@ -2,7 +2,7 @@ import datetime
 import logging
 from typing import Dict, Optional, Tuple
 
-from pydantic import Field, ValidationError, root_validator, validator
+from pydantic import Field, field_validator, model_validator
 
 from everest_models.jobs.fm_npv.currency import CURRENCY_CODES
 from everest_models.jobs.shared.models import BaseConfig, BaseFrozenConfig
@@ -20,10 +20,11 @@ class Capital(BaseFrozenConfig):
     value: float
     currency: Optional[str] = None
 
-    @validator("currency")
+    @field_validator("currency")
+    @classmethod
     def currency_exist(cls, currency):
         if currency is not None and currency not in CURRENCY_CODES:
-            raise ValidationError("Currency does not exist")
+            raise ValueError("Currency does not exist")
         return currency
 
 
@@ -47,7 +48,8 @@ class NPVConfig(BaseConfig):
     costs: Tuple[CurrencyRate, ...] = Field(default_factory=tuple)
     well_costs: Tuple[WellCost, ...] = Field(default_factory=tuple)
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def populate_summary_keys(cls, values):
         if not ("summary_keys" in values and values["summary_keys"]):
             if "prices" not in values:

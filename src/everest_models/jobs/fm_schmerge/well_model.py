@@ -23,7 +23,7 @@ class Well(Well):
 
 
 class Wells(WellConfig):
-    __root__: Tuple[Well, ...]
+    root: Tuple[Well, ...]
 
     def dated_operations(self):
         operations_dict = defaultdict(list)

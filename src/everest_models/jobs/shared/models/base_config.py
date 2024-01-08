@@ -3,8 +3,8 @@ import pathlib
 import sys
 import typing
 
-from pydantic import BaseModel, Extra
-from pydantic.fields import ModelField
+from pydantic import BaseModel, ConfigDict
+from pydantic.fields import FieldInfo
 
 from everest_models.jobs.shared import io_utils as io
 from everest_models.jobs.shared.converters import path_to_str
@@ -13,19 +13,19 @@ from everest_models.jobs.shared.models.phase import BaseEnum
 
 def _is_complex_field(value: typing.Any) -> bool:
     return inspect.isclass(value) and any(
-        issubclass(value, klass) for klass in (BaseEnum, dict)
+        issubclass(value, klass) for klass in (BaseEnum, dict, tuple, list, set)
     )
 
 
 class BaseConfig(BaseModel):
     """Mutable custom pydantic BaseModel configuration with schema specification renderer."""
 
-    class Config:
-        validate_assignment = True
-        arbitrary_types_allowed = False
-        underscore_attrs_are_private = True
-        extra = Extra.forbid
-        json_encoders = {pathlib.Path: path_to_str}
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
+    model_config = ConfigDict(
+        validate_assignment=True,
+        arbitrary_types_allowed=False,
+        json_encoders={pathlib.Path: path_to_str},
+    )
 
     def json_dump(self, output: pathlib.Path) -> None:
         """Write instance state to a JSON file.
@@ -34,34 +34,30 @@ class BaseConfig(BaseModel):
             output (pathlib.Path): file to write to
         """
         output.write_text(
-            self.json(
+            self.model_dump_json(
                 indent=2,
-                separators=(",", ": "),
                 exclude_none=True,
                 exclude_unset=True,
-                sort_keys=True,
             )
         )
 
     @classmethod
-    def _field_properties(cls, model: ModelField) -> typing.Dict[str, typing.Any]:
+    def _field_properties(cls, field, info: FieldInfo) -> typing.Dict[str, typing.Any]:
         return {
-            "required": model.required,
-            **({"default": model.default} if model.default else {}),
+            "required": info.is_required(),
+            **({"default": info.default} if info.default else {}),
             **{
                 field: value
-                for field, value in cls._get_field_property(model.name).items()
+                for field, value in cls._get_field_property(field).items()
                 if field in ("type", "oneOf", "format")
             },
         }
 
     @classmethod
     def _get_field_property(cls, name: str) -> typing.Optional[typing.Dict[str, str]]:
-        schema = cls.schema()
+        schema = cls.model_json_schema()
         return (
-            schema["properties"][name]
-            if name != "__root__"
-            else {"type": schema["type"]}
+            schema["properties"][name] if name != "root" else {"type": schema["type"]}
         )
 
     @classmethod
@@ -80,36 +76,40 @@ class BaseConfig(BaseModel):
             return {builtin_types_to_string(key): cls._unravel_nested(value)}
         if origin in (tuple, list):
             return [cls._unravel_nested(arg) for arg in args if arg is not Ellipsis]
-        if origin is typing.Union:
-            return {
-                "one of": [
-                    cls._unravel_nested(arg) for arg in args if arg is not Ellipsis
-                ]
-            }
         if origin is set:
             return [
                 {"unique": True, "value": cls._unravel_nested(arg)}
                 for arg in args
                 if arg
             ]
+        if len(args) == 2 and args[1] is type(None):
+            return {"format": cls._unravel_nested(args[0]), "required": False}
+        if origin is typing.Union:
+            return {
+                "one of": [
+                    cls._unravel_nested(arg) for arg in args if arg is not Ellipsis
+                ]
+            }
+
         return builtin_types_to_string(typ)
 
     @classmethod
     def _help_fields_schema(cls):
-        for field, model in cls.__fields__.items():
+        for field, info in cls.model_fields.items():
             value = (
-                cls._unravel_nested(model.outer_type_)
-                if model.is_complex()
-                or _is_complex_field(model.outer_type_)
+                cls._unravel_nested(info.annotation)
+                if _is_complex_field(typing.get_origin(info.annotation))
                 or (
-                    inspect.isclass(model.outer_type_)
-                    and issubclass(model.outer_type_, BaseEnum)
+                    inspect.isclass(info.annotation)
+                    and issubclass(info.annotation, BaseEnum)
                 )
-                or typing.get_origin(model.outer_type_) == typing.Union
-                else cls._field_properties(model)
+                or typing.get_origin(info.annotation) == typing.Union
+                or inspect.isclass(info.annotation)
+                and issubclass(info.annotation, BaseModel)
+                else cls._field_properties(field, info)
             )
-            if typing.get_origin(model.outer_type_) == typing.Literal:
-                literals = typing.get_args(model.outer_type_)
+            if typing.get_origin(info.annotation) == typing.Literal:
+                literals = typing.get_args(info.annotation)
                 if len(literals) == 1:
                     literals = literals[0]
                 value["literal"] = literals
@@ -126,7 +126,7 @@ class BaseConfig(BaseModel):
             typing.Union[dict, list]: Class specification schema
         """
         fields = dict(cls._help_fields_schema())
-        if (root := fields.pop("__root__", None)) is not None:
+        if (root := fields.pop("root", None)) is not None:
             fields = root
         if argument_name is not None:
             fields = {"arguments": argument_name, "fields": fields}
@@ -145,30 +145,29 @@ class BaseConfig(BaseModel):
 class BaseFrozenConfig(BaseConfig):
     """Frozen custom pydantic BaseModel Configuration with schema specification renderer."""
 
-    class Config:
-        frozen = True
+    model_config = ConfigDict(frozen=True)
 
 
 class DictRootMixin:
     """Dictionary mixin functions for pydantic models with dictionary __root__ fields"""
 
     def get(self, value, default=None):
-        return self.__root__.get(value, default)
+        return self.root.get(value, default)
 
     def keys(self):
-        return self.__root__.keys()
+        return self.root.keys()
 
     def values(self):
-        return self.__root__.values()
+        return self.root.values()
 
     def items(self):
-        return self.__root__.items()
+        return self.root.items()
 
     def __iter__(self) -> typing.Iterator:
-        return iter(self.__root__)
+        return iter(self.root)
 
     def __getitem__(self, item):
-        return self.__root__[item]
+        return self.root[item]
 
     def __len__(self) -> int:
-        return len(self.__root__)
+        return len(self.root)

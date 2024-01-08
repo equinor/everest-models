@@ -27,7 +27,7 @@ def missing_controls(*args, **kwargs):
 
 def missing_well(*args, **kwargs):
     wells = WellConfig.parse_file("wells.json")
-    wells.__root__ = (well for well in wells if int(well.name[-1]) % 2)
+    wells.set_wells((well for well in wells if int(well.name[-1]) % 2))
     return wells
 
 

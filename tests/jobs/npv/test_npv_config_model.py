@@ -4,7 +4,7 @@ from pydantic import ValidationError
 
 
 def test_npv_config_defaults():
-    config = NPVConfig.parse_obj(
+    config = NPVConfig.model_validate(
         {
             "prices": {
                 "FOPT": [
@@ -36,4 +36,4 @@ def test_npv_config_defaults():
 
 def test_npv_money_bad_currency():
     with pytest.raises(ValidationError):
-        Capital.parse_obj({"value": 3.14, "currency": "PIE"})
+        Capital.model_validate({"value": 3.14, "currency": "PIE"})

@@ -14,13 +14,13 @@ def test_drill_planner_config_mismatch_slots(drill_planner_config):
         ValidationError,
         match=r"There are rig\(s\) with mismatch slot\(s\):\s+",
     ) as e:
-        DrillPlanConfig.parse_obj(config_dict)
+        DrillPlanConfig.model_validate(config_dict)
     error_str = str(e)
     assert all(value in error_str for value in ("miss", "ing"))
 
 
 def test_drill_planner_config_set_unavailability(drill_planner_config):
-    config = DrillPlanConfig.parse_obj(deepcopy(drill_planner_config))
+    config = DrillPlanConfig.model_validate(deepcopy(drill_planner_config))
     assert _Unavailability.start_date == config.start_date
     assert _Unavailability.end_date == config.end_date
 
@@ -28,7 +28,7 @@ def test_drill_planner_config_set_unavailability(drill_planner_config):
 def test_drill_planner_config_default_end_date(drill_planner_config):
     config_dict = deepcopy(drill_planner_config)
     config_dict.pop("end_date")
-    DrillPlanConfig.parse_obj(config_dict)
+    DrillPlanConfig.model_validate(config_dict)
     assert _Unavailability.end_date == datetime.date(3000, 1, 1)
 
 
@@ -43,7 +43,7 @@ def test_drill_planner_config_missing_field(field, error, drill_planner_config):
     config_dict = deepcopy(drill_planner_config)
     config_dict.pop(field)
     with pytest.raises(error, match=field):
-        DrillPlanConfig.parse_obj(config_dict)
+        DrillPlanConfig.model_validate(config_dict)
 
 
 @pytest.mark.parametrize(
@@ -59,7 +59,7 @@ def test_drill_planner_config_defaults(field, default, drill_planner_config):
     if field == "slots":
         for rig in config_dict["rigs"]:
             rig.pop(field)
-    plan = DrillPlanConfig.parse_obj(config_dict)
+    plan = DrillPlanConfig.model_validate(config_dict)
     assert getattr(plan, field) == default
     if field == "slots":
         assert all(rig.slots == default for rig in plan.rigs)

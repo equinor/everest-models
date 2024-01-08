@@ -24,7 +24,7 @@ dependencies = [
     "numpy>=1.23.2",
     "ruamel.yaml>=0.17.21",
     "fmu-steaclient",
-    "pydantic < 2",
+    "pydantic",
     "ortools>=9.3",
     "rips>=2023.01.0.1",
     "lasio",

@@ -39,8 +39,11 @@ _WELL_CONSTRAINTS_CONFIG_ERRORS = [
 
 def assert_error_messages(info: pytest.ExceptionInfo, *msgs):
     errors = info.value.errors()
+
     assert len(errors) == len(msgs)
-    assert all(error["msg"] in msgs for error in errors)
+    assert all(
+        error["msg"].replace("Assertion failed, ", "") in msgs for error in errors
+    )
 
 
 def get_config_constraint(key: str, pop: bool, retain: bool = True) -> dict:
@@ -55,13 +58,13 @@ def get_config_constraint(key: str, pop: bool, retain: bool = True) -> dict:
 
 @given(st.floats(max_value=1, min_value=0))
 def test_constraint_model_fields(value):
-    assert Constraints.parse_obj({"Li": {1: value}, "Vi": {2: 0.35}})
+    assert Constraints.model_validate({"Li": {1: value}, "Vi": {2: 0.35}})
 
 
 @given(st.floats(min_value=1.0000000001))
 def test_constraint_model_fields_over_zero_error(value):
     with pytest.raises(ValidationError) as e:
-        Constraints.parse_obj({"Li": {1: value}, "Vi": {2: 0.35}})
+        Constraints.model_validate({"Li": {1: value}, "Vi": {2: 0.35}})
     assert_error_messages(
         e, f"Value(s) are not within bounds [0, 1]:\n\tLi -> 1 -> {value}"
     )
@@ -70,7 +73,7 @@ def test_constraint_model_fields_over_zero_error(value):
 @given(st.floats(max_value=-0.0000000001))
 def test_constraint_model_fields_under_zero_error(value):
     with pytest.raises(ValidationError) as e:
-        Constraints.parse_obj({"Li": {1: value}, "Vi": {2: 0.35}})
+        Constraints.model_validate({"Li": {1: value}, "Vi": {2: 0.35}})
     assert_error_messages(
         e, f"Value(s) are not within bounds [0, 1]:\n\tLi -> 1 -> {value}"
     )
@@ -78,14 +81,14 @@ def test_constraint_model_fields_under_zero_error(value):
 
 def test_constraint_model_fields_multi_error_one_message():
     with pytest.raises(ValidationError) as e:
-        Constraints.parse_obj({"Li": {1: -0.3}, "Vi": {2: 1.35}})
+        Constraints.model_validate({"Li": {1: -0.3}, "Vi": {2: 1.35}})
     assert_error_messages(
         e, "Value(s) are not within bounds [0, 1]:\n\tLi -> 1 -> -0.3\tVi -> 2 -> 1.35"
     )
 
 
 def test_constraints_config_model_fields():
-    assert WellConstraintConfig.parse_obj(_WELL_CONSTRAINTS_CONFIG)
+    assert WellConstraintConfig.model_validate(_WELL_CONSTRAINTS_CONFIG)
 
 
 @pytest.mark.parametrize(
@@ -97,7 +100,7 @@ def test_constraints_config_model_fields():
 )
 def test_constraints_config_model_fields_min_or_max_error(config):
     with pytest.raises(ValidationError) as e:
-        WellConstraintConfig.parse_obj(config)
+        WellConstraintConfig.model_validate(config)
     assert_error_messages(e, _WELL_CONSTRAINTS_CONFIG_ERRORS[1])
 
 
@@ -123,7 +126,7 @@ def test_constraints_config_model_fields_min_or_max_error(config):
 )
 def test_constraints_config_model_fields_min_max_value_error(config, error_message):
     with pytest.raises(ValidationError) as e:
-        WellConstraintConfig.parse_obj(config)
+        WellConstraintConfig.model_validate(config)
     assert_error_messages(e, error_message)
 
 
@@ -132,7 +135,7 @@ def test_constraint_config_model_fields_options_value_error():
     phase = config["INJECT1"][1]["phase"]
     phase["value"] = phase.get("options")[0]
     with pytest.raises(ValidationError) as e:
-        WellConstraintConfig.parse_obj(config)
+        WellConstraintConfig.model_validate(config)
     assert_error_messages(
         e, "'options' key cannot be used in conjunction with 'value' key."
     )
@@ -143,7 +146,7 @@ def test_constraints_config_model_fields_min_gt_max_error():
     rate = config["INJECT1"][1]["rate"]
     rate["max"] = rate["min"]
     with pytest.raises(ValidationError) as e:
-        WellConstraintConfig.parse_obj(config)
+        WellConstraintConfig.model_validate(config)
     assert_error_messages(e, _WELL_CONSTRAINTS_CONFIG_ERRORS[-1])
 
 
@@ -152,7 +155,7 @@ def test_constraints_config_model_fields_multi_error_one_message():
     rate = config["INJECT1"][1]["rate"]
     rate["max"] = rate["min"]
     with pytest.raises(ValidationError) as e:
-        WellConstraintConfig.parse_obj(config)
+        WellConstraintConfig.model_validate(config)
     assert_error_messages(e, "\n".join(_WELL_CONSTRAINTS_CONFIG_ERRORS[::2]))
 
 
@@ -162,7 +165,7 @@ def test_constraints_config_model_fields_multi_error_multi_message():
     phase["value"] = phase["options"][0]
     phase["options"] = []
     with pytest.raises(ValidationError) as e:
-        WellConstraintConfig.parse_obj(config)
+        WellConstraintConfig.model_validate(config)
     assert_error_messages(e, "Empty 'options' list", _WELL_CONSTRAINTS_CONFIG_ERRORS[0])
 
 
@@ -171,12 +174,12 @@ def test_constraints_config_model_fields_multi_error_multi_message():
     ((0, "GAS"), (0.25, "GAS"), (0.5, "GAS"), (0.75, "WATER"), (1, "WATER")),
 )
 def test_constraint_phase_model_optimum_value(optimizer_value, expected):
-    phase = Phase.parse_obj(_WELL_CONSTRAINTS_CONFIG["INJECT1"][1]["phase"])
+    phase = Phase.model_validate(_WELL_CONSTRAINTS_CONFIG["INJECT1"][1]["phase"])
     assert phase.optimum_value(optimizer_value) == expected
 
 
 def test_constraint_phase_model_optimum_value_none():
-    assert Phase.parse_obj({"value": "water"}).optimum_value(None) == "WATER"
+    assert Phase.model_validate({"value": "water"}).optimum_value(None) == "WATER"
 
 
 @pytest.mark.parametrize(
@@ -184,10 +187,10 @@ def test_constraint_phase_model_optimum_value_none():
     ((0, 0), (0.1, 100), (0.2, 200), (0.15684, 156.84), (1, 1000)),
 )
 def test_constraint_tolerance_model_optimum_value(optimizer_value, expected):
-    phase = Tolerance.parse_obj(_WELL_CONSTRAINTS_CONFIG["INJECT1"][1]["rate"])
+    phase = Tolerance.model_validate(_WELL_CONSTRAINTS_CONFIG["INJECT1"][1]["rate"])
     assert phase.optimum_value(optimizer_value) == expected
 
 
 def test_constraint_tolerance_model_optimum_value_none():
-    assert Tolerance.parse_obj({"value": 314}).optimum_value(None) == 314
+    assert Tolerance.model_validate({"value": 314}).optimum_value(None) == 314
     assert Tolerance().optimum_value(None) is None

@@ -3,7 +3,7 @@ import logging
 import pathlib
 from typing import Dict, Optional, Tuple
 
-from pydantic import Field, FilePath, ValidationError, root_validator, validator
+from pydantic import Field, FilePath, field_validator, model_validator
 
 from everest_models.jobs.fm_compute_economics.currency import CURRENCY_CODES
 from everest_models.jobs.shared.models import BaseConfig, BaseFrozenConfig
@@ -21,10 +21,11 @@ class Capital(BaseFrozenConfig):
     value: float
     currency: Optional[str] = None
 
-    @validator("currency")
+    @field_validator("currency")
+    @classmethod
     def currency_exist(cls, currency):
         if currency is not None and currency not in CURRENCY_CODES:
-            raise ValidationError("Currency does not exist")
+            raise ValueError("Currency does not exist")
         return currency
 
 
@@ -37,20 +38,20 @@ class WellCost(Capital):
 
 
 class EclipseSummaryConfig(BaseConfig):
-    main: FilePath
-    reference: Optional[FilePath]
+    main: pathlib.Path
+    reference: Optional[FilePath] = None
     keys: Tuple[str, ...] = Field(default_factory=tuple)
 
 
 class OutputConfig(BaseConfig):
     file: pathlib.Path
-    currency: Optional[str]
-    currency_rate: Optional[Tuple[CurrencyRate, ...]]
+    currency: Optional[str] = None
+    currency_rate: Optional[Tuple[CurrencyRate, ...]] = None
 
 
 class OilEquivalentConversionConfig(BaseFrozenConfig):
     oil: Dict[str, float]
-    remap: Optional[Dict[str, Dict[str, float]]]
+    remap: Optional[Dict[str, Dict[str, float]]] = None
 
 
 class EconomicIndicatorConfig(BaseConfig):
@@ -64,11 +65,12 @@ class EconomicIndicatorConfig(BaseConfig):
     discount_rates: Tuple[CurrencyRate, ...] = Field(default_factory=tuple)
     costs: Tuple[CurrencyRate, ...] = Field(default_factory=tuple)
     well_costs: Tuple[WellCost, ...] = Field(default_factory=tuple)
-    wells_input: Optional[FilePath]
+    wells_input: Optional[FilePath] = None
     output: OutputConfig
-    oil_equivalent: Optional[OilEquivalentConversionConfig]
+    oil_equivalent: Optional[OilEquivalentConversionConfig] = None
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def populate_summary_keys(cls, values):
         if isinstance(values["summary"], dict):
             if not ("keys" in values["summary"] and values["summary"]["keys"]):
@@ -78,7 +80,8 @@ class EconomicIndicatorConfig(BaseConfig):
                 values["summary"].keys = tuple(values["prices"])
         return values
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def currency_exist(cls, values):
         if isinstance(values["output"], dict):
             if values["output"].get("currency", None) is None:
@@ -106,7 +109,8 @@ class EconomicIndicatorConfig(BaseConfig):
                 )
         return values
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def currency_rate_exist(cls, values):
         if isinstance(values["output"], dict):
             if values["output"].get("currency", None) is None:

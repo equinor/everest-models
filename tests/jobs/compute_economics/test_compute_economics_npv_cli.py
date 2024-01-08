@@ -69,7 +69,7 @@ def test_npv_main_entry_point(
         lambda: MockParser(
             options=Options(
                 calculation="npv",
-                config=EconomicIndicatorConfig.parse_obj(config),
+                config=EconomicIndicatorConfig.model_validate(config),
             )
         ),
     )
@@ -106,7 +106,7 @@ def test_npv_main_entry_point_output_currency_USD(
         lambda: MockParser(
             options=Options(
                 calculation="npv",
-                config=EconomicIndicatorConfig.parse_obj(config),
+                config=EconomicIndicatorConfig.model_validate(config),
             )
         ),
     )
@@ -142,7 +142,7 @@ def test_npv_main_entry_point_output_currency_USD_from_CLI(
         lambda: MockParser(
             options=Options(
                 calculation="npv",
-                config=EconomicIndicatorConfig.parse_obj(config),
+                config=EconomicIndicatorConfig.model_validate(config),
                 output_currency="USD",
             )
         ),
@@ -171,7 +171,7 @@ def test_npv_main_entry_point_no_input_error(
         lambda: MockParser(
             options=Options(
                 calculation="npv",
-                config=EconomicIndicatorConfig.parse_obj(config),
+                config=EconomicIndicatorConfig.model_validate(config),
             )
         ),
     )
@@ -211,7 +211,7 @@ def test_npv_main_entry_point_no_well_costs_error(
         lambda: MockParser(
             options=Options(
                 calculation="npv",
-                config=EconomicIndicatorConfig.parse_obj(config),
+                config=EconomicIndicatorConfig.model_validate(config),
             )
         ),
     )
@@ -244,7 +244,7 @@ def test_npv_main_entry_point_no_input(
         lambda: MockParser(
             options=Options(
                 calculation="npv",
-                config=EconomicIndicatorConfig.parse_obj(config),
+                config=EconomicIndicatorConfig.model_validate(config),
             )
         ),
     )
@@ -288,7 +288,7 @@ def test_npv_main_entry_point_overwrite_config(
         lambda: MockParser(
             options=Options(
                 calculation="npv",
-                config=EconomicIndicatorConfig.parse_obj(config),
+                config=EconomicIndicatorConfig.model_validate(config),
                 **{option: value},
             )
         ),
@@ -324,7 +324,7 @@ def test_npv_main_entry_lint_ignore_overwrite_config(
         lambda: MockParser(
             options=Options(
                 calculation="npv",
-                config=EconomicIndicatorConfig.parse_obj(config),
+                config=EconomicIndicatorConfig.model_validate(config),
                 multiplier=1.42,
                 lint=True,
             )

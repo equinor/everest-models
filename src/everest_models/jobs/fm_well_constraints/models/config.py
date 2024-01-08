@@ -1,6 +1,6 @@
 from typing import Dict, Iterator, Tuple
 
-from pydantic import root_validator, validator
+from pydantic import ConfigDict, RootModel, field_validator, model_validator
 
 from everest_models.jobs.shared.models import BaseFrozenConfig, DictRootMixin, PhaseEnum
 
@@ -9,14 +9,15 @@ class Phase(BaseFrozenConfig):
     options: Tuple[PhaseEnum, ...] = None
     value: PhaseEnum = None
 
-    @validator("options")
+    @field_validator("options")
+    @classmethod
     def is_not_empty(cls, options):
         assert options is None or options, "Empty 'options' list"
         return options
 
-    @root_validator
+    @model_validator(mode="before")
     def is_correct_phase_field(cls, values):
-        assert (values.get("options") is None) ^ (
+        assert (values.get("options") is None or values.get("options") == []) ^ (
             values.get("value") is None
         ), "'options' key cannot be used in conjunction with 'value' key."
         return values
@@ -44,7 +45,7 @@ class Tolerance(BaseFrozenConfig):
     max: float = None
     value: float = None
 
-    @root_validator
+    @model_validator(mode="before")
     def is_correct_tolerance_field(cls, values):
         value_keys = {
             key for key, _ in filter(lambda x: x[1] is not None, values.items())
@@ -78,7 +79,7 @@ class Constraints(BaseFrozenConfig):
     duration: Tolerance
 
 
-class WellConstraintConfig(BaseFrozenConfig, DictRootMixin):
+class WellConstraintConfig(RootModel, DictRootMixin):
     """An 'immutable' well constraint configuration schema.
 
     The schema is a container for a two layers deep dictionary.
@@ -86,4 +87,5 @@ class WellConstraintConfig(BaseFrozenConfig, DictRootMixin):
     Second layer key is an integer that represent the Configuration index
     """
 
-    __root__: Dict[str, Dict[int, Constraints]]
+    model_config = ConfigDict(frozen=True)
+    root: Dict[str, Dict[int, Constraints]]

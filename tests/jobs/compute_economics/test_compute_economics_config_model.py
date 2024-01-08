@@ -10,7 +10,7 @@ from pydantic import ValidationError
 
 
 def test_economic_indicator_config_defaults():
-    config = EconomicIndicatorConfig.parse_obj(
+    config = EconomicIndicatorConfig.model_validate(
         {
             "summary": {
                 "main": "tests/jobs/compute_economics/test_compute_economics_config_model.py",
@@ -49,4 +49,4 @@ def test_economic_indicator_config_defaults():
 
 def test_economic_indicator_money_bad_currency():
     with pytest.raises(ValidationError):
-        Capital.parse_obj({"value": 3.14, "currency": "PIE"})
+        Capital.model_validate({"value": 3.14, "currency": "PIE"})

@@ -69,7 +69,7 @@ def test_bep_main_entry_point(
         lambda: MockParser(
             options=Options(
                 calculation="bep",
-                config=EconomicIndicatorConfig.parse_obj(config),
+                config=EconomicIndicatorConfig.model_validate(config),
             )
         ),
     )
@@ -97,7 +97,7 @@ def test_bep_main_entry_point_no_input_error(
         lambda: MockParser(
             options=Options(
                 calculation="bep",
-                config=EconomicIndicatorConfig.parse_obj(config),
+                config=EconomicIndicatorConfig.model_validate(config),
             )
         ),
     )
@@ -137,7 +137,7 @@ def test_bep_main_entry_point_no_well_costs_error(
         lambda: MockParser(
             options=Options(
                 calculation="bep",
-                config=EconomicIndicatorConfig.parse_obj(config),
+                config=EconomicIndicatorConfig.model_validate(config),
             )
         ),
     )
@@ -170,7 +170,7 @@ def test_bep_main_entry_point_no_input(
         lambda: MockParser(
             options=Options(
                 calculation="bep",
-                config=EconomicIndicatorConfig.parse_obj(config),
+                config=EconomicIndicatorConfig.model_validate(config),
             )
         ),
     )
@@ -214,7 +214,7 @@ def test_bep_main_entry_point_overwrite_config(
         lambda: MockParser(
             options=Options(
                 calculation="bep",
-                config=EconomicIndicatorConfig.parse_obj(config),
+                config=EconomicIndicatorConfig.model_validate(config),
                 **{option: value},
             )
         ),
@@ -250,7 +250,7 @@ def test_bep_main_entry_lint_ignore_overwrite_config(
         lambda: MockParser(
             options=Options(
                 calculation="bep",
-                config=EconomicIndicatorConfig.parse_obj(config),
+                config=EconomicIndicatorConfig.model_validate(config),
                 multiplier=1.42,
                 lint=True,
             )

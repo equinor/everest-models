@@ -24,7 +24,7 @@ def drill_plan_config(drill_planner_config):
     config.pop("slots")
     for rig in config["rigs"]:
         rig.pop("slots", None)
-    return DrillPlanConfig.parse_obj(config)
+    return DrillPlanConfig.model_validate(config)
 
 
 @pytest.mark.parametrize("lint, expected", ((False, FieldManager), (True, type(None))))
@@ -70,7 +70,7 @@ def test_drill_planner_manager_optimized_schedule(
     drill_planner_config, wells_and_priority
 ):
     manager = get_field_manager(
-        DrillPlanConfig.parse_obj(drill_planner_config),
+        DrillPlanConfig.model_validate(drill_planner_config),
         *wells_and_priority,
         ignore_end_date=False,
         skip_creation=False,

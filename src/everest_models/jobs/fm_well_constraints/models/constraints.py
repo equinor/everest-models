@@ -1,11 +1,11 @@
 from typing import Dict
 
-from pydantic import validator
+from pydantic import RootModel, field_validator
 
-from everest_models.jobs.shared.models import BaseFrozenConfig, DictRootMixin
+from everest_models.jobs.shared.models import DictRootMixin
 
 
-class Constraints(BaseFrozenConfig, DictRootMixin):
+class Constraints(RootModel, DictRootMixin):
     """An 'immutable' well constraint optimizer value schema.
 
     The schema is a container for a two layers deep dictionary.
@@ -13,9 +13,10 @@ class Constraints(BaseFrozenConfig, DictRootMixin):
     Second layer key is an integer that represent the optimizer_value index
     """
 
-    __root__: Dict[str, Dict[int, float]]
+    root: Dict[str, Dict[int, float]]
 
-    @validator("__root__")
+    @field_validator("root")
+    @classmethod
     def is_within_bounds(cls, root):
         assert not (
             error := [

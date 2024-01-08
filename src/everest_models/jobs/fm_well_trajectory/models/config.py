@@ -9,9 +9,10 @@ from pydantic import (
     NonNegativeInt,
     PositiveFloat,
     PositiveInt,
-    constr,
-    validator,
+    StringConstraints,
+    field_validator,
 )
+from typing_extensions import Annotated
 
 from everest_models.jobs.shared.models import BaseFrozenConfig, PhaseEnum
 from everest_models.jobs.shared.validators import validate_eclipse_path
@@ -44,13 +45,13 @@ class ResInsightInterpolationConfig(BaseFrozenConfig):
 
 
 class DomainProperty(BaseFrozenConfig):
-    key: constr(regex=r"^[^a-z]+$", strict=True)
+    key: Annotated[str, StringConstraints(pattern=r"^[^a-z]+$", strict=True)]
     min: Optional[float]
     max: Optional[float]
 
 
 class PerforationConfig(BaseFrozenConfig):
-    well: constr(regex=r"^[^a-z]+$", strict=True)
+    well: Annotated[str, StringConstraints(pattern=r"^[^a-z]+$", strict=True)]
     dynamic: Tuple[DomainProperty, ...] = Field(default_factory=tuple)
     static: Tuple[DomainProperty, ...] = Field(default_factory=tuple)
     formations: Tuple[int, ...] = Field(default_factory=tuple)
@@ -79,37 +80,36 @@ class WellConfig(BaseFrozenConfig):
     radius: PositiveFloat = 0.15
     dogleg: PositiveFloat = 4.0
     cost: NonNegativeFloat = 0.0
-    platform: Optional[str]
+    platform: Optional[str] = None
 
 
 class OutputsConfig(BaseFrozenConfig):
     save_paths: bool = False
-    guide_points: Optional[Path]
-    geometry: Optional[Path]
-    npv_input: Optional[Path]
+    guide_points: Optional[Path] = None
+    geometry: Optional[Path] = None
+    npv_input: Optional[Path] = None
 
 
 class ConfigSchema(BaseFrozenConfig):
     scales: ScalesConfig
     references: ReferencesConfig
     interpolation: Union[SimpleInterpolationConfig, ResInsightInterpolationConfig]
-    connections: Optional[ResInsightConnectionConfig]
+    connections: Optional[ResInsightConnectionConfig] = None
     platforms: Tuple[PlatformConfig, ...] = Field(default_factory=tuple)
     wells: Tuple[WellConfig, ...]
-    outputs: Optional[OutputsConfig]
-    eclipse_model: Optional[Path]
-    resinsight_binary: Optional[FilePath]
+    outputs: Optional[OutputsConfig] = None
+    eclipse_model: Optional[Path] = None
+    resinsight_binary: Optional[FilePath] = None
 
-    validate_eclipse = validator("eclipse_model", allow_reuse=True)(
-        validate_eclipse_path
-    )
+    validate_eclipse = field_validator("eclipse_model")(validate_eclipse_path)
 
-    @validator("wells", always=True, each_item=True)
-    def _validate_wells(cls, well: WellConfig, values: Dict[str, Any]) -> WellConfig:
+    @field_validator("wells")
+    def _validate_wells(cls, wells: WellConfig, values: Dict[str, Any]) -> WellConfig:
         if getattr(cls, "_platforms", None) is None:
-            cls._platforms = [item.name for item in values["platforms"]]
-        if well.platform is not None and well.platform not in cls._platforms:
-            raise ValueError(
-                f"Platform '{well.platform}' for well '{well.name}' not defined"
-            )
-        return well
+            cls._platforms = [item.name for item in values.data["platforms"]]
+        for well in wells:
+            if well.platform is not None and well.platform not in cls._platforms:
+                raise ValueError(
+                    f"Platform '{well.platform}' for well '{well.name}' not defined"
+                )
+        return wells

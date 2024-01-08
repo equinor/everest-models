@@ -30,7 +30,7 @@ def create_well_operations(
     """
     operations = []
     for index, event in events.items():
-        operation = Operation.parse_obj(
+        operation = Operation.model_validate(
             {
                 "tokens": {
                     constraint_type: constraint.optimum_value(

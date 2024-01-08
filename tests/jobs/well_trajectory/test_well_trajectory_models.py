@@ -13,7 +13,7 @@ def well_trajectory_config(path_test_data):
 
 
 def test_parameters_config(well_trajectory_config):
-    ConfigSchema.parse_obj(well_trajectory_config)
+    ConfigSchema.model_validate(well_trajectory_config)
 
 
 def test_parameters_invalid_platform(well_trajectory_config):
@@ -22,4 +22,4 @@ def test_parameters_invalid_platform(well_trajectory_config):
     with pytest.raises(
         ValidationError, match="Platform 'platform0' for well 'WI_1' not defined"
     ):
-        ConfigSchema.parse_obj(config)
+        ConfigSchema.model_validate(config)

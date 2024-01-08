@@ -200,7 +200,7 @@ def parse_file(value: str, schema: Type[T]) -> T:
     """
     value = valid_input_file(value)
     try:
-        return schema.parse_obj(value)
+        return schema.model_validate(value)
     except ValidationError as e:
         raise argparse.ArgumentTypeError(
             f"\n{_prettify_validation_error_message(e)}"

@@ -38,8 +38,9 @@ def test_schmerge_main_entry_point_invalid_wells(
 
     assert e.value.code == 2
     _, err = capsys.readouterr()
+
     assert (
-        "argument -i/--input: \nindex 1 -> ops -> index 1 -> template:\n\tfield required"
+        "argument -i/--input: \nindex 1 -> ops -> index 1 -> _Operation -> template:\n\tField required"
         in err
     )
 

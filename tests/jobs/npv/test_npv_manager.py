@@ -30,14 +30,14 @@ def npv_well_dates():
 
 def test_npv_base_case(npv_config_dict, npv_summary, npv_well_dates):
     manager = NPVCalculator(
-        config=NPVConfig.parse_obj(npv_config_dict), summary=npv_summary
+        config=NPVConfig.model_validate(npv_config_dict), summary=npv_summary
     )
     assert manager.compute(npv_well_dates) == 691981114.68
 
 
 def test_npv_base_case_no_input(npv_config_dict, npv_summary):
     manager = NPVCalculator(
-        config=NPVConfig.parse_obj(npv_config_dict), summary=npv_summary
+        config=NPVConfig.model_validate(npv_config_dict), summary=npv_summary
     )
     assert manager.compute({}) == 865092178.9
 
@@ -50,7 +50,7 @@ def test_npv_base_case_omit_dates_summary_keys(
     config_dict.pop("summary_keys")
 
     manager = NPVCalculator(
-        config=NPVConfig.parse_obj(config_dict), summary=npv_summary
+        config=NPVConfig.model_validate(config_dict), summary=npv_summary
     )
     assert manager.compute(npv_well_dates) == 1323951495.03
 
@@ -62,7 +62,7 @@ def test_npv_base_case_modify_multiplier(npv_config_dict, npv_summary, npv_well_
     config_dict["multiplier"] = 2
 
     manager = NPVCalculator(
-        config=NPVConfig.parse_obj(config_dict), summary=npv_summary
+        config=NPVConfig.model_validate(config_dict), summary=npv_summary
     )
     assert manager.compute(npv_well_dates) == 2647902990.07
 
@@ -76,7 +76,7 @@ def test_npv_base_case_modify_ref_date(npv_config_dict, npv_summary, npv_well_da
     dates["ref_date"] = datetime.date(2000, 5, 6)
 
     manager = NPVCalculator(
-        config=NPVConfig.parse_obj(config_dict), summary=npv_summary
+        config=NPVConfig.model_validate(config_dict), summary=npv_summary
     )
     assert manager.compute(npv_well_dates) == 1344403927.71
 
@@ -133,7 +133,7 @@ def test_npv_base_case_modify_start_end_dates(
     config_dates.update(dates)
 
     manager = NPVCalculator(
-        config=NPVConfig.parse_obj(config_dict), summary=npv_summary
+        config=NPVConfig.model_validate(config_dict), summary=npv_summary
     )
     assert manager.compute(npv_well_dates) == expected
 
@@ -143,7 +143,7 @@ def test_npv_summary_keys_not_available(npv_config_dict, npv_summary):
     config_dict["summary_keys"] = ["NOT_EXISTING", "FAULTY_KEY"]
 
     with pytest.raises(AttributeError) as e:
-        NPVCalculator(NPVConfig.parse_obj(config_dict), npv_summary)
+        NPVCalculator(NPVConfig.model_validate(config_dict), npv_summary)
 
     assert (
         "Missing required data (['NOT_EXISTING', 'FAULTY_KEY']) in summary file."

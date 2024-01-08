@@ -103,11 +103,11 @@ def test_parse_file_error(switch_cwd_tmp_path):
         str(e.value)
         == """
 test_field_a:
-\tpath "." does not point to a file
+\tPath does not point to a file
 test_field_b -> test_field_1:
-\tvalue is not a valid float
+\tInput should be a valid number, unable to parse string as a number
 test_field_x:
-\textra fields not permitted"""
+\tExtra inputs are not permitted"""
     )
 
 
