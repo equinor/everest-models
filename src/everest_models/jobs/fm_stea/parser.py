@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import stea
 
 from everest_models.jobs.shared.arguments import add_lint_argument, get_parser
@@ -17,7 +19,7 @@ def build_argument_parser():
     required_group.add_argument(
         "-c",
         "--config",
-        type=lambda value: stea.SteaInput([value]),
+        type=lambda value: stea.SteaInput(Path(value)),
         help="STEA (yaml) config file",
         required=True,
     )

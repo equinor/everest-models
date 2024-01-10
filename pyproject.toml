@@ -45,6 +45,7 @@ test = [
     "hypothesis",
     "pytest-runner",
     "pytest-timeout",
+    "fmu-steaclient @ git+https://github.com/equinor/fmu-steaclient",
 ]
 
 style = [

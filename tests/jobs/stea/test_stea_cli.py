@@ -13,7 +13,7 @@ def test_import_stea():
 
 
 def calculate_patch(*args, **kwargs):
-    stea_input = SteaInput(["stea_input.yml"])
+    stea_input = SteaInput(pathlib.Path("stea_input.yml"))
     return SteaResult(
         {
             SteaKeys.KEY_VALUES: [
