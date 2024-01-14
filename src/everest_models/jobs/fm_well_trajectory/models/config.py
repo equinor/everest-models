@@ -1,113 +1,139 @@
 import datetime
 from pathlib import Path
-from typing import Any, Dict, Literal, Optional, Tuple, Union
+from typing import Literal, Tuple, Union
 
 from pydantic import (
+    AfterValidator,
     Field,
     FilePath,
-    NonNegativeFloat,
-    NonNegativeInt,
-    PositiveFloat,
-    PositiveInt,
+    NewPath,
+    PlainSerializer,
     StringConstraints,
+    ValidationInfo,
     field_validator,
 )
 from typing_extensions import Annotated
 
-from everest_models.jobs.shared.models import BaseFrozenConfig, PhaseEnum
+from everest_models.jobs.shared.converters import path_to_str
+from everest_models.jobs.shared.models import ModelConfig, PhaseEnum
 from everest_models.jobs.shared.validators import validate_eclipse_path
 
 
-class ScalesConfig(BaseFrozenConfig):
-    x: PositiveFloat
-    y: PositiveFloat
-    z: PositiveFloat
-    k: PositiveFloat
+class ScalesConfig(ModelConfig):
+    x: Annotated[float, Field(description="", gt=0)]
+    y: Annotated[float, Field(description="", gt=0)]
+    z: Annotated[float, Field(description="", gt=0)]
+    k: Annotated[float, Field(description="", gt=0)]
 
 
-class ReferencesConfig(BaseFrozenConfig):
-    x: float
-    y: float
-    z: float
-    k: float
+class ReferencesConfig(ModelConfig):
+    x: Annotated[float, Field(description="")]
+    y: Annotated[float, Field(description="")]
+    z: Annotated[float, Field(description="")]
+    k: Annotated[float, Field(description="")]
 
 
-class SimpleInterpolationConfig(BaseFrozenConfig):
+class SimpleInterpolationConfig(ModelConfig):
     type: Literal["simple"]
-    length: PositiveInt = 50
-    trial_number: NonNegativeInt = 100000
-    trial_step: PositiveFloat = 0.01
+    length: Annotated[int, Field(default=50, description="", gt=0)]
+    trial_number: Annotated[int, Field(default=100000, description="", ge=0)]
+    trial_step: Annotated[float, Field(default=0.01, description="", gt=0)]
 
 
-class ResInsightInterpolationConfig(BaseFrozenConfig):
+class ResInsightInterpolationConfig(ModelConfig):
     type: Literal["resinsight"]
-    measured_depth_step: PositiveFloat = 5
+    measured_depth_step: Annotated[float, Field(default=5, description="", gt=0)]
 
 
-class DomainProperty(BaseFrozenConfig):
-    key: Annotated[str, StringConstraints(pattern=r"^[^a-z]+$", strict=True)]
-    min: Optional[float]
-    max: Optional[float]
+class DomainProperty(ModelConfig):
+    key: Annotated[
+        str, StringConstraints(strip_whitespace=True, strict=True, pattern=r"^[^a-z]+$")
+    ]
+    min: Annotated[float, Field(description="")]
+    max: Annotated[float, Field(description="")]
 
 
-class PerforationConfig(BaseFrozenConfig):
-    well: Annotated[str, StringConstraints(pattern=r"^[^a-z]+$", strict=True)]
-    dynamic: Tuple[DomainProperty, ...] = Field(default_factory=tuple)
-    static: Tuple[DomainProperty, ...] = Field(default_factory=tuple)
-    formations: Tuple[int, ...] = Field(default_factory=tuple)
+class PerforationConfig(ModelConfig):
+    well: Annotated[
+        str, StringConstraints(strip_whitespace=True, strict=True, pattern=r"^[^a-z]+$")
+    ]
+    dynamic: Annotated[
+        Tuple[DomainProperty, ...],
+        Field(default_factory=tuple, description=""),
+    ]
+    static: Annotated[
+        Tuple[DomainProperty, ...],
+        Field(default_factory=tuple, description=""),
+    ]
+    formations: Annotated[Tuple[int, ...], Field(default_factory=tuple, description="")]
 
 
-class ResInsightConnectionConfig(BaseFrozenConfig):
+class ResInsightConnectionConfig(ModelConfig):
     type: Literal["resinsight"]
-    date: Optional[datetime.date]
-    formations_file: FilePath
-    perforations: Tuple[PerforationConfig, ...]
+    date: Annotated[datetime.date, Field(description="")]
+    formations_file: Annotated[
+        FilePath,
+        PlainSerializer(path_to_str, when_used="unless-none"),
+        Field(description=""),
+    ]
+    perforations: Annotated[Tuple[PerforationConfig, ...], Field(description="")]
 
 
-class PlatformConfig(BaseFrozenConfig):
+class PlatformConfig(ModelConfig):
     name: str
-    x: float
-    y: float
-    z: float
-    k: float
+    x: Annotated[float, Field(description="")]
+    y: Annotated[float, Field(description="")]
+    z: Annotated[float, Field(description="")]
+    k: Annotated[float, Field(description="")]
 
 
-class WellConfig(BaseFrozenConfig):
-    name: str
-    group: str
-    phase: PhaseEnum
-    skin: NonNegativeFloat = 0.0
-    radius: PositiveFloat = 0.15
-    dogleg: PositiveFloat = 4.0
-    cost: NonNegativeFloat = 0.0
-    platform: Optional[str] = None
+class WellConfig(ModelConfig):
+    name: Annotated[str, Field(description="")]
+    group: Annotated[str, Field(description="")]
+    phase: Annotated[PhaseEnum, Field(description="")]
+    skin: Annotated[float, Field(default=0.0, description="", ge=0)]
+    radius: Annotated[float, Field(default=0.15, description="", gt=0)]
+    dogleg: Annotated[float, Field(default=4.0, description="", gt=0)]
+    cost: Annotated[float, Field(default=0.0, description="", ge=0)]
+    platform: Annotated[str, Field(default=None, description="")]
 
 
-class OutputsConfig(BaseFrozenConfig):
-    save_paths: bool = False
-    guide_points: Optional[Path] = None
-    geometry: Optional[Path] = None
-    npv_input: Optional[Path] = None
+class OutputsConfig(ModelConfig):
+    save_paths: Annotated[bool, Field(default=False, description="")]
+    guide_points: Annotated[NewPath, Field(default=None, description="")]
+    geometry: Annotated[NewPath, Field(default=None, description="")]
+    npv_input: Annotated[NewPath, Field(default=None, description="")]
 
 
-class ConfigSchema(BaseFrozenConfig):
-    scales: ScalesConfig
-    references: ReferencesConfig
-    interpolation: Union[SimpleInterpolationConfig, ResInsightInterpolationConfig]
-    connections: Optional[ResInsightConnectionConfig] = None
-    platforms: Tuple[PlatformConfig, ...] = Field(default_factory=tuple)
-    wells: Tuple[WellConfig, ...]
-    outputs: Optional[OutputsConfig] = None
-    eclipse_model: Optional[Path] = None
-    resinsight_binary: Optional[FilePath] = None
-
-    validate_eclipse = field_validator("eclipse_model")(validate_eclipse_path)
+class ConfigSchema(ModelConfig):
+    scales: Annotated[ScalesConfig, Field(description="")]
+    references: Annotated[ReferencesConfig, Field(description="")]
+    interpolation: Annotated[
+        Union[SimpleInterpolationConfig, ResInsightInterpolationConfig],
+        Field(description=""),
+    ]
+    connections: Annotated[
+        ResInsightConnectionConfig, Field(description="", default=None)
+    ]
+    platforms: Annotated[
+        Tuple[PlatformConfig, ...], Field(default_factory=tuple, description="")
+    ]
+    wells: Annotated[Tuple[WellConfig, ...], Field(description="")]
+    outputs: Annotated[OutputsConfig, Field(description="", default=None)]
+    eclipse_model: Annotated[
+        Path,
+        AfterValidator(validate_eclipse_path),
+        Field(description="", default=None),
+    ]
+    resinsight_binary: Annotated[FilePath, Field(default=None, description="")]
 
     @field_validator("wells")
-    def _validate_wells(cls, wells: WellConfig, values: Dict[str, Any]) -> WellConfig:
-        if getattr(cls, "_platforms", None) is None:
-            cls._platforms = [item.name for item in values.data["platforms"]]
+    def _validate_wells(
+        cls, wells: Tuple[WellConfig, ...], values: ValidationInfo
+    ) -> Tuple[WellConfig, ...]:
         for well in wells:
+            if getattr(cls, "_platforms", None) is None:
+                cls._platforms = [item.name for item in values.data["platforms"]]
             if well.platform is not None and well.platform not in cls._platforms:
                 raise ValueError(
                     f"Platform '{well.platform}' for well '{well.name}' not defined"

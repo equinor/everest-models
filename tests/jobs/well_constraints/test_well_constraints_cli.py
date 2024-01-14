@@ -7,7 +7,7 @@ import pytest
 import ruamel.yaml as yaml
 from everest_models.jobs.fm_well_constraints import cli, parser
 from everest_models.jobs.fm_well_constraints.models import (
-    Constraints,
+    Constraint,
     WellConstraintConfig,
 )
 from sub_testdata import WELL_CONSTRAINTS as TEST_DATA
@@ -33,7 +33,7 @@ def _get_modified_constraints(path: pathlib.Path, key: str):
     with path.open(mode="r") as fp:
         data = json.load(fp)
     data[key] = data.pop("INJECT2")
-    return Constraints.model_validate(data)
+    return Constraint.model_validate(data)
 
 
 @pytest.fixture(scope="module")

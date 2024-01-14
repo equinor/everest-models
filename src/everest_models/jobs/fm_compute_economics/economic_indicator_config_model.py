@@ -1,77 +1,49 @@
-import datetime
 import logging
 import pathlib
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Tuple
 
-from pydantic import Field, FilePath, field_validator, model_validator
+from pydantic import ConfigDict, Field, FilePath, NewPath, model_validator
+from typing_extensions import Annotated
 
-from everest_models.jobs.fm_compute_economics.currency import CURRENCY_CODES
-from everest_models.jobs.shared.models import BaseConfig, BaseFrozenConfig
+from everest_models.jobs.shared.currency import CURRENCY_CODES
+from everest_models.jobs.shared.models import ModelConfig
+from everest_models.jobs.shared.models.economics import CurrencyRate, EconomicConfig
 
 logger = logging.getLogger(__name__)
 
 
-class Dates(BaseConfig):
-    start_date: datetime.date = None
-    end_date: datetime.date = None
-    ref_date: datetime.date = None
+class EclipseSummaryConfig(ModelConfig):
+    main: Annotated[pathlib.Path, Field(description="")]
+    reference: Annotated[FilePath, Field(default=None, description="")]
+    keys: Annotated[Tuple[str, ...], Field(default_factory=tuple, description="")]
 
 
-class Capital(BaseFrozenConfig):
-    value: float
-    currency: Optional[str] = None
-
-    @field_validator("currency")
-    @classmethod
-    def currency_exist(cls, currency):
-        if currency is not None and currency not in CURRENCY_CODES:
-            raise ValueError("Currency does not exist")
-        return currency
+class OutputConfig(ModelConfig):
+    model_config = ConfigDict(frozen=False)
+    file: Annotated[NewPath, Field(description="")]
+    currency: Annotated[str, Field(default=None, description="")]
+    currency_rate: Annotated[
+        Tuple[CurrencyRate, ...], Field(default=None, description="")
+    ]
 
 
-class CurrencyRate(Capital):
-    date: datetime.date
+class OilEquivalentConversionConfig(ModelConfig):
+    oil: Annotated[Dict[str, float], Field(description="")]
+    remap: Annotated[Dict[str, Dict[str, float]], Field(default=None, description="")]
 
 
-class WellCost(Capital):
-    well: str
-
-
-class EclipseSummaryConfig(BaseConfig):
-    main: pathlib.Path
-    reference: Optional[FilePath] = None
-    keys: Tuple[str, ...] = Field(default_factory=tuple)
-
-
-class OutputConfig(BaseConfig):
-    file: pathlib.Path
-    currency: Optional[str] = None
-    currency_rate: Optional[Tuple[CurrencyRate, ...]] = None
-
-
-class OilEquivalentConversionConfig(BaseFrozenConfig):
-    oil: Dict[str, float]
-    remap: Optional[Dict[str, Dict[str, float]]] = None
-
-
-class EconomicIndicatorConfig(BaseConfig):
-    prices: Dict[str, Tuple[CurrencyRate, ...]]
-    summary: EclipseSummaryConfig
-    multiplier: float = 1
-    default_exchange_rate: float = 1
-    default_discount_rate: float = 0.08
-    dates: Dates = Dates()
-    exchange_rates: Dict[str, Tuple[CurrencyRate, ...]] = Field(default_factory=dict)
-    discount_rates: Tuple[CurrencyRate, ...] = Field(default_factory=tuple)
-    costs: Tuple[CurrencyRate, ...] = Field(default_factory=tuple)
-    well_costs: Tuple[WellCost, ...] = Field(default_factory=tuple)
-    wells_input: Optional[FilePath] = None
-    output: OutputConfig
-    oil_equivalent: Optional[OilEquivalentConversionConfig] = None
+class EconomicIndicatorConfig(EconomicConfig):
+    summary: Annotated[EclipseSummaryConfig, Field(description="")]
+    wells_input: Annotated[FilePath, Field(default=None, description="")]
+    output: Annotated[OutputConfig, Field(description="")]
+    oil_equivalent: Annotated[
+        OilEquivalentConversionConfig, Field(default=None, description="")
+    ]
 
     @model_validator(mode="before")
-    @classmethod
-    def populate_summary_keys(cls, values):
+    def populate_summary_keys(cls, values: Dict[str, Any]):
+        # values.setdefault("summary", {})
+        # values["summary"].setdefault("keys", tuple(values.get("prices", {})))
         if isinstance(values["summary"], dict):
             if not ("keys" in values["summary"] and values["summary"]["keys"]):
                 values["summary"]["keys"] = tuple(values["prices"])
@@ -145,15 +117,3 @@ class EconomicIndicatorConfig(BaseConfig):
                 values["output"].currency_rate = currency_rate
 
         return values
-
-    @property
-    def start_date(self) -> Optional[datetime.date]:
-        return self.dates.start_date
-
-    @property
-    def end_date(self) -> Optional[datetime.date]:
-        return self.dates.end_date
-
-    @property
-    def ref_date(self) -> Optional[datetime.date]:
-        return self.dates.ref_date

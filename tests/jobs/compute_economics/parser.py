@@ -2,7 +2,7 @@ import datetime
 import pathlib
 import sys
 from types import SimpleNamespace
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 from everest_models.jobs.fm_compute_economics.economic_indicator_config_model import (
     EconomicIndicatorConfig,
@@ -121,16 +121,16 @@ def oil_equivalent_bep(*args, **kwargs):
 class Options(NamedTuple):
     calculation: str
     config: EconomicIndicatorConfig
-    start_date: datetime.date = None
-    end_date: datetime.date = None
-    ref_date: datetime.date = None
-    default_exchange_rate: float = None
-    default_discount_rate: float = None
-    multiplier: float = 1.0
-    schema: bool = None
-    lint: bool = None
+    start_date: Optional[datetime.date] = None
+    end_date: Optional[datetime.date] = None
+    ref_date: Optional[datetime.date] = None
+    default_exchange_rate: Optional[float] = None
+    default_discount_rate: Optional[float] = None
+    multiplier: Optional[float] = 1.0
+    schema: Optional[bool] = None
+    lint: Optional[bool] = None
     output: pathlib.Path = pathlib.Path("test_0")
-    output_currency: str = None
+    output_currency: Optional[str] = None
 
 
 class MockParser:

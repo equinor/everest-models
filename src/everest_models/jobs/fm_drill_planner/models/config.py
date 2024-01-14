@@ -1,17 +1,18 @@
-import datetime
 import itertools
-from typing import ClassVar, Tuple
+from datetime import date
+from typing import ClassVar, Optional, Tuple
 
 from pydantic import Field, field_validator, model_validator
+from typing_extensions import Annotated
 
-from everest_models.jobs.shared.models import BaseFrozenConfig
+from everest_models.jobs.shared.models import ModelConfig
 
 
-class _Unavailability(BaseFrozenConfig):
-    start_date: ClassVar[datetime.date]
-    end_date: ClassVar[datetime.date]
-    start: datetime.date
-    stop: datetime.date
+class _Unavailability(ModelConfig):
+    start_date: ClassVar[date]
+    end_date: ClassVar[date]
+    start: Annotated[date, Field(description="")]
+    stop: Annotated[date, Field(description="")]
 
     @field_validator("*")
     @classmethod
@@ -21,10 +22,13 @@ class _Unavailability(BaseFrozenConfig):
         return date
 
 
-class _DrillSubject(BaseFrozenConfig):
-    name: str
-    wells: Tuple[str, ...]
-    unavailability: Tuple[_Unavailability, ...] = Field(default_factory=tuple)
+class _DrillSubject(ModelConfig):
+    name: Annotated[str, Field(description="")]
+    wells: Annotated[Tuple[str, ...], Field(default_factory=tuple, description="")]
+    unavailability: Annotated[
+        Tuple[_Unavailability, ...],
+        Field(default_factory=tuple, description=""),
+    ]
 
 
 class Slot(_DrillSubject):
@@ -32,30 +36,23 @@ class Slot(_DrillSubject):
 
 
 class Rig(_DrillSubject):
-    slots: Tuple[str, ...] = Field(default_factory=tuple)
-    delay: int = 0
-
-    @field_validator("delay")
-    @classmethod
-    def is_positive(cls, number):
-        if number < 0:
-            raise ValueError("delay must be positive integer")
-        return number
+    slots: Annotated[Tuple[str, ...], Field(default_factory=tuple, description="")]
+    delay: Annotated[int, Field(default=0, description="", ge=0)]
 
 
-class DrillPlanConfig(BaseFrozenConfig):
-    start_date: datetime.date
-    end_date: datetime.date
-    rigs: Tuple[Rig, ...]
-    slots: Tuple[Slot, ...] = Field(default_factory=tuple)
+class DrillPlanConfig(ModelConfig):
+    start_date: Annotated[date, Field(description="")]
+    end_date: Annotated[date, Field(description="")]
+    rigs: Annotated[Tuple[Rig, ...], Field(description="")]
+    slots: Annotated[Tuple[Slot, ...], Field(default_factory=tuple, description="")]
 
     def __init__(
-        self, start_date: datetime.date, end_date: datetime.date = None, **data
+        self, start_date: date, end_date: Optional[date] = None, **data
     ) -> None:
-        end_date = end_date or datetime.date(3000, 1, 1)
+        end_date = end_date or date(3000, 1, 1)
         _Unavailability.start_date = start_date
         _Unavailability.end_date = end_date
-        super().__init__(start_date=start_date, end_date=end_date, **data)
+        super().__init__(start_date=start_date, end_date=end_date, **data)  # type: ignore
 
     @model_validator(mode="after")
     def all_rig_slots_exist(self):

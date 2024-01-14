@@ -20,7 +20,7 @@ def main_entry_point(args=None):
     if options.lint:
         args_parser.exit()
 
-    options.input.set_wells(
+    options.input.root = tuple(
         filter(
             lambda x: x.name in well_names if keep else x.name not in well_names,
             options.input,

@@ -5,7 +5,8 @@ from typing import Dict, NamedTuple, Tuple
 
 import pytest
 from everest_models.jobs.fm_drill_date_planner import cli
-from everest_models.jobs.shared.models import WellConfig
+from everest_models.jobs.shared.models import Wells
+from everest_models.jobs.shared.validators import parse_file
 from sub_testdata import DRILL_DATE_PLANNER as TEST_DATA
 
 
@@ -17,7 +18,7 @@ def drill_date_planner_args():
     ).split()
 
 
-def missing_controls(*args, **kwargs):
+def missing_controls() -> Dict[str, float]:
     with open("controls.json") as fp:
         controls = json.load(fp)
     del controls["WELL2"]
@@ -25,15 +26,15 @@ def missing_controls(*args, **kwargs):
     return controls
 
 
-def missing_well(*args, **kwargs):
-    wells = WellConfig.parse_file("wells.json")
-    wells.set_wells((well for well in wells if int(well.name[-1]) % 2))
-    return wells
+def missing_well() -> Wells:
+    with open("wells.json") as fp:
+        wells = json.load(fp)
+    return Wells.model_validate(well for well in wells if int(well["name"][-1]) % 2)
 
 
 def test_drill_date_planner_main_entry_point(
     drill_date_planner_args, copy_testdata_tmpdir
-):
+) -> None:
     copy_testdata_tmpdir(TEST_DATA)
     cli.main_entry_point(drill_date_planner_args)
 
@@ -43,7 +44,7 @@ def test_drill_date_planner_main_entry_point(
     )
 
 
-def test_drill_date_planner_lint(drill_date_planner_args, copy_testdata_tmpdir):
+def test_drill_date_planner_lint(drill_date_planner_args, copy_testdata_tmpdir) -> None:
     copy_testdata_tmpdir(TEST_DATA)
     with pytest.raises(SystemExit) as e:
         cli.main_entry_point([*drill_date_planner_args, "--lint"])
@@ -53,7 +54,7 @@ def test_drill_date_planner_lint(drill_date_planner_args, copy_testdata_tmpdir):
 
 
 class Options(NamedTuple):
-    input: WellConfig
+    input: Wells
     optimizer: Dict[str, float]
     bounds: Tuple[float, float] = (0.1, 1.0)
     max_days: int = 300
@@ -75,7 +76,7 @@ class MockParser:
 
 def test_drill_date_planner_missing_control(
     drill_date_planner_args, monkeypatch, capsys, copy_testdata_tmpdir
-):
+) -> None:
     copy_testdata_tmpdir(TEST_DATA)
     with open("controls.json") as fp:
         controls = json.load(fp)
@@ -97,14 +98,14 @@ def test_drill_date_planner_missing_control(
 
 def test_drill_date_planner_missing_well(
     drill_date_planner_args, monkeypatch, capsys, copy_testdata_tmpdir
-):
+) -> None:
     copy_testdata_tmpdir(TEST_DATA)
     monkeypatch.setattr(
         cli,
         "build_argument_parser",
         lambda: MockParser(
             Options(
-                input=WellConfig.parse_file("wells.json"),
+                input=parse_file("wells.json", Wells),
                 optimizer=missing_controls(),
             )
         ),

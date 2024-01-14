@@ -1,42 +1,41 @@
 import argparse
 import functools
 from functools import partial
+from sys import stdout
 from typing import Callable, Dict, Optional, Tuple, Type, TypeVar, Union
 
-from everest_models.jobs.shared.models import BaseConfig, WellConfig
-from everest_models.jobs.shared.validators import (
+from pydantic import BaseModel
+
+from .io_utils import dump_yaml
+from .models import Wells
+from .validators import (
     is_writable_path,
     parse_file,
     valid_ecl_summary,
     valid_input_file,
 )
 
-T = TypeVar("T", bound=BaseConfig)
-
-
-class classproperty(property):
-    def __get__(self, owner_self, owner_class):
-        return self.fget(owner_class)
+T = TypeVar("T", bound=BaseModel)
 
 
 class SchemaAction(argparse.Action):
     _models = {}
 
-    @classproperty
-    def models(self) -> Dict[str, Type[T]]:
-        return self._models
-
     @classmethod
-    def register_single_model(cls, argument: str, model: Type[T]):
-        cls._models.update({argument: model})
+    def register_models(cls, models: Dict[str, Type[T]]) -> None:
+        cls._models.update(models)
 
-    @classmethod
-    def register_models(cls, items: Dict[str, Type[T]]):
-        cls._models.update(items)
-
-    def __call__(self, parser, namespace, values, option_string):
+    def __call__(self, parser, *_):
         for argument, model in self._models.items():
-            model.help_schema_yaml(argument)
+            print("\n\n")
+            if issubclass(model, Wells):
+                print(f"{argument} is Everest generated wells JSON file")
+                continue
+            data = model.commented_map()
+            data.yaml_set_start_comment(
+                f"{argument} specification:\n'...' are REQUIRED fields that needs replacing\n\n"
+            )
+            dump_yaml(data, stdout, explicit=True, default_flow_style=False)
         parser.exit()
 
 
@@ -97,12 +96,11 @@ def add_file_schemas(
     Args:
         parser (argparse.ArgumentParser): Argument parser
     """
-    s = "s" if len(SchemaAction.models) > 1 else ""
     parser.add_argument(
-        f"--schema{s}",
+        "--schema",
         nargs=0,
         action=SchemaAction,
-        help=f"Output schema{s} for file parameter{s}",
+        help="Output schema(s) for file parameter(s)",
     )
 
 
@@ -133,7 +131,7 @@ def add_wells_input_argument(
     parser: Union[argparse.ArgumentParser, argparse._ArgumentGroup],
     *,
     required: bool = True,
-    schema: Type[T] = WellConfig,
+    schema: Type[T] = Wells,
     **kwargs,
 ) -> None:
     """Add wells argument to parser
@@ -153,7 +151,7 @@ def add_wells_input_argument(
         required=required,
         **kwargs,
     )
-    SchemaAction.register_single_model("/".join(arg), WellConfig)
+    SchemaAction.register_models({"/".join(arg): schema})
 
 
 def add_output_argument(

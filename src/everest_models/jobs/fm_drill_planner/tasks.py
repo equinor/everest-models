@@ -18,4 +18,6 @@ def orcastrate_drill_schedule(
             ready_date = date(days=event.end)
             well.readydate = ready_date
             well.completion_date = date(days=event.completion)
-            well.ops = (Operation.parse_obj({"opname": "open", "date": ready_date}),)
+            well.operations = (
+                Operation.model_validate({"opname": "open", "date": ready_date}),
+            )

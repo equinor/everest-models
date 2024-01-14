@@ -1,9 +1,9 @@
 from typing import Iterable
 
-from everest_models.jobs.shared.models import WellConfig
+from everest_models.jobs.shared.models import Wells
 
 
-def remove_operations(wells: WellConfig, well_names: Iterable[str]) -> None:
+def remove_operations(wells: Wells, well_names: Iterable[str]) -> None:
     """Set well operations to None for well's name in `well_names`.
 
     Args:

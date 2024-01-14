@@ -5,7 +5,8 @@ import logging
 
 from everest_models.jobs.fm_compute_economics.manager import create_indicator
 from everest_models.jobs.fm_compute_economics.parser import build_argument_parser
-from everest_models.jobs.shared.models import WellConfig
+from everest_models.jobs.shared.models import Wells
+from everest_models.jobs.shared.validators import parse_file
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +57,7 @@ def main_entry_point(args=None):
 
     if bool(options.config.well_costs) ^ bool(options.config.wells_input):
         args_parser.error(
-            "-c/--config argument file key 'well_cost' and -i/--input argument file "
+            "-c/--config argument file keys 'well_costs' and 'wells_input' "
             "must always be paired; one of the two is missing."
         )
 
@@ -81,7 +82,11 @@ def main_entry_point(args=None):
     ).compute(
         {
             well.name: well.completion_date or well.readydate
-            for well in WellConfig.parse_file(options.config.wells_input) or {}
+            for well in (
+                parse_file(options.config.wells_input, Wells)
+                if options.config.wells_input
+                else {}
+            )
         }
     )
 

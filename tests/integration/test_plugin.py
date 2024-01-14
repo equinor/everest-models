@@ -4,7 +4,7 @@ import sys
 import pytest
 import ruamel.yaml as yaml
 from everest_models.jobs.fm_add_templates.config_model import TemplateConfig
-from pydantic import BaseModel, Extra, ValidationError
+from pydantic import BaseModel, ConfigDict, ValidationError
 from sub_testdata import ADD_TEMPLATE as TEST_DATA
 
 FORWARD_MODEL_DIR = "forward_models"
@@ -61,9 +61,7 @@ def test_get_forward_model_schemas_hook_keys_are_options(plugin_manager):
 
 class SchemaModel(BaseModel):
     content: str
-
-    class Config:
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 def test_parse_forward_model_schema_hook(switch_cwd_tmp_path, plugin_manager):

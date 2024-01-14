@@ -18,7 +18,7 @@ def scaled_well_number(value: str) -> float:
 
 @bootstrap_parser
 def build_argument_parser():
-    SchemaAction.register_single_model("file", WellNumber)
+    SchemaAction.register_models({"file": WellNumber})
     parser, required_named_arguments = get_parser(
         description="Select the first wells from a drill planner output file."
     )

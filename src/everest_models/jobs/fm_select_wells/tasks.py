@@ -4,7 +4,7 @@ import logging
 from typing import Callable, Optional, Tuple
 
 from everest_models.jobs.shared.converters import rescale_value
-from everest_models.jobs.shared.models import WellConfig
+from everest_models.jobs.shared.models import Wells
 
 logger = logging.getLogger(__name__)
 
@@ -71,9 +71,9 @@ def get_well_number(
 
 
 def select_wells(
-    wells: WellConfig,
-    max_date: datetime.date,
-    number_of_wells: int,
+    wells: Wells,
+    max_date: Optional[datetime.date],
+    number_of_wells: Optional[int],
 ) -> None:
     """Select wells.
 
@@ -87,9 +87,9 @@ def select_wells(
         number_of_wells (int): number of wells to be selected
     """
     if max_date:
-        wells.set_wells(well for well in wells if well.readydate <= max_date)
+        wells.root = tuple(well for well in wells.root if well.readydate <= max_date)
 
-    if not number_of_wells or len(wells) < number_of_wells:
-        return
-
-    wells.set_wells(sorted(wells, key=lambda k: k.readydate)[:number_of_wells])
+    if number_of_wells and number_of_wells < len(wells.root):
+        wells.root = tuple(
+            sorted(wells.root, key=lambda k: k.readydate)[:number_of_wells]
+        )

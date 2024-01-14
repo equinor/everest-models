@@ -8,7 +8,7 @@ from everest_models.jobs.shared.arguments import (
     bootstrap_parser,
     get_parser,
 )
-from everest_models.jobs.shared.models import WellConfig
+from everest_models.jobs.shared.models import Wells
 from everest_models.jobs.shared.validators import parse_file
 
 _CONFIG_ARGUMENT = "-c/--config"
@@ -17,7 +17,7 @@ SCHEMAS = {_CONFIG_ARGUMENT: TemplateConfig}
 
 @bootstrap_parser
 def build_argument_parser():
-    SchemaAction.register_single_model(_CONFIG_ARGUMENT, TemplateConfig)
+    SchemaAction.register_models(SCHEMAS)
     parser, required_group = get_parser(
         description="Inserts template file paths for all well operations in the "
         " given input file where the config keys match the operation"
@@ -27,7 +27,7 @@ def build_argument_parser():
     )
     add_wells_input_argument(
         required_group,
-        schema=WellConfig,
+        schema=Wells,
         help="Input file that requires template paths. Json file expected ex: wells.json",
     )
     add_output_argument(required_group, help="Output file")

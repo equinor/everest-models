@@ -1,22 +1,15 @@
-from everest_models.jobs.shared.models.base_config import (
-    BaseConfig,
-    BaseFrozenConfig,
-    DictRootMixin,
-)
-from everest_models.jobs.shared.models.operation import Operation
-from everest_models.jobs.shared.models.phase import BaseEnum, PhaseEnum
-from everest_models.jobs.shared.models.wells import Well, WellConfig
+from .base_config import ModelConfig, RootModelConfig
+from .operation import Operation, Tokens
+from .phase import PhaseEnum
+from .wells import OPERATIONS_FIELD_ATTRIBUTE, Well, Wells
 
 __all__ = [
-    "BaseConfig",
-    "BaseFrozenConfig",
-    "BaseEnum",
-    "WellConfig",
+    "ModelConfig",
+    "OPERATIONS_FIELD_ATTRIBUTE",
+    "Wells",
     "Well",
     "Operation",
-    "DictRootMixin",
     "PhaseEnum",
-    "EclipseDateMatch",
-    "eclipse_dates",
     "Tokens",
+    "RootModelConfig",
 ]

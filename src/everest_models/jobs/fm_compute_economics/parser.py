@@ -1,8 +1,5 @@
 from functools import partial
 
-from everest_models.jobs.fm_compute_economics.economic_indicator_config_model import (
-    EconomicIndicatorConfig,
-)
 from everest_models.jobs.shared.arguments import (
     SchemaAction,
     add_output_argument,
@@ -10,6 +7,8 @@ from everest_models.jobs.shared.arguments import (
     get_parser,
 )
 from everest_models.jobs.shared.validators import parse_file, valid_iso_date
+
+from .economic_indicator_config_model import EconomicIndicatorConfig
 
 CONFIG_ARGUMENT = "-c/--config"
 
@@ -20,9 +19,7 @@ SCHEMAS = {CONFIG_ARGUMENT: EconomicIndicatorConfig}
 
 @bootstrap_parser
 def build_argument_parser():
-    SchemaAction.register_single_model(
-        "/".join(CONFIG_ARGUMENT), EconomicIndicatorConfig
-    )
+    SchemaAction.register_models(SCHEMAS)
     parser, required_group = get_parser(
         description="Module to calculate economical indicators based on an eclipse simulation. "
         "All optional args, except: lint, schemas, input and output, is also configurable through the config file."
@@ -34,7 +31,7 @@ def build_argument_parser():
         help="selected economic indicator",
     )
     required_group.add_argument(
-        *CONFIG_ARGUMENT,
+        *CONFIG_ARGUMENT.split("/"),
         required=True,
         type=partial(parse_file, schema=EconomicIndicatorConfig),
         help="Path to config file containing at least prices",
@@ -48,7 +45,6 @@ def build_argument_parser():
     parser.add_argument(
         "--output-currency",
         required=False,
-        type=None,
         help="Name of the output currency. Should be either default or defined in the exchange rate.",
     )
     parser.add_argument(

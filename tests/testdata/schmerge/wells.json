@@ -1,62 +1,76 @@
 [
-    {
-        "name": "INJECT5",
-        "ops": [{
-                    "opname": "open",
-                    "date": "2016-05-19",
-                    "template": "files/welopen.jinja"
-               }]
-    },
-    {
-        "name": "INJECT7",
-        "ops": [{
-                    "opname": "wconinje",
-                    "date": "2000-01-01",
-                    "template": "files/wconinje.jinja",
-                    "rate": "0.7",
-                    "phase": "WATER"
-               }]
-    },
-    {
-        "name": "PROD3",
-        "ops": [{
-                    "opname": "open",
-                    "date": "2016-05-20",
-                    "template": "files/welopen.jinja"
-               }]
-    },
-    {
-        "name": "INJECT3",
-        "ops": [{
-                    "opname": "wcqonje",
-                    "date": "2021-04-24",
-                    "template": "files/wconinje.jinja",
-                    "rate": "0.55",
-                    "phase": "GAS"
-               }]
-    },
-    {
-        "name": "INJECT1",
-        "ops": [{
-                    "opname": "open",
-                    "date": "2020-01-28",
-                    "template": "files/welopen.jinja"
-               }]
-    },
-    {
-        "name": "PROD1",
-        "ops": [{
-                    "opname": "open",
-                    "date": "2021-04-23",
-                    "template": "files/welopen.jinja"
-               }]
-    },
-    {
-        "name": "PROD4",
-        "ops": [{
-                    "opname": "open",
-                    "date": "2020-07-28",
-                    "template": "files/welopen.jinja"
-               }]
-    }
+  {
+    "name": "INJECT5",
+    "ops": [
+      {
+        "opname": "open",
+        "date": "2016-05-19",
+        "template": "files/welopen.jinja"
+      }
+    ]
+  },
+  {
+    "name": "INJECT7",
+    "ops": [
+      {
+        "opname": "wconinje",
+        "date": "2000-01-01",
+        "template": "files/wconinje.jinja",
+        "rate": "0.7",
+        "phase": "WATER"
+      }
+    ]
+  },
+  {
+    "name": "PROD3",
+    "ops": [
+      {
+        "opname": "open",
+        "date": "2016-05-20",
+        "template": "files/welopen.jinja"
+      }
+    ]
+  },
+  {
+    "name": "INJECT3",
+    "ops": [
+      {
+        "opname": "wcqonje",
+        "date": "2021-04-24",
+        "template": "files/wconinje.jinja",
+        "rate": "0.55",
+        "phase": "GAS"
+      }
+    ]
+  },
+  {
+    "name": "INJECT1",
+    "ops": [
+      {
+        "opname": "open",
+        "date": "2020-01-28",
+        "template": "files/welopen.jinja"
+      }
+    ]
+  },
+  {
+    "name": "PROD1",
+    "ops": [
+      {
+        "opname": "open",
+        "date": "2021-04-23",
+        "template": "files/welopen.jinja"
+      }
+    ]
+  },
+  {
+    "name": "PROD4",
+    "ops": [
+      {
+        "opname": "open",
+        "date": "2020-07-28",
+        "template": "files/welopen.jinja"
+      }
+    ]
+  }
 ]

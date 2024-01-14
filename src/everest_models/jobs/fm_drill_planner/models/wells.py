@@ -1,18 +1,17 @@
 from typing import Dict, Tuple
 
-from pydantic import RootModel
-
-from everest_models.jobs.shared.models import BaseFrozenConfig, WellConfig
+from everest_models.jobs.shared.models import RootModelConfig
 from everest_models.jobs.shared.models import Well as _Well
+from everest_models.jobs.shared.models import Wells as _Wells
 
 
 class Well(_Well):
     drill_time: int
 
 
-class Wells(WellConfig):
+class Wells(_Wells):
     root: Tuple[Well, ...]
 
 
-class Optimizer(BaseFrozenConfig, RootModel):
+class Optimizer(RootModelConfig):
     root: Dict[str, float]

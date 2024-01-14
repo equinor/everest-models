@@ -1,6 +1,5 @@
 from functools import partial
 
-from everest_models.jobs.fm_npv.npv_config_model import NPVConfig
 from everest_models.jobs.shared.arguments import (
     SchemaAction,
     add_output_argument,
@@ -11,6 +10,8 @@ from everest_models.jobs.shared.arguments import (
 )
 from everest_models.jobs.shared.validators import parse_file, valid_iso_date
 
+from .npv_config import NPVConfig
+
 CONFIG_ARGUMENT = "-c/--config"
 
 SCHEMAS = {CONFIG_ARGUMENT: NPVConfig}
@@ -18,7 +19,7 @@ SCHEMAS = {CONFIG_ARGUMENT: NPVConfig}
 
 @bootstrap_parser
 def build_argument_parser():
-    SchemaAction.register_single_model(CONFIG_ARGUMENT, NPVConfig)
+    SchemaAction.register_models(SCHEMAS)
     parser, required_group = get_parser(
         description="Module to calculate the NPV based on an eclipse simulation. "
         "All optional args, except: lint, schemas, input and output, is also configurable through the config file."

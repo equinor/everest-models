@@ -1,17 +1,19 @@
 #!/usr/bin/env python
 import collections
 import logging
+from typing import Iterable
 
-from everest_models.jobs.fm_add_templates import tasks
-from everest_models.jobs.fm_add_templates.config_model import TemplateConfig
-from everest_models.jobs.fm_add_templates.parser import build_argument_parser
 from everest_models.jobs.shared.converters import path_to_str
-from everest_models.jobs.shared.models import WellConfig
+from everest_models.jobs.shared.models import Well
+
+from .config_model import Template
+from .parser import build_argument_parser
+from .tasks import insert_template_with_matching_well_operation
 
 logger = logging.getLogger(__name__)
 
 
-def _duplicate_template_msg(templates: TemplateConfig) -> str:
+def _duplicate_template_msg(templates: Iterable[Template]) -> str:
     return "\n".join(
         f"Found duplicate template file path {path_to_str(path)} in config file!"
         for path, count in collections.Counter(
@@ -21,12 +23,12 @@ def _duplicate_template_msg(templates: TemplateConfig) -> str:
     )
 
 
-def _no_template_msg(wells: WellConfig) -> str:
+def _no_template_msg(wells: Iterable[Well]) -> str:
     string = []
     for well in wells:
         if sub_str := "\n".join(
-            "\t" f"operation: {opname}" "\t" f"date: {date}"
-            for opname, date in well.missing_templates()
+            "\t" f"operation: {name}" "\t" f"date: {date}"
+            for name, date in well.missing_templates
         ):
             string.append(f"Well: {well.name}\n{sub_str}")
     return "\n".join(string)
@@ -41,7 +43,7 @@ def main_entry_point(args=None):
     if options.lint:
         args_parser.exit()
 
-    consumed_templates = tasks.insert_template_with_matching_well_operation(
+    consumed_templates = insert_template_with_matching_well_operation(
         options.config.templates, options.input
     )
 

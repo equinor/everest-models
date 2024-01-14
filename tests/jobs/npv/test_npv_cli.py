@@ -4,8 +4,8 @@ import pathlib
 
 import pytest
 from everest_models.jobs.fm_npv import cli
-from everest_models.jobs.fm_npv.npv_config_model import NPVConfig
-from everest_models.jobs.shared.models.wells import WellConfig
+from everest_models.jobs.fm_npv.npv_config import NPVConfig
+from everest_models.jobs.shared.models import Wells
 from everest_models.jobs.shared.validators import parse_file
 from jobs.npv.parser import MockParser, Options
 from sub_testdata import NPV as TEST_DATA
@@ -28,7 +28,7 @@ def test_npv_main_entry_point(copy_testdata_tmpdir, monkeypatch, input_file):
         "build_argument_parser",
         lambda: MockParser(
             options=Options(
-                input=parse_file(input_file, WellConfig),
+                input=parse_file(input_file, Wells),
                 config=parse_file(_CONFIG_FILE, NPVConfig),
             )
         ),
@@ -67,7 +67,7 @@ def test_npv_main_entry_point_no_well_costs_error(
         "build_argument_parser",
         lambda: MockParser(
             options=Options(
-                input=parse_file(input_file, WellConfig),
+                input=parse_file(input_file, Wells),
                 config=parse_file(_CONFIG_FILE_NO_WELL_COSTS, NPVConfig),
             )
         ),

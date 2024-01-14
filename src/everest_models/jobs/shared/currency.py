@@ -2,6 +2,13 @@
 # moneyed.list_all_currencies()
 # TODO: Replace this module, currency.py, with py-moneyed package
 
+
+def currency_exist(currency):
+    if currency is not None and currency not in CURRENCY_CODES:
+        raise ValueError(f"Currency {currency} not in supported {CURRENCY_CODES}")
+    return currency
+
+
 CURRENCY_CODES = [
     "ADP",
     "AED",

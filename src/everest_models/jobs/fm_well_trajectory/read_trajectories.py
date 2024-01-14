@@ -107,8 +107,8 @@ def read_trajectories(
                 _rescale_point(scale, inputs[value][well.name], reference)
                 for value, scale, reference in zip(
                     values,
-                    scales.dict(exclude={"k"}).values(),
-                    references.dict(exclude={"k"}).values(),
+                    scales.model_dump(exclude={"k"}).values(),
+                    references.model_dump(exclude={"k"}).values(),
                 )
             )
 

@@ -1,8 +1,10 @@
 import argparse
 import datetime
 import pathlib
+from typing import Dict
 
 import pytest
+from everest_models.jobs.shared.models.base_config import ModelConfig, RootModelConfig
 from everest_models.jobs.shared.validators import (
     _prettify_validation_error_message,
     is_gt_zero,
@@ -13,7 +15,7 @@ from everest_models.jobs.shared.validators import (
 )
 from hypothesis import given
 from hypothesis import strategies as st
-from pydantic import BaseModel, FilePath
+from pydantic import FilePath
 
 
 def write_file(path, txt):
@@ -75,19 +77,17 @@ def test_valid_input_file_error(path, func, match, switch_cwd_tmp_path):
         valid_input_file(path)
 
 
-class Model(BaseModel):
-    class Config:
-        frozen = True
-        extra = "forbid"
-
-
-class ModelB(Model):
+class ModelB(ModelConfig):
     test_field_1: float
 
 
-class ModelA(Model):
+class ModelA(ModelConfig):
     test_field_a: FilePath
     test_field_b: ModelB
+
+
+class ModelC(RootModelConfig):
+    root: Dict[str, ModelA]
 
 
 def test_parse_file_error(switch_cwd_tmp_path):
@@ -95,7 +95,6 @@ def test_parse_file_error(switch_cwd_tmp_path):
         "test.json",
         '{"test_field_x": "s", "test_field_a": ".", "test_field_b": {"test_field_1": "r"}}',
     )()
-    print(pathlib.Path("test.json").read_text())
     with pytest.raises(argparse.ArgumentTypeError) as e:
         parse_file("test.json", ModelA)
 
@@ -188,8 +187,8 @@ def test_prettify_validation_error_message(monkeypatch):
     class ValidationError:
         def errors(self):
             return [
-                {"loc": ("__root__", 5, "name"), "msg": "not a name"},
-                {"loc": ("__root__", "field_a", "child"), "msg": "baby"},
+                {"loc": ("root", 5, "name"), "msg": "not a name"},
+                {"loc": ("root", "field_a", "child"), "msg": "baby"},
                 {"loc": ("field_b", 4, "sub", "child"), "msg": "nested"},
             ]
 

@@ -1,10 +1,15 @@
 import pytest
-from everest_models.jobs.fm_npv.npv_config_model import Capital, NPVConfig
+from everest_models.jobs.shared.models.economics import EconomicConfig, _Capital
 from pydantic import ValidationError
 
 
-def test_npv_config_defaults():
-    config = NPVConfig.model_validate(
+def test_economic_currency_bad():
+    with pytest.raises(ValidationError, match=r"Currency PIE not in supported \[.*\]"):
+        _Capital.model_validate({"value": 3.14, "currency": "PIE"})
+
+
+def test_economic_config_defaults():
+    config = EconomicConfig.model_validate(
         {
             "prices": {
                 "FOPT": [
@@ -26,14 +31,8 @@ def test_npv_config_defaults():
     assert config.multiplier == 1
     assert config.default_discount_rate == 0.08
     assert config.default_exchange_rate == 1
-    assert config.summary_keys == ("FOPT",)
     assert config.start_date is None
     assert config.end_date is None
     assert config.ref_date is None
     assert not config.discount_rates and isinstance(config.discount_rates, tuple)
     assert not config.well_costs and isinstance(config.well_costs, tuple)
-
-
-def test_npv_money_bad_currency():
-    with pytest.raises(ValidationError):
-        Capital.model_validate({"value": 3.14, "currency": "PIE"})

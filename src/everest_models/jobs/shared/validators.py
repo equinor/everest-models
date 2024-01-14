@@ -52,10 +52,10 @@ def valid_ecl_summary(file_path: str) -> Summary:
     """
     try:
         return Summary(file_path)
-    except (IOError, OSError):
-        argparse.ArgumentTypeError(
+    except (IOError, OSError) as e:
+        raise argparse.ArgumentTypeError(
             f"Could not load eclipse summary from file: {file_path}"
-        )
+        ) from e
 
 
 def validate_eclipse_path(path: pathlib.Path) -> pathlib.Path:
@@ -178,7 +178,7 @@ def _prettify_validation_error_message(error: ValidationError) -> str:
         " -> ".join(
             f"index {key + 1}" if isinstance(key, int) else key
             for key in err["loc"]
-            if key != "__root__"
+            if key != "root"
         )
         + f":\n\t{err['msg']}"
         for err in error.errors()

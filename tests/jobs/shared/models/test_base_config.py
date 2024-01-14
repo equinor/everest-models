@@ -1,170 +1,181 @@
-import datetime
-import os
-import pathlib
+from enum import Enum
+from io import StringIO
 from textwrap import dedent
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, Tuple
 
-from everest_models.jobs.shared.models import BaseConfig, BaseEnum
-from pydantic import RootModel
-
-
-class ABEnum(BaseEnum):
-    a = "A"
-    b = "B"
-
-    @classmethod
-    def value_type(cls) -> Dict[str, Any]:
-        return {"type": "string", "choices": [e.value for e in cls]}
+import pytest
+from everest_models.jobs.shared.models import ModelConfig, RootModelConfig
+from pydantic import Field, FilePath, ValidationError
+from ruamel.yaml import YAML
+from typing_extensions import Annotated
 
 
-class SubTester(BaseConfig):
-    c: int = 53
-    d: List[str]
+class Sex(Enum):
+    MALE = "male"
+    FEMALE = "female"
 
 
-class MainTester(BaseConfig):
-    a: Optional[datetime.date] = None
-    b: SubTester
+class User(ModelConfig):
+    name: Annotated[str, Field("some_name", description="The name of the test model")]
+    age: Annotated[
+        int, Field(description="Long live the test model", examples=[5, "1.5e4"])
+    ]
+    sex: Annotated[Sex, Field(Sex.MALE, description="Sex of the user")]
 
 
-class RootDictTester(BaseConfig, RootModel):
-    root: Dict[str, Dict[int, SubTester]]
+class UserSequence(RootModelConfig):
+    root: Tuple[User, ...]
 
 
-class RootListTester(BaseConfig, RootModel):
-    root: Tuple[List[float], Set[SubTester]]
+class DeepNested(RootModelConfig):
+    root: Dict[str, Dict[int, User]]
 
 
-class EllipsisTester(BaseConfig):
-    a: Tuple[int, ...]
+class Wrapper(ModelConfig):
+    user: Annotated[
+        User, Field(description="User description. A relatively simple data.")
+    ]
+    user_id: int = 213
+    data: FilePath
 
 
-class EnumTester(BaseConfig):
-    x: ABEnum
+@pytest.mark.parametrize(
+    "model, expected",
+    (
+        pytest.param(
+            Wrapper,
+            dedent(
+                """
+                # User description. A relatively simple data.
+                # Datatype: User map
+                user:
+
+                  # The name of the test model
+                  # Datatype: string
+                  # Examples: a string value
+                  # Default: some_name
+                  name: some_name
+
+                  # Long live the test model
+                  # Datatype: integer
+                  # Examples: 5, 1.5e4
+                  age: '...'  # ← REPLACE
+
+                  # Sex of the user
+                  # Datatype: string
+                  # Choices: male, female
+                  # Default: male
+                  sex: male
+
+                # Datatype: integer
+                # Examples: 1, 1.34E5, 1.34e5
+                # Default: 213
+                user_id: 213
+
+                # Datatype: Path
+                # Examples: /path/to/file.ext, /path/to/dirictory/
+                data: '...'  # ← REPLACE
+                """
+            ),
+            id="wrapper over user",
+        ),
+        pytest.param(
+            UserSequence,
+            dedent(
+                """\
+                -
+
+                  # The name of the test model
+                  # Datatype: string
+                  # Examples: a string value
+                  # Default: some_name
+                  name: some_name
+
+                  # Long live the test model
+                  # Datatype: integer
+                  # Examples: 5, 1.5e4
+                  age: '...'  # ← REPLACE
+
+                  # Sex of the user
+                  # Datatype: string
+                  # Choices: male, female
+                  # Default: male
+                  sex: male
+                """
+            ),
+            id="sequence of users",
+        ),
+        pytest.param(
+            DeepNested,
+            dedent(
+                """\
+                <string>:
+                  <integer>:
+
+                    # The name of the test model
+                    # Datatype: string
+                    # Examples: a string value
+                    # Default: some_name
+                    name: some_name
+
+                    # Long live the test model
+                    # Datatype: integer
+                    # Examples: 5, 1.5e4
+                    age: '...'  # ← REPLACE
+
+                    # Sex of the user
+                    # Datatype: string
+                    # Choices: male, female
+                    # Default: male
+                    sex: male
+                """
+            ),
+            id="deeply nested user",
+        ),
+    ),
+)
+def test_base_config_commented_map(model: ModelConfig, expected: str) -> None:
+    map = model.commented_map()
+    collector = StringIO()
+    YAML().dump(map, collector)
+    assert collector.getvalue() == expected
 
 
-def test_base_config_json_dump(tmpdir):
-    class Tester(BaseConfig):
-        path: pathlib.Path
-
-    test_model = Tester(path="some/location.txt")
-    output = pathlib.Path("output.json")
-    cwd = pathlib.Path()
-    tmpdir.chdir()
-    test_model.json_dump(output)
-    assert (
-        output.read_bytes()
-        == b"""{
-  "path": "some/location.txt"
-}"""
-    )
-    test_model = Tester(path="/tmp/some/location.txt")
-    test_model.json_dump(output)
-    assert (
-        output.read_bytes()
-        == b"""{
-  "path": "/tmp/some/location.txt"
-}"""
-    )
-    os.chdir(cwd)
+def test_base_config_check_for_ellipses() -> None:
+    with pytest.raises(ValidationError, match="Field required"):
+        User.model_validate({})
+    with pytest.raises(
+        ValidationError, match="Please replace `...`, this field is required"
+    ):
+        User.model_validate({"age": "..."})
 
 
-def test_base_config_help_schema_set_argument():
-    schema = SubTester.help_schema()
-    assert all(x not in ("fields", "arguments") for x in schema)
-    schema = SubTester.help_schema("arg")
-    assert schema["arguments"] == "arg"
-    assert schema["fields"]
-    args = ("arg1", "arg2")
-    schema = SubTester.help_schema(args)
-    assert isinstance(schema["arguments"], tuple)
-    assert all(x in args for x in schema["arguments"])
-
-
-def test_base_config_help_schema_enum():
-    schema = EnumTester.help_schema()
-    assert isinstance(schema, dict)
-    assert isinstance(schema["x"], dict)
-    assert all(x in ("type", "choices") for x in schema["x"])
-
-
-def test_base_config_help_schema_ellipsis():
-    schema = EllipsisTester.help_schema()
-    assert isinstance(schema, dict)
-    assert isinstance(schema["a"], list)
-
-
-def test_base_config_help_schema():
-    schema = MainTester.help_schema()
-    assert isinstance(schema, dict)
-
-
-def test_base_config_help_schema_list__root__():
-    schema = RootListTester.help_schema()
-    assert isinstance(schema, list)
-    assert isinstance(schema[0], list)
-    assert isinstance(schema[1], list)
-    assert isinstance(schema[1][0], dict)
-    assert isinstance(schema[1][0]["value"], dict)
-    assert isinstance(schema[1][0]["value"]["d"], list)
-    assert schema[1][0]["unique"] is True
-
-
-def test_base_config_help_schema_dict__root__():
-    schema = RootDictTester.help_schema()
-    assert isinstance(schema, dict)
-    assert isinstance(schema["string"], dict)
-    assert isinstance(schema["string"]["integer"], dict)
-    assert isinstance(schema["string"]["integer"]["d"], list)
-
-
-def test_base_config_help_schema_yaml(capsys):
-    MainTester.help_schema_yaml("args")
-    out, _ = capsys.readouterr()
-    assert out == dedent(
-        """\
----
-arguments: args
-fields:
-   a: {format: date, required: false}
-   b:
-      c: {default: 53, required: false, type: integer}
-      d: [string]
-...
-"""
-    )
-
-
-def test_base_config_help_schema_yaml_list__root__(capsys):
-    RootListTester.help_schema_yaml("args")
-    out, _ = capsys.readouterr()
-    assert out == dedent(
-        """\
----
-arguments: args
-fields:
-- [float]
-- - unique: true
-    value:
-       c: {default: 53, required: false, type: integer}
-       d: [string]
-...
-"""
-    )
-
-
-def test_base_config_help_schema_yaml_dict__root__(capsys):
-    RootDictTester.help_schema_yaml("args")
-    out, _ = capsys.readouterr()
-    assert out == dedent(
-        """\
----
-arguments: args
-fields:
-   string:
-      integer:
-         c: {default: 53, required: false, type: integer}
-         d: [string]
-...
-"""
-    )
+@pytest.mark.parametrize(
+    "model, expected",
+    (
+        pytest.param(
+            Wrapper,
+            {
+                "str_strip_whitespace": True,
+                "frozen": True,
+                "extra": "forbid",
+                "ser_json_timedelta": "iso8601",
+                "regex_engine": "rust-regex",
+            },
+            id="ModelConfig",
+        ),
+        pytest.param(
+            DeepNested,
+            {
+                "str_strip_whitespace": True,
+                "frozen": True,
+                "extra": None,
+                "ser_json_timedelta": "iso8601",
+                "regex_engine": "rust-regex",
+            },
+            id="RootModelConfig",
+        ),
+    ),
+)
+def test_base_config_model_config(model: ModelConfig, expected: Dict[str, Any]) -> None:
+    assert model.model_config == expected

@@ -39,8 +39,10 @@ def main_entry_point(args=None):
         args_parser.exit()
 
     for well, value in wells:
-        well.drill_time += rescale_value(
-            value, options.bounds[0], options.bounds[1], 0, options.max_days
+        well.drill_time += int(
+            rescale_value(
+                value, options.bounds[0], options.bounds[1], 0, options.max_days
+            )
         )
 
     logger.info(f"Writing results to {options.output}")

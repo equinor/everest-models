@@ -1,34 +1,35 @@
 import itertools
 import logging
 import pathlib
-from typing import Iterator, Tuple
+from typing import Iterator, Sequence, Tuple
 
-from everest_models.jobs.fm_add_templates.config_model import Template, TemplateConfig
 from everest_models.jobs.shared.converters import path_to_str
-from everest_models.jobs.shared.models import Operation, WellConfig
+from everest_models.jobs.shared.models import Operation, Well
+
+from .config_model import Template
 
 logger = logging.getLogger(__name__)
 
 
 def collect_matching(
-    templates: TemplateConfig, wells: WellConfig
-) -> Iterator[Tuple[str, Operation, TemplateConfig]]:
+    templates: Sequence[Template], wells: Sequence[Well]
+) -> Iterator[Tuple[str, Operation, Template]]:
     """Collect data from template and well model, where template's keys and well's operation match.
 
     Args:
         templates (TemplateConfig): template configuration model
-        wells (WellListModel): well model
+        wells (Wells): well model
 
     Yields:
         Iterator[Tuple[str, Operation, TemplateConfig]]: well name, matching well operations and template
     """
     for well in wells:
-        for op, template in (
+        for operation, template in (
             (x, y)
-            for x, y in itertools.product(well.ops, templates)
+            for x, y in itertools.product(well.operations, templates)
             if y.matching_keys(x)
         ):
-            yield well.name, op, template
+            yield well.name, operation, template
 
 
 def add_templates(
@@ -52,9 +53,10 @@ def add_templates(
 
 
 def insert_template_with_matching_well_operation(
-    templates: TemplateConfig, wells: WellConfig
+    templates: Sequence[Template], wells: Sequence[Well]
 ) -> Iterator[pathlib.Path]:
     return (
         add_templates(well_name, operation, template)
         for well_name, operation, template in collect_matching(templates, wells)
+        if not operation.template
     )

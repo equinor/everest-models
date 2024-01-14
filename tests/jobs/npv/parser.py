@@ -1,10 +1,10 @@
 import datetime
 import pathlib
 import sys
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
-from everest_models.jobs.fm_npv.npv_config_model import NPVConfig
-from everest_models.jobs.shared.models import WellConfig
+from everest_models.jobs.fm_npv.npv_config import NPVConfig
+from everest_models.jobs.shared.models import Wells
 from resdata.summary import Summary
 
 
@@ -19,8 +19,7 @@ def ecl_summary_npv(*args, **kwargs):
         "GOPT:OP": list(range(num_element)),
     }
 
-    dimensions = [10, 10, 10]
-    ecl_sum = Summary.writer("TEST", datetime.date(1999, 12, 1), *dimensions)
+    ecl_sum = Summary.writer("TEST", datetime.date(1999, 12, 1), 10, 10, 10)
 
     for key in sum_keys:
         sub_name = None
@@ -44,14 +43,14 @@ def ecl_summary_npv(*args, **kwargs):
 
 class Options(NamedTuple):
     config: NPVConfig
-    input: WellConfig = None
-    start_date: datetime.date = None
-    end_date: datetime.date = None
-    ref_date: datetime.date = None
-    default_exchange_rate: float = None
-    default_discount_rate: float = None
-    schema: bool = None
-    lint: bool = None
+    input: Optional[Wells] = None
+    start_date: Optional[datetime.date] = None
+    end_date: Optional[datetime.date] = None
+    ref_date: Optional[datetime.date] = None
+    default_exchange_rate: Optional[float] = None
+    default_discount_rate: Optional[float] = None
+    schema: Optional[bool] = None
+    lint: Optional[bool] = None
     multiplier: float = 1.0
     summary: Summary = ecl_summary_npv()
     output: pathlib.Path = pathlib.Path("test_0")

@@ -1,7 +1,7 @@
 import json
 import linecache
 from pathlib import Path
-from typing import Any, TextIO
+from typing import Any, Optional, TextIO
 
 import ruamel.yaml as yaml
 
@@ -42,11 +42,13 @@ def dump_json(data: dict, path: Path):
 
 
 def dump_yaml(
-    data: dict, fp: TextIO, explicit: bool = False, default_flow_style: bool = None
+    data: dict,
+    fp: TextIO,
+    explicit: bool = False,
+    default_flow_style: Optional[bool] = None,
 ):
-    _yaml = yaml.YAML(typ="safe", pure=True)
-    if default_flow_style is not None:
-        _yaml.default_flow_style = default_flow_style
+    _yaml = yaml.YAML()
+    _yaml.default_flow_style = default_flow_style
     _yaml.explicit_start = explicit
     _yaml.explicit_end = explicit
     _yaml.indent(mapping=3, sequence=2, offset=0)

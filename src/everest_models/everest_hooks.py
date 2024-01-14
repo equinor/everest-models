@@ -8,7 +8,7 @@ import logging
 import pathlib
 import sys
 from importlib import import_module, resources
-from typing import Dict, List, Type, TypeVar
+from typing import Dict, List, Type
 
 from pydantic import BaseModel
 
@@ -26,7 +26,6 @@ logger = logging.getLogger(__name__)
 FORWARD_MODEL_DIR = "forward_models"
 PACKAGE = "everest_models"
 JOBS = f"{PACKAGE}.jobs"
-T = TypeVar("T", bound=BaseModel)
 
 
 def _get_jobs():
@@ -43,7 +42,7 @@ def get_forward_models() -> List[Dict[str, str]]:
         - ...
     """
     if sys.version_info.minor >= 9:
-        jobs = resources.files(PACKAGE) / FORWARD_MODEL_DIR
+        jobs = resources.files(PACKAGE) / FORWARD_MODEL_DIR  # type: ignore
     else:
         with resources.path(PACKAGE, FORWARD_MODEL_DIR) as fd:
             jobs = fd
@@ -55,7 +54,7 @@ def get_forward_models() -> List[Dict[str, str]]:
 
 
 @hookimpl
-def get_forward_models_schemas() -> Dict[str, Dict[str, Type[T]]]:
+def get_forward_models_schemas() -> Dict[str, Dict[str, Type[BaseModel]]]:
     """Accumulate all forward model jobs and schemas.
 
     group schemas by the name of forward models,
@@ -80,7 +79,7 @@ def get_forward_models_schemas() -> Dict[str, Dict[str, Type[T]]]:
 
 
 @hookimpl
-def parse_forward_model_schema(path: str, schema: Type[T]) -> T:
+def parse_forward_model_schema(path: str, schema: Type[BaseModel]) -> BaseModel:
     """Parse given filepath by the provided schema model.
 
     Args:

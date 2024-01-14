@@ -2,7 +2,7 @@ import argparse
 from functools import partial
 
 from everest_models.jobs.fm_well_constraints.models import (
-    Constraints,
+    Constraint,
     WellConstraintConfig,
 )
 from everest_models.jobs.shared.arguments import (
@@ -14,7 +14,7 @@ from everest_models.jobs.shared.arguments import (
     get_parser,
     parse_file,
 )
-from everest_models.jobs.shared.models.wells import WellConfig
+from everest_models.jobs.shared.models.wells import Wells
 
 CONFIG_ARG_KEY = "-c/--config"
 RATE_CONSTRAINTS_ARG_KEY = "-rc/--rate-constraints"
@@ -23,14 +23,14 @@ DURATION_CONSTRAINTS_ARG_KEY = "-dc/--duration-constraints"
 
 SCHEMAS = {
     CONFIG_ARG_KEY: WellConstraintConfig,
-    RATE_CONSTRAINTS_ARG_KEY: Constraints,
-    PHASE_CONSTRAINTS_ARG_KEY: Constraints,
-    DURATION_CONSTRAINTS_ARG_KEY: Constraints,
+    RATE_CONSTRAINTS_ARG_KEY: Constraint,
+    PHASE_CONSTRAINTS_ARG_KEY: Constraint,
+    DURATION_CONSTRAINTS_ARG_KEY: Constraint,
 }
 
 constraint_parameters = {
     "default": None,
-    "type": partial(parse_file, schema=Constraints),
+    "type": partial(parse_file, schema=Constraint),
 }
 
 
@@ -46,7 +46,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     )
     add_wells_input_argument(
         required_group,
-        schema=WellConfig,
+        schema=Wells,
         help="""
         File in json format containing well names and well opening times,
         should be specified in Everest config (wells.json).

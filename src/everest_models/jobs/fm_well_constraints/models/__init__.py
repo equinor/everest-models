@@ -1,4 +1,4 @@
-from everest_models.jobs.fm_well_constraints.models.config import WellConstraintConfig
-from everest_models.jobs.fm_well_constraints.models.constraints import Constraints
+from .config import WellConstraintConfig
+from .constraints import Constraint, WellConstraints
 
-__all__ = ["Constraints", "WellConstraintConfig"]
+__all__ = ["Constraint", "WellConstraintConfig", "WellConstraints"]

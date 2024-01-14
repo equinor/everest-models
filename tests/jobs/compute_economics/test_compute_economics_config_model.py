@@ -1,12 +1,9 @@
 import pathlib
 
-import pytest
 from everest_models.jobs.fm_compute_economics.economic_indicator_config_model import (
-    Capital,
     EconomicIndicatorConfig,
     OutputConfig,
 )
-from pydantic import ValidationError
 
 
 def test_economic_indicator_config_defaults():
@@ -45,8 +42,3 @@ def test_economic_indicator_config_defaults():
     assert isinstance(config.output, OutputConfig)
     assert config.output.file == pathlib.Path("test_0")
     assert config.output.currency == "USD"
-
-
-def test_economic_indicator_money_bad_currency():
-    with pytest.raises(ValidationError):
-        Capital.model_validate({"value": 3.14, "currency": "PIE"})

@@ -1,14 +1,14 @@
 import datetime
 import pathlib
-from typing import Dict
+from typing import Any, Dict, List
 
 import pytest
-from everest_models.jobs.shared.models import Operation, PhaseEnum, Well, WellConfig
+from everest_models.jobs.shared.models import Operation, PhaseEnum, Well, Wells
 from pydantic import ValidationError
 
 
 @pytest.fixture(scope="module")
-def well_dict(path_test_data) -> Dict:
+def well_dict(path_test_data) -> List[Dict[str, Any]]:
     template_file = "add_tmpl/templates/template_{tmpl}.tmpl"
     return [
         {
@@ -48,7 +48,7 @@ def well_dict(path_test_data) -> Dict:
 
 @pytest.fixture(scope="module")
 def well_model(well_dict):
-    return WellConfig.model_validate(well_dict)
+    return Wells.model_validate(well_dict)
 
 
 def test_operation_model_field():
@@ -59,7 +59,7 @@ def test_operation_model_field():
     }
     operation = Operation.model_validate(data)
     assert operation
-    assert isinstance(operation.tokens["phase"], PhaseEnum)
+    assert isinstance(operation.tokens.get("phase"), PhaseEnum)
     with pytest.raises(ValidationError):
         Operation.model_validate({"z": 3.3, **data})
 
@@ -75,27 +75,27 @@ def test_well_model_fields(well_model):
     assert isinstance(well.readydate, datetime.date)
     assert isinstance(well.completion_date, datetime.date)
     assert isinstance(well.drill_time, int)
-    assert isinstance(well.ops, tuple)
-    op1 = well.ops[0]
-    assert isinstance(op1, Operation)
-    assert isinstance(op1.date, datetime.date)
-    assert isinstance(op1.opname, str)
-    assert isinstance(op1.template, pathlib.Path)
-    ops2 = well_model[1].ops
+    assert isinstance(well.operations, tuple)
+    operation = well.operations[0]
+    assert isinstance(operation, Operation)
+    assert isinstance(operation.date, datetime.date)
+    assert isinstance(operation.opname, str)
+    assert isinstance(operation.template, pathlib.Path)
+    operation_2 = well_model[1].operations
     with pytest.raises(ValidationError):
-        ops2[0].template = "does_not_exist.txt"  # file does not exist
-        ops2[0].template = "src"  # not a file
-    assert isinstance(ops2[1].tokens["phase"], PhaseEnum)
-    assert isinstance(ops2[1].tokens["rate"], float)
+        operation_2[0].template = "does_not_exist.txt"  # file does not exist
+        operation_2[0].template = "src"  # not a file
+    assert isinstance(operation_2[1].tokens["phase"], PhaseEnum)
+    assert isinstance(operation_2[1].tokens["rate"], float)
 
 
 def test_well_model_minimum_fields():
-    assert not WellConfig.model_validate([])  # does not throw error
-    assert WellConfig.model_validate([{"name": "WELL", "drill_time": 23}])
+    assert not Wells.model_validate([]).root  # does not throw error
+    assert Wells.model_validate([{"name": "WELL", "drill_time": 23}])
 
 
 def test_well_model_is_subscribable(well_model):
-    wells = WellConfig.model_validate([])
+    wells = Wells.model_validate([])
     assert not wells.root
     assert not list(wells)
     assert well_model[1]
@@ -111,8 +111,8 @@ def test_well_model_to_dict(well_model):
 
 
 def test_legacy_well_model_missing_templates(well_model):
-    assert not tuple(well_model[0].missing_templates())
-    assert tuple(well_model[1].missing_templates()) == (
+    assert not tuple(well_model[0].missing_templates)
+    assert tuple(well_model[1].missing_templates) == (
         ("open", datetime.date.fromisoformat("2019-05-12")),
         ("rate", datetime.date.fromisoformat("2019-07-01")),
         ("rate", datetime.date.fromisoformat("2019-08-30")),

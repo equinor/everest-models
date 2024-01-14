@@ -1,13 +1,14 @@
-from typing import Dict, Iterator, Tuple
+from typing import Dict, Iterator, Optional, Tuple, overload
 
-from pydantic import ConfigDict, RootModel, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from typing_extensions import Annotated
 
-from everest_models.jobs.shared.models import BaseFrozenConfig, DictRootMixin, PhaseEnum
+from everest_models.jobs.shared.models import ModelConfig, PhaseEnum, RootModelConfig
 
 
-class Phase(BaseFrozenConfig):
-    options: Tuple[PhaseEnum, ...] = None
-    value: PhaseEnum = None
+class Phase(ModelConfig):
+    options: Annotated[Tuple[PhaseEnum, ...], Field(default=None, description="")]
+    value: Annotated[PhaseEnum, Field(default=None, description="")]
 
     @field_validator("options")
     @classmethod
@@ -16,6 +17,7 @@ class Phase(BaseFrozenConfig):
         return options
 
     @model_validator(mode="before")
+    @classmethod
     def is_correct_phase_field(cls, values):
         assert (values.get("options") is None or values.get("options") == []) ^ (
             values.get("value") is None
@@ -23,9 +25,11 @@ class Phase(BaseFrozenConfig):
         return values
 
     def _optimum_index(self, optimizer_value: float, *, thresholds: Iterator) -> int:
-        for index, threshold in enumerate(thresholds):
-            if optimizer_value <= threshold:
-                return index
+        return next(
+            index
+            for index, threshold in enumerate(thresholds)
+            if optimizer_value <= threshold
+        )
 
     def optimum_value(self, optimizer_value: float) -> str:
         if optimizer_value is None:
@@ -40,12 +44,13 @@ class Phase(BaseFrozenConfig):
         ].value
 
 
-class Tolerance(BaseFrozenConfig):
-    min: float = None
-    max: float = None
-    value: float = None
+class Tolerance(ModelConfig):
+    min: Annotated[float, Field(default=None, description="")]
+    max: Annotated[float, Field(default=None, description="")]
+    value: Annotated[float, Field(default=None, description="")]
 
     @model_validator(mode="before")
+    @classmethod
     def is_correct_tolerance_field(cls, values):
         value_keys = {
             key for key, _ in filter(lambda x: x[1] is not None, values.items())
@@ -64,7 +69,7 @@ class Tolerance(BaseFrozenConfig):
 
         return values
 
-    def optimum_value(self, optimizer_value: float) -> float:
+    def optimum_value(self, optimizer_value: Optional[float]) -> float:
         """Min/max scaling of input (optimizer) value"""
         return (
             self.value
@@ -73,19 +78,32 @@ class Tolerance(BaseFrozenConfig):
         )
 
 
-class Constraints(BaseFrozenConfig):
-    phase: Phase
-    rate: Tolerance
-    duration: Tolerance
+class Constraints(ModelConfig):
+    phase: Annotated[Phase, Field(description="")]
+    rate: Annotated[Tolerance, Field(description="")]
+    duration: Annotated[Tolerance, Field(description="")]
 
 
-class WellConstraintConfig(RootModel, DictRootMixin):
-    """An 'immutable' well constraint configuration schema.
-
-    The schema is a container for a two layers deep dictionary.
-    First layer key is a string that represents the well name.
-    Second layer key is an integer that represent the Configuration index
-    """
-
-    model_config = ConfigDict(frozen=True)
+# WellConstraintConfig = RootModel[Dict[str, Dict[int, Constraints]]]
+class WellConstraintConfig(RootModelConfig):
     root: Dict[str, Dict[int, Constraints]]
+
+    def __iter__(self) -> Iterator[str]:  # type: ignore
+        return iter(self.root)
+
+    @overload
+    def get(self, __key: str) -> Dict[int, Constraints]:
+        ...
+
+    @overload
+    def get(
+        self, __key: str, __default: Dict[int, Constraints]
+    ) -> Dict[int, Constraints]:
+        ...
+
+    def get(
+        self, __key: str, __default: Optional[Dict[int, Constraints]] = None
+    ) -> Optional[Dict[int, Constraints]]:
+        if __default is None:
+            return self.root.get(__key)
+        return self.root.get(__key, __default)

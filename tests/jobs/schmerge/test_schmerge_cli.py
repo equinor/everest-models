@@ -7,15 +7,15 @@ from sub_testdata import SCHMERGE as TEST_DATA
 
 
 @pytest.fixture(scope="module")
-def schmerge_args() -> Tuple[str]:
-    return [
+def schmerge_args() -> Tuple[str, ...]:
+    return (
         "--output",
         "out.sch",
         "--schedule",
         "loaded_dates.sch",
         "--input",
         "wells.json",
-    ]
+    )
 
 
 def test_schmerge_main_entry_point(copy_testdata_tmpdir, schmerge_args):
@@ -40,7 +40,7 @@ def test_schmerge_main_entry_point_invalid_wells(
     _, err = capsys.readouterr()
 
     assert (
-        "argument -i/--input: \nindex 1 -> ops -> index 1 -> _Operation -> template:\n\tField required"
+        "argument -i/--input: \nindex 1 -> ops -> index 1 -> template:\n\tField required"
         in err
     )
 

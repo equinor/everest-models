@@ -1,57 +1,66 @@
-import datetime
-from typing import Dict, Iterable, Iterator, Optional, Tuple
+from datetime import date
+from pathlib import Path
+from typing import Dict, Iterator, Tuple
 
-from pydantic import Field, RootModel, field_validator
+from pydantic import ConfigDict, Field
+from typing_extensions import Annotated
 
-from everest_models.jobs.shared.models import BaseConfig
-from everest_models.jobs.shared.models.operation import (
-    Operation,
-    OperationType,
-    update_legacy_operations,
-)
+from .base_config import ModelConfig, RootModelConfig
+from .operation import Operation
+
+OPERATIONS_FIELD_ATTRIBUTE = {
+    "default_factory": tuple,
+    "description": "Sequence of operations",
+    "alias": "ops",
+}
 
 
-class Well(BaseConfig):
-    completion_date: Optional[datetime.date] = None
-    drill_time: Optional[int] = None
-    name: str = Field(..., frozen=True)
-    ops: Tuple[OperationType, ...] = Field(default_factory=tuple)
-    readydate: Optional[datetime.date] = None
+class Well(ModelConfig):
+    model_config = ConfigDict(frozen=False)
 
-    def missing_templates(self) -> Iterator[Operation]:
-        return ((op.opname, op.date) for op in self.ops if op.template is None)
+    completion_date: Annotated[date, Field(None, description="")]
+    drill_time: Annotated[int, Field(None, description="")]
+    name: Annotated[str, Field(frozen=True, description="Well name")]
+    operations: Annotated[Tuple[Operation, ...], Field(**OPERATIONS_FIELD_ATTRIBUTE)]
+    readydate: Annotated[date, Field(None, description="")]
 
     def __hash__(self):
         return hash(self.name)
 
-    @field_validator("drill_time")
-    @classmethod
-    def is_positive_drill_time(cls, drill_time: Optional[int]) -> Optional[int]:
-        if drill_time is not None and drill_time <= 0:
-            ValueError("Drill_time must be greater than 0")
-        return drill_time
-
-    # remove ones deprecation event is over
-    @field_validator("ops")
-    @classmethod
-    def legacy_operations(cls, ops):
-        return update_legacy_operations(ops)
+    @property
+    def missing_templates(self) -> Iterator[Tuple[str, date]]:
+        return (
+            (operation.opname, operation.date)
+            for operation in self.operations
+            if operation.template is None
+        )
 
 
-class WellConfig(BaseConfig, RootModel):
+class Wells(RootModelConfig):
     root: Tuple[Well, ...]
 
-    def __iter__(self) -> Iterator[Well]:
+    model_config = ConfigDict(frozen=False)
+
+    def __iter__(self) -> Iterator[Well]:  # type: ignore
         return iter(self.root)
 
-    def __getitem__(self, item) -> Well:
+    def __getitem__(self, item: int):
         return self.root[item]
 
     def to_dict(self) -> Dict[str, Well]:
         return {well.name: well for well in self}
 
-    def set_wells(self, value: Iterable):
-        self.root = tuple(value)
+    def json_dump(self, output: Path) -> None:
+        """Write instance state to a JSON file.
 
-    def __len__(self) -> int:
-        return len(self.root)
+        Args:
+            output (pathlib.Path): file to write to
+        """
+        output.write_text(
+            self.model_dump_json(
+                indent=2,
+                exclude_none=True,
+                exclude_unset=True,
+                by_alias=True,
+            )
+        )

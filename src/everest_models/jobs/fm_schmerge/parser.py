@@ -1,4 +1,3 @@
-from everest_models.jobs.fm_schmerge.well_model import Wells
 from everest_models.jobs.shared.arguments import (
     add_output_argument,
     add_wells_input_argument,
@@ -6,6 +5,8 @@ from everest_models.jobs.shared.arguments import (
     get_parser,
 )
 from everest_models.jobs.shared.validators import valid_schedule_template
+
+from .well_model import Wells
 
 
 @bootstrap_parser

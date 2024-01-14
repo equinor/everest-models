@@ -21,10 +21,7 @@ SCHEMAS = {CONFIG_ARG_KEY: ConfigSchema}
 
 @bootstrap_parser
 def build_argument_parser() -> argparse.ArgumentParser:
-    SchemaAction.register_single_model(
-        CONFIG_ARG_KEY,
-        ConfigSchema,
-    )
+    SchemaAction.register_models(SCHEMAS)
     parser, required_group = get_parser(description="Design a well trajectory.")
     required_group.add_argument(
         *CONFIG_ARG_KEY.split("/"),

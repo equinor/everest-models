@@ -1,9 +1,11 @@
 [
-    {
-        "name": "INJECT5",
-        "ops": [{
-                    "opname": "open",
-                    "date": "2016-05-19"
-               }]
-    }
+  {
+    "name": "INJECT5",
+    "ops": [
+      {
+        "opname": "open",
+        "date": "2016-05-19"
+      }
+    ]
+  }
 ]

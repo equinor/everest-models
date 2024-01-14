@@ -2,7 +2,7 @@ import copy
 
 import pytest
 from everest_models.jobs.fm_well_constraints.models import (
-    Constraints,
+    Constraint,
     WellConstraintConfig,
 )
 from everest_models.jobs.fm_well_constraints.models.config import Phase, Tolerance
@@ -58,13 +58,13 @@ def get_config_constraint(key: str, pop: bool, retain: bool = True) -> dict:
 
 @given(st.floats(max_value=1, min_value=0))
 def test_constraint_model_fields(value):
-    assert Constraints.model_validate({"Li": {1: value}, "Vi": {2: 0.35}})
+    assert Constraint.model_validate({"Li": {1: value}, "Vi": {2: 0.35}})
 
 
 @given(st.floats(min_value=1.0000000001))
 def test_constraint_model_fields_over_zero_error(value):
     with pytest.raises(ValidationError) as e:
-        Constraints.model_validate({"Li": {1: value}, "Vi": {2: 0.35}})
+        Constraint.model_validate({"Li": {1: value}, "Vi": {2: 0.35}})
     assert_error_messages(
         e, f"Value(s) are not within bounds [0, 1]:\n\tLi -> 1 -> {value}"
     )
@@ -73,7 +73,7 @@ def test_constraint_model_fields_over_zero_error(value):
 @given(st.floats(max_value=-0.0000000001))
 def test_constraint_model_fields_under_zero_error(value):
     with pytest.raises(ValidationError) as e:
-        Constraints.model_validate({"Li": {1: value}, "Vi": {2: 0.35}})
+        Constraint.model_validate({"Li": {1: value}, "Vi": {2: 0.35}})
     assert_error_messages(
         e, f"Value(s) are not within bounds [0, 1]:\n\tLi -> 1 -> {value}"
     )
@@ -81,7 +81,7 @@ def test_constraint_model_fields_under_zero_error(value):
 
 def test_constraint_model_fields_multi_error_one_message():
     with pytest.raises(ValidationError) as e:
-        Constraints.model_validate({"Li": {1: -0.3}, "Vi": {2: 1.35}})
+        Constraint.model_validate({"Li": {1: -0.3}, "Vi": {2: 1.35}})
     assert_error_messages(
         e, "Value(s) are not within bounds [0, 1]:\n\tLi -> 1 -> -0.3\tVi -> 2 -> 1.35"
     )

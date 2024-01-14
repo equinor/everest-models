@@ -1,10 +1,10 @@
 from typing import Any, Dict, Protocol, Tuple
 
-from pydantic import Field, FilePath, model_validator
-from typing_extensions import TypedDict
+from pydantic import ConfigDict, Field, FilePath, PlainSerializer, model_validator
+from typing_extensions import Annotated, TypedDict
 
-from everest_models.jobs.shared.models import BaseFrozenConfig, PhaseEnum
-from everest_models.jobs.shared.models.operation import Tokens
+from everest_models.jobs.shared.converters import path_to_str
+from everest_models.jobs.shared.models import ModelConfig, PhaseEnum, Tokens
 from everest_models.jobs.shared.validators import validate_no_extra_fields
 
 
@@ -18,9 +18,21 @@ class Keys(TypedDict, total=False):
     phase: PhaseEnum
 
 
-class Template(BaseFrozenConfig):
-    file: FilePath
-    keys: Keys = Field(default_factory=dict)
+class Template(ModelConfig):
+    model_config = ConfigDict(extra="allow")
+    file: Annotated[
+        FilePath,
+        PlainSerializer(path_to_str),
+        Field(description="File path to jinja template"),
+    ]
+    keys: Annotated[
+        Keys,
+        Field(
+            default_factory=dict,
+            description="",
+            examples=["{opname: KBD, phase: WATER, <field>: <value>}"],
+        ),
+    ]
 
     @model_validator(mode="before")
     @classmethod
@@ -38,5 +50,5 @@ class Template(BaseFrozenConfig):
         )
 
 
-class TemplateConfig(BaseFrozenConfig):
+class TemplateConfig(ModelConfig):
     templates: Tuple[Template, ...]

@@ -6,7 +6,7 @@ from typing import Callable, Dict, Iterable, Protocol, Tuple
 from resdata.summary import Summary
 from resdata.util.util import TimeVector
 
-from everest_models.jobs.fm_npv.npv_config_model import NPVConfig
+from .npv_config import NPVConfig
 
 logger = logging.getLogger(__name__)
 
