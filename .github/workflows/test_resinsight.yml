@@ -1,16 +1,15 @@
 name: Test ResInsight
 
 on:
- push:
-   branches:
-     - main
-   tags: "*"
- pull_request:
-
+  push:
+    branches:
+      - main
+    tags: "*"
+  pull_request:
 
 env:
   ERT_SHOW_BACKTRACE: 1
-  RESINSIGHT_VERSION: "2023.10"
+  RESINSIGHT_VERSION: "2023.12.0"
   INSTALL_DIR: local
 
 jobs:
@@ -100,7 +99,7 @@ jobs:
       matrix:
         python-version: [3.8]
         os: [ubuntu-22.04]
-        test_type: ['resinsight']
+        test_type: ["resinsight"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/cache/restore@v3
