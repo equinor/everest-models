@@ -1,6 +1,6 @@
 usage: drill_planner [-h] -i INPUT -o OUTPUT -c CONFIG -opt OPTIMIZER
                         [-tl TIME_LIMIT] [--ignore-end-date] [--lint]
-                        [--schemas]
+                        [--schema]
 
 A module that given a well priority list and a set of constraints, creates a
 list of dates for each well to be completed. Any well may have multiple
@@ -18,7 +18,7 @@ optional arguments:
   --ignore-end-date     Ignore the end date in the config file.
   --lint                Lints all given input (file) arguments with no data
                         transformation.
-  --schemas             Output schemas for file parameters
+  --schema              Output schema(s) for file parameter(s)
 
 required named arguments:
   -i INPUT, --input INPUT

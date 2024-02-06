@@ -1,33 +1,55 @@
 ---
-arguments: -c/--config
-fields:
-   end_date: {format: date, required: true, type: string}
-   rigs:
-   - delay: {required: false, type: integer}
-     name: {required: true, type: string}
-     slots: [string]
-     unavailability:
-     - start: {format: date, required: true, type: string}
-       stop: {format: date, required: true, type: string}
-     wells: [string]
-   slots:
-   - name: {required: true, type: string}
-     unavailability:
-     - start: {format: date, required: true, type: string}
-       stop: {format: date, required: true, type: string}
-     wells: [string]
-   start_date: {format: date, required: true, type: string}
-...
----
-arguments: -opt/--optimizer
-fields: {string: float}
-...
----
-arguments: -i/--input
-fields:
-- completion_date: {format: date, required: false, type: string}
-  drill_time: {required: false, type: integer}
-  name: {required: true, type: string}
-  ops: [OperationType]
-  readydate: {format: date, required: false, type: string}
+# -c/--config specification:
+# '...' are REQUIRED fields that needs replacing
+
+
+# Datatype: date
+# Examples: 2024-01-31, 2024-01-31T11:06
+start_date: '...'  # ← REPLACE
+
+# Datatype: date
+# Examples: 2024-01-31, 2024-01-31T11:06
+end_date: '...'  # ← REPLACE
+rigs:
+-
+
+  # Datatype: string
+  # Examples: a string value
+  name: '...'  # ← REPLACE
+  wells:
+  - '...'  # ← REPLACE
+  unavailability:
+  -
+
+  # Datatype: date
+  # Examples: 2024-01-31, 2024-01-31T11:06
+    start: '...'  # ← REPLACE
+
+  # Datatype: date
+  # Examples: 2024-01-31, 2024-01-31T11:06
+    stop: '...' # ← REPLACE
+  slots:
+  - '...'  # ← REPLACE
+
+  # Datatype: integer
+  # Examples: 1, 1.34E5, 1.34e5
+  delay: 0
+slots:
+-
+
+  # Datatype: string
+  # Examples: a string value
+  name: '...'  # ← REPLACE
+  wells:
+  - '...'  # ← REPLACE
+  unavailability:
+  -
+
+  # Datatype: date
+  # Examples: 2024-01-31, 2024-01-31T11:06
+    start: '...'  # ← REPLACE
+
+  # Datatype: date
+  # Examples: 2024-01-31, 2024-01-31T11:06
+    stop: '...' # ← REPLACE
 ...

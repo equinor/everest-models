@@ -1,9 +1,0 @@
----
-arguments: -i/--input
-fields:
-- completion_date: {format: date, required: false, type: string}
-  drill_time: {required: false, type: integer}
-  name: {required: true, type: string}
-  ops: [OperationType]
-  readydate: {format: date, required: false, type: string}
-...
