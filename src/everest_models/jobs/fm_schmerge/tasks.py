@@ -56,7 +56,7 @@ def _find_dates_in_schedule(source: str):
                 else date,
             ),
             "%d %b %Y",
-        ).date(): match[0]  # Convert to date
+        ).date(): re.escape(match[0])  # Convert to date
         for match in ECLIPSE_DATE_REGEX.finditer(f"{source}DATES")
     }
 
@@ -88,7 +88,7 @@ def _merge_operations_onto_schedule(operations: OperationData, schedule: str) ->
             _render_parameter_data(operation_date, **parameters) for parameters in entry
         )
         schedule = re.sub(
-            f"({schedule_data[closest_date]})",
+            rf"({schedule_data[closest_date]})",
             (r"\1" + insertion_text)
             if closest_date <= operation_date  # is operation date before closest date ?
             else (insertion_text + r"\1"),

@@ -6,6 +6,13 @@
         "opname": "open",
         "date": "2016-05-19",
         "template": "files/welopen.jinja"
+      },
+      {
+        "opname": "wconinje",
+        "date": "2018-03-01",
+        "template": "files/wconinje.jinja",
+        "phase": "GAS",
+        "rate": 2500000.0
       }
     ]
   },
@@ -18,6 +25,13 @@
         "template": "files/wconinje.jinja",
         "rate": "0.7",
         "phase": "WATER"
+      },
+      {
+        "opname": "wconinje",
+        "date": "2017-04-01",
+        "template": "files/wconinje.jinja",
+        "phase": "GAS",
+        "rate": 2500000.0
       }
     ]
   },

@@ -95,6 +95,22 @@ DATES
 /
 
 DATES
+ 01 APR 2017 /
+/
+
+GSATPROD
+ 'DOPSAT' 319.3006994 2008.845173 913164.7543 /
+/
+
+--start files/wconinje.jinja
+
+WCONINJE
+  'INJECT7'  'GAS'  'OPEN'  'RATE' 2500000.0   1* 320  1*  1*    1*   /
+/
+
+--end files/wconinje.jinja
+
+DATES
  14 MAY 2017 /
 /
 
@@ -109,6 +125,27 @@ DATES
 DATES
  8 FEB 2018 /
 /
+
+DATES
+ 01 MAR 2018 /
+/
+
+WEFAC
+ '*HAOP' 0.832 /
+ '*HAWI' 0.49 /
+/
+
+GSATPROD
+ 'DOPSAT' 84.723817 214.0727 111269.15 /
+/
+
+--start files/wconinje.jinja
+
+WCONINJE
+  'INJECT5'  'GAS'  'OPEN'  'RATE' 2500000.0   1* 320  1*  1*    1*   /
+/
+
+--end files/wconinje.jinja
 
 DATES
  9 MAY 2018 /
