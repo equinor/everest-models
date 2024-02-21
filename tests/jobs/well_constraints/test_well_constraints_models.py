@@ -191,6 +191,19 @@ def test_constraint_tolerance_model_optimum_value(optimizer_value, expected):
     assert phase.optimum_value(optimizer_value) == expected
 
 
+def test_invalid_min_max_fields_throws_validation_error():
+    with pytest.raises(ValidationError) as e:
+        Tolerance.model_validate({"min": "314s", "max": 200})
+    assert_error_messages(
+        e, "Input should be a valid number, unable to parse string as a number"
+    )
+    with pytest.raises(ValidationError) as e:
+        Tolerance.model_validate({"min": 314, "max": "200f"})
+    assert_error_messages(
+        e, "Input should be a valid number, unable to parse string as a number"
+    )
+
+
 def test_constraint_tolerance_model_optimum_value_none():
     assert Tolerance.model_validate({"value": 314}).optimum_value(None) == 314
     assert Tolerance().optimum_value(None) is None

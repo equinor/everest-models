@@ -49,25 +49,22 @@ class Tolerance(ModelConfig):
     max: Annotated[float, Field(default=None, description="")]
     value: Annotated[float, Field(default=None, description="")]
 
-    @model_validator(mode="before")
-    @classmethod
-    def is_correct_tolerance_field(cls, values):
-        value_keys = {
-            key for key, _ in filter(lambda x: x[1] is not None, values.items())
-        }
-        has_min = "min" in value_keys
-        has_max = "max" in value_keys
+    @model_validator(mode="after")
+    def is_correct_tolerance_field(self):
+        has_min = self.min is not None
+        has_max = self.max is not None
+        has_value = self.value is not None
 
         errors = []
-        if "value" in value_keys and (has_min or has_max):
+        if all([has_value, has_min or has_max]):
             errors.append("Either ['max', 'min'] PAIR or 'value' key, but not both.")
         if has_min ^ has_max:
             errors.append("'max' and 'min' must be in a pair")
-        if (has_min and has_max) and values["max"] <= values["min"]:
+        if (has_min and has_max) and self.max <= self.min:
             errors.append("'max' cannot be less or equal to 'min' value.")
         assert not errors, "\n".join(errors)
 
-        return values
+        return self
 
     def optimum_value(self, optimizer_value: Optional[float]) -> float:
         """Min/max scaling of input (optimizer) value"""
