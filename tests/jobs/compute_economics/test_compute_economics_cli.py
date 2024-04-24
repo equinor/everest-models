@@ -136,12 +136,16 @@ def test_economic_indicator_main_entry_point_no_input(
 @pytest.mark.parametrize(
     "option, value",
     (
+        pytest.param("summary_reference", "junk.UNSMRY", id="summary_reference"),
+        pytest.param("input", "wells.json", id="input"),
         pytest.param("multiplier", 3, id="multiplier"),
         pytest.param("default_exchange_rate", 3.41, id="default_exchange_rate"),
         pytest.param("default_discount_rate", 4.75, id="default_discount_rate"),
         pytest.param("start_date", datetime.date(2000, 12, 7), id="start_date"),
         pytest.param("end_date", datetime.date(2002, 12, 23), id="end_date"),
         pytest.param("ref_date", datetime.date(2000, 12, 9), id="ref_date"),
+        pytest.param("output", "junk", id="output"),
+        pytest.param("output_currency", "JK", id="output_currency"),
     ),
 )
 def test_bep_main_entry_point_overwrite_config(

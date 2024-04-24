@@ -36,6 +36,23 @@ def build_argument_parser():
         type=partial(parse_file, schema=EconomicIndicatorConfig),
         help="Path to config file containing at least prices",
     )
+    parser.add_argument(
+        "-i",
+        "--input",
+        default=None,
+        required=False,
+        help="Path to input file containing information related to wells. "
+        "The format is consistent with the wells.json file when running "
+        "everest. It must contain a 'readydate' key for each well for when "
+        "it is considered completed and ready for production.",
+    )
+    parser.add_argument(
+        "-sr",
+        "--summary-reference",
+        default=None,
+        required=False,
+        help="Path to reference Eclipse summary file.",
+    )
     add_output_argument(
         parser,
         required=False,
