@@ -12,8 +12,31 @@ from everest_models.jobs.shared.models.economics import CurrencyRate, EconomicCo
 logger = logging.getLogger(__name__)
 
 
+def get(obj, key, default=None):
+    if isinstance(obj, Dict):
+        return obj.get(key, default)
+    else:
+        return getattr(obj, key, default)
+
+
+def set(obj, key, value):
+    if isinstance(obj, Dict):
+        obj[key] = value
+    else:
+        setattr(obj, key, value)
+    return obj
+
+
+def has_and_not_empty(obj, key):
+    if isinstance(obj, Dict):
+        return key in obj and bool(obj[key])
+    else:
+        return hasattr(obj, key) and bool(getattr(obj, key))
+
+
 class EclipseSummaryConfig(ModelConfig):
-    main: Annotated[pathlib.Path, Field(description="")]
+    model_config = ConfigDict(frozen=False)
+    main: Annotated[pathlib.Path, Field(description="", frozen=True)]
     reference: Annotated[FilePath, Field(default=None, description="")]
     keys: Annotated[Tuple[str, ...], Field(default_factory=tuple, description="")]
 
@@ -41,80 +64,37 @@ class EconomicIndicatorConfig(EconomicConfig):
     ]
 
     @model_validator(mode="before")
+    @classmethod
     def populate_summary_keys(cls, values: Dict[str, Any]):
-        # values.setdefault("summary", {})
-        # values["summary"].setdefault("keys", tuple(values.get("prices", {})))
-        if isinstance(values["summary"], dict):
-            if not ("keys" in values["summary"] and values["summary"]["keys"]):
-                values["summary"]["keys"] = tuple(values["prices"])
-        elif isinstance(values["summary"], EclipseSummaryConfig) and not (
-            hasattr(values["summary"], "keys") and values["summary"].keys
-        ):
-            values["summary"].keys = tuple(values["prices"])
+        if not has_and_not_empty(values["summary"], "keys"):
+            set(values["summary"], "keys", tuple(values["prices"]))
         return values
 
     @model_validator(mode="before")
     @classmethod
     def currency_exist(cls, values):
-        if isinstance(values["output"], dict):
-            if values["output"].get("currency", None) is None:
-                return values
-            if values["output"]["currency"] not in CURRENCY_CODES:
-                raise ValueError("Currency does not exist")
-            if (
-                "exchange_rates" in values
-                and values["output"]["currency"] not in values["exchange_rates"]
-            ):
-                raise ValueError(
-                    "Currency cannot be interpreted from given exchange rate"
-                )
-        elif isinstance(values["output"], OutputConfig):
-            if not values["output"].currency:
-                return values
-            if values["output"].currency not in CURRENCY_CODES:
-                raise ValueError("Currency does not exist")
-            if (
-                "exchange_rates" in values
-                and values["output"].currency not in values["exchange_rates"]
-            ):
-                raise ValueError(
-                    "Currency cannot be interpreted from given exchange rate"
-                )
+        if get(values["output"], "currency", default=None) is None:
+            return values
+        if get(values["output"], "currency") not in CURRENCY_CODES:
+            raise ValueError(f"Currency {get(values['output'], 'currency')} does not exist")
+        if ("exchange_rates" in values and get(values["output"], "currency") not in values["exchange_rates"]):
+            raise ValueError("Currency cannot be interpreted from given exchange rate")
         return values
 
     @model_validator(mode="before")
     @classmethod
     def currency_rate_exist(cls, values):
-        if isinstance(values["output"], dict):
-            if values["output"].get("currency", None) is None:
-                return values
-            if (
-                "currency_rate" in values["output"]
-                and values["output"]["currency_rate"]
-            ):
-                return values
-            if values.get("exchange_rates", None) is None:
-                values["output"]["currency_rate"] = None
-            else:
-                values["output"]["currency_rate"] = tuple(
-                    {"date": rate["date"], "value": 1.0 / rate["value"]}
-                    for rate in values["exchange_rates"][values["output"]["currency"]]
-                )
-        elif isinstance(values["output"], OutputConfig):
-            if not values["output"].currency:
-                return values
-            if (
-                hasattr(values["output"], "currency_rate")
-                and values["output"].currency_rate
-            ):
-                return values
-            if values.get("exchange_rates", None) is None:
-                values["output"]["currency_rate"] = None
-            else:
-                currency_rate = tuple(
-                    {"date": rate.date, "value": 1.0 / rate.value}
-                    for rate in values["exchange_rates"][values["output"].currency]
-                )
-                values["output"].currency_rate = currency_rate
+        if get(values["output"], "currency", default=None) is None:
+            return values
+        if has_and_not_empty(values["output"], "currency_rate"):
+            return values
+        if get(values, "exchange_rates", default=None) is None:
+            set(values["output"], "currency_rate", None)
+        else:
+            set(values["output"], "currency_rate", tuple(
+                {"date": rate["date"], "value": 1.0 / rate["value"]}
+                for rate in values["exchange_rates"][get(values["output"], "currency")]
+            )
+            )
 
         return values
