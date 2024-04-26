@@ -33,9 +33,13 @@ def _overwrite_economic_indicator_config(
                 instance, field, value[index] if isinstance(value, tuple) else value
             )
         elif field == "input":
-            instance = options.config.wells_input = value[index] if isinstance(value, tuple) else value
+            instance = options.config.wells_input = (
+                value[index] if isinstance(value, tuple) else value
+            )
         elif field == "summary_reference":
-            instance = options.config.summary.reference = value[index] if isinstance(value, tuple) else value
+            instance = options.config.summary.reference = (
+                value[index] if isinstance(value, tuple) else value
+            )
         elif field == "output":
             options.config.output.file = (
                 value[index] if isinstance(value, tuple) else value
