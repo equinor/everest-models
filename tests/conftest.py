@@ -5,12 +5,12 @@ import sys
 
 import pluggy
 import pytest
+from everest_models import everest_hooks  # noqa: E402
 from hypothesis import HealthCheck, settings
 
 sys.modules["everest.plugins"] = type(sys)("everest.plugins")
 sys.modules["everest.plugins"].hookimpl = pluggy.HookimplMarker("test")
 
-from everest_models import everest_hooks  # noqa: E402
 
 settings.register_profile(
     "ci",
