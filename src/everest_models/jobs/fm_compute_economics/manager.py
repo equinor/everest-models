@@ -25,8 +25,7 @@ class Rate(Protocol):
 
 
 class Production(Protocol):
-    def blocked_production(self, totalKey, timeRange):
-        ...
+    def blocked_production(self, totalKey, timeRange): ...
 
 
 def _rate_sort_reverse_dates(rates: Iterable[Rate]) -> Iterable[Rate]:

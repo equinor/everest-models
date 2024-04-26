@@ -76,8 +76,13 @@ class EconomicIndicatorConfig(EconomicConfig):
         if get(values["output"], "currency", default=None) is None:
             return values
         if get(values["output"], "currency") not in CURRENCY_CODES:
-            raise ValueError(f"Currency {get(values['output'], 'currency')} does not exist")
-        if ("exchange_rates" in values and get(values["output"], "currency") not in values["exchange_rates"]):
+            raise ValueError(
+                f"Currency {get(values['output'], 'currency')} does not exist"
+            )
+        if (
+            "exchange_rates" in values
+            and get(values["output"], "currency") not in values["exchange_rates"]
+        ):
             raise ValueError("Currency cannot be interpreted from given exchange rate")
         return values
 
@@ -91,10 +96,15 @@ class EconomicIndicatorConfig(EconomicConfig):
         if get(values, "exchange_rates", default=None) is None:
             set(values["output"], "currency_rate", None)
         else:
-            set(values["output"], "currency_rate", tuple(
-                {"date": rate["date"], "value": 1.0 / rate["value"]}
-                for rate in values["exchange_rates"][get(values["output"], "currency")]
-            )
+            set(
+                values["output"],
+                "currency_rate",
+                tuple(
+                    {"date": rate["date"], "value": 1.0 / rate["value"]}
+                    for rate in values["exchange_rates"][
+                        get(values["output"], "currency")
+                    ]
+                ),
             )
 
         return values
