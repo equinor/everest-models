@@ -1,0 +1,46 @@
+usage: drill_planner [-h] -i INPUT -o OUTPUT -c CONFIG -opt OPTIMIZER
+                        [-tl TIME_LIMIT] [--ignore-end-date] [--lint]
+                        [--schema]
+
+A module that given a well priority list and a set of constraints, creates a
+list of dates for each well to be completed. Any well may have multiple
+options as to where it can be drilled, both for different slots and rigs. The
+module will try to find the optimum event combinations that allows for the
+wells to be completed as quickly as possible, and at the same time make sure
+that the dates that are output will be a valid drill plan.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -tl TIME_LIMIT, --time-limit TIME_LIMIT
+                        Maximum time limit for the solver in seconds.If a
+                        solution has not been reached within this time, a
+                        greedyapproach will be used instead. (default: 3600)
+  --ignore-end-date     Ignore the end date in the config file.
+  --lint                Lints all given input (file) arguments with no data
+                        transformation.
+  --schema              Output schema(s) for file parameter(s)
+
+required named arguments:
+  -i INPUT, --input INPUT
+                        File containing information related to wells. The
+                        format is consistent with the wells.json file when
+                        running everest and can be used directly.
+  -o OUTPUT, --output OUTPUT
+                        Name of the output-file. The output-file (json) will
+                        contain the same information as the input-file,
+                        including the results from the drill_planner. Please
+                        note that it is highly recommended to not use the same
+                        filename as the input-file. In cases where the same
+                        workflow is run twice, it is generally advised that
+                        the input-file for each job is consistent
+  -c CONFIG, --config CONFIG
+                        Configuration file in yaml format describing the
+                        constraints of the field development. The file must
+                        contain information about rigs and slots that the
+                        wells can be drilled through. Additional information,
+                        such as when rigs and slots are available is also
+                        added here.
+  -opt OPTIMIZER, --optimizer OPTIMIZER
+                        The optimizer file in yaml format is the file output
+                        from everest that contains the well priority values -
+                        a float for each well.

@@ -1,0 +1,115 @@
+[
+  {
+    "drill_time": 20,
+    "name": "w1",
+    "ops": [
+      {
+        "date": "2000-02-22",
+        "opname": "open",
+        "template": "./templates/template_open.tmpl"
+      }
+    ],
+    "readydate": "2000-02-22"
+  },
+  {
+    "drill_time": 25,
+    "name": "w2",
+    "ops": [
+      {
+        "date": "2000-02-22",
+        "opname": "open",
+        "template": "./templates/template_open.tmpl"
+      },
+      {
+        "date": "2000-04-13",
+        "opname": "rate",
+        "template": "./templates/template_water_inject.tmpl",
+        "tokens": {
+          "phase": "WATER"
+        }
+      },
+      {
+        "date": "2000-05-13",
+        "opname": "rate",
+        "template": "./templates/template_oil_prod.tmpl",
+        "tokens": {
+          "phase": "OIL"
+        }
+      },
+      {
+        "date": "2000-06-13",
+        "opname": "rate",
+        "template": "./templates/template_water_inject.tmpl",
+        "tokens": {
+          "phase": "WATER"
+        }
+      },
+      {
+        "date": "2000-07-13",
+        "opname": "rate",
+        "template": "./templates/template_rate_inject.tmpl"
+      }
+    ],
+    "readydate": "2000-04-13"
+  },
+  {
+    "drill_time": 43,
+    "name": "w3",
+    "ops": [
+      {
+        "date": "2000-02-22",
+        "opname": "open",
+        "template": "./templates/template_open.tmpl"
+      },
+      {
+        "date": "2000-05-26",
+        "opname": "rate",
+        "template": "./templates/template_water_inject.tmpl",
+        "tokens": {
+          "phase": "WATER"
+        }
+      }
+    ],
+    "readydate": "2000-05-26"
+  },
+  {
+    "drill_time": 23,
+    "name": "w4",
+    "ops": [
+      {
+        "date": "2000-05-06",
+        "opname": "open",
+        "template": "./templates/template_open.tmpl"
+      },
+      {
+        "date": "2000-05-13",
+        "opname": "rate",
+        "template": "./templates/template_oil_prod.tmpl",
+        "tokens": {
+          "phase": "OIL"
+        }
+      },
+      {
+        "date": "2000-06-13",
+        "opname": "rate",
+        "template": "./templates/template_water_inject.tmpl",
+        "tokens": {
+          "phase": "WATER"
+        }
+      }
+    ],
+    "readydate": "2000-05-06"
+  },
+  {
+    "drill_time": 36,
+    "name": "w5",
+    "ops": [
+      {
+        "date": "2000-06-11",
+        "opname": "open",
+        "template": "./templates/template_open.tmpl"
+      }
+    ],
+    "readydate": "2000-06-11"
+  }
+]

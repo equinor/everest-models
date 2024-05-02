@@ -1,0 +1,49 @@
+---
+arguments: -c/--config
+fields:
+   costs:
+   - currency: {required: false, type: string}
+     date: {format: date, required: true, type: string}
+     value: {required: true, type: number}
+   dates:
+      end_date: {format: date, required: false, type: string}
+      ref_date: {format: date, required: false, type: string}
+      start_date: {format: date, required: false, type: string}
+   default_discount_rate: {default: 0.08, required: false, type: number}
+   default_exchange_rate: {default: 1, required: false, type: number}
+   discount_rates:
+   - currency: {required: false, type: string}
+     date: {format: date, required: true, type: string}
+     value: {required: true, type: number}
+   exchange_rates:
+      string:
+      - currency: {required: false, type: string}
+        date: {format: date, required: true, type: string}
+        value: {required: true, type: number}
+   multiplier: {default: 1, required: false, type: number}
+   oil_equivalent:
+      oil: {string: float}
+      remap:
+         string: {string: float}
+   output:
+      currency: {required: false, type: string}
+      currency_rate:
+      - currency: {required: false, type: string}
+        date: {format: date, required: true, type: string}
+        value: {required: true, type: number}
+      file: {format: path, required: true, type: string}
+   prices:
+      string:
+      - currency: {required: false, type: string}
+        date: {format: date, required: true, type: string}
+        value: {required: true, type: number}
+   summary:
+      keys: [string]
+      main: {format: file-path, required: true, type: string}
+      reference: {format: file-path, required: false, type: string}
+   well_costs:
+   - currency: {required: false, type: string}
+     value: {required: true, type: number}
+     well: {required: true, type: string}
+   wells_input: {format: file-path, required: false, type: string}
+...

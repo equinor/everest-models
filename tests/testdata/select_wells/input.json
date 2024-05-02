@@ -1,0 +1,62 @@
+[
+    {
+        "drill_time": 50,
+        "name": "WELL1",
+        "readydate": "2022-12-01",
+        "completion_date": "2022-12-01",
+        "ops": [
+            {
+                "opname": "open",
+                "date": "2022-12-01"
+            }
+        ]
+    },
+    {
+        "drill_time": 50,
+        "name": "WELL2",
+        "readydate": "2023-01-21",
+        "completion_date": "2023-01-21",
+        "ops": [
+            {
+                "opname": "open",
+                "date": "2023-01-21"
+            }
+        ]
+    },
+    {
+        "drill_time": 50,
+        "name": "WELL3",
+        "readydate": "2023-03-13",
+        "completion_date": "2023-03-13",
+        "ops": [
+            {
+                "opname": "open",
+                "date": "2023-03-13"
+            }
+        ]
+    },
+    {
+        "drill_time": 50,
+        "name": "WELL4",
+        "readydate": "2023-03-13",
+        "completion_date": "2023-03-13",
+        "ops": [
+            {
+                "opname": "open",
+                "date": "2023-03-13"
+            }
+        ]
+    },
+    {
+        "drill_time": 50,
+        "name": "WELL5",
+        "readydate": "2023-06-23",
+        "completion_date": "2023-06-23",
+        "ops": [
+            {
+                "opname": "open",
+                "date": "2023-06-23"
+            }
+        ]
+    }
+]

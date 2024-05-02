@@ -1,0 +1,16 @@
+usage: stea [-h] [--lint] -c CONFIG
+
+STEA is a powerful economic analysis tool used for complex economic analysis
+and portfolio optimization. STEA helps you analyze single projects, large and
+small portfolios and complex decision trees. As output, for each of the
+entries in the result section of the yaml config file, STEA will create result
+files ex: Res1_0, Res2_0, .. Res#_0
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --lint                Lints all given input (file) arguments with no data
+                        transformation.
+
+required named arguments:
+  -c CONFIG, --config CONFIG
+                        STEA (yaml) config file

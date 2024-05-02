@@ -1,0 +1,55 @@
+---
+# -c/--config specification:
+# '...' are REQUIRED fields that needs replacing
+
+
+# Datatype: date
+# Examples: 2024-01-31, 2024-01-31T11:06
+start_date: '...'  # ← REPLACE
+
+# Datatype: date
+# Examples: 2024-01-31, 2024-01-31T11:06
+end_date: '...'  # ← REPLACE
+rigs:
+-
+
+  # Datatype: string
+  # Examples: a string value
+  name: '...'  # ← REPLACE
+  wells:
+  - '...'  # ← REPLACE
+  unavailability:
+  -
+
+  # Datatype: date
+  # Examples: 2024-01-31, 2024-01-31T11:06
+    start: '...'  # ← REPLACE
+
+  # Datatype: date
+  # Examples: 2024-01-31, 2024-01-31T11:06
+    stop: '...' # ← REPLACE
+  slots:
+  - '...'  # ← REPLACE
+
+  # Datatype: integer
+  # Examples: 1, 1.34E5, 1.34e5
+  delay: 0
+slots:
+-
+
+  # Datatype: string
+  # Examples: a string value
+  name: '...'  # ← REPLACE
+  wells:
+  - '...'  # ← REPLACE
+  unavailability:
+  -
+
+  # Datatype: date
+  # Examples: 2024-01-31, 2024-01-31T11:06
+    start: '...'  # ← REPLACE
+
+  # Datatype: date
+  # Examples: 2024-01-31, 2024-01-31T11:06
+    stop: '...' # ← REPLACE
+...

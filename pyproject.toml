@@ -1,0 +1,123 @@
+# https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
+[build-system]
+requires = ["setuptools>=45", "setuptools-scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "everest-models"
+description = "Module containing a collection of jobs for ERT"
+readme = "README.md"
+license = {text = "GPL-3.0"}
+requires-python = ">=3.8"
+authors = [
+    {name="Equinor ASA"},
+]
+classifiers = [
+    "Programming language :: Python",
+    "Programming language :: Python :: 3.8",
+    "Programming language :: Python :: 3.9",
+    "Programming language :: Python :: 3.10",
+    "Programming language :: Python :: 3.11",
+]
+dependencies = [
+    "resdata",
+    "Jinja2>=3.1.2",
+    "numpy>=1.23.2",
+    "ruamel.yaml>=0.17.21",
+    "fmu-steaclient @ git+https://github.com/equinor/fmu-steaclient",
+    "pydantic",
+    "ortools>=9.3",
+    "rips>=2023.01.0.1",
+    "lasio",
+    "scipy"
+]
+dynamic = [
+    "version",
+]
+
+[project.urls]
+"Repository" = "https://github.com/equinor/everest-models"
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "decorator",
+    "mock",
+    "hypothesis",
+    "pytest-runner",
+    "pytest-timeout",
+    "fmu-steaclient @ git+https://github.com/equinor/fmu-steaclient",
+]
+
+style = [
+  "pre-commit",
+  "pre-commit-hooks",
+  "ruff",
+]
+
+docs = [
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocstrings[python]",
+    "mdx_include",
+    "pygments",
+    "markdown-mdantic"
+]
+
+[project.entry-points."everest"]
+everest-models = "everest_models.everest_hooks"
+
+[project.scripts]
+fm_add_templates = "everest_models.jobs.fm_add_templates.cli:main_entry_point"
+fm_drill_date_planner = "everest_models.jobs.fm_drill_date_planner.cli:main_entry_point"
+fm_drill_planner = "everest_models.jobs.fm_drill_planner.cli:main_entry_point"
+fm_compute_economics = "everest_models.jobs.fm_compute_economics.cli:main_entry_point"
+fm_npv = "everest_models.jobs.fm_npv.cli:main_entry_point"
+fm_extract_summary_data = "everest_models.jobs.fm_extract_summary_data.cli:main_entry_point"
+fm_interpret_well_drill = "everest_models.jobs.fm_interpret_well_drill.cli:main_entry_point"
+fm_rf = "everest_models.jobs.fm_rf.cli:main_entry_point"
+fm_schmerge = "everest_models.jobs.fm_schmerge.cli:main_entry_point"
+fm_select_wells = "everest_models.jobs.fm_select_wells.cli:main_entry_point"
+fm_stea = "everest_models.jobs.fm_stea.cli:main_entry_point"
+fm_strip_dates = "everest_models.jobs.fm_strip_dates.cli:main_entry_point"
+fm_well_constraints = "everest_models.jobs.fm_well_constraints.cli:main_entry_point"
+fm_well_filter = "everest_models.jobs.fm_well_filter.cli:main_entry_point"
+fm_well_trajectory = "everest_models.jobs.fm_well_trajectory.cli:main_entry_point"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools_scm]
+write_to = "src/everest_models/version.py"
+
+[tool.setuptools.dynamic]
+version = {attr = "everest_models.version.__version__"}
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+required_plugins = "hypothesis"
+testpaths = [
+    "tests"
+]
+markers = [
+    "slow",
+    "resinsight"
+]
+
+log_cli = 0
+log_cli_level = "INFO"
+
+[tool.ruff]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "C",  # flake8-comprehensions
+    "B",  # flake8-bugbear
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]

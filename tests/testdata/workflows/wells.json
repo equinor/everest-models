@@ -1,0 +1,26 @@
+[
+ {
+   "name": "PROD1",
+   "drill_time": 20
+ },
+ {
+   "name": "PROD2",
+   "drill_time": 25
+ },
+ {
+   "name": "INJ1",
+   "drill_time": 43
+ },
+ {
+   "name": "INJ2",
+   "drill_time": 23
+ },
+ {
+   "name": "PROD3",
+   "drill_time": 36
+ },
+ {
+   "name": "EXTRA1",
+   "drill_time": 100
+ }
+]

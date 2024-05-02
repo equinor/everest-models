@@ -1,0 +1,10 @@
+---
+# file specification:
+# '...' are REQUIRED fields that needs replacing
+
+
+# Datatype: number
+# Examples: .1, 1. 1 1.0, 1.34E-5, 1.34e-5
+# Default: null
+scaled_number_of_wells: 'null'
+...

@@ -1,0 +1,22 @@
+usage: add_templates [-h] -i INPUT -o OUTPUT -c CONFIG [--lint] [--schema]
+
+Inserts template file paths for all well operations in the given input file
+where the config keys match the operation information. If key sets associated
+with multiple template files match a well operation the template with the most
+keys matching will be the one inserted
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --lint                Lints all given input (file) arguments with no data
+                        transformation.
+  --schema              Output schema(s) for file parameter(s)
+
+required named arguments:
+  -i INPUT, --input INPUT
+                        Input file that requires template paths. Json file
+                        expected ex: wells.json
+  -o OUTPUT, --output OUTPUT
+                        Output file
+  -c CONFIG, --config CONFIG
+                        Config file containing list of template file paths to
+                        be injected.

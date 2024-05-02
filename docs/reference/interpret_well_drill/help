@@ -1,0 +1,17 @@
+usage: interpret_well_drill [-h] -i INPUT [--lint] -o OUTPUT
+
+This module transforms dakota well_drill output to a json object.This object
+contains a list of well names to keep.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --lint                Lints all given input (file) arguments with no data
+                        transformation.
+
+required named arguments:
+  -i INPUT, --input INPUT
+                        Yaml file that contains optimizer output, this should
+                        consist of a list of well names, with their associated
+                        value between 0 and 1
+  -o OUTPUT, --output OUTPUT
+                        File path to write the resulting json file to.

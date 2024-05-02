@@ -1,0 +1,61 @@
+---
+arguments: --config/-c
+fields:
+   connections:
+      date: {format: date, required: false, type: string}
+      formations_file: {format: file-path, required: true, type: string}
+      perforations:
+      - dynamic:
+        - key: {required: true, type: string}
+          max: {required: false, type: number}
+          min: {required: false, type: number}
+        formations: [integer]
+        static:
+        - key: {required: true, type: string}
+          max: {required: false, type: number}
+          min: {required: false, type: number}
+        well: {required: true, type: string}
+      type: {literal: resinsight, required: true, type: string}
+   eclipse_model: {format: path, required: false, type: string}
+   interpolation:
+      one of:
+      - length: {default: 50, required: false, type: integer}
+        trial_number: {default: 100000, required: false, type: integer}
+        trial_step: {default: 0.01, required: false, type: number}
+        type: {literal: simple, required: true, type: string}
+      - measured_depth_step: {default: 5, required: false, type: number}
+        type: {literal: resinsight, required: true, type: string}
+   outputs:
+      geometry: {format: path, required: false, type: string}
+      guide_points: {format: path, required: false, type: string}
+      npv_input: {format: path, required: false, type: string}
+      save_paths: {required: false, type: boolean}
+   platforms:
+   - k: {required: true, type: number}
+     name: {required: true, type: string}
+     x: {required: true, type: number}
+     y: {required: true, type: number}
+     z: {required: true, type: number}
+   references:
+      k: {required: true, type: number}
+      x: {required: true, type: number}
+      y: {required: true, type: number}
+      z: {required: true, type: number}
+   resinsight_binary: {format: file-path, required: false, type: string}
+   scales:
+      k: {required: true, type: number}
+      x: {required: true, type: number}
+      y: {required: true, type: number}
+      z: {required: true, type: number}
+   wells:
+   - cost: {required: false, type: number}
+     dogleg: {default: 4.0, required: false, type: number}
+     group: {required: true, type: string}
+     name: {required: true, type: string}
+     phase:
+        choices: [WATER, GAS, OIL]
+        type: string
+     platform: {required: false, type: string}
+     radius: {default: 0.15, required: false, type: number}
+     skin: {required: false, type: number}
+...
