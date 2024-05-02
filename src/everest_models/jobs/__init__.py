@@ -13,6 +13,7 @@ from everest_models.jobs import (
     fm_strip_dates,
     fm_well_constraints,
     fm_well_filter,
+    fm_well_swapping,
     fm_well_trajectory,
 )
 
@@ -32,4 +33,5 @@ __all__ = [
     "fm_well_constraints",
     "fm_well_filter",
     "fm_well_trajectory",
+    "fm_well_swapping",
 ]

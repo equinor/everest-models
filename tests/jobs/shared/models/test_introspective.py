@@ -1,7 +1,7 @@
 from enum import Enum
 from io import StringIO
 from textwrap import dedent
-from typing import Any, List, Sequence, Set, Tuple, Type
+from typing import Any, List, Optional, Sequence, Set, Tuple, Type, Union
 
 import pytest
 from everest_models.jobs.shared.models.base_config.introspective import (
@@ -153,10 +153,12 @@ def test_builtin_datatypes_with_enum():
 @pytest.mark.parametrize(
     "typ, expected",
     (
-        pytest.param(Sequence[int], "a array of integer", id="sequence"),
-        pytest.param(Set[int], "a collection of integer", id="set"),
-        pytest.param(List[str], "a array of string", id="list"),
-        pytest.param(Tuple[int, int], "a array of (integer, integer)", id="tuple"),
+        pytest.param(Sequence[int], "[integer]", id="sequence"),
+        pytest.param(Union[int, float], "integer or number", id="union"),
+        pytest.param(Optional[int], "integer", id="optional"),
+        pytest.param(Set[int], "unique values [integer]", id="set"),
+        pytest.param(List[str], "[string]", id="list"),
+        pytest.param(Tuple[int, int], "[integer, integer]", id="tuple"),
     ),
 )
 def test_builtin_datatypes_with_sequence(typ: Type, expected: str):

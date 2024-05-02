@@ -48,32 +48,38 @@ class Wrapper(ModelConfig):
                 """
                 # User description. A relatively simple data.
                 # Datatype: User map
+                # Required: True
                 user:
 
                   # The name of the test model
                   # Datatype: string
                   # Examples: a string value
+                  # Required: False
                   # Default: some_name
                   name: some_name
 
                   # Long live the test model
                   # Datatype: integer
                   # Examples: 5, 1.5e4
+                  # Required: True
                   age: '...'  # ← REPLACE
 
                   # Sex of the user
                   # Datatype: string
                   # Choices: male, female
+                  # Required: False
                   # Default: male
                   sex: male
 
                 # Datatype: integer
                 # Examples: 1, 1.34E5, 1.34e5
+                # Required: False
                 # Default: 213
                 user_id: 213
 
                 # Datatype: Path
                 # Examples: /path/to/file.ext, /path/to/dirictory/
+                # Required: True
                 data: '...'  # ← REPLACE
                 """
             ),
@@ -88,17 +94,20 @@ class Wrapper(ModelConfig):
                   # The name of the test model
                   # Datatype: string
                   # Examples: a string value
+                  # Required: False
                   # Default: some_name
                   name: some_name
 
                   # Long live the test model
                   # Datatype: integer
                   # Examples: 5, 1.5e4
+                  # Required: True
                   age: '...'  # ← REPLACE
 
                   # Sex of the user
                   # Datatype: string
                   # Choices: male, female
+                  # Required: False
                   # Default: male
                   sex: male
                 """
@@ -115,17 +124,20 @@ class Wrapper(ModelConfig):
                     # The name of the test model
                     # Datatype: string
                     # Examples: a string value
+                    # Required: False
                     # Default: some_name
                     name: some_name
 
                     # Long live the test model
                     # Datatype: integer
                     # Examples: 5, 1.5e4
+                    # Required: True
                     age: '...'  # ← REPLACE
 
                     # Sex of the user
                     # Datatype: string
                     # Choices: male, female
+                    # Required: False
                     # Default: male
                     sex: male
                 """
@@ -178,5 +190,5 @@ def test_base_config_check_for_ellipses() -> None:
         ),
     ),
 )
-def test_base_config_model_config(model: ModelConfig, expected: Dict[str, Any]) -> None:
+def test_base_config_model(model: ModelConfig, expected: Dict[str, Any]) -> None:
     assert model.model_config == expected

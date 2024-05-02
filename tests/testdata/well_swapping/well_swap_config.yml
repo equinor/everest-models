@@ -5,48 +5,49 @@ priorities:
   # fallback priorities if a priorities file is not given
   # Datatype: a mapping of (string, a array of number)
   # Default: null
-  WELL-1: [.5, .5, .5, .5]
-  WELL-2: [.5, .5, .5, .5]
-  WELL-3: [.5, .5, .5, .5]
-  WELL-4: [.5, .5, .5, .5]
-  WELL-5: [.5, .5, .5, .5]
+  fallback_values:
+    WELL-1: [.5, .5, .5, .5]
+    WELL-2: [.5, .5, .5, .5]
+    WELL-3: [.5, .5, .5, .5]
+    WELL-4: [.5, .5, .5, .5]
+    WELL-5: [.5, .5, .5, .5]
 
 # Datatype: Constraint map
-n_max_wells:
-  fallback_values: [2, 2, 2, 2]
+constraints:
+  n_max_wells:
+    fallback_values: [2, 2, 2, 2]
 
-  # Datatype: Scaling map
-  scaling:
-    # Datatype: Bound
-    source: [0.001, 1]
+    # Datatype: Scaling map
+    scaling:
+      # Datatype: Bound
+      source: [0.001, 1]
 
-    # Datatype: Bound
-    target: [2, 5]
+      # Datatype: Bound
+      target: [2, 5]
 
-# Datatype: Constraint map
-n_switch_states:
-  fallback_values: [300, 300, 300, 300]
+  # Datatype: Constraint map
+  n_switch_states:
+    fallback_values: [300, 300, 300, 300]
 
-  # Datatype: Scaling map
-  scaling:
-    # Datatype: Bound
-    source: [0.001, 1]
+    # Datatype: Scaling map
+    scaling:
+      # Datatype: Bound
+      source: [0.001, 1]
 
-    # Datatype: Bound
-    target: [2, 5]
+      # Datatype: Bound
+      target: [2, 5]
 
-# Datatype: Constraint map
-state_duration:
-  fallback_values: [300, 300, 300, 300]
+  # Datatype: Constraint map
+  state_duration:
+    fallback_values: [300, 300, 300, 300]
 
-  # Datatype: Scaling map
-  scaling:
-    # Datatype: Bound
-    source: [0.001, 1]
+    # Datatype: Scaling map
+    scaling:
+      # Datatype: Bound
+      source: [0.001, 1]
 
-    # Datatype: Bound
-    target: [0, 500]
-
+      # Datatype: Bound
+      target: [0, 500]
 # Datatype: date
 # Examples: 2024-01-31, 2024-01-31T11:06
 start_date: 2022-06-01

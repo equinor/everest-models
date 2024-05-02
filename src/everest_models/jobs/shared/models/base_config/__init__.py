@@ -1,3 +1,7 @@
+from typing import TypeVar
+
 from .base import ModelConfig, RootModelConfig
 
-__all__ = ["ModelConfig", "RootModelConfig"]
+Model = TypeVar("Model", bound=ModelConfig)
+
+__all__ = ["ModelConfig", "RootModelConfig", "Model"]

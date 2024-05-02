@@ -1,9 +1,95 @@
+from argparse import Namespace
+from collections import defaultdict
 from datetime import date, timedelta
 from itertools import accumulate
-from typing import Dict, Iterable, Iterator, List, Sequence, Tuple
+from pathlib import Path
+from typing import (
+    Any,
+    DefaultDict,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    NamedTuple,
+    Sequence,
+    Tuple,
+)
 
-from .models import Operation, Well
+from everest_models.jobs.shared.models import Operation, Well, Wells
+
+from .model_config import validate_priorities_and_state_initial_same_wells
 from .state_processor import StateProcessor
+
+
+class Data(NamedTuple):
+    lint_only: bool
+    priorities: Tuple[Tuple[str, ...], ...]
+    initial_states: Dict[str, str]
+    wells: Wells
+    output: Path
+    n_max_wells: Tuple[int, ...]
+    n_switch_states: Tuple[int, ...]
+    state_duration: Tuple[int, ...]
+    errors: List[str]
+
+
+def clean_parsed_data(options: Namespace) -> Data:
+    """
+    Cleans command-line parsed data and returns a Data object.
+
+    if errors are trigger it will be written to Data.errors
+
+    Parameters:
+    options (Namespace): A command-line parsed options
+
+    Returns:
+    Data: (cleaned data and/or errors).
+      - lint_only
+      - priorities
+      - initial_states
+      - wells
+      - output
+      - n_max_wells
+      - n_switch_states
+      - state_duration
+      - errors
+    """
+
+    errors: List[str] = []
+    lint_only = options.command == "lint"
+
+    def validate_exist(value: Any, message: str):
+        if not (value or lint_only):
+            errors.append(message)
+        return value
+
+    priorities = validate_exist(
+        sorted_well_priorities(
+            options.priorities or options.config.priorities.inverted
+        ),
+        "no priorities",
+    )
+
+    try:
+        validate_priorities_and_state_initial_same_wells(
+            set(priorities[0]), set(options.config.state.wells)
+        )
+    except ValueError as e:
+        errors.append(str(e))
+
+    return Data(
+        lint_only,
+        priorities,
+        options.config.initial_states(priorities[0]),
+        wells=validate_exist(
+            options.wells or options.config.wells_instance(), "no wells"
+        ),
+        output=validate_exist(options.output or options.config.output, "no output"),
+        **validate_exist(
+            options.config.constraints.rescale(options.constraints), "no constraints"
+        ),
+        errors=errors,
+    )
 
 
 def sorted_well_priorities(
@@ -32,6 +118,7 @@ def inject_well_operations(
     This function iterates through the provided params and injects the corresponding operations into the respective wells.
     Each operation is validated using the Operation model before being added to the well's operations list.
     """
+    wells_: DefaultDict[str, List[Operation]] = defaultdict(list)
     for _date, states in params:
         for well, state in states:
             if well not in wells:
@@ -42,7 +129,10 @@ def inject_well_operations(
                 raise ValueError(
                     f"Invalid operation data: {_date}, {state}. {str(e)}"
                 ) from e
-            wells[well].operations.append(operation)
+            wells_[well].append(operation)
+
+    for well, operation in wells_.items():
+        wells[well].operations = (*wells[well].operations, *operation)  # type: ignore
 
 
 def duration_to_dates(durations: Sequence[int], start_date: date) -> Iterator[date]:
@@ -67,7 +157,7 @@ def determine_index_states(
     state_processor: StateProcessor,
 ) -> Iterator[Iterator[Tuple[str, str]]]:
     """
-    Iterate through state paramenteres (wells, n_max_wells, n_switch_states) and process the well states for each index.
+    Iterate through state parameters (wells, n_max_wells, n_switch_states) and process the well states for each index.
 
     Args:
         process_params(Iterable[Tuple[Tuple[str, ...], int, int]],):

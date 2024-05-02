@@ -1,17 +1,18 @@
-from collections.abc import Collection, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date, datetime
 from enum import Enum
-from inspect import isclass
 from pathlib import Path
-from typing import Any, Optional, Type, get_args, get_origin
+from typing import Any, Optional, Union, get_args, get_origin
 
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 from pydantic_core import PydanticUndefined
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
-__all__ = ["builtin_datatypes", "build_yaml_structure", "is_related"]
+from everest_models.jobs.shared import is_related
+
+__all__ = ["builtin_datatypes", "build_yaml_structure"]
 
 
 INLINE_REPLACE = "← REPLACE"
@@ -24,11 +25,9 @@ class CommentedObject:
     inline_comment: Optional[str] = None
 
 
-def is_related(value: Any, typ: Type) -> bool:
-    return (isclass(value) and issubclass(value, typ)) or isinstance(value, typ)
-
-
 def builtin_datatypes(value: Any) -> str:
+    if value is None or value is type(None):
+        return ""
     if is_related(value, bool):
         return "boolean"
     if is_related(value, int):
@@ -38,7 +37,7 @@ def builtin_datatypes(value: Any) -> str:
     if is_related(value, str):
         return "string"
     if is_related(value, BaseModel):
-        return f"{value.__name__} map"
+        return f"{value.__name__.lstrip('_')} map"
     if is_related(value, Enum):
         try:
             value = value.value
@@ -49,24 +48,18 @@ def builtin_datatypes(value: Any) -> str:
     if is_related(value, Sequence) and hasattr(value, "_field_types"):
         return str([builtin_datatypes(type_) for type_ in value._field_types.values()])
     if origin := get_origin(value):
-        string = (
-            f"({items})"
-            if ","
-            in (
-                items := ", ".join(
-                    builtin_datatypes(arg)
-                    for arg in get_args(value)
-                    if arg is not Ellipsis
-                )
-            )
-            else items
+        string = ", ".join(
+            builtin_datatypes(arg) for arg in get_args(value) if arg is not Ellipsis
         )
+        if origin is Union:
+            return string.rstrip(", ").replace(",", " or")
+        if is_related(origin, set):
+            return f"unique values [{string}]"
         if is_related(origin, Sequence):
-            return f"a array of {string}"
+            return f"[{string}]"
         if is_related(origin, Mapping):
-            return f"a mapping of {string}"
-        if is_related(origin, Collection):
-            return f"a collection of {string}"
+            return "{" + string.replace(",", ":") + "}"
+        return string
     return value.__name__
 
 
@@ -77,7 +70,7 @@ def _example_types(value: Any) -> str:
     if is_related(value, int):
         return f"{prefix}: 1, 1.34E5, 1.34e5"
     if is_related(value, float):
-        return f"{prefix}: .1, 1. 1 1.0, 1.34E-5, 1.34e-5"
+        return f"{prefix}: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5"
     if is_related(value, str):
         return f"{prefix}: a string value"
     if is_related(value, Path):
@@ -112,7 +105,8 @@ def _build_comment(info: FieldInfo) -> str:
                 info.description,
                 f"Datatype: {typ or '_'}",
                 examples,
-                f"Default: {default}" if default else default,
+                f"Required: {info.is_required()}",
+                default if default is None else f"Default: {default}",
             ),
         )
     )
@@ -134,7 +128,7 @@ def build_yaml_structure(data: Any, level: int = 0):
             else:
                 result[key] = build_yaml_structure(value)
         return result
-    elif isinstance(data, Sequence) and not isinstance(data, str):
+    if isinstance(data, Sequence) and not isinstance(data, str):
         result = CommentedSeq()
         for item in data:
             if isinstance(item, CommentedObject):
@@ -147,11 +141,10 @@ def build_yaml_structure(data: Any, level: int = 0):
             else:
                 result.append(build_yaml_structure(item, level + 1))
         return result
-    elif isinstance(data, CommentedObject):
+    if isinstance(data, CommentedObject):
         # For standalone CommentedObject not in a collection
         return build_yaml_structure(data.value, level)
-    else:
-        return "null" if data is None else data() if callable(data) else data
+    return data() if callable(data) else data
 
 
 def parse_field_info(info: FieldInfo) -> Any:
