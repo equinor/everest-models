@@ -17,7 +17,7 @@ def test_well_swapping_workflow(copy_testdata_tmpdir) -> None:
             "constraints.json",
             "-o",
             "well_swap_output.json",
-            "-i",
+            "-w",
             "wells.json",
             "well_swap_config.yml",
         ]

@@ -52,5 +52,8 @@ def dump_yaml(
     _yaml.default_flow_style = default_flow_style
     _yaml.explicit_start = explicit
     _yaml.explicit_end = explicit
+    _yaml.representer.add_representer(
+        type(None), lambda x, _: x.represent_scalar("tag:yaml.org,2002:null", "null")
+    )
     _yaml.indent(mapping=3, sequence=2, offset=0)
     _yaml.dump(data, fp)

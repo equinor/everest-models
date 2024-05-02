@@ -2,7 +2,7 @@ from copy import deepcopy
 from typing import Any, Dict, Set
 
 import pytest
-from everest_models.jobs.fm_well_swapping.models.config import (
+from everest_models.jobs.fm_well_swapping.model_config import (
     SINGLE_WORD,
     ConfigSchema,
     DircetionalState,
@@ -85,7 +85,7 @@ def test_well_swapping_config_constraints_bad(
     well_swap_config_data: Dict[str, Any],
 ) -> None:
     config = deepcopy(well_swap_config_data)
-    config[constraint]["fallback_values"].pop()
+    config["constraints"][constraint]["fallback_values"].pop()
     with pytest.raises(
         ValidationError, match="Fallback values are not the same length"
     ):
