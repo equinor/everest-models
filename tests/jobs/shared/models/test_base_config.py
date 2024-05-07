@@ -145,7 +145,8 @@ def test_base_config_check_for_ellipses() -> None:
     with pytest.raises(ValidationError, match="Field required"):
         User.model_validate({})
     with pytest.raises(
-        ValidationError, match="Please replace `...`, this field is required"
+        ValidationError,
+        match="Please replace any and/or all `...`, these field are required",
     ):
         User.model_validate({"age": "..."})
 

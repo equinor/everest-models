@@ -29,7 +29,7 @@ def missing_controls() -> Dict[str, float]:
 def missing_well() -> Wells:
     with open("wells.json") as fp:
         wells = json.load(fp)
-    return Wells.model_validate(well for well in wells if int(well["name"][-1]) % 2)
+    return Wells.model_validate([well for well in wells if int(well["name"][-1]) % 2])
 
 
 def test_drill_date_planner_main_entry_point(
