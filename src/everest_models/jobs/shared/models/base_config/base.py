@@ -1,7 +1,11 @@
 from typing import Any, Dict, Union
 
-from pydantic import BaseModel, ConfigDict, RootModel, ValidationInfo, field_validator
-from pydantic_core import PydanticUndefined
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    RootModel,
+    model_validator,
+)
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 from typing_extensions import override
 
@@ -19,16 +23,20 @@ class ModelConfig(BaseModel):
         regex_engine="rust-regex",
     )
 
-    @field_validator("*", mode="before")
+    @model_validator(mode="before")
     @classmethod
-    def check_for_ellipses(cls, value: Any, info: ValidationInfo) -> Any:
-        if value == "...":
-            if (
-                default := info.field_name and cls.model_fields[info.field_name].default
-            ) is PydanticUndefined:
-                raise ValueError("Please replace `...`, this field is required")
-            return default
-        return value
+    def check_for_ellipses(cls, data: Any) -> Any:
+        def any_ellipses(data: Any):
+            return any(
+                any_ellipses(value) if isinstance(value, dict) else value == "..."
+                for value in (data.values() if isinstance(data, dict) else data)
+            )
+
+        if any_ellipses(data):
+            raise ValueError(
+                "Please replace any and/or all `...`, these field are required"
+            )
+        return data
 
     @classmethod
     def introspective_data(cls) -> Dict[str, Any]:
