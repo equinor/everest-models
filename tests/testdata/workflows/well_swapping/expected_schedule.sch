@@ -72,13 +72,13 @@ WELOPEN
 
 --end templates/welopen.jinja
 
---start templates/welshut.jinja
+--start templates/welclose.jinja
 
 WELOPEN
-  'WELL-3' 'SHUT' /
+  'WELL-3' 'CLOSE' /
 /
 
---end templates/welshut.jinja
+--end templates/welclose.jinja
 
 --start templates/welopen.jinja
 
@@ -100,13 +100,13 @@ DATES
  14 OCT 2023 / --ADDED
 /
 
---start templates/welshut.jinja
+--start templates/welclose.jinja
 
 WELOPEN
-  'WELL-1' 'SHUT' /
+  'WELL-1' 'CLOSE' /
 /
 
---end templates/welshut.jinja
+--end templates/welclose.jinja
 
 --start templates/welopen.jinja
 
@@ -148,13 +148,13 @@ DATES
  20 JUN 2024 / --ADDED
 /
 
---start templates/welshut.jinja
+--start templates/welclose.jinja
 
 WELOPEN
-  'WELL-1' 'SHUT' /
+  'WELL-1' 'CLOSE' /
 /
 
---end templates/welshut.jinja
+--end templates/welclose.jinja
 
 --start templates/welopen.jinja
 
@@ -164,13 +164,13 @@ WELOPEN
 
 --end templates/welopen.jinja
 
---start templates/welshut.jinja
+--start templates/welclose.jinja
 
 WELOPEN
-  'WELL-3' 'SHUT' /
+  'WELL-3' 'CLOSE' /
 /
 
---end templates/welshut.jinja
+--end templates/welclose.jinja
 
 --start templates/welopen.jinja
 

@@ -2,19 +2,19 @@ from datetime import date
 from functools import partial
 from typing import Dict, Tuple
 
-from everest_models.jobs.shared.arguments import (
+from ..shared.arguments import (
     Parser,
     add_output_argument,
     add_wells_input_argument,
 )
-from everest_models.jobs.shared.io_utils import load_json
-from everest_models.jobs.shared.parsers import bootstrap_parser
-from everest_models.jobs.shared.validators import (
+from ..shared.io_utils import load_json
+from ..shared.parsers import bootstrap_parser
+from ..shared.validators import (
+    is_gt_zero,
     parse_file,
     valid_optimizer,
 )
-
-from .model_config import ConfigSchema
+from .models import ConfigSchema
 
 _CONFIG_ARGUMENT = "config"
 _PRIORITIES_ARGUMENT = "-p/--priorities"
@@ -26,6 +26,8 @@ def _clean_constraint(value: str) -> Dict[str, Tuple[float, ...]]:
     return {key: tuple(value.values()) for key, value in load_json(value).items()}
 
 
+# TODO: Change program name to state adjuster or something more related to what it does
+# omit anything to do with well
 @bootstrap_parser(
     schemas=SCHEMAS,  # type: ignore
     deprication=date(2024, 5, 1),
@@ -51,19 +53,21 @@ def build_argument_parser(
         help="Everest generated optimized priorities",
     )
     parser.add_argument(
-        "--allow-reopen",
-        action="store_true",
-        help="ignores irreversible states if exist",
+        "-il",
+        "--iteration-limit",
+        default=0,
+        type=partial(is_gt_zero, "limit-number-iterations must be a positive number"),
+        help="Limit the number of iteration, this value is capped by available iterations.",
     )
     add_wells_input_argument(
         parser,
         required=False,
-        arg=("-w", "--wells"),
+        arg=("-cs", "--cases"),
         help="Everest generated wells.json file",
     )
     if not lint:
         add_output_argument(
             parser,
             required=False,
-            help="Where to write wells opertation json file",
+            help="Where to write output file to",
         )

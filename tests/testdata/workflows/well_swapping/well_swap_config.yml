@@ -1,9 +1,12 @@
 # config specification:
 # '...' are REQUIRED fields that needs replacing
 
+# Datatype: Priorities map
+# Required: True
 priorities:
-  # fallback priorities if a priorities file is not given
-  # Datatype: a mapping of (string, a array of number)
+  # fallback priorities if priorities file is not given
+  # Datatype: {string: [number]}
+  # Required: False
   # Default: null
   fallback_values:
     WELL-1: [.5, .5, .5, .5]
@@ -12,63 +15,98 @@ priorities:
     WELL-4: [.5, .5, .5, .5]
     WELL-5: [.5, .5, .5, .5]
 
-# Datatype: Constraint map
+# Make sure the following are present in you Everest configuration file.
+
+# create a generic control where the control variables are:
+#     'max_n_cases' and 'state_duration'
+#     and the length of all initial_guesses are n+1,
+#     where 'n' is the nth index in the initial_guess array
+
+# controls:
+# - name: <name of constraint file>
+#     type: generic_control
+#     variables:
+#     - { name: max_n_cases, initial_guess: [x0, x1, ..., xn] }
+#     - { name: state_duration, initial_guess: [z0, z1, ..., zn] }
+
+# Datatype: Constraints map
+# Required: True
 constraints:
-  n_max_wells:
-    fallback_values: [2, 2, 2, 2]
-
-    # Datatype: Scaling map
-    scaling:
-      # Datatype: Bound
-      source: [0.001, 1]
-
-      # Datatype: Bound
-      target: [2, 5]
-
+  # Constraint information for the time duration of any given state per iteraton
   # Datatype: Constraint map
-  n_switch_states:
-    fallback_values: [300, 300, 300, 300]
-
-    # Datatype: Scaling map
-    scaling:
-      # Datatype: Bound
-      source: [0.001, 1]
-
-      # Datatype: Bound
-      target: [2, 5]
-
-  # Datatype: Constraint map
+  # Required: True
   state_duration:
+    # A list of values to fallback on if constraint json file is not present
+    # Note: all fallback fields must be the same length
+    # Datatype: [integer]
+    # Required: False
+    # Default: null
     fallback_values: [300, 300, 300, 300]
 
+    # Scaling data used by everest for producing constraint files,
+    # given these values this well swapping forward model will rescale the constraints
     # Datatype: Scaling map
+    # Required: True
     scaling:
-      # Datatype: Bound
+      # [min, max] values for scaling source
+      # Datatype: ['number', 'number']
+      # Required: True
       source: [0.001, 1]
 
-      # Datatype: Bound
+      # [min, max] values for scaling target
+      # Datatype: ['number', 'number']
+      # Required: True
       target: [0, 500]
 
 # Datatype: date
 # Examples: 2024-01-31, 2024-01-31T11:06
+# Required: True
 start_date: 2022-06-01
 
 # Datatype: State map
+# Required: True
 state:
-  viable: [shut, open]
-  initial:
-    # States to set wells to at initial iteration
-    # Datatype: a mapping of (string, string)
-    # Default: null
-    WELL-1: shut
-    WELL-2: shut
-    WELL-3: shut
-    WELL-4: shut
-    WELL-5: shut
-  # True: 'actions' field are taken as allowed state actions.
-  # False: 'actions' field are taken as prohibited state actions.
+  # State hierarchy in decending order [highest, ..., lowest]
+  # Note: values must be unique!
+  # Tip: highest is the default target state
+  # and lowest is the default initial state
+  # Datatype: [StateHierarchy map]
+  # Required: True
+  hierarchy:
+    - # State's label/name.
+      # Datatype: string
+      # Examples: a string value
+      # Required: True
+      label:
+        open
+
+        # Case state toggle quota per iteration.
+        # Tip: '_', (infinity) alias can be used to pad array
+        # Thus, if you wish all iteration to infinity, then omit this field
+        # Note: If a integer is given, all iterations will be that string
+        # Datatype: integer or [integer or _]
+        # Examples: [_, 4, _, 2], 2
+        # Required: False
+        # Default: null
+      quotas: 3
+    - label: close
+    - label: shut
+
+  # List of directional (source → target) state actions.
+  # Note: action context is set with the 'forbiden_actions' field
+  # Datatype: [['string', 'string']]
+  # Required: False
+  # Default: null
+  actions:
+    - [shut, close]
+    - [open, shut]
+    - [close, shut]
+
+  # False: 'actions' is used as the only allowed state trasitions.
+  # True: 'actions' is negated from allowed state trasitions.
   # Note: if 'actions' is not given this value is ignored
   # Datatype: boolean
   # Choices: true, false
-  # Default: True
-  is_allow_action: true
+  # Required: False
+  # Default: False
+  forbiden_actions: true

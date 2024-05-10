@@ -1,11 +1,10 @@
 templates:
-  -
-    file: "./templates/welopen.jinja"
+  - file: "./templates/welopen.jinja"
     keys:
-        opname: open
-  -
-    file: "./templates/welshut.jinja"
+      opname: open
+  - file: "./templates/welshut.jinja"
     keys:
-        opname: shut
-
-
+      opname: shut
+  - file: "./templates/welclose.jinja"
+    keys:
+      opname: close
