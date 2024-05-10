@@ -147,7 +147,7 @@ class Wrapper(ModelConfig):
     ),
 )
 def test_base_config_commented_map(model: ModelConfig, expected: str) -> None:
-    map = model.commented_map()
+    map = model.commented_map(minimal=False)
     collector = StringIO()
     YAML().dump(map, collector)
     assert collector.getvalue() == expected

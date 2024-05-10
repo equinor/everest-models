@@ -1,18 +1,9 @@
-from copy import deepcopy
-from typing import Any, Dict, Set
+from typing import Any, Dict, Tuple
 
 import pytest
-from everest_models.jobs.fm_well_swapping.model_config import (
-    SINGLE_WORD,
-    ConfigSchema,
-    DircetionalState,
-    Scaling,
-    State,
-    validate_priorities_and_state_initial_same_wells,
-)
+from everest_models.jobs.fm_well_swapping.models import StateConfig
+from everest_models.jobs.fm_well_swapping.models.constraints import _Scaling
 from everest_models.jobs.shared.io_utils import load_yaml
-from hypothesis import given
-from hypothesis import strategies as st
 from pydantic import ValidationError
 from sub_testdata import WELL_SWAPPING as TEST_DATA
 
@@ -20,6 +11,11 @@ from sub_testdata import WELL_SWAPPING as TEST_DATA
 @pytest.fixture(scope="module")
 def well_swap_config_data(path_test_data) -> Dict[str, Any]:
     return load_yaml(path_test_data / TEST_DATA / "well_swap_config.yml")
+
+
+@pytest.fixture(scope="module")
+def well_swap_state_hierarchy() -> Tuple[Dict[str, str], ...]:
+    return {"label": "high"}, {"label": "middle"}, {"label": "low"}
 
 
 @pytest.mark.parametrize(
@@ -32,89 +28,126 @@ def well_swap_config_data(path_test_data) -> Dict[str, Any]:
 )
 def test_well_swapping_config_scaling_bad(source, target, match) -> None:
     with pytest.raises(ValidationError, match=match):
-        Scaling.model_validate({"source": source, "target": target})
-
-
-@given(st.from_regex(regex=SINGLE_WORD, fullmatch=True))
-def test_well_swapping_config_state_action_bad(value) -> None:
-    assert DircetionalState.model_validate({"source": value, "target": "other"})
-    assert DircetionalState.model_validate({"source": "other", "target": value})
-
-
-def test_well_swapping_config_state_action_same_target_source() -> None:
-    with pytest.raises(ValidationError, match="source and values cannot be the same"):
-        DircetionalState.model_validate({"source": "same", "target": "same"})
+        _Scaling.model_validate({"source": source, "target": target})
 
 
 @pytest.mark.parametrize(
-    "initial",
+    "input, expected",
     (
-        pytest.param({"A": "one", "B": "one", "C": "one"}, id="one viable state used"),
+        pytest.param(None, ("high",) * 4, id="states is None"),
+        pytest.param("middle", ("middle",) * 4, id="initial state as a string"),
         pytest.param(
-            {"A": "three", "B": "two", "C": "three"}, id="two viable state used"
+            ("middle", "middle"),
+            ("middle", "middle", "high", "high"),
+            id="fill missing tail",
         ),
         pytest.param(
-            {"A": "one", "B": "two", "C": "three"}, id="all viable state used"
+            ("_", "middle"),
+            ("high", "middle", "high", "high"),
+            id="fill _ default alias",
+        ),
+        pytest.param(
+            ("middle",) * 5,
+            ("middle",) * 4,
+            id="fill None default alias",
         ),
     ),
 )
-def test_well_swapping_config_state_initial_in_viable(initial) -> None:
+def test_targets(input, expected, well_swap_state_hierarchy) -> None:
     assert (
-        state := State.model_validate(
-            {"viable": ["one", "two", "three"], "initial": initial}
+        state := StateConfig.model_validate(
+            {"hierarchy": well_swap_state_hierarchy, "targets": input}
         )
     )
-    assert state.wells == ("A", "B", "C")
+    assert state.get_targets(4) == expected
 
 
-def test_well_swapping_config_state_initial_not_in_viable() -> None:
-    with pytest.raises(ValidationError, match="Non-viable status given"):
-        State.model_validate(
-            {
-                "viable": ["one", "two"],
-                "initial": {"A": "one", "B": "three", "C": "four"},
-            }
-        )
-
-
-@pytest.mark.parametrize(
-    "constraint", ("n_max_wells", "n_switch_states", "state_duration")
-)
-def test_well_swapping_config_constraints_bad(
-    constraint: str,
-    well_swap_config_data: Dict[str, Any],
-) -> None:
-    config = deepcopy(well_swap_config_data)
-    config["constraints"][constraint]["fallback_values"].pop()
-    with pytest.raises(
-        ValidationError, match="Fallback values are not the same length"
-    ):
-        ConfigSchema.model_validate(config)
+def test_targets_error(well_swap_state_hierarchy) -> None:
+    assert (
+        state := StateConfig.model_validate({"hierarchy": well_swap_state_hierarchy})
+    )
+    with pytest.raises(ValueError, match="Iteration must be greater than zero"):
+        assert state.get_targets(0)
 
 
 @pytest.mark.parametrize(
-    "priority_wells, initial_wells",
+    "input, expected",
     (
-        pytest.param(set(), {"one"}, id="no priority wells"),
-        pytest.param({"one"}, set(), id="no initial wells"),
-        pytest.param(set(), set(), id="no wells"),
-        pytest.param({"one"}, {"one"}, id="same wells"),
+        pytest.param(
+            None, {"A": "low", "B": "low", "C": "low"}, id="initial states is None"
+        ),
+        pytest.param(
+            "middle",
+            {"A": "middle", "B": "middle", "C": "middle"},
+            id="initial state as a string",
+        ),
+        pytest.param(
+            {"A": "middle"},
+            {"A": "middle", "B": "low", "C": "low"},
+            id="fill default when omited",
+        ),
+        pytest.param(
+            {"A": "middle", "B": "high"},
+            {"A": "middle", "B": "high", "C": "low"},
+            id="multiple initial states",
+        ),
     ),
 )
-def test_validate_priorities_and_state_initial_same_wells(
-    priority_wells: Set[str], initial_wells: Set[str]
-) -> None:
+def test_get_initial_state(input, expected, well_swap_state_hierarchy) -> None:
     assert (
-        validate_priorities_and_state_initial_same_wells(priority_wells, initial_wells)
-        is None
-    )
-
-
-def test_validate_priorities_and_state_initial_same_wells_fault() -> None:
-    with pytest.raises(
-        ValueError,
-        match="There are some discrepancies in `properties` and/or `initial_states`",
-    ):
-        validate_priorities_and_state_initial_same_wells(
-            {"one", "two"}, {"one", "three"}
+        state := StateConfig.model_validate(
+            {"hierarchy": well_swap_state_hierarchy, "initial": input}
         )
+    )
+    assert state.get_initial(set("ABC")) == expected
+
+
+def test_defualt_values(well_swap_state_hierarchy) -> None:
+    assert (
+        state := StateConfig.model_validate({"hierarchy": well_swap_state_hierarchy})
+    )
+    assert state.get_initial(set("ABC")) == {"A": "low", "B": "low", "C": "low"}
+    assert state.get_targets(4) == ("high",) * 4
+
+
+@pytest.mark.parametrize(
+    "data",
+    (
+        pytest.param({"initial": "four"}, id="initial"),
+        pytest.param({"targets": "four"}, id="targets"),
+    ),
+)
+def test_well_swapping_config_state_not_in_hierarcy(
+    data, well_swap_state_hierarchy
+) -> None:
+    with pytest.raises(ValidationError, match="State not in hierarchy"):
+        StateConfig.model_validate({"hierarchy": well_swap_state_hierarchy, **data})
+
+
+# TODO: Move to tasks tests
+# @pytest.mark.parametrize(
+#     "priority_wells, initial_wells",
+#     (
+#         pytest.param(set(), {"one"}, id="no priority wells"),
+#         pytest.param({"one"}, set(), id="no initial wells"),
+#         pytest.param(set(), set(), id="no wells"),
+#         pytest.param({"one"}, {"one"}, id="same wells"),
+#     ),
+# )
+# def test_validate_priorities_and_state_initial_same_wells(
+#     priority_wells: Set[str], initial_wells: Set[str]
+# ) -> None:
+#     assert (
+#         validate_priorities_and_state_initial_same_wells(priority_wells, initial_wells)
+#         is None
+#     )
+#
+#
+# def test_validate_priorities_and_state_initial_same_wells_fault() -> None:
+#     with pytest.raises(
+#         ValueError,
+#         match="There are some discrepancies in `properties` and/or `initial_states`",
+#     ):
+#         validate_priorities_and_state_initial_same_wells(
+#             {"one", "two"}, {"one", "three"}
+#         )

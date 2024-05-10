@@ -1,74 +1,68 @@
-from collections import defaultdict
-from typing import DefaultDict, Dict, Iterator, Optional, Sequence, Set, Tuple
+from typing import Dict, Iterable, Iterator, List, Tuple
+
+from .models import Case, Quota, State
+from .state_machine import StateMachine
 
 
 class StateProcessor:
     def __init__(
         self,
-        default: str,
-        is_allow_action: bool,
-        latest: Dict[str, str],
-        actions: Optional[Sequence[Tuple[str, str]]] = None,
+        state_machine: StateMachine,
+        initial_states: Dict[Case, State],
+        quotas: Dict[State, List[Quota]],
     ) -> None:
         """
-        Initialize an instance of StateProcessor.
+        Create a StateProcessor instance.
 
         Parameters:
-        - default (str): The default state for the wells.
-        - is_allow_action (bool): action context indicator (allow or refuse).
-        - latest (Dict[str, str]): A dictionary mapping well names to their latest state.
-        - actions (Optional[Sequence[Tuple[str, str]]]): actions to perform depending on context.
+        state_machine (StateMachine): A pandas state matrix wrapper that implements `is_possible_action` and `next_possible_action`.
+        initial_states (Dict[str, str]): A map of case to it's initial state.
+        quotas (Dict[str, List[int]]): A map of state to it's quotas per iteration index.
 
         Returns:
-        - None
+        None
         """
-        self.is_allow_action = is_allow_action
-        self.latest = self._inverted_latest(latest)
-        self.actions = actions
-        self.default = default
+        self._machine: StateMachine = state_machine
+        self._history: Dict[Case, List[State]] = {
+            subject: [state] for subject, state in initial_states.items()
+        }
+        self._quotas: Dict[State, List[Quota]] = quotas
 
-    def _inverted_latest(self, states: Dict[str, str]) -> DefaultDict[str, Set[str]]:
-        latest = defaultdict(set)
-        for well, state in states.items():
-            latest[state].add(well)
-        return latest
+    def _recurse_state_hierarcy(self, index: int, state: State, target: State) -> State:
+        if (
+            self._machine.is_possible_action(state, target)
+            and self._quotas[target][index] > 0
+        ):
+            return target
+        return self._recurse_state_hierarcy(
+            index, *self._machine.next_possible_action(state, target)
+        )
 
-    def _revert_latest(self) -> Iterator[Tuple[str, str]]:
-        return ((well, state) for state, wells in self.latest.items() for well in wells)
+    def _state_toggler(self, case: Case, target: State, index: int) -> None:
+        history = self._history[case]
+        source = history[-1]
+        state = self._recurse_state_hierarcy(index, source, target)
+        self._quotas[state][index] -= 1
+        history.append(state)
 
-    def _toggle_well_state(self, well: str, new: str, previous: str) -> None:
-        if well not in self.latest[new]:
-            self.latest[new].add(well)
-            self.latest[previous].remove(well)
-
-    # TODO: Use n_switch_states, actions and is is_allow_action
-    # TODO: Make functions more generic (remove open and shut)
     def process(
-        self, wells: Tuple[str, ...], n_max_wells: int, n_switch_states: int
-    ) -> Iterator[Tuple[str, str]]:
+        self, cases: Iterable[Case], target: State, index: int
+    ) -> Iterator[Tuple[Case, State]]:
         """
-        Process the given priorities to toggle the state of wells
+        Process given cases to target state.
+
+        If state target is not possible transition to the next possible state.
 
         Parameters:
-        wells (Tuple[str, ...]): well order [highest,..., lowest] priority
-        n_max_wells (int): The maximum number of wells to process.
-        n_switch_states (int): The number of state switches allowed.
+        cases (Iterable[str]): The cases to be processed.
+        target (str): The target state to transition to.
+        index (int): The current iteration.
 
         Returns:
-        Iterator[Tuple[str, str]]:  (well, state), ...
-
-        Raises:
-        ValueError: If n_max_wells is greater than the length of priorities.
+        Iterator[Tuple[str, str]]: An iterator yielding tuples of case and it's post-process state.
         """
-
-        if n_max_wells > len(wells):
-            raise ValueError(
-                "n_max_wells cannot be greater than the length of priorities"
-            )
-
-        for well in wells[:n_max_wells]:
-            self._toggle_well_state(well, "open", "shut")
-        for well in wells[n_max_wells:]:
-            self._toggle_well_state(well, "shut", "open")
-
-        return self._revert_latest()
+        if not set(cases).issubset(self._history):
+            raise ValueError("Case names must be a subset of initial state cases")
+        for case in cases:
+            self._state_toggler(case, target, index)
+        return ((case, states[-1]) for case, states in self._history.items())

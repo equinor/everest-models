@@ -11,15 +11,15 @@ def test_well_swapping_workflow(copy_testdata_tmpdir) -> None:
     well_swapping(
         [
             "run",
+            "well_swap_config.yml",
             "-p",
             "priorities.json",
             "-c",
             "constraints.json",
             "-o",
             "well_swap_output.json",
-            "-w",
+            "-cs",
             "wells.json",
-            "well_swap_config.yml",
         ]
     )
     add_templates(

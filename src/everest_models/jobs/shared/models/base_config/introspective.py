@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Optional, Union, get_args, get_origin
+from typing import Any, Literal, Optional, Union, get_args, get_origin
 
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
@@ -48,6 +48,8 @@ def builtin_datatypes(value: Any) -> str:
     if is_related(value, Sequence) and hasattr(value, "_field_types"):
         return str([builtin_datatypes(type_) for type_ in value._field_types.values()])
     if origin := get_origin(value):
+        if origin is Literal:
+            return ", ".join(item for item in get_args(value))
         string = ", ".join(
             builtin_datatypes(arg) for arg in get_args(value) if arg is not Ellipsis
         )
@@ -113,6 +115,30 @@ def _build_comment(info: FieldInfo) -> str:
 
 
 def build_yaml_structure(data: Any, level: int = 0):
+    """
+    This function recursively builds a commented YAML structure from CommentedObjects.
+
+    It handles different types of containers, mappings, sequences, and CommentedObjects.
+    recursively break containers down to the essientials and and insert into yaml
+    container structure.
+    For mappings, it creates a CommentedMap. If a value is a CommentedObject,
+    For sequences, it creates a CommentedSeq. If an item is a CommentedObject,
+    For standalone CommentedObject, extract elements (comments and value) from object
+    If the data is callable (default_factory), envoke it
+
+    Note: CommentedObject classes for handling comments in the YAML structure.
+
+    Parameters:
+    data (Any): Nested container of CommentedObjects.
+    level (int): The current level of nesting in the YAML structure. Default is 0.
+
+    Returns:
+    Union[CommentedMap, CommentedSeq, Any]: The built YAML structure.
+
+    Raises:
+    None
+    """
+
     if isinstance(data, Mapping):
         result = CommentedMap()
         for key, value in data.items():
@@ -126,7 +152,7 @@ def build_yaml_structure(data: Any, level: int = 0):
                     result.yaml_add_eol_comment(value.inline_comment, key=key)
                 result[key] = sub_result
             else:
-                result[key] = build_yaml_structure(value)
+                result[key] = build_yaml_structure(value, level + 1)
         return result
     if isinstance(data, Sequence) and not isinstance(data, str):
         result = CommentedSeq()
@@ -147,22 +173,9 @@ def build_yaml_structure(data: Any, level: int = 0):
     return data() if callable(data) else data
 
 
-def parse_field_info(info: FieldInfo) -> Any:
-    comment = _build_comment(info)
-    if get_origin(info.annotation) or is_related(info.annotation, BaseModel):
-        return parse_annotation(info.annotation, comment)
-    if info.default_factory is not None:
-        return CommentedObject(info.default_factory, comment)
-    if info.default is PydanticUndefined:
-        return CommentedObject("...", comment, INLINE_REPLACE)
-    return CommentedObject(
-        info.default.value if isinstance(info.default, Enum) else info.default, comment
-    )
-
-
-def parse_annotation(annotation: Any, comment: Optional[str] = None) -> Any:
+def parse_annotation(annotation: Any, minimal: bool, no_comment: bool) -> Any:
     if is_related(annotation, BaseModel):
-        return CommentedObject(annotation.introspective_data(), comment)
+        return annotation.introspective_data(minimal, no_comment)
 
     origin = get_origin(annotation)
     args = get_args(annotation)
@@ -170,14 +183,55 @@ def parse_annotation(annotation: Any, comment: Optional[str] = None) -> Any:
     if is_related(origin, Mapping):
         key, value = args
         return {
-            f"<{builtin_datatypes(key)}>": CommentedObject(
-                parse_annotation(value), comment
-            )
+            f"<{builtin_datatypes(key)}>": parse_annotation(value, minimal, no_comment)
         }
     if is_related(origin, Sequence):
         return [
-            CommentedObject(parse_annotation(arg), comment)
+            parse_annotation(arg, minimal, no_comment)
             for arg in args
             if arg is not Ellipsis
         ]
-    return CommentedObject("...", inline_comment=INLINE_REPLACE)
+    return "..."
+
+
+def _parse_field_info(info: FieldInfo, minimal: bool, no_comment: bool) -> Any:
+    if get_origin(info.annotation) or is_related(info.annotation, BaseModel):
+        return parse_annotation(info.annotation, minimal, no_comment)
+    if info.default_factory is not None:
+        return info.default_factory
+    if info.default is PydanticUndefined:
+        return "..."
+    return info.default.value if isinstance(info.default, Enum) else info.default
+
+
+def parse_field_info(info: FieldInfo, minimal: bool, no_comment: bool) -> Any:
+    """
+    Parses the field information based on the provided parameters.
+
+    Args:
+    info (FieldInfo): The field information to be parsed.
+
+    minimal (bool): A flag indicating only parse required values,
+    used for nested recursion calls back to `introspective_data` method
+    True: only required fields are parsed
+    False: all fields are parsed
+
+    no_comment (bool): A flag indicating whether comments should be included,
+    False: will build comment string from parsed info data
+    and package the comment together with defualt value into a CommentedObject
+    True: only default value is extracted
+
+    Returns:
+    Any: default value if requested with comments.
+
+    Raises:
+    None
+    """
+    value = _parse_field_info(info, minimal, no_comment)
+    if no_comment:
+        return value
+    return CommentedObject(
+        value,
+        _build_comment(info),
+        INLINE_REPLACE if is_related(value, str) and value == "..." else None,
+    )

@@ -1,5 +1,6 @@
 import re
 from argparse import (
+    SUPPRESS,
     ArgumentDefaultsHelpFormatter,
     ArgumentParser,
     _ArgumentGroup,
@@ -40,17 +41,40 @@ class ParserBuilder(Protocol):
 
 
 def build_schema_sub_parser(schema: ArgumentParser) -> None:
-    schema.add_argument(
+    schema.add_argument("schema_action", action=SchemaAction, nargs="?", help=SUPPRESS)
+    group = schema.add_mutually_exclusive_group(required=True)
+    group.add_argument(
+        "-s",
         "--show",
-        nargs=0,
-        action=SchemaAction,
+        action="store_true",
         help="write all user defined input file schematics to stdout",
     )
-    schema.add_argument(
+    group.add_argument(
+        "-i",
         "--init",
-        nargs=0,
-        action=SchemaAction,
-        help="Initialize all needed configuration files",
+        action="store_true",
+        help="Initialize all needed configuration files in current working directory",
+    )
+    schema.add_argument(
+        "-m",
+        "--minimal",
+        action="store_true",
+        help="Add only required fields to the YAML configuration file, "
+        "file name will be prefix with `minimal`",
+    )
+    schema.add_argument(
+        "-nw",
+        "--no-overwrite",
+        action="store_true",
+        help="Do not overwrite file if already exist, "
+        "file name will be postfix with datetimestamp. "
+        "NOTE: this option is ignore if --show is set.",
+    )
+    schema.add_argument(
+        "-nc",
+        "--no-comment",
+        action="store_true",
+        help="Do not add any comments to the YAML configuration file",
     )
 
 
@@ -129,7 +153,8 @@ def bootstrap_parser(
             )
             build_schema_sub_parser(
                 sub_parser.add_parser(
-                    "schema", help="Schematic description of input data files"
+                    "schema",
+                    help="Schematic description of input data files",
                 )
             )
             func(sub_parser.add_parser("run", help="Forward model execution"))
