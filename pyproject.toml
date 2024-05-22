@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "everest-models"
-description = "Module containing a collection of jobs for ERT"
+description = "Module containing a collection of jobs for Everest"
 readme = "README.md"
 license = {text = "GPL-3.0"}
 requires-python = ">=3.8"
