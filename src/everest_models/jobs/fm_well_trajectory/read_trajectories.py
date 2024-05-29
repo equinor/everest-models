@@ -8,9 +8,9 @@ from ..shared.io_utils import load_json
 from .models.config import PlatformConfig, ReferencesConfig, ScalesConfig, WellConfig
 from .models.data_structs import Trajectory
 
-X1 = ("x1_x", "x1_y", "x1_z")
-X2 = ("x2_a", "x2_b", "x2_c")
-X3 = ("x3_x", "x3_y", "x3_z")
+P1 = ("p1_x", "p1_y", "p1_z")
+P2 = ("p2_a", "p2_b", "p2_c")
+P3 = ("p3_x", "p3_y", "p3_z")
 
 OPTIONAL_FILES = [
     "p_x",
@@ -61,7 +61,7 @@ def _read_files_from_everest() -> Dict[str, Any]:
         itertools.chain(
             (
                 (filename, load_json(Path(filename).with_suffix(".json")))
-                for filename in itertools.chain(X1, X2, X3)
+                for filename in itertools.chain(P1, P2, P3)
             ),
             (
                 (filename, load_json(filename))
@@ -82,7 +82,7 @@ def _construct_midpoint(
     z0: float,
     z2: float,
 ) -> Tuple[float, float, float]:
-    a1, b1, c1 = [round(inputs[key][well], ROUND) for key in X2]
+    a1, b1, c1 = [round(inputs[key][well], ROUND) for key in P2]
     return tuple(
         numpy.around(
             [
@@ -118,8 +118,8 @@ def read_trajectories(
             references,
             platform=next(item for item in platforms if item.name == well.platform),
         )
-        x0, y0, z0 = [round(value, ROUND) for value in generate_rescaled_points(X1)]
-        x2, y2, z2 = [round(value, ROUND) for value in generate_rescaled_points(X3)]
+        x0, y0, z0 = [round(value, ROUND) for value in generate_rescaled_points(P1)]
+        x2, y2, z2 = [round(value, ROUND) for value in generate_rescaled_points(P3)]
 
         x1, y1, z1 = _construct_midpoint(well.name, inputs, x0, x2, y0, y2, z0, z2)
 
