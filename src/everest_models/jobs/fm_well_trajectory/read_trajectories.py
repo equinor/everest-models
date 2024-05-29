@@ -1,6 +1,8 @@
 import itertools
+import logging
+from enum import Enum, EnumMeta
 from pathlib import Path
-from typing import Any, Dict, Iterable, Iterator, Tuple
+from typing import Any, Dict, Iterable, Iterator, Optional, Tuple
 
 import numpy
 
@@ -8,16 +10,34 @@ from ..shared.io_utils import load_json
 from .models.config import PlatformConfig, ReferencesConfig, ScalesConfig, WellConfig
 from .models.data_structs import Trajectory
 
+logger = logging.getLogger("well_trajectory")
+
 P1 = ("p1_x", "p1_y", "p1_z")
 P2 = ("p2_a", "p2_b", "p2_c")
 P3 = ("p3_x", "p3_y", "p3_z")
 
-OPTIONAL_FILES = [
-    "p_x",
-    "p_y",
-    "p_z",
-    "k_z",
-]
+
+class ConstantEnumMeta(EnumMeta):
+    def __getattribute__(self, __name: str) -> Any:
+        # Return the value directly for enum members
+        return (
+            attribute.value
+            if isinstance(attribute := super().__getattribute__(__name), Enum)  # type: ignore
+            else attribute
+        )
+
+
+class PLATFORM_FILES(Enum, metaclass=ConstantEnumMeta):
+    X = "platform_x"
+    Y = "platform_y"
+    Z = "platform_z"
+    K = "platform_k"
+
+    @classmethod
+    def iter(cls):
+        return (x.value for x in cls)
+
+
 ROUND = 3
 
 
@@ -31,25 +51,40 @@ def _read_platforms_and_kickoffs(
     references: ReferencesConfig,
     platform: PlatformConfig,
 ) -> Tuple[float, float, float, float]:
+    def _file_value(filename: str) -> Optional[float]:
+        if filename in trajectory and platform.name in trajectory[filename]:
+            logger.warning(
+                f"File: {filename}.json found, '{filename.split('_')[1]}' for '{platform.name}' in configuration ignored."
+            )
+            if filename == PLATFORM_FILES.K and (
+                references.k is None or scales.k is None
+            ):
+                raise ValueError(
+                    "Either 'references.k' or 'scales.k' missing in configuration"
+                )
+
+            return trajectory[filename][platform.name]
+
     px, py = (
         (
-            _rescale_point(scales.x, trajectory["p_x"][platform], references.x),
-            _rescale_point(scales.y, trajectory["p_y"][platform], references.y),
+            _rescale_point(scales.x, p_x, references.x),
+            _rescale_point(scales.y, p_y, references.y),
         )
-        if "p_x" in trajectory and "p_y" in trajectory
+        if (p_x := _file_value(PLATFORM_FILES.X))
+        and (p_y := _file_value(PLATFORM_FILES.Y))
         else (
             platform.x,
             platform.y,
         )
     )
     pz = (
-        _rescale_point(scales.z, trajectory["p_z"][platform], references.z)
-        if "p_z" in trajectory
+        _rescale_point(scales.z, p_z, references.z)
+        if (p_z := _file_value(PLATFORM_FILES.Z))
         else platform.z
     )
     kz = (
-        _rescale_point(scales.k, trajectory["k_z"][platform], references.k)
-        if "k_z" in trajectory
+        _rescale_point(scales.k, k_z, references.k)
+        if (k_z := _file_value(PLATFORM_FILES.K))
         else platform.k
     )
 
@@ -64,8 +99,8 @@ def _read_files_from_everest() -> Dict[str, Any]:
                 for filename in itertools.chain(P1, P2, P3)
             ),
             (
-                (filename, load_json(filename))
-                for filename in OPTIONAL_FILES
+                (filename, load_json(Path(filename).with_suffix(".json")))
+                for filename in PLATFORM_FILES.iter()
                 if Path(filename).with_suffix(".json").exists()
             ),
         )
@@ -116,7 +151,9 @@ def read_trajectories(
             inputs,
             scales,
             references,
-            platform=next(item for item in platforms if item.name == well.platform),
+            platform=next(
+                platform for platform in platforms if platform.name == well.platform
+            ),
         )
         x0, y0, z0 = [round(value, ROUND) for value in generate_rescaled_points(P1)]
         x2, y2, z2 = [round(value, ROUND) for value in generate_rescaled_points(P3)]
