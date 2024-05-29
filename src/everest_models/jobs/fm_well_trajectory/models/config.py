@@ -22,14 +22,14 @@ class ScalesConfig(ModelConfig):
     x: Annotated[float, Field(description="", gt=0)]
     y: Annotated[float, Field(description="", gt=0)]
     z: Annotated[float, Field(description="", gt=0)]
-    k: Annotated[float, Field(description="", gt=0)]
+    k: Annotated[float, Field(default=None, description="", gt=0)]
 
 
 class ReferencesConfig(ModelConfig):
     x: Annotated[float, Field(description="")]
     y: Annotated[float, Field(description="")]
     z: Annotated[float, Field(description="")]
-    k: Annotated[float, Field(description="")]
+    k: Annotated[float, Field(default=None, description="")]
 
 
 class SimpleInterpolationConfig(ModelConfig):
