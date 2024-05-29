@@ -6,7 +6,6 @@ from pydantic import (
     AfterValidator,
     Field,
     FilePath,
-    NewPath,
     PlainSerializer,
     StringConstraints,
     ValidationInfo,
@@ -100,9 +99,9 @@ class WellConfig(ModelConfig):
 
 class OutputsConfig(ModelConfig):
     save_paths: Annotated[bool, Field(default=False, description="")]
-    guide_points: Annotated[NewPath, Field(default=None, description="")]
-    geometry: Annotated[NewPath, Field(default=None, description="")]
-    npv_input: Annotated[NewPath, Field(default=None, description="")]
+    guide_points: Annotated[Path, Field(default=None, description="")]
+    geometry: Annotated[Path, Field(default=None, description="")]
+    npv_input: Annotated[Path, Field(default=None, description="")]
 
 
 class ConfigSchema(ModelConfig):
