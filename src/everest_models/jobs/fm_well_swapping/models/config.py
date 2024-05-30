@@ -54,7 +54,13 @@ class Priorities(ModelConfig):
 
 
 class ConfigSchema(ModelConfig):
-    priorities: Priorities
+    priorities: Annotated[
+        Priorities,
+        Field(
+            default=None,
+            description="Backup values for case priorities if priority JSON file is missing.",
+        ),
+    ]
     constraints: Annotated[
         Constraints,
         Field(

@@ -86,6 +86,8 @@ def clean_parsed_data(options: Namespace) -> Data:
     priorities = validate_exist(
         sorted_case_priorities(
             options.priorities or options.config.priorities.inverted
+            if options.config.priorities
+            else []
         ),
         "no priorities",
     )
@@ -102,13 +104,16 @@ def clean_parsed_data(options: Namespace) -> Data:
         priorities=_limit_iterations(priorities, limit),
         quotas=validate_exist(
             {
-                state.label: state.get_quotas(limit, len(priorities[0]))
+                state.label: state.get_quotas(
+                    limit, len(priorities[0]) if priorities else 0
+                )
                 for state in options.config.state.hierarchy
             },
             "no states",
         ),
         initial_states=validate_exist(
-            options.config.initial_states(priorities[0]), "no initial states"
+            options.config.initial_states(priorities[0] if priorities else ()),
+            "no initial states",
         ),
         cases=validate_exist(options.cases or options.config.cases(), "no cases"),
         output=validate_exist(options.output or options.config.output, "no output"),
