@@ -78,8 +78,8 @@ def clean_parsed_data(options: Namespace) -> Data:
     errors: List[str] = []
     lint_only = options.command == "lint"
 
-    def validate_exist(value: Any, message: str):
-        if not (value or lint_only):
+    def validate_exist(value: Any, message: str, skip_on_lint: bool = False):
+        if not (value or skip_on_lint) and lint_only:
             errors.append(message)
         return value
 
@@ -105,19 +105,21 @@ def clean_parsed_data(options: Namespace) -> Data:
         quotas=validate_exist(
             {
                 state.label: state.get_quotas(
-                    limit, len(priorities[0]) if priorities else 0
+                    limit, len(priorities[0]) if priorities else 0, errors
                 )
                 for state in options.config.state.hierarchy
             },
             "no states",
         ),
         initial_states=validate_exist(
-            options.config.initial_states(priorities[0] if priorities else ()),
+            options.config.initial_states(priorities[0] if priorities else (), errors),
             "no initial states",
         ),
         cases=validate_exist(options.cases or options.config.cases(), "no cases"),
-        output=validate_exist(options.output or options.config.output, "no output"),
-        targets=validate_exist(options.config.targets(limit), "no targets"),
+        output=validate_exist(options.output, "no output", skip_on_lint=True),
+        targets=validate_exist(
+            options.config.state.get_targets(limit, errors), "no targets"
+        ),
         state_duration=_limit_iterations(
             validate_exist(
                 options.config.constraints.rescale(
