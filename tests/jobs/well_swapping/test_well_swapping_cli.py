@@ -23,13 +23,13 @@ def test_well_swapping_main_entrypoint_run(
     main_entry_point(
         (
             *command,
-            "-p",
+            "--priorities",
             "priorities.json",
-            "-c",
+            "--constraints",
             "constraints.json",
-            "-o",
+            "--output",
             output,
-            "-cs",
+            "--cases",
             "wells.json",
         )
     )
@@ -40,7 +40,7 @@ def test_well_swapping_main_entrypoint_parse(copy_testdata_tmpdir) -> None:
     copy_testdata_tmpdir(TEST_DATA)
     files = tuple(Path().glob("*.*"))
     with pytest.raises(SystemExit, match="0"):
-        main_entry_point(("lint", "well_swap_config.yml"))
+        main_entry_point(("lint", "--cases", "wells.json", "well_swap_config.yml"))
     assert files == tuple(Path().glob("*.*"))
 
 

@@ -1,5 +1,6 @@
 from collections.abc import Collection, Sequence
 from functools import cached_property
+from logging import getLogger
 from typing import Any, Dict, List, Literal, NamedTuple, Set, Tuple, Union
 
 from pydantic import AfterValidator, Field, model_validator
@@ -12,6 +13,7 @@ FILLER: Final = "_"
 State: TypeAlias = str
 Case: TypeAlias = str
 Quota: TypeAlias = int
+logger = getLogger("Well Swapping")
 
 
 def unique_values(values: Sequence) -> Sequence:
@@ -76,13 +78,18 @@ class StateHierarchy(ModelConfig):
         ),
     ]
 
-    def get_quotas(self, iterations: int, cases: int) -> List[Quota]:
+    def get_quotas(self, iterations: int, cases: int, errors: List[str]) -> List[Quota]:
         if any(value < 0 for value in (iterations, cases)):
-            raise ValueError("Iteration and cases must be greater than zero.")
+            errors.append("Iteration and cases must be greater than zero.")
+            return []
         if self.quotas is None:
             return [cases] * iterations
         if isinstance(self.quotas, int):
-            # TODO: put out a warning if quota is greater than cases
+            if self.quotas > cases:
+                logger.warn(
+                    "Quotas is greater than the available cases, "
+                    f"quatas is set to {cases}, the total amount of cases."
+                )
             return [self.quotas if self.quotas < cases else cases] * iterations
         quotas = [cases if quota == "_" else quota for quota in self.quotas]
         if len(self.quotas) < iterations:
@@ -220,9 +227,9 @@ class StateConfig(ModelConfig):
 
         return {**{case: default for case in cases}, **self.initial}
 
-    def get_targets(self, iterations: int) -> Tuple[State, ...]:
+    def get_targets(self, iterations: int, errors: List[str]) -> Tuple[State, ...]:
         if iterations < 1:
-            raise ValueError("Iteration must be greater than zero.")
+            errors.append("Iteration must be greater than zero.")
         default = self.highest_priority
         if self.targets is None:
             return (default,) * iterations

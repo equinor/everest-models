@@ -1,8 +1,7 @@
 from datetime import date
 from functools import cached_property
-from pathlib import Path
 from textwrap import dedent
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 
 from pydantic import Field, FilePath
 from typing_extensions import Annotated
@@ -84,20 +83,18 @@ class ConfigSchema(ModelConfig):
     ]
     start_date: date
     state: StateConfig
-    output: Annotated[Path, Field(None, description=file_path_description("output"))]
     case_file: Annotated[
         FilePath, Field(None, description=file_path_description("cases"))
     ]
-
-    def targets(self, iterations: int) -> Tuple[str, ...]:
-        return self.state.get_targets(iterations)
 
     def cases(self) -> Optional[Cases]:
         if not self.case_file:
             return
         return parse_file(str(self.case_file), Cases)
 
-    def initial_states(self, cases: Sequence[Case]) -> Dict[Case, State]:
+    def initial_states(
+        self, cases: Iterable[Case], errors: List[str]
+    ) -> Dict[Case, State]:
         """
         Generate initial states for the given cases.
 
@@ -125,7 +122,8 @@ class ConfigSchema(ModelConfig):
         """
         initial = self.state.initial
         if not (cases or initial):
-            raise ValueError(
+            errors.append(
                 "There is no initial state given and no cases given to generate one."
             )
+            return {}
         return self.state.get_initial(set(cases))

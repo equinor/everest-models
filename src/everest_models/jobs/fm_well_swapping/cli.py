@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import logging
+from logging import getLogger
 from typing import Optional, Sequence
 
 from .parser import build_argument_parser
@@ -13,7 +13,7 @@ from .tasks import (
     inject_case_operations,
 )
 
-logger = logging.getLogger(__name__)
+logger = getLogger("Well Swapping")
 
 
 def main_entry_point(args: Optional[Sequence[str]] = None):
@@ -21,7 +21,9 @@ def main_entry_point(args: Optional[Sequence[str]] = None):
     options = args_parser.parse_args(args)
     data = clean_parsed_data(options)
     if data.errors:
-        args_parser.error("\n".join(data.errors))
+        erros = "\n".join(data.errors)
+        logger.error(erros)
+        args_parser.error(erros)
 
     if data.lint_only:
         args_parser.exit()
@@ -44,7 +46,7 @@ def main_entry_point(args: Optional[Sequence[str]] = None):
             ),
         ),
     )
-    data.cases.json_dump(options.output)
+    data.cases.json_dump(data.output)
 
 
 if __name__ == "__main__":
