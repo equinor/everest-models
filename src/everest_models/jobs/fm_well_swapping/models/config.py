@@ -14,20 +14,6 @@ from .constraints import Constraints
 from .state import Case, State, StateConfig
 
 
-def file_path_description(argument: str) -> str:
-    message = f"Everest generated well {argument}"
-    if argument == "cases":
-        message = "Everest generated or forward model modified cases json file"
-    if argument == "output":
-        message = "where you wish to output the modified cases json file"
-    return dedent(
-        f"""
-        Relative or absolute path to {message}.
-        NOTE: cli option argument `--{argument.lower()} {argument.upper()}` overrides this field
-        """
-    )
-
-
 class Priorities(ModelConfig):
     fallback_values: Annotated[
         Dict[Case, List[float]],
@@ -84,7 +70,15 @@ class ConfigSchema(ModelConfig):
     start_date: date
     state: StateConfig
     case_file: Annotated[
-        FilePath, Field(None, description=file_path_description("cases"))
+        FilePath,
+        Field(
+            None,
+            description=(
+                "Relative or absolute path to Everest generated or forward model modefied "
+                "json case file.\n"
+                "NOTE: cli option argument `--cases CASES` overrides this field"
+            ),
+        ),
     ]
 
     def cases(self) -> Optional[Cases]:

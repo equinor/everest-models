@@ -2,11 +2,12 @@ import argparse
 import datetime
 import pathlib
 from collections import Counter
+from collections.abc import Sized
 from json import JSONDecodeError
 from os import W_OK, access
-from typing import Any, Dict, Iterable, List, Type, TypeVar
+from typing import Any, Callable, Dict, Iterable, List, Type, TypeVar
 
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ValidationError, ValidationInfo
 from resdata.summary import Summary
 from ruamel.yaml.error import YAMLError
 
@@ -40,6 +41,17 @@ def is_writable_path(value: str) -> pathlib.Path:
         raise argparse.ArgumentTypeError(f"Can not write to file: {path}")
 
     return path
+
+
+def min_length(min: int) -> Callable[[Any, ValidationInfo], Any]:
+    def validator(value: Any, info: ValidationInfo) -> Any:
+        if isinstance(value, Sized) and not isinstance(value, str) and len(value) < min:
+            raise ValueError(
+                f"{info.field_name} value, is below minimum length ({min})"
+            )
+        return value
+
+    return validator
 
 
 def valid_ecl_summary(file_path: str) -> Summary:

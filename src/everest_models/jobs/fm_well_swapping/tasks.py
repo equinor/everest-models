@@ -81,7 +81,7 @@ def clean_parsed_data(options: Namespace) -> Data:
     lint_only = options.command == "lint"
 
     def validate_exist(value: Any, message: str, skip_on_lint: bool = False):
-        if not (value or skip_on_lint) and lint_only:
+        if not (value or skip_on_lint):
             errors.append(message)
         return value
 

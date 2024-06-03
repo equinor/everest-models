@@ -88,7 +88,7 @@ class StateMachine:
         row = self.__matrix.loc[source]
         index = self.__matrix.columns.get_loc(target) - 1 % len(self.__matrix.columns)  # type: ignore
         while True:
-            if row.iloc[index] == 1:
+            if row.iloc[index]:
                 return (source, str(self.__matrix.columns[index]))
             index -= 1
 
