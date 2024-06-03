@@ -3,6 +3,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date, timedelta
 from itertools import accumulate, takewhile
+from logging import getLogger
 from pathlib import Path
 from typing import (
     Any,
@@ -24,6 +25,7 @@ from .models import Case, Quota, State
 from .state_processor import StateProcessor
 
 T = TypeVar("T", tuple, list)
+logger = getLogger("Well Swapping")
 
 
 def _limit_iterations(value: T, limit: int) -> T:
@@ -85,7 +87,9 @@ def clean_parsed_data(options: Namespace) -> Data:
 
     priorities = validate_exist(
         sorted_case_priorities(
-            options.priorities or options.config.priorities.inverted
+            options.priorities
+            if options.priorities
+            else options.config.priorities.inverted
             if options.config.priorities
             else []
         ),

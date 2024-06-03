@@ -56,7 +56,9 @@ def build_argument_parser(
         "-il",
         "--iteration-limit",
         default=0,
-        type=partial(is_gt_zero, "limit-number-iterations must be a positive number"),
+        type=partial(
+            is_gt_zero, msg="limit-number-iterations must be a positive number"
+        ),
         help="Limit the number of iteration, this value is capped by available iterations.",
     )
     add_wells_input_argument(

@@ -41,7 +41,14 @@ class StateProcessor:
     def _state_toggler(self, case: Case, target: State, index: int) -> None:
         history = self._history[case]
         source = history[-1]
-        state = self._recurse_state_hierarcy(index, source, target)
+        try:
+            state = self._recurse_state_hierarcy(index, source, target)
+        except RecursionError as e:
+            raise ValueError(
+                "A state lock was found in your configuration.\n"
+                f"current state map:\n{self._machine}\n"
+                "Please look to your state section and correct it as needed."
+            ) from e
         self._quotas[state][index] -= 1
         history.append(state)
 

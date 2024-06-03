@@ -123,32 +123,3 @@ def test_well_swapping_config_state_not_in_hierarcy(
 ) -> None:
     with pytest.raises(ValidationError, match="State not in hierarchy"):
         StateConfig.model_validate({"hierarchy": well_swap_state_hierarchy, **data})
-
-
-# TODO: Move to tasks tests
-# @pytest.mark.parametrize(
-#     "priority_wells, initial_wells",
-#     (
-#         pytest.param(set(), {"one"}, id="no priority wells"),
-#         pytest.param({"one"}, set(), id="no initial wells"),
-#         pytest.param(set(), set(), id="no wells"),
-#         pytest.param({"one"}, {"one"}, id="same wells"),
-#     ),
-# )
-# def test_validate_priorities_and_state_initial_same_wells(
-#     priority_wells: Set[str], initial_wells: Set[str]
-# ) -> None:
-#     assert (
-#         validate_priorities_and_state_initial_same_wells(priority_wells, initial_wells)
-#         is None
-#     )
-#
-#
-# def test_validate_priorities_and_state_initial_same_wells_fault() -> None:
-#     with pytest.raises(
-#         ValueError,
-#         match="There are some discrepancies in `properties` and/or `initial_states`",
-#     ):
-#         validate_priorities_and_state_initial_same_wells(
-#             {"one", "two"}, {"one", "three"}
-#         )

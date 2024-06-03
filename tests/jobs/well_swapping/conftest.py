@@ -24,6 +24,7 @@ def well_swapping_state_machine(
         list(well_swapping_quotas),
         (("open", "locked"), ("closed", "locked"), ("locked", "closed")),
         forbiden=True,
+        inaction=True,
     )
 
 
