@@ -10,16 +10,12 @@ Action: TypeAlias = Tuple[State, State]
 
 
 def _build_state_matrix(
-    states: List[State], actions: Iterable[Action], forbiden: bool
+    states: List[State], actions: Iterable[Action], forbiden: bool, inaction: bool
 ) -> pd.DataFrame:
     size = len(states)
-    df = pd.DataFrame(
-        data=(np.ones if forbiden or not actions else np.zeros)(
-            (size, size), dtype=int
-        ),
-        index=states,
-        columns=states,
-    )
+    data = (np.ones if forbiden or not actions else np.zeros)((size, size), dtype=int)
+    np.fill_diagonal(data, 1 if inaction else 0)
+    df = pd.DataFrame(data=data, index=states, columns=states)
     for source, target in actions:
         df.loc[source, target] = 0 if forbiden else 1
     return df
@@ -29,10 +25,16 @@ class StateMachine:
     """A state to state, action matrix wrapper."""
 
     def __init__(
-        self, states: List[State], actions: Iterable[Action], forbiden: bool
+        self,
+        states: List[State],
+        actions: Iterable[Action],
+        forbiden: bool,
+        inaction: bool,
     ) -> None:
         "Create an encapsulated action matrix."
-        self.__matrix: pd.DataFrame = _build_state_matrix(states, actions, forbiden)
+        self.__matrix: pd.DataFrame = _build_state_matrix(
+            states, actions, forbiden, inaction
+        )
 
     @classmethod
     def from_config(cls, config: StateConfig) -> Self:
@@ -53,6 +55,7 @@ class StateMachine:
             [item.label for item in config.hierarchy],
             config.actions or (),
             config.forbiden_actions,
+            config.allow_inactions,
         )
 
     def is_possible_action(self, source: State, target: State) -> bool:

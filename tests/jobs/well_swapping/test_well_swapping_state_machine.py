@@ -22,6 +22,16 @@ from everest_models.jobs.fm_well_swapping.state_machine import State, StateMachi
             id="binary states",
         ),
         pytest.param(
+            {"hierarchy": ("open", "close"), "allow_inactions": False},
+            dedent(
+                """\
+                       open  close
+                open      0      1
+                close     1      0"""
+            ),
+            id="binary states force action",
+        ),
+        pytest.param(
             {
                 "hierarchy": ("open", "close", "locked"),
                 "actions": (("open", "locked"),),
@@ -44,11 +54,26 @@ from everest_models.jobs.fm_well_swapping.state_machine import State, StateMachi
             dedent(
                 """\
                         open  close  locked
+                open       1      0       1
+                close      1      1       0
+                locked     0      0       1"""
+            ),
+            id="allowed actions tri-state",
+        ),
+        pytest.param(
+            {
+                "hierarchy": ("open", "close", "locked"),
+                "actions": (("open", "locked"), ("close", "open")),
+                "allow_inactions": False,
+            },
+            dedent(
+                """\
+                        open  close  locked
                 open       0      0       1
                 close      1      0       0
                 locked     0      0       0"""
             ),
-            id="allowed actions tri-state",
+            id="tri-state force action",
         ),
         pytest.param(
             {
@@ -103,7 +128,7 @@ def test_is_possible_action(
 
 def test_empty_state_map() -> None:
     assert not (
-        StateMachine([], (), False).is_possible_action("open", "closed")
+        StateMachine([], (), False, True).is_possible_action("open", "closed")
     ), "Should handle empty state matrix gracefully"
 
 

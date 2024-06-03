@@ -117,19 +117,6 @@ class StateConfig(ModelConfig):
             ),
         ),
     ]
-    rolling_hierarchy: Annotated[
-        bool,
-        Field(
-            default=False,
-            description=(
-                "This variable only comes into play if an action's taget is not possible,\n"
-                "And your the data curser is at the highest state in hierarchy.\n"
-                "In other words, allow case to be set to an lower state than 'targets'\n"
-                "False: Do not roll back to the lowest if you are already at the highest,\n"
-                "True: roll back down to the lowest state in hierarchy\n"
-            ),
-        ),
-    ]
     initial: Annotated[
         Union[Dict[Case, State], State],
         Field(
@@ -143,18 +130,6 @@ class StateConfig(ModelConfig):
                 "Thus, if you wish to initialize all values to default, "
                 "then omit this field\n"
                 "Note: If a string is given, all cases will be initialize to that string"
-            ),
-        ),
-    ]
-    actions: Annotated[
-        Tuple[Action, ...],
-        AfterValidator(unique_values),
-        Field(
-            default=None,
-            min_length=1,
-            description=(
-                "List of directional (source → target) state actions.\n"
-                "Note: action context is set with the 'forbiden_actions' field"
             ),
         ),
     ]
@@ -174,6 +149,29 @@ class StateConfig(ModelConfig):
                 "string"
             ),
             examples=["[_, sitting, _, standing]", "sitting"],
+        ),
+    ]
+    actions: Annotated[
+        Tuple[Action, ...],
+        AfterValidator(unique_values),
+        Field(
+            default=None,
+            min_length=1,
+            description=(
+                "List of directional (source → target) state actions.\n"
+                "Note: action context is set with the 'forbiden_actions' field"
+            ),
+        ),
+    ]
+    allow_inactions: Annotated[
+        bool,
+        Field(
+            default=True,
+            description=(
+                "Are cases allowed to stay at the same state?\n"
+                "False: Inforce cases to change state each iteration, (can cause state lock)\n"
+                "True: Cases are allowed to stay at same state between iterations\n"
+            ),
         ),
     ]
     forbiden_actions: Annotated[
