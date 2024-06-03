@@ -1,13 +1,13 @@
 from typing import NamedTuple, Sequence, Tuple, Union
 
-from pydantic import Field, field_validator
+from pydantic import AfterValidator, Field, field_validator
 from typing_extensions import Annotated
 
 from everest_models.jobs.shared import rescale_value
 from everest_models.jobs.shared.models import ModelConfig
+from everest_models.jobs.shared.validators import min_length
 
 
-# TODO: Need a better name
 class _Bound(NamedTuple):
     min: float
     max: float
@@ -35,9 +35,9 @@ class _Scaling(ModelConfig):
 class _Constraint(ModelConfig):
     fallback_values: Annotated[
         Union[Tuple[int, ...], int],
+        AfterValidator(min_length(1)),
         Field(
             default=None,
-            min_length=1,
             description=(
                 "Fallback values for each iteration if constraint json file is missing\n"
                 "Note: If a int is given, all iterations will be initialize to that "

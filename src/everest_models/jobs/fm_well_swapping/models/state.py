@@ -7,6 +7,7 @@ from pydantic import AfterValidator, Field, model_validator
 from typing_extensions import Annotated, Final, Self, TypeAlias
 
 from everest_models.jobs.shared.models import ModelConfig
+from everest_models.jobs.shared.validators import min_length
 
 SINGLE_WORD: Final = r"^[a-zA-Z][_\-a-zA-Z0-9]*$"
 FILLER: Final = "_"
@@ -119,9 +120,9 @@ class StateConfig(ModelConfig):
     ]
     initial: Annotated[
         Union[Dict[Case, State], State],
+        AfterValidator(min_length(1)),
         Field(
             default=None,
-            min_length=1,
             description=(
                 "States to set cases to at initial iteration.\n"
                 "Tip: fill only cases that differ from default "
@@ -135,9 +136,9 @@ class StateConfig(ModelConfig):
     ]
     targets: Annotated[
         Union[Tuple[Union[State, Literal["_"]], ...], State],
+        AfterValidator(min_length(1)),
         Field(
             default=None,
-            min_length=1,
             description=(
                 "Target States for each iteration.\n"
                 "Tip: '_', default alias can be used to pad array"
