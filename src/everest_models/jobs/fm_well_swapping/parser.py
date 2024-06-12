@@ -1,4 +1,3 @@
-from datetime import date
 from functools import partial
 from typing import Dict, Tuple
 
@@ -16,9 +15,11 @@ from ..shared.validators import (
 )
 from .models import ConfigSchema
 
-_CONFIG_ARGUMENT = "config"
+_CONFIG_ARGUMENT = "-c/--config"
 _PRIORITIES_ARGUMENT = "-p/--priorities"
-_CONSTRAINTS_ARGUMENT = "-c/--constraints"
+_CONSTRAINTS_ARGUMENT = "-cr/--constraints"
+_LIMIT_ARGUMENT = "-il/--iteration-limit"
+
 SCHEMAS = {_CONFIG_ARGUMENT: ConfigSchema}
 
 
@@ -30,15 +31,13 @@ def _clean_constraint(value: str) -> Dict[str, Tuple[float, ...]]:
 # omit anything to do with well
 @bootstrap_parser(
     schemas=SCHEMAS,  # type: ignore
-    deprication=date(2024, 5, 1),
     prog="Well Swapping",
     description="Swap well operation status over multiple time intervals.",
 )
-def build_argument_parser(
-    parser: Parser, legacy: bool = False, lint: bool = False
-) -> None:
+def build_argument_parser(parser: Parser, lint: bool = False, *_) -> None:
     parser.add_argument(
-        f"{'--' if legacy else ''}{_CONFIG_ARGUMENT}",
+        *_CONFIG_ARGUMENT.split("/"),
+        required=True,
         type=partial(parse_file, schema=ConfigSchema),
         help="well swapping configuration file",
     )
@@ -53,8 +52,7 @@ def build_argument_parser(
         help="Everest generated optimized priorities",
     )
     parser.add_argument(
-        "-il",
-        "--iteration-limit",
+        *_LIMIT_ARGUMENT.split("/"),
         default=0,
         type=partial(
             is_gt_zero, msg="limit-number-iterations must be a positive number"

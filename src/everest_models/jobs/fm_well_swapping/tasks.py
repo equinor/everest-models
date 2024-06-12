@@ -2,7 +2,7 @@ from argparse import Namespace
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date, timedelta
-from itertools import accumulate, takewhile
+from itertools import accumulate, chain
 from logging import getLogger
 from pathlib import Path
 from typing import (
@@ -12,24 +12,23 @@ from typing import (
     Iterable,
     Iterator,
     List,
+    Optional,
     Sequence,
     Tuple,
     TypeVar,
 )
 
+from everest_models.jobs.fm_well_swapping.models.state import StateConfig
+from everest_models.jobs.fm_well_swapping.parser import build_argument_parser
 from everest_models.jobs.shared.models import Operation
 from everest_models.jobs.shared.models import Well as CaseConfig
 from everest_models.jobs.shared.models import Wells as CasesConifg
 
-from .models import Case, Quota, State
+from .models import Case, State
 from .state_processor import StateProcessor
 
 T = TypeVar("T", tuple, list)
 logger = getLogger("Well Swapping")
-
-
-def _limit_iterations(value: T, limit: int) -> T:
-    return value[:limit] if limit else value
 
 
 @dataclass
@@ -48,19 +47,18 @@ class Data:
     """
 
     lint_only: bool
+    start_date: date
     iterations: int
     priorities: Tuple[Tuple[Case, ...], ...]
-    quotas: Dict[State, List[Quota]]
-    initial_states: Dict[Case, State]
+    state: StateConfig
     cases: CasesConifg
-    output: Path
-    targets: Tuple[State, ...]
+    output: Optional[Path]
     state_duration: Tuple[int, ...]
     errors: List[str]
 
 
-def clean_parsed_data(options: Namespace) -> Data:
-    """Cleans and validates command line options.
+def clean_data(options: Namespace) -> Data:
+    """Cleans command line options.
 
     Args:
         options (Namespace): The parsed command line options.
@@ -68,21 +66,23 @@ def clean_parsed_data(options: Namespace) -> Data:
     Returns:
         A Data object containing cleaned and validated data.
 
-    This function takes the parsed command line options and performs various validations and cleaning operations on the data.
-    It checks if the command is 'lint' and sets a flag accordingly. It then validates and sorts the priorities, sets a limit based on the iteration limit or the length of priorities, and creates a Data object with the cleaned and validated data.
-    Any errors encountered during the cleaning and validation process are stored in the 'errors' list.
+    This function takes the parsed command line options and performs various validations
+    and cleaning operations on the data. It checks if the command is 'lint' and sets a
+    flag accordingly. It then validates and sorts the priorities, sets a limit based on
+    the iteration limit or the length of priorities, and creates a Data object with the
+    cleaned and validated data. Any errors encountered during the cleaning and validation
+    process are stored in the 'errors' list.
 
     Typical usage example:
         options = parse_command_line_arguments()
-        cleaned_data = clean_parsed_data(options)
+        cleaned_data = clean_data(options)
     """
-
     errors: List[str] = []
     lint_only = options.command == "lint"
 
-    def validate_exist(value: Any, message: str, skip_on_lint: bool = False):
-        if not (value or skip_on_lint):
-            errors.append(message)
+    def validate_exist(value: Any, argument: str):
+        if not (value or lint_only) and hasattr(options, argument):
+            errors.append(f"no {' '.join(argument.split('_'))}")
         return value
 
     priorities = validate_exist(
@@ -93,50 +93,53 @@ def clean_parsed_data(options: Namespace) -> Data:
             if options.config.priorities
             else []
         ),
-        "no priorities",
+        "priorities",
     )
-
-    limit = (
-        len(priorities)
-        if not options.iteration_limit or options.iteration_limit > len(priorities)
-        else options.iteration_limit
+    iteration_capacity = len(priorities)
+    iteration_limit = (
+        options.iteration_limit
+        if 0 < options.iteration_limit < iteration_capacity
+        else iteration_capacity
     )
 
     return Data(
         lint_only,
-        iterations=limit,
-        priorities=_limit_iterations(priorities, limit),
-        quotas=validate_exist(
-            {
-                state.label: state.get_quotas(
-                    limit, len(priorities[0]) if priorities else 0, errors
-                )
-                for state in options.config.state.hierarchy
-            },
-            "no states",
-        ),
-        initial_states=validate_exist(
-            options.config.initial_states(priorities[0] if priorities else (), errors),
-            "no initial states",
-        ),
-        cases=validate_exist(options.cases or options.config.cases(), "no cases"),
-        output=validate_exist(options.output, "no output", skip_on_lint=True),
-        targets=validate_exist(
-            options.config.state.get_targets(limit, errors), "no targets"
-        ),
-        state_duration=_limit_iterations(
-            validate_exist(
-                options.config.constraints.rescale(
-                    options.constraints["state_duration"]
-                    if options.constraints
-                    else limit
-                ),
-                "no state duration",
+        start_date=options.config.start_date,
+        iterations=iteration_limit,
+        priorities=priorities,
+        state=options.config.state,
+        cases=validate_exist(options.cases or options.config.cases(), "cases"),
+        output=None if lint_only else validate_exist(options.output, "output"),
+        state_duration=validate_exist(
+            options.config.constraints.rescale(
+                options.constraints["state_duration"]
+                if options.constraints
+                else iteration_capacity
             ),
-            limit,
+            "state_duration",
         ),
         errors=errors,
     )
+
+
+def clean_parsed_data(
+    args: Optional[Sequence[str]] = None, hook_call: bool = False
+) -> Data:
+    parser = build_argument_parser()
+    options = parser.parse_args(args)
+    data = clean_data(options)
+
+    if hook_call:
+        return data
+
+    if data.errors:
+        erros = "\n".join(data.errors)
+        logger.error(erros)
+        parser.error(erros)
+
+    if data.lint_only:
+        parser.exit()
+    return data
 
 
 def sorted_case_priorities(
@@ -153,7 +156,8 @@ def inject_case_operations(
 
     Args:
         cases (Dict[str, CaseConfig]): A dictionary mapping case names to Case objects.
-        params (Iterable[Tuple[date, Iterator[Tuple[str, str]]]): A nested Iterable in the form of (date, ((case, state), ...)), ...
+        params (Iterable[Tuple[date, Iterator[Tuple[str, str]]]): A nested Iterable in
+        the form of (date, ((case, state), ...)), ...
 
     Raises:
         KeyError: If a case name provided in the params does not exist in the cases dictionary.
@@ -197,23 +201,20 @@ def duration_to_dates(durations: Sequence[int], start_date: date) -> Iterator[da
 
 
 def determine_index_states(
-    process_params: Iterable[Tuple[Tuple[Case, ...], State]],
-    state_processor: StateProcessor,
-    iterations: int,
+    state: StateConfig, limit: int, priorities: Iterable[Tuple[Case, ...]]
 ) -> Iterator[Iterator[Tuple[Case, State]]]:
-    """Determine the states of cases at each index based on the process parameters.
-
-    Args:
-        process_params (Iterable[Tuple[Tuple[str, ...], str]]): A collection of tuples where each tuple contains a tuple of cases and a target state.
-        state_processor (StateProcessor): An object that processes the cases and updates the states.
-        iterations (int): The number of iterations to run the state processing for.
-
-    Returns:
-        An iterator of iterators where each inner iterator contains tuples of cases and their corresponding states.
-    """
-    return (
-        state_processor.process(cases, target, index)
-        for index, (cases, target) in takewhile(
-            lambda x: x[0] < iterations, enumerate(process_params)
+    case_names = tuple(set(chain.from_iterable(priorities)))
+    processor = StateProcessor.from_state_config(state, case_names)
+    for index, (cases, target, quotas) in enumerate(
+        zip(
+            priorities,
+            state.get_targets(limit),
+            state.get_quotas(limit, len(case_names)),
         )
-    )
+    ):
+        if not processor.is_locked:
+            processor.process(cases, target, quotas)
+            yield processor.latest_valid_states(index)
+        else:
+            yield processor.latest_valid_states(max(index - 1, 0))
+            break

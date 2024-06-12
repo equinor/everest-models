@@ -8,7 +8,7 @@ import logging
 import pathlib
 import sys
 from importlib import import_module, resources
-from typing import Dict, List, Type
+from typing import Dict, List, Sequence, Type
 
 from pydantic import BaseModel
 
@@ -94,3 +94,20 @@ def parse_forward_model_schema(path: str, schema: Type[BaseModel]) -> BaseModel:
         raise ValueError(f"File does not exists or is a directory: {path_}")
 
     return schema.model_validate(load_supported_file_encoding(path_))
+
+
+@hookimpl
+def lint_forward_model(job: str, args: Sequence[str]) -> List[str]:
+    """Execute job in lint mode with the given arguments.
+
+    Make sure there is no command in args {run, schema, lint}
+    only positional or optional arguments
+
+    Args:
+        job (str): Forward model job you wish to be run in lint mode
+    """
+    return (
+        import_module(f"{JOBS}.fm_{job}.tasks")
+        .clean_parsed_data(("lint", *args), hook_call=True)
+        .errors
+    )

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Tuple
 
 import pytest
 from everest_models.jobs.fm_well_swapping.models import StateConfig
@@ -59,16 +59,7 @@ def test_targets(input, expected, well_swap_state_hierarchy) -> None:
             {"hierarchy": well_swap_state_hierarchy, "targets": input}
         )
     )
-    assert state.get_targets(4, []) == expected
-
-
-def test_targets_error(well_swap_state_hierarchy) -> None:
-    assert (
-        state := StateConfig.model_validate({"hierarchy": well_swap_state_hierarchy})
-    )
-    errors: List[str] = []
-    state.get_targets(0, errors)
-    assert "Iteration must be greater than zero." in errors
+    assert state.get_targets(4) == expected
 
 
 @pytest.mark.parametrize(
@@ -108,7 +99,8 @@ def test_defualt_values(well_swap_state_hierarchy) -> None:
         state := StateConfig.model_validate({"hierarchy": well_swap_state_hierarchy})
     )
     assert state.get_initial(set("ABC")) == {"A": "low", "B": "low", "C": "low"}
-    assert state.get_targets(4, []) == ("high",) * 4
+    assert state.get_targets(4) == ("high",) * 4
+    assert list(state.get_quotas(4, 3)) == [{"low": 3, "middle": 3, "high": 3}] * 4
 
 
 @pytest.mark.parametrize(
