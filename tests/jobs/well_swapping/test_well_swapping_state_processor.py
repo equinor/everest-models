@@ -1,45 +1,65 @@
+import logging
 from textwrap import dedent
-from typing import Dict, List
+from typing import Dict
 
 import pytest
-from everest_models.jobs.fm_well_swapping.models.state import Case, Quota, State
-from everest_models.jobs.fm_well_swapping.state_machine import StateMachine
+from everest_models.jobs.fm_well_swapping.models.state import Quota, State
 from everest_models.jobs.fm_well_swapping.state_processor import StateProcessor
 
 
-def test_locked_state(
-    well_swapping_initial_state: Dict[Case, State],
-    well_swapping_quotas: Dict[State, List[Quota]],
+def test_locked_state_first_iteration(
+    well_swapping_state_processor: StateProcessor, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    processor = StateProcessor(
-        state_machine=StateMachine(
-            list(well_swapping_quotas),
-            (("open", "locked"), ("closed", "locked"), ("locked", "closed")),
-            forbiden=True,
-            inaction=False,
-        ),
-        initial_states=well_swapping_initial_state,
-        quotas=well_swapping_quotas,
+    with monkeypatch.context() as patch:
+        patch.setattr(well_swapping_state_processor, "_locked", True)
+        assert well_swapping_state_processor.is_locked
+        with pytest.raises(
+            RuntimeError,
+            match=dedent(
+                """\
+                A state lock was found on the first iteration.
+                current state map:
+                        open  closed  locked
+                open       1       1       0
+                closed     1       1       0
+                locked     1       0       1
+                Please check the states section in your configuration."""
+            ),
+        ):
+            well_swapping_state_processor.latest_valid_states(0)
+
+
+def test_locked_state_with_history(
+    well_swapping_state_processor: StateProcessor,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    well_swapping_state_processor.process(
+        ["one", "two", "three", "four"], "open", {"open": 2, "closed": 4, "locked": 4}
     )
+    assert not well_swapping_state_processor.is_locked
+    with caplog.at_level(logging.WARNING):
+        well_swapping_state_processor.process(
+            ["three", "two", "one", "four"],
+            "closed",
+            {"open": 1, "closed": 0, "locked": 0},
+        )
+    # assert "Encouter a state lock." in caplog.text
+    assert well_swapping_state_processor.is_locked
+    assert dict(well_swapping_state_processor.latest_valid_states(2)) == {
+        "one": "open",
+        "two": "open",
+        "three": "locked",
+        "four": "locked",
+    }
 
-    with pytest.raises(
-        ValueError,
-        match=dedent(
-            """\
-            A state lock was found in your configuration.
-            current state map:
-                    open  closed  locked
-            open       0       1       0
-            closed     1       0       0
-            locked     1       0       0
-            Please look to your state section and correct it as needed."""
-        ),
-    ):
-        processor.process(["one", "two", "three"], "open", 0)
 
-
-def test_process_bad_cases(well_swapping_state_processor: StateProcessor) -> None:
+def test_process_bad_cases(
+    well_swapping_state_processor: StateProcessor,
+    well_swapping_quotas: Dict[State, Quota],
+) -> None:
     with pytest.raises(
         ValueError, match="Case names must be a subset of initial state cases"
     ):
-        well_swapping_state_processor.process(["unknown_case"], "don't matter", 0)
+        well_swapping_state_processor.process(
+            ["unknown_case"], "don't matter", well_swapping_quotas
+        )

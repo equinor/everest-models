@@ -1,14 +1,14 @@
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Dict, List, Literal, NamedTuple, Optional, Tuple, TypedDict
+from typing import Any, Dict, List, Literal, NamedTuple, Optional, Tuple, TypedDict
 
 import pytest
 from everest_models.jobs.fm_well_swapping.models import ConfigSchema
 from everest_models.jobs.fm_well_swapping.tasks import (
     Data,
-    clean_parsed_data,
-    determine_index_states,
+    clean_data,
     duration_to_dates,
+    sorted_case_priorities,
 )
 from everest_models.jobs.shared.models import Wells
 
@@ -18,12 +18,12 @@ class Constraints(TypedDict):
 
 
 class Options(NamedTuple):
-    command: Literal["lint", "run"]
     config: ConfigSchema
     cases: Optional[Wells] = None
     priorities: Optional[List[Dict[str, float]]] = None
     constraints: Optional[Constraints] = None
     output: Optional[Path] = None
+    command: Literal["lint", "run"] = "lint"
     iteration_limit: int = 0
 
 
@@ -35,18 +35,20 @@ minimum_data = {
     "state": {"hierarchy": [{"label": "open"}, {"label": "shut"}]},
 }
 cases = Wells.model_validate([{"name": "W1"}, {"name": "W2"}, {"name": "W3"}])
-data = Data(
-    lint_only=True,
-    iterations=2,
-    priorities=(("W3", "W1", "W2"), ("W2", "W3", "W1")),
-    quotas={"open": [3, 3], "shut": [3, 3]},
-    initial_states={"W1": "shut", "W2": "shut", "W3": "shut"},
-    cases=cases,
-    output=None,  # type: ignore
-    targets=("open", "open"),
-    state_duration=(250, 250),
-    errors=[],
-)
+
+
+def result(data: Dict[str, Any]) -> Data:
+    return Data(
+        lint_only=False,
+        start_date=date(2024, 6, 3),
+        iterations=2,
+        priorities=(("W3", "W1", "W2"), ("W2", "W3", "W1")),
+        state=ConfigSchema.model_validate(data),  # type: ignore
+        cases=cases,
+        output=None,  # type: ignore
+        state_duration=(250, 250),
+        errors=["no output"],
+    )
 
 
 # NOTE: There is way to many permutations.
@@ -55,31 +57,23 @@ data = Data(
     "options, expected",
     [
         pytest.param(
-            Options(command="lint", config=ConfigSchema.model_validate(minimum_data)),
+            Options(config=ConfigSchema.model_validate(minimum_data)),
             Data(
                 lint_only=True,
+                start_date=date(2024, 6, 3),
                 iterations=0,
                 priorities=(),
-                quotas={"open": [], "shut": []},
-                initial_states={},
+                state=ConfigSchema.model_validate(minimum_data),  # type: ignore
                 cases=None,  # type: ignore
                 output=None,  # type: ignore
-                targets=(),
                 state_duration=None,  # type: ignore
-                errors=[
-                    "no priorities",
-                    "no initial states",
-                    "no cases",
-                    "Iteration must be greater than zero.",
-                    "no targets",
-                    "no state duration",
-                ],
+                errors=[],
             ),
             id="minimum",
         ),
         pytest.param(
             Options(
-                command="lint",
+                command="run",
                 config=ConfigSchema.model_validate(minimum_data),
                 cases=cases,
                 priorities=[
@@ -88,12 +82,12 @@ data = Data(
                 ],
                 constraints={"state_duration": (0.5, 0.5)},
             ),
-            data,
+            result(minimum_data),
             id="all files present",
         ),
         pytest.param(
             Options(
-                command="lint",
+                command="run",
                 config=ConfigSchema.model_validate(
                     {
                         **minimum_data,
@@ -114,12 +108,29 @@ data = Data(
                 ),
                 cases=cases,
             ),
-            data,
+            result(
+                {
+                    **minimum_data,
+                    "priorities": {
+                        "fallback_values": {
+                            "W1": [0.51, 0.50],
+                            "W2": [0.40, 0.54],
+                            "W3": [0.55, 0.51],
+                        }
+                    },
+                    "constraints": {
+                        "state_duration": {
+                            "fallback_values": 250,
+                            **minimum_data["constraints"]["state_duration"],
+                        }
+                    },
+                }
+            ),
             id="config backups",
         ),
         pytest.param(
             Options(
-                command="lint",
+                command="run",
                 config=ConfigSchema.model_validate(
                     {
                         **minimum_data,
@@ -147,28 +158,45 @@ data = Data(
                 ],
                 constraints={"state_duration": (0.5, 0.5)},
             ),
-            data,
+            result(
+                {
+                    **minimum_data,
+                    "priorities": {
+                        "fallback_values": {
+                            # flip W1 and W2
+                            "W1": [0.40, 0.54],
+                            "W2": [0.51, 0.50],
+                            "W3": [0.55, 0.51],
+                        }
+                    },
+                    "constraints": {
+                        "state_duration": {
+                            # make fallback bigger
+                            "fallback_values": 300,
+                            **minimum_data["constraints"]["state_duration"],
+                        }
+                    },
+                }
+            ),
             id="files have priority over fallback",
         ),
     ],
 )
 def test_clean_parsed_data(options: Options, expected: Data):
-    data = clean_parsed_data(options)  # type: ignore
+    data = clean_data(options)  # type: ignore
     assert isinstance(data, Data)
-    assert data.lint_only == expected.lint_only
+    assert data.lint_only is expected.lint_only
+    assert data.start_date == expected.start_date
     assert data.iterations == expected.iterations
     assert data.priorities == expected.priorities
-    assert data.quotas == expected.quotas
-    assert data.initial_states == expected.initial_states
     assert data.cases == expected.cases
     assert data.output == expected.output
-    assert data.targets == expected.targets
+    # assert data.states == expected.states
     assert data.state_duration == expected.state_duration
     assert data.errors == expected.errors
 
 
-# Test duration_to_dates function
-def test_duration_to_dates():
+def test_duration_to_dates() -> None:
     start_date = date(2024, 1, 1)
     assert list(duration_to_dates([1, 2, 3], start_date)) == [
         start_date,
@@ -178,48 +206,30 @@ def test_duration_to_dates():
     ]
 
 
-# None positive numbers are never tested, but those test cases would never happen
 @pytest.mark.parametrize(
-    "iterations, expected",
+    "value, expected",
     (
+        pytest.param((), (), id="empty"),
+        pytest.param(({"SINGLE": 0.9},), (("SINGLE",),), id="single value"),
         pytest.param(
-            1, ([("case1", "state1"), ("case2", "state1")],), id="one iterations"
+            ({"W1": 0.51, "W2": 0.40, "W3": 0.55},),
+            (("W3", "W1", "W2"),),
+            id="multi value",
         ),
         pytest.param(
-            2,
             (
-                [("case1", "state1"), ("case2", "state1")],
-                [("case3", "state2"), ("case4", "state2")],
+                {"W1": 0.51, "W2": 0.40, "W3": 0.55},
+                {"W1": 0.50, "W2": 0.54, "W3": 0.51},
             ),
-            id="max iterations",
-        ),
-        pytest.param(
-            3,
-            (
-                [("case1", "state1"), ("case2", "state1")],
-                [("case3", "state2"), ("case4", "state2")],
-            ),
-            id="surpass max",
+            (("W3", "W1", "W2"), ("W2", "W3", "W1")),
+            id="multi iteration",
         ),
     ),
 )
-def test_determine_index_states(
-    iterations: int, expected: Tuple[Tuple[Tuple[str, str], ...], ...]
-):
-    class MockStateProcessor:
-        def process(self, cases, target, _):
-            return [(case, target) for case in cases]
+def test_sorted_case_priorities(
+    value: List[Dict[str, float]], expected: Tuple[Tuple[str, ...]]
+) -> None:
+    assert sorted_case_priorities(value) == expected
 
-    assert (
-        tuple(
-            determine_index_states(
-                process_params=[
-                    (("case1", "case2"), "state1"),
-                    (("case3", "case4"), "state2"),
-                ],
-                state_processor=MockStateProcessor(),  # type: ignore
-                iterations=iterations,
-            )
-        )
-        == expected
-    )
+
+# need a propper way of test determine_index_states

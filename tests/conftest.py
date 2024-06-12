@@ -67,6 +67,10 @@ class TestSpec:
     def parse_forward_model_schema(self, path, schema):
         ...
 
+    @hookspec
+    def lint_forward_model(job, args):
+        ...
+
 
 class MockPluginManager(pluggy.PluginManager):
     """A testing plugin manager"""

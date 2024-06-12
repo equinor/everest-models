@@ -1,7 +1,18 @@
 from collections.abc import Collection, Sequence
 from functools import cached_property
 from logging import getLogger
-from typing import Any, Dict, List, Literal, NamedTuple, Set, Tuple, Union
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Literal,
+    NamedTuple,
+    Set,
+    Tuple,
+    Union,
+)
 
 from pydantic import AfterValidator, Field, model_validator
 from typing_extensions import Annotated, Final, Self, TypeAlias
@@ -75,14 +86,11 @@ class StateHierarchy(ModelConfig):
                 "Thus, if you wish all iteration to infinity, then omit this field\n"
                 "Note: If a integer is given, all iterations will be that string"
             ),
-            examples=["[_, 4, _, 2]", 2],
+            examples=[f"[{FILLER}, 4, {FILLER}, 2]", 2],
         ),
     ]
 
-    def get_quotas(self, iterations: int, cases: int, errors: List[str]) -> List[Quota]:
-        if any(value < 0 for value in (iterations, cases)):
-            errors.append("Iteration and cases must be greater than zero.")
-            return []
+    def get_quotas(self, iterations: int, cases: int) -> List[Quota]:
         if self.quotas is None:
             return [cases] * iterations
         if isinstance(self.quotas, int):
@@ -149,7 +157,7 @@ class StateConfig(ModelConfig):
                 "Note: If a string is given, all iterations will be initialize to that "
                 "string"
             ),
-            examples=["[_, sitting, _, standing]", "sitting"],
+            examples=[f"{FILLER}, sitting, {FILLER}, standing]", "sitting"],
         ),
     ]
     actions: Annotated[
@@ -215,7 +223,7 @@ class StateConfig(ModelConfig):
         )
         return self
 
-    def get_initial(self, cases: Set[Case]) -> Dict[Case, State]:
+    def get_initial(self, cases: Iterable[Case]) -> Dict[Case, State]:
         default = self.lowest_priority
         if self.initial is None:
             return {case: default for case in cases}
@@ -226,9 +234,7 @@ class StateConfig(ModelConfig):
 
         return {**{case: default for case in cases}, **self.initial}
 
-    def get_targets(self, iterations: int, errors: List[str]) -> Tuple[State, ...]:
-        if iterations < 1:
-            errors.append("Iteration must be greater than zero.")
+    def get_targets(self, iterations: int) -> Tuple[State, ...]:
         default = self.highest_priority
         if self.targets is None:
             return (default,) * iterations
@@ -238,6 +244,14 @@ class StateConfig(ModelConfig):
         if len(self.targets) < iterations:
             targets += [default] * (iterations - len(self.targets))
         return tuple(targets[:iterations] if iterations < len(targets) else targets)
+
+    def get_quotas(self, iterations: int, cases: int) -> Iterator[Dict[State, Quota]]:
+        return (
+            dict(zip((item.label for item in self.hierarchy), value))
+            for value in zip(
+                *[item.get_quotas(iterations, cases) for item in self.hierarchy]
+            )
+        )
 
     @cached_property
     def state_hierarchy(self) -> Tuple[State, ...]:
