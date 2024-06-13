@@ -68,15 +68,13 @@ class SchemaAction(Action):
         ):
             if self.dest == "schema" or options.show:
                 print("\n\n")
-                if is_related(model, Wells):
-                    print(f"{argument} is Everest generated wells JSON file")
-                    continue
-                dump_yaml(data, stdout, explicit=True, default_flow_style=False)
+                if not is_related(model, Wells):
+                    dump_yaml(data, stdout, explicit=True, default_flow_style=False)
             elif options.init:
                 if is_related(model, Wells):
                     continue
                 path = _get_filepath(
-                    "_".join(parser.prog.split()[:-1]).lower(),
+                    "_".join(parser.prog.split()[:-1]).lower() + f"_{argument}",
                     options.no_overwrite,
                     options.minimal,
                 )
