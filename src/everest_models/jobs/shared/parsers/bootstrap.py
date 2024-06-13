@@ -128,11 +128,11 @@ def bootstrap_parser(
     """
 
     def decorator(func: ParserBuilder) -> Callable[[], ArgumentParser]:
-        if schemas:
-            SchemaAction.register_models(schemas)
-
         @wraps(func)
         def wrapper() -> ArgumentParser:
+            if schemas:
+                SchemaAction.register_models(schemas)
+
             argument_parser_params.setdefault("formatter_class", CustomFormatter)
             main = ArgumentParser(**argument_parser_params)
             if deprication:
