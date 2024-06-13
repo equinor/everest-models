@@ -1,5 +1,5 @@
 # Well Trajectory
 
 ```yaml
-{!> reference/well_trajectory/schema.yml!}
+{!> reference/well_trajectory/config.yml!}
 ```

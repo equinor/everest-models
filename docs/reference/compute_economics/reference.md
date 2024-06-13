@@ -128,7 +128,7 @@ Notice that it is further possible to overwrite the input configuration by speci
 ## Usage and schema
 
 ```yaml
-{!> reference/compute_economics/schema.yml!}
+{!> reference/compute_economics/config.yml!}
 ```
 
 ## Models

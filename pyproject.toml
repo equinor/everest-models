@@ -61,7 +61,6 @@ docs = [
     "mkdocstrings[python]",
     "mdx_include",
     "pygments",
-    "markdown-mdantic"
 ]
 
 [project.entry-points."everest"]

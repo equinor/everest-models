@@ -1,0 +1,5 @@
+# -dc/--duration-constraints specification:
+# '...' are REQUIRED fields that needs replacing
+
+<string>:
+  <integer>: '...'

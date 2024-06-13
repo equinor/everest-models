@@ -1,0 +1,5 @@
+# -rc/--rate-constraints specification:
+# '...' are REQUIRED fields that needs replacing
+
+<string>:
+  <integer>: '...'

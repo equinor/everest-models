@@ -1,0 +1,253 @@
+# -c/--config specification:
+# '...' are REQUIRED fields that needs replacing
+
+
+# Datatype: ScalesConfig map
+# Required: True
+scales:
+
+  # Datatype: number
+  # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+  # Required: True
+  x: '...'  # ← REPLACE
+
+  # Datatype: number
+  # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+  # Required: True
+  y: '...' # ← REPLACE
+
+  # Datatype: number
+  # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+  # Required: True
+  z: '...' # ← REPLACE
+
+  # Datatype: number
+  # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+  # Required: False
+  # Default: null
+  k: null
+
+# Datatype: ReferencesConfig map
+# Required: True
+references:
+
+  # Datatype: number
+  # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+  # Required: True
+  x: '...'  # ← REPLACE
+
+  # Datatype: number
+  # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+  # Required: True
+  y: '...' # ← REPLACE
+
+  # Datatype: number
+  # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+  # Required: True
+  z: '...' # ← REPLACE
+
+  # Datatype: number
+  # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+  # Required: False
+  # Default: null
+  k: null
+
+# Datatype: SimpleInterpolationConfig map or ResInsightInterpolationConfig map
+# Required: True
+interpolation: '...'  # ← REPLACE
+
+# Datatype: ResInsightConnectionConfig map
+# Required: False
+# Default: null
+connections:
+
+  # Datatype: resinsight
+  # Required: True
+  type: '...'  # ← REPLACE
+
+  # Datatype: date
+  # Examples: 2024-01-31, 2024-01-31T11:06
+  # Required: True
+  date: '...'  # ← REPLACE
+
+  # Datatype: Path
+  # Examples: /path/to/file.ext, /path/to/dirictory/
+  # Required: True
+  formations_file: '...'  # ← REPLACE
+
+  # Datatype: [PerforationConfig map]
+  # Required: True
+  perforations:
+  -
+
+      # Datatype: string
+      # Examples: a string value
+      # Required: True
+    well: '...'  # ← REPLACE
+
+      # Datatype: [DomainProperty map]
+      # Required: False
+    dynamic:
+    -
+
+          # Datatype: string
+          # Examples: a string value
+          # Required: True
+      key: '...'  # ← REPLACE
+
+          # Datatype: number
+          # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+          # Required: True
+      min: '...' # ← REPLACE
+
+          # Datatype: number
+          # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+          # Required: True
+      max: '...' # ← REPLACE
+
+      # Datatype: [DomainProperty map]
+      # Required: False
+    static:
+    -
+
+          # Datatype: string
+          # Examples: a string value
+          # Required: True
+      key: '...'  # ← REPLACE
+
+          # Datatype: number
+          # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+          # Required: True
+      min: '...' # ← REPLACE
+
+          # Datatype: number
+          # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+          # Required: True
+      max: '...' # ← REPLACE
+
+      # Datatype: [integer]
+      # Required: False
+    formations:
+    - '...'
+
+# Datatype: [PlatformConfig map]
+# Required: False
+platforms:
+-
+
+    # Datatype: string
+    # Examples: a string value
+    # Required: True
+  name: '...'  # ← REPLACE
+
+    # Datatype: number
+    # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+    # Required: True
+  x: '...' # ← REPLACE
+
+    # Datatype: number
+    # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+    # Required: True
+  y: '...' # ← REPLACE
+
+    # Datatype: number
+    # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+    # Required: False
+    # Default: 0.0
+  z: 0.0
+
+    # Datatype: number
+    # Required: False
+    # Default: null
+  k: '...'  # ← REPLACE
+
+# Datatype: [WellConfig map]
+# Required: True
+wells:
+-
+
+    # Datatype: string
+    # Examples: a string value
+    # Required: True
+  name: '...'  # ← REPLACE
+
+    # Datatype: string
+    # Examples: a string value
+    # Required: True
+  group: '...'  # ← REPLACE
+
+    # Datatype: string
+    # Choices: WATER, GAS, OIL
+    # Required: True
+  phase: '...' # ← REPLACE
+
+    # Datatype: number
+    # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+    # Required: False
+    # Default: 0.0
+  skin: 0.0
+
+    # Datatype: number
+    # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+    # Required: False
+    # Default: 0.15
+  radius: 0.15
+
+    # Datatype: number
+    # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+    # Required: False
+    # Default: 4.0
+  dogleg: 4.0
+
+    # Datatype: number
+    # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+    # Required: False
+    # Default: 0.0
+  cost: 0.0
+
+    # Datatype: string
+    # Examples: a string value
+    # Required: False
+    # Default: null
+  platform: null
+
+# Datatype: OutputsConfig map
+# Required: False
+# Default: null
+outputs:
+
+  # Datatype: boolean
+  # Choices: true, false
+  # Required: False
+  # Default: False
+  save_paths: false
+
+  # Datatype: Path
+  # Examples: /path/to/file.ext, /path/to/dirictory/
+  # Required: False
+  # Default: null
+  guide_points: null
+
+  # Datatype: Path
+  # Examples: /path/to/file.ext, /path/to/dirictory/
+  # Required: False
+  # Default: null
+  geometry: null
+
+  # Datatype: Path
+  # Examples: /path/to/file.ext, /path/to/dirictory/
+  # Required: False
+  # Default: null
+  npv_input: null
+
+# Datatype: Path
+# Examples: /path/to/file.ext, /path/to/dirictory/
+# Required: False
+# Default: null
+eclipse_model: null
+
+# Datatype: Path
+# Examples: /path/to/file.ext, /path/to/dirictory/
+# Required: False
+# Default: null
+resinsight_binary: null
