@@ -1,0 +1,154 @@
+# -c/--config specification:
+# '...' are REQUIRED fields that needs replacing
+
+
+# Backup values for case priorities if priority JSON file is missing.
+# Datatype: Priorities map
+# Required: False
+# Default: null
+priorities:
+
+  # fallback priorities if priorities file is not given
+  # Datatype: {string: [number]}
+  # Required: False
+  # Default: null
+  fallback_values:
+    <string>:
+    - '...'
+
+
+# Make sure the following are present in you Everest configuration file.
+
+# create a generic control where the control variables are:
+#     'max_n_cases' and 'state_duration'
+#     and the length of all initial_guesses are n+1,
+#     where 'n' is the nth index in the initial_guess array
+
+# controls:
+# - name: <name of constraint file>
+#     type: generic_control
+#     variables:
+#     - { name: state_duration, initial_guess: [z0, z1, ..., zn] }
+
+# Datatype: Constraints map
+# Required: True
+constraints:
+
+  # Constraint information for the time duration of any given state per iteraton
+  # Datatype: Constraint map
+  # Required: True
+  state_duration:
+
+    # Fallback values for each iteration if constraint json file is missing
+    # Note: If a int is given, all iterations will be initialize to that string
+    # Datatype: [integer] or integer
+    # Examples: [150, 200, 500], 200
+    # Required: False
+    # Default: null
+    fallback_values: '...'  # ← REPLACE
+
+    # Scaling data used by everest for producing constraint files,
+    # given these values this forward model will rescale the constraints
+    # Datatype: Scaling map
+    # Required: True
+    scaling:
+
+      # [min, max] values for scaling source
+      # Datatype: ['number', 'number']
+      # Required: True
+      source: '...'  # ← REPLACE
+
+      # [min, max] values for scaling target
+      # Datatype: ['number', 'number']
+      # Required: True
+      target: '...' # ← REPLACE
+
+# Datatype: date
+# Examples: 2024-01-31, 2024-01-31T11:06
+# Required: True
+start_date: '...' # ← REPLACE
+
+# Datatype: StateConfig map
+# Required: True
+state:
+
+  # State hierarchy in decending order [highest, ..., lowest]
+  # Note: values must be unique!
+  # Tip: highest is the default target state
+  # and lowest is the default initial state
+  # Datatype: [StateHierarchy map]
+  # Required: True
+  hierarchy:
+  -
+
+      # State's label/name.
+      # Datatype: string
+      # Examples: a string value
+      # Required: True
+    label: '...'  # ← REPLACE
+
+      # Case state toggle quota per iteration.
+      # Tip: '_', (infinity) alias can be used to pad array
+      # Thus, if you wish all iteration to infinity, then omit this field
+      # Note: If a integer is given, all iterations will be that string
+      # Datatype: integer or [integer or _]
+      # Examples: [_, 4, _, 2], 2
+      # Required: False
+      # Default: null
+    quotas: '...' # ← REPLACE
+
+  # States to set cases to at initial iteration.
+  # Tip: fill only cases that differ from default (lowest priority level in hierarchy),
+  # since those are automatically populated for you.
+  # Thus, if you wish to initialize all values to default, then omit this field
+  # Note: If a string is given, all cases will be initialize to that string
+  # Datatype: {string: string} or string
+  # Required: False
+  # Default: null
+  initial: '...' # ← REPLACE
+
+  # Target States for each iteration.
+  # Tip: '_', default alias can be used to pad array(highest priority level in hierarchy),
+  # since those are automatically populated for you.
+  # Thus, if you wish to initialize all values to default, then omit this field
+  # Note: If a string is given, all iterations will be initialize to that string
+  # Datatype: [string or _] or string
+  # Examples: _, sitting, _, standing], sitting
+  # Required: False
+  # Default: null
+  targets: '...' # ← REPLACE
+
+  # List of directional (source → target) state actions.
+  # Note: action context is set with the 'forbiden_actions' field
+  # Datatype: [['string', 'string']]
+  # Required: False
+  # Default: null
+  actions:
+  - '...'
+
+  # Are cases allowed to stay at the same state?
+  # False: Inforce cases to change state each iteration, (can cause state lock)
+  # True: Cases are allowed to stay at same state between iterations
+
+  # Datatype: boolean
+  # Choices: true, false
+  # Required: False
+  # Default: True
+  allow_inactions: true
+
+  # False: 'actions' is used as the only allowed state trasitions.
+  # True: 'actions' is negated from allowed state trasitions.
+  # Note: if 'actions' is not given this value is ignored
+  # Datatype: boolean
+  # Choices: true, false
+  # Required: False
+  # Default: False
+  forbiden_actions: false
+
+# Relative or absolute path to Everest generated or forward model modefied json case file.
+# NOTE: cli option argument `--cases CASES` overrides this field
+# Datatype: Path
+# Examples: /path/to/file.ext, /path/to/dirictory/
+# Required: False
+# Default: null
+case_file: null

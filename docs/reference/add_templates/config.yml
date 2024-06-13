@@ -1,0 +1,19 @@
+# -c/--config specification:
+# '...' are REQUIRED fields that needs replacing
+
+
+# Datatype: [Template map]
+# Required: True
+templates:
+-
+
+    # File path to jinja template
+    # Datatype: Path
+    # Examples: /path/to/file.ext, /path/to/dirictory/
+    # Required: True
+  file: '...'  # ← REPLACE
+
+    # Datatype: Keys
+    # Examples: {opname: KBD, phase: WATER, <field>: <value>}
+    # Required: False
+  keys: {}

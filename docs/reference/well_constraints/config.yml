@@ -1,0 +1,65 @@
+# -c/--config specification:
+# '...' are REQUIRED fields that needs replacing
+
+<string>:
+  <integer>:
+
+    # Datatype: Phase map
+    # Required: True
+    phase:
+
+      # Datatype: [string]
+      # Required: False
+      # Default: null
+      options:
+      - '...'
+
+      # Datatype: string
+      # Choices: WATER, GAS, OIL
+      # Required: False
+      # Default: null
+      value: null
+
+    # Datatype: Tolerance map
+    # Required: True
+    rate:
+
+      # Datatype: number
+      # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+      # Required: False
+      # Default: null
+      min: null
+
+      # Datatype: number
+      # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+      # Required: False
+      # Default: null
+      max: null
+
+      # Datatype: number
+      # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+      # Required: False
+      # Default: null
+      value: null
+
+    # Datatype: Tolerance map
+    # Required: True
+    duration:
+
+      # Datatype: number
+      # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+      # Required: False
+      # Default: null
+      min: null
+
+      # Datatype: number
+      # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+      # Required: False
+      # Default: null
+      max: null
+
+      # Datatype: number
+      # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+      # Required: False
+      # Default: null
+      value: null

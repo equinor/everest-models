@@ -96,6 +96,12 @@ def path_test_data() -> pathlib.Path:
     return pathlib.Path(__file__).parent / "testdata"
 
 
+@pytest.fixture(scope="session")
+def reference_docs() -> pathlib.Path:
+    """Path to the reference documentation directory"""
+    return pathlib.Path(__file__).parent.parent / "docs/reference"
+
+
 @pytest.fixture
 def copy_testdata_tmpdir(path_test_data, tmp_path):
     def _copy_tree(path=None):

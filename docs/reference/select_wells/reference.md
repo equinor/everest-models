@@ -7,7 +7,3 @@
 ## Tasks
 
 ::: everest_models.jobs.fm_select_wells.tasks
-
-## Models
-
-$pydantic: everest_models.jobs.fm_select_wells.well_number_model.WellNumber
