@@ -1,6 +1,4 @@
-```bash
-{!> reference/rf/help!}
-```
+# Recovery Factor
 
 ## Tasks
 

@@ -1,9 +1,4 @@
-```bash
-{!> reference/schmerge/help!}
-```
-```yaml
-{!> reference/schmerge/schema.yml!}
-```
+# Schmerge
 
 ## Models
 

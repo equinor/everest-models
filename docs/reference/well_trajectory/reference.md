@@ -1,6 +1,5 @@
-```bash
-{!> reference/well_trajectory/help!}
-```
+# Well Trajectory
+
 ```yaml
 {!> reference/well_trajectory/schema.yml!}
 ```

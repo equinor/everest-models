@@ -1,6 +1,4 @@
-```bash
-{!> reference/strip_dates/help!}
-```
+# Strip Dates
 
 ## Tasks
 

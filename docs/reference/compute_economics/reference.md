@@ -1,3 +1,4 @@
+# Compute Economics
 
 ## Economical Indicators
 
@@ -17,14 +18,11 @@ $$
 
 Estimation of some delta indicators is possible where the difference between the optimized production and a given single case is used. For example, the reference case can be the mean of the prediction if no new well is drilled (situation as is). This means that in the expressions below, the production would be replaced by
 
-
 $$
 \text{production}_{\text{key}, \text{index}} \leftarrow \text{production}_{\text{key}, \text{index}} - \text{reference_production}_{\text{key}, \text{index}},
 $$
 
-
 where $\text{key}$ is an Eclipse keyword and $\text{index}$ represents the time variable.
-
 
 ### Net Present Value
 
@@ -49,8 +47,6 @@ and
 $$
 \text{costs} = \sum_{\text{date} \in \{ \text{cost dates} \} } \text{discount} \times \text{costs}_\text{date}.
 $$
-
-
 
 ### Break-Even Price
 
@@ -103,21 +99,19 @@ $$
 
 Notice that the production can be a production difference in case a reference case is given,
 
-
 !!! danger
 
     The code has been tested and used only with the double conversion. No test have been done if for example the oil equivalent would depend only on FOPT and FGPT, nor
     in case the only oil is produced from the field.
 
-
 ### Observations
 
 The NPV and BEP have been compared to estimation done in a spreadsheet for a given real case. While in the spreadsheet yearly production data were used, the everest_models forward models used a daily interpolation of the production data, prices, exchange rates and discount. This may lead to some noticeable differences.
 
-
 ### Output currency
 
 The output currency is determined by both the existence of a default exchange rate and the given exchange rates. The given exchange rates indicate a rate from the given currency to the default one. This means that the output currency is the one not given in the exchange rate. For a case where both USD and NOK are used currencies in the configuration and that the following echange rate is given
+
 ```yaml
 exchange_rates:
     USD:
@@ -126,17 +120,13 @@ exchange_rates:
         - { date: 2001-05-01, value: 6 }
         - { date: 2002-02-01, value: 9 }
 ```
+
 the output currency will be NOK.
 
 Notice that it is further possible to overwrite the input configuration by specifying in the command input line one of the currencies given in the exchange rate (eg. USD in the above case).
 
-
 ## Usage and schema
 
-
-```bash
-{!> reference/compute_economics/help!}
-```
 ```yaml
 {!> reference/compute_economics/schema.yml!}
 ```

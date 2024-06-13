@@ -1,6 +1,5 @@
-```bash
-{!> reference/npv/help!}
-```
+# Net Price Value
+
 ```yaml
 {!> reference/npv/schema.yml!}
 ```

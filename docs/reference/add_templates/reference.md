@@ -1,9 +1,9 @@
-```bash
-{!> reference/add_templates/help!}
-```
+# Add Templates
+
 ```yaml
 {!> reference/add_templates/schema.yml!}
 ```
+
 ## Tasks
 
 ::: everest_models.jobs.fm_add_templates.tasks
