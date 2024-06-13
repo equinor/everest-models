@@ -1,6 +1,4 @@
-```bash
-{!> reference/extract_summary_data/help!}
-```
+# Extract Summary Data
 
 ## Tasks
 

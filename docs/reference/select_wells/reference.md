@@ -1,6 +1,5 @@
-```bash
-{!> reference/select_wells/help!}
-```
+# Select Wells
+
 ```yaml
 {!> reference/select_wells/schema.yml!}
 ```

@@ -1,9 +1,9 @@
-```bash
-{!> reference/drill_planner/help!}
-```
+# Drill Planner
+
 ```yaml
 {!> reference/drill_planner/schema.yml!}
 ```
+
 ## Builder
 
 ::: everest_models.jobs.fm_drill_planner.manager.builder

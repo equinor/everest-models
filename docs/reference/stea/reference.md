@@ -1,3 +1,1 @@
-```bash
-{!> reference/stea/help!}
-```
+# Stea

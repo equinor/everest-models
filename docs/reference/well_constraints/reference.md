@@ -1,6 +1,5 @@
-```bash
-{!> reference/well_constraints/help!}
-```
+# Well Constraints
+
 ```yaml
 {!> reference/well_constraints/schema.yml!}
 ```
