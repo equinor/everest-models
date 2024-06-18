@@ -1,6 +1,6 @@
 import itertools
 from pathlib import Path
-from typing import Any, Dict, Iterable, Iterator, Tuple
+from typing import Any, Dict, Iterable, Iterator, Optional, Tuple
 
 import numpy
 
@@ -29,31 +29,26 @@ def _read_platforms_and_kickoffs(
     trajectory: Dict[str, Any],
     scales: ScalesConfig,
     references: ReferencesConfig,
-    platform: PlatformConfig,
+    platform: Optional[PlatformConfig],
 ) -> Tuple[float, float, float, float]:
-    px, py = (
-        (
-            _rescale_point(scales.x, trajectory["p_x"][platform], references.x),
-            _rescale_point(scales.y, trajectory["p_y"][platform], references.y),
-        )
-        if "p_x" in trajectory and "p_y" in trajectory
-        else (
-            platform.x,
-            platform.y,
-        )
-    )
-    pz = (
-        _rescale_point(scales.z, trajectory["p_z"][platform], references.z)
-        if "p_z" in trajectory
-        else platform.z
-    )
-    kz = (
-        _rescale_point(scales.k, trajectory["k_z"][platform], references.k)
-        if "k_z" in trajectory
-        else platform.k
-    )
+    def _get_point(key: str, attr: str) -> Optional[float]:
+        value = trajectory.get(key, {}).get(platform.name)
+        if value is not None:
+            value = _rescale_point(
+                getattr(scales, attr), value, getattr(references, attr)
+            )
+        if value is None and platform is not None:
+            value = getattr(platform, attr)
+        if value is not None:
+            value = round(value, ROUND)
+        return value
 
-    return round(px, ROUND), round(py, ROUND), round(pz, ROUND), round(kz, ROUND)
+    px = _get_point("p_x", "x")
+    py = _get_point("p_y", "y")
+    pz = _get_point("p_z", "z")
+    kz = _get_point("k_z", "k")
+
+    return px, py, pz, kz
 
 
 def _read_files_from_everest() -> Dict[str, Any]:
@@ -112,21 +107,40 @@ def read_trajectories(
                 )
             )
 
+        x0, y0, z0 = [round(value, ROUND) for value in generate_rescaled_points(X1)]
+        x2, y2, z2 = [round(value, ROUND) for value in generate_rescaled_points(X3)]
+        x1, y1, z1 = _construct_midpoint(well.name, inputs, x0, x2, y0, y2, z0, z2)
         whx, why, whz, koz = _read_platforms_and_kickoffs(
             inputs,
             scales,
             references,
-            platform=next(item for item in platforms if item.name == well.platform),
+            platform=next(
+                (item for item in platforms if item.name == well.platform), None
+            ),
         )
-        x0, y0, z0 = [round(value, ROUND) for value in generate_rescaled_points(X1)]
-        x2, y2, z2 = [round(value, ROUND) for value in generate_rescaled_points(X3)]
 
-        x1, y1, z1 = _construct_midpoint(well.name, inputs, x0, x2, y0, y2, z0, z2)
+        x, y, z = [], [], []
+        if whx is not None:
+            if why is None or whz is None:
+                raise RuntimeError(
+                    "Incomplete platform location, some coordinates are missing."
+                )
+            x.append(whx)
+            y.append(why)
+            z.append(whz)
+        if koz is not None:
+            if whx is None or why is None:
+                raise RuntimeError(
+                    "A kickoff is defined, but the platform coordinates are missing or incomplete."
+                )
+            x.append(whx)
+            y.append(why)
+            z.append(koz)
 
         return Trajectory(
-            x=numpy.array([whx, whx, x0, x1, x2]),
-            y=numpy.array([why, why, y0, y1, y2]),
-            z=numpy.array([whz, koz, z0, z1, z2]),
+            x=numpy.array(x + [x0, x1, x2]),
+            y=numpy.array(y + [y0, y1, y2]),
+            z=numpy.array(z + [z0, z1, z2]),
         )
 
     inputs = _read_files_from_everest()
