@@ -104,7 +104,8 @@ jobs:
       - name: Unpack ResInsight
         run: |
           cd $HOME
-          tar zxf ${{ github.workspace }}/resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
+          pwd
+          tar zvxf ${{ github.workspace }}/resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
           echo "${HOME}/${INSTALL_DIR}" >> $GITHUB_PATH
           echo $PATH
 
