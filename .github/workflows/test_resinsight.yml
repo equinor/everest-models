@@ -120,7 +120,7 @@ jobs:
       #   run: |
       #     pip install .[test]
 
-      # - name: "Test package spinningjenny"
+      # - name: "Run tests using resinsight"
       #   run: |
       #     echo $PATH
       #     pytest -m "${{ matrix.test_type }}" -sv --hypothesis-profile ci
@@ -128,6 +128,4 @@ jobs:
       - name: "Test package spinningjenny"
         run: |
           echo $PATH
-          which ResInsight
-
-  
+          ResInsight --console
