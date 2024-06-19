@@ -1,10 +1,11 @@
 import itertools
 import logging
+import shutil
 import signal
 import sys
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
 import rips
 
@@ -18,7 +19,9 @@ logger = logging.getLogger(__name__)
 
 
 class ResInsight:
-    def __init__(self, executable: Path) -> None:
+    def __init__(self, executable: Optional[Path] = None) -> None:
+        if executable is None:
+            executable = shutil.which("ResInsight")
         self._executable = executable
         signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
         signal.signal(signal.SIGINT, lambda *_: sys.exit(0))
