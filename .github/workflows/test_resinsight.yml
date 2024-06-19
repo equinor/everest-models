@@ -9,8 +9,9 @@ on:
 
 env:
   ERT_SHOW_BACKTRACE: 1
-  RESINSIGHT_VERSION: "2023.12.0"
-  INSTALL_DIR: local
+  RESINSIGHT_VERSION: "2024.03.3"
+  RIPS_VERSION: "2024.3.3.3"
+  INSTALL_DIR: resinsight_bin
 
 jobs:
   build_dependencies:
@@ -23,29 +24,17 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: "actions/setup-python@v4"
-        with:
-          python-version: "${{ matrix.python-version }}"
-      - uses: "actions/cache@v3"
+      - uses: "actions/cache@v4"
         id: cache-package
         with:
-          key: ${{ matrix.os }}_python-${{ matrix.python-version }}_resinsight_${{ env.RESINSIGHT_VERSION }}
+          key: ${{ matrix.os }}_resinsight_${{ env.RESINSIGHT_VERSION }}
           path: ${{ github.workspace }}/resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
       - name: Install dependencies
         if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
           sudo apt update
-          sudo apt -y install \
-          build-essential \
-          gcc-12 g++-12 \
-          curl zip unzip tar \
-          qtbase5-dev libqt5svg5-dev qtbase5-private-dev
-          pip install -U pip
-          pip install cmake aqtinstall
-      - name: Install Qt
-        if: steps.cache-package.outputs.cache-hit != 'true'
-        run: |
-          aqt install-qt linux desktop 5.15.2 -m qtcharts -O ${{ github.workspace }}/Qt
+          sudo apt -y install build-essential gcc-12 g++-12 curl zip unzip tar
+          sudo apt -y install qtbase5-dev qtbase5-private-dev libqt5charts5-dev libqt5svg5-dev
       - name: Switch cpp compiler
         if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
@@ -57,38 +46,40 @@ jobs:
         if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
           git clone -b v${{ env.RESINSIGHT_VERSION }} https://github.com/OPM/ResInsight.git
+      - name: Build ResInsight dependencies
+        if: steps.cache-package.outputs.cache-hit != 'true'
+        run: |
           cd ResInsight
           git submodule update --init
           ThirdParty/vcpkg/bootstrap-vcpkg.sh
           ThirdParty/vcpkg/vcpkg install grpc boost-filesystem boost-spirit eigen3
-          pip install -r GrpcInterface/Python/requirements.txt
-          # add missing directory that cause resinsight installation to fail
-          mkdir -p GrpcInterface/Python/rips/generated
       - name: Build ResInsight
         if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
-          mkdir ${{ github.workspace }}/ResInsight/cmakebuild
-          cd ${{ github.workspace }}/ResInsight/cmakebuild
-          cmake \
-          -DCMAKE_PREFIX_PATH=${{ github.workspace }}/Qt/5.15.2/gcc_64/lib/cmake \
-          -DRESINSIGHT_ENABLE_GRPC=true \
-          -DVCPKG_TARGET_TRIPLET=x64-linux \
-          -DCMAKE_TOOLCHAIN_FILE=../ThirdParty/vcpkg/scripts/buildsystems/vcpkg.cmake \
-          -DRESINSIGHT_GRPC_PYTHON_EXECUTABLE=$( which python ) \
-          -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/${{ env.INSTALL_DIR }} \
-          ..
-
+          # Installation of ResInsight may fail if this directory does not exist:
+          mkdir -p ResInsight/GrpcInterface/Python/rips/generated
+          mkdir ResInsight/build
+          cd ResInsight/build
+          cmake .. \
+              -DRESINSIGHT_ENABLE_GRPC=true \
+              -DVCPKG_TARGET_TRIPLET=x64-linux \
+              -DCMAKE_TOOLCHAIN_FILE=../ThirdParty/vcpkg/scripts/buildsystems/vcpkg.cmake \
+              -DBUILD_PYTHON=OFF \
+              -DRESINSIGHT_GRPC_DOWNLOAD_PYTHON_MODULE=OFF \
+              -DRESINSIGHT_GRPC_BUNDLE_PYTHON_MODULE=OFF \
+              -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/${{ env.INSTALL_DIR }} \
+              -DRESINSIGHT_ENABLE_HDF5=OFF
           make -j$( nproc ) install
       - name: Package ResInsight
         if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
-          tar zcf ${{ github.workspace }}/resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz ${{ github.workspace }}/${{ env.INSTALL_DIR }}
+          tar zcf resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz ${{ env.INSTALL_DIR }}
       - name: Archive ResInsight
-        uses: actions/upload-artifact@v3
+        if: steps.cache-package.outputs.cache-hit != 'true'
+        uses: actions/upload-artifact@v4
         with:
           name: resinsight_${{ env.RESINSIGHT_VERSION }}
           path: ${{ github.workspace }}/resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
-          retention-days: 5
 
   tests:
     needs: build_dependencies
@@ -102,30 +93,29 @@ jobs:
         test_type: ["resinsight"]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/cache/restore@v3
-        id: restore-cached-package
+      - uses: "actions/setup-python@v5"
         with:
-          key: ${{ matrix.os }}_python-${{ matrix.python-version }}_resinsight_${{ env.RESINSIGHT_VERSION }}
-          path: ${{ github.workspace }}/resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
-
-      - name: Unpack ResInsight
-        run: |
-          cd $HOME
-          tar zxf ${{ github.workspace }}/resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
-          echo "PATH=${PATH}:${HOME}/${INSTALL_DIR}/bin" >> ${GITHUB_ENV}
-
-      - uses: "actions/checkout@v2"
+          python-version: "${{ matrix.python-version }}"
+      - uses: "actions/checkout@v4"
         with:
           fetch-depth: 0
-
-      - name: "Install dependencies"
+      - uses: actions/cache/restore@v4
+        id: restore-cached-package
+        with:
+          key: ${{ matrix.os }}_resinsight_${{ env.RESINSIGHT_VERSION }}
+          path: ${{ github.workspace }}/resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
+      - name: Install ResInsight
+        run: |
+          sudo apt -y install qtbase5-dev qtbase5-private-dev libqt5charts5-dev libqt5svg5-dev
+          # Unpack after checking out, otherwise the checkout action would delete it:
+          tar zxf resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
+          echo "${{ github.workspace }}/${{ env.INSTALL_DIR }}" >> $GITHUB_PATH
+      - name: "Install the package"
         run: |
           pip install --upgrade pip setuptools
-
-      - name: "Install package"
-        run: |
+          # Make sure we use a compatible rips:
+          pip install rips==${{ env.RIPS_VERSION }}
           pip install .[test]
-
-      - name: "Test package spinningjenny"
+      - name: Run tests using resinsight
         run: |
-          pytest -m "${{ matrix.test_type }}" -sv --hypothesis-profile ci
+          pytest -m "${{ matrix.test_type }}" -sv
