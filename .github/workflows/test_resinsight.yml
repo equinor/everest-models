@@ -10,7 +10,7 @@ on:
 env:
   ERT_SHOW_BACKTRACE: 1
   RESINSIGHT_VERSION: "2024.03.2"
-  INSTALL_DIR: resinsight
+  INSTALL_DIR: resinsight_bin
 
 jobs:
   build_dependencies:
@@ -59,8 +59,8 @@ jobs:
         if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
           mkdir -p ResInsight/GrpcInterface/Python/rips/generated
-          mkdir ${{ github.workspace }}/ResInsight/build
-          cd ${{ github.workspace }}/ResInsight/build
+          mkdir ResInsight/build
+          cd ResInsight/build
           cmake .. \
               -DRESINSIGHT_ENABLE_GRPC=true \
               -DVCPKG_TARGET_TRIPLET=x64-linux \
@@ -74,7 +74,7 @@ jobs:
       - name: Package ResInsight
         if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
-          tar zcf ${{ github.workspace }}/resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz ${{ github.workspace }}/${{ env.INSTALL_DIR }}
+          tar zcf resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz ${{ env.INSTALL_DIR }}
       - name: Archive ResInsight
         if: steps.cache-package.outputs.cache-hit != 'true'
         uses: actions/upload-artifact@v3
@@ -103,10 +103,8 @@ jobs:
 
       - name: Unpack ResInsight
         run: |
-          cd $HOME
-          pwd
-          tar zvxf ${{ github.workspace }}/resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
-          echo "${HOME}/${INSTALL_DIR}" >> $GITHUB_PATH
+          tar zvxf resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
+          echo "${{ github.workspace }}/${{ env.INSTALL_DIR }}" >> $GITHUB_PATH
           echo $PATH
 
       # - uses: "actions/checkout@v2"
@@ -128,6 +126,5 @@ jobs:
 
       - name: "Test package spinningjenny"
         run: |
-          echo $PATH
-          ls $HOME/resinsight
+          ls "${{ github.workspace }}/${{ env.INSTALL_DIR }}"
           ResInsight --console
