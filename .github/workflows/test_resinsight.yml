@@ -105,6 +105,7 @@ jobs:
           cd $HOME
           tar zxf ${{ github.workspace }}/resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
           echo "PATH=${PATH}:${HOME}/${INSTALL_DIR}" >> ${GITHUB_ENV}
+          echo $PATH
 
       - uses: "actions/checkout@v2"
         with:
@@ -120,4 +121,5 @@ jobs:
 
       - name: "Test package spinningjenny"
         run: |
+          echo $PATH
           pytest -m "${{ matrix.test_type }}" -sv --hypothesis-profile ci
