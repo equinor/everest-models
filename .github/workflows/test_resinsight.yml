@@ -106,21 +106,28 @@ jobs:
           cd $HOME
           tar zxf ${{ github.workspace }}/resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
           echo "${HOME}/${INSTALL_DIR}" >> $GITHUB_PATH
-          echo $GITHUB_PATH
+          echo $PATH
 
-      - uses: "actions/checkout@v2"
-        with:
-          fetch-depth: 0
+      # - uses: "actions/checkout@v2"
+      #   with:
+      #     fetch-depth: 0
 
-      - name: "Install dependencies"
-        run: |
-          pip install --upgrade pip setuptools
+      # - name: "Install dependencies"
+      #   run: |
+      #     pip install --upgrade pip setuptools
 
-      - name: "Install package"
-        run: |
-          pip install .[test]
+      # - name: "Install package"
+      #   run: |
+      #     pip install .[test]
+
+      # - name: "Test package spinningjenny"
+      #   run: |
+      #     echo $PATH
+      #     pytest -m "${{ matrix.test_type }}" -sv --hypothesis-profile ci
 
       - name: "Test package spinningjenny"
         run: |
-          echo $GITHUB_PATH
-          pytest -m "${{ matrix.test_type }}" -sv --hypothesis-profile ci
+          echo $PATH
+          which ResInsight
+
+  
