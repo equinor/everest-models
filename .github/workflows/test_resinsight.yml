@@ -128,4 +128,5 @@ jobs:
       - name: "Test package spinningjenny"
         run: |
           echo $PATH
+          ls $HOME/resinsight
           ResInsight --console
