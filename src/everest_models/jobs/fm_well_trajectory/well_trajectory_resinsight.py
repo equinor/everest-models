@@ -22,7 +22,8 @@ class ResInsight:
     def __init__(self, executable: Optional[Path] = None) -> None:
         if executable is None:
             executable = shutil.which("ResInsight")
-        self._executable = executable
+        # ResInsight only checks for empty string and not None
+        self._executable = executable if executable is not None else ""
         signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
         signal.signal(signal.SIGINT, lambda *_: sys.exit(0))
 
