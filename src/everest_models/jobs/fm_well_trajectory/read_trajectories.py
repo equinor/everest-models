@@ -45,50 +45,46 @@ def _rescale_point(scale: float, point: float, reference: float):
     return scale * point + reference
 
 
-def _read_platforms_and_kickoffs(
+def _read_platform_and_kickoff(
     trajectory: Dict[str, Any],
     scales: ScalesConfig,
     references: ReferencesConfig,
     platform: PlatformConfig,
-) -> Tuple[float, float, float, float]:
-    def _file_value(filename: str) -> Optional[float]:
-        if filename in trajectory and platform.name in trajectory[filename]:
+) -> Tuple[float, float, float, Optional[float]]:
+    def _get_point(filename: str, attr: str) -> Optional[float]:
+        value = trajectory.get(filename, {}).get(platform.name)
+        if value is not None:
             logger.warning(
-                f"File: {filename}.json found, '{filename.split('_')[1]}' for '{platform.name}' in configuration ignored."
+                f"File: {filename}.json found, overriding '{attr}' "
+                f"for '{platform.name}' in configuration."
             )
-            if filename == PLATFORM_FILES.K and (
-                references.k is None or scales.k is None
-            ):
+            scale = getattr(scales, attr)
+            ref = getattr(references, attr)
+            if scale is None or ref is None:
                 raise ValueError(
-                    "Either 'references.k' or 'scales.k' missing in configuration"
+                    f"Either 'references.{attr}' or 'scales.{attr}' missing in configuration"
                 )
+            value = _rescale_point(scale, value, ref)
+        else:
+            # If necessary, get the value from the platform:
+            value = getattr(platform, attr)
 
-            return trajectory[filename][platform.name]
+        if value is not None:
+            value = round(value, ROUND)
 
-    px, py = (
-        (
-            _rescale_point(scales.x, p_x, references.x),
-            _rescale_point(scales.y, p_y, references.y),
-        )
-        if (p_x := _file_value(PLATFORM_FILES.X))
-        and (p_y := _file_value(PLATFORM_FILES.Y))
-        else (
-            platform.x,
-            platform.y,
-        )
-    )
-    pz = (
-        _rescale_point(scales.z, p_z, references.z)
-        if (p_z := _file_value(PLATFORM_FILES.Z))
-        else platform.z
-    )
-    kz = (
-        _rescale_point(scales.k, k_z, references.k)
-        if (k_z := _file_value(PLATFORM_FILES.K))
-        else platform.k
-    )
+        return value
 
-    return round(px, ROUND), round(py, ROUND), round(pz, ROUND), round(kz, ROUND)
+    px = _get_point("platform_x", "x")
+    py = _get_point("platform_y", "y")
+    pz = _get_point("platform_z", "z")
+    pk = _get_point("platform_k", "k")
+
+    # px, py and pz are mandatory, pk may be `None`:
+    assert px is not None
+    assert py is not None
+    assert pz is not None
+
+    return px, py, pz, pk
 
 
 def _read_files_from_everest() -> Dict[str, Any]:
@@ -147,23 +143,31 @@ def read_trajectories(
                 )
             )
 
-        whx, why, whz, koz = _read_platforms_and_kickoffs(
-            inputs,
-            scales,
-            references,
-            platform=next(
-                platform for platform in platforms if platform.name == well.platform
-            ),
+        x, y, z = [], [], []
+
+        platform = next(
+            (item for item in platforms if item.name == well.platform), None
         )
+        if platform is not None:
+            px, py, pz, pk = _read_platform_and_kickoff(
+                inputs, scales, references, platform
+            )
+            x.append(px)
+            y.append(py)
+            z.append(pz)
+            if pk is not None:
+                x.append(px)
+                y.append(py)
+                z.append(pk)
+
         x0, y0, z0 = [round(value, ROUND) for value in generate_rescaled_points(P1)]
         x2, y2, z2 = [round(value, ROUND) for value in generate_rescaled_points(P3)]
-
         x1, y1, z1 = _construct_midpoint(well.name, inputs, x0, x2, y0, y2, z0, z2)
 
         return Trajectory(
-            x=numpy.array([whx, whx, x0, x1, x2]),
-            y=numpy.array([why, why, y0, y1, y2]),
-            z=numpy.array([whz, koz, z0, z1, z2]),
+            x=numpy.array(x + [x0, x1, x2]),
+            y=numpy.array(y + [y0, y1, y2]),
+            z=numpy.array(z + [z0, z1, z2]),
         )
 
     inputs = _read_files_from_everest()
