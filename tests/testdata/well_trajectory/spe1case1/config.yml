@@ -37,12 +37,10 @@ platforms:
     - name: INJ
       x: 2500
       y: 2500
-      z: 0
       k: 50
     - name: PROD
       x: 7500
       y: 7500
-      z: 0
       k: 50
 outputs:
     save_paths: true

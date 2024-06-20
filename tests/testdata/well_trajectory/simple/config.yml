@@ -37,7 +37,6 @@ platforms:
   - name: platform2
     x: 461335.48
     y: 5933608.04
-    z: 0.0
     k: 200.0
 
 outputs:

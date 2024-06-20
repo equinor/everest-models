@@ -12,7 +12,6 @@ from everest_models.jobs.shared.models.phase import PhaseEnum
 from .models.config import (
     DomainProperty,
     PerforationConfig,
-    PlatformConfig,
     ResInsightConnectionConfig,
     WellConfig,
 )
@@ -25,13 +24,12 @@ def _create_perforation_view(
     perforations: Iterable[PerforationConfig],
     formations_file: Path,
     case: rips.Case,
-    wells: Iterable[str],
+    well_name: str,
 ) -> None:
-    for perforation in perforations:
-        if perforation.well in wells:
-            if perforation.formations:
-                case.import_formation_names([bytes(formations_file.resolve())])
-            case.create_view().set_time_step(-1)
+    perforation = next((item for item in perforations if item.well == well_name), None)
+    if perforation is not None and perforation.formations:
+        case.import_formation_names([bytes(formations_file.resolve())])
+    case.create_view().set_time_step(-1)
 
 
 def read_wells(
@@ -46,13 +44,15 @@ def read_wells(
         ],
         well_path_folder=str(well_path_folder),
     )
+
     if connection is not None:
-        _create_perforation_view(
-            connection.perforations,
-            connection.formations_file,
-            project.cases()[0],
-            well_names,
-        )
+        for well_name in well_names:
+            _create_perforation_view(
+                connection.perforations,
+                connection.formations_file,
+                project.cases()[0],
+                well_name,
+            )
 
     project.update()
 
@@ -61,21 +61,12 @@ def read_wells(
 
 def create_well(
     connection: ResInsightConnectionConfig,
-    platforms: Iterable[PlatformConfig],
     measured_depth_step: float,
     well: WellConfig,
     trajectory: Trajectory,
     project: rips.Project,
     project_path: Path,
 ) -> rips.Project:
-    # ResInsight starts in a different directory we cannot use a relative path:
-    project_file = project_path / "model.rsp"
-
-    targets = [
-        [str(x), str(y), str(z)]
-        for x, y, z in zip(trajectory.x, trajectory.y, trajectory.z)
-    ]
-
     _create_perforation_view(
         connection.perforations,
         connection.formations_file,
@@ -83,40 +74,21 @@ def create_well(
         well.name,
     )
 
-    # Add a new modeled well path
-    well_path_coll = project.descendants(rips.WellPathCollection)[0]
-    well_path = well_path_coll.add_new_object(rips.ModeledWellPath)
+    well_path_collection = project.descendants(rips.WellPathCollection)[0]
+    well_path = well_path_collection.add_new_object(rips.ModeledWellPath)
     well_path.name = well.name
     well_path.update()
 
-    # Create well targets
-    intersection_points = []
     geometry = well_path.well_path_geometry()
-
-    # if the first point is already a platform:
-    if targets[0][2] == str(0.0):
-        # set first point as platform and remove from targets
-        reference = targets[0]
-        targets = targets[1:]
-    # otherwise, if platform and kickoff are inputs:
-    elif well.platform is not None:
-        platform = next(item for item in platforms if item.name == well.platform)
-        reference = [platform.x, platform.y, platform.z]
-        targets = [reference] + targets
-    # finally, when there is no platform info create platform directly above
-    # first guide point
-    else:
-        reference = [targets[0][0], targets[0][1], 0]
-
-    # Create reference point
     reference_point = geometry.reference_point
-    reference_point[0] = reference[0]
-    reference_point[1] = reference[1]
-    reference_point[2] = reference[2]
+    reference_point[0] = str(trajectory.x[0])
+    reference_point[1] = str(trajectory.y[0])
+    reference_point[2] = str(trajectory.z[0])
     geometry.update()
 
-    for target in targets:
-        coord = target
+    intersection_points = []
+    for point in zip(trajectory.x[1:], trajectory.y[1:], trajectory.z[1:]):
+        coord = [str(item) for item in point]
         target = geometry.append_well_target(coordinate=coord, absolute=True)
         target.dogleg1 = well.dogleg
         target.dogleg2 = well.dogleg
@@ -124,14 +96,11 @@ def create_well(
         intersection_points.append(coord)
     geometry.update()
 
-    #### currently only available in resinsightdev
-    intersection_coll = project.descendants(rips.IntersectionCollection)[0]
-    # Add a CurveIntersection and set coordinates for the polyline
-    intersection = intersection_coll.add_new_object(rips.CurveIntersection)
+    intersection_collection = project.descendants(rips.IntersectionCollection)[0]
+    intersection = intersection_collection.add_new_object(rips.CurveIntersection)
     intersection.points = intersection_points
     intersection.update()
 
-    # Read out estimated dogleg and azimuth/inclination for well targets
     for well in geometry.well_path_targets():
         logger.info(
             "\t".join(
@@ -144,9 +113,11 @@ def create_well(
             )
         )
 
-    # Save the project to file
+    # ResInsight starts in a different directory, the project file must be absolute:
+    project_file = project_path / "model.rsp"
     logger.info(f"Saving project to: {project_file}")
     project.save(str(project_file))
+
     logger.info(
         f"Calling 'export_well_paths' on the resinsight project" f"\ncwd = {Path.cwd()}"
     )

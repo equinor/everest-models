@@ -70,7 +70,6 @@ def well_trajectory_resinsight(
                 for well in config.wells:
                     project = create_well(
                         config.connections,
-                        config.platforms,
                         config.interpolation.measured_depth_step,
                         well,
                         guide_points[well.name],

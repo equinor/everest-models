@@ -1,6 +1,6 @@
 import datetime
 from pathlib import Path
-from typing import Literal, Tuple, Union
+from typing import Literal, Optional, Tuple, Union
 
 from pydantic import (
     AfterValidator,
@@ -82,8 +82,7 @@ class PlatformConfig(ModelConfig):
     name: str
     x: Annotated[float, Field(description="")]
     y: Annotated[float, Field(description="")]
-    z: Annotated[float, Field(default=0.0, description="")]
-    k: Annotated[float, Field(description="")]
+    k: Annotated[Optional[float], Field(default=None, description="")]
 
 
 class WellConfig(ModelConfig):
