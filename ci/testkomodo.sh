@@ -1,5 +1,5 @@
 
-install_package () {
+install_test_dependencies () {
     pip install .[test]
 }
 
