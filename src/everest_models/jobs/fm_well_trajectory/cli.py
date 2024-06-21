@@ -41,8 +41,6 @@ def main_entry_point(args=None):
             eclipse_model := options.eclipse_model or options.config.eclipse_model
         ) is None:
             args_parser.error("missing eclipse model")
-        if options.config.resinsight_binary is None:
-            args_parser.error("missing ResInsight binary path")
         well_trajectory_resinsight(
             options.config,
             eclipse_model,

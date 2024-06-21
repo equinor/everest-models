@@ -1,11 +1,10 @@
 import itertools
 import logging
-import shutil
 import signal
 import sys
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict
 
 import rips
 
@@ -19,18 +18,22 @@ logger = logging.getLogger(__name__)
 
 
 class ResInsight:
-    def __init__(self, executable: Optional[Path] = None) -> None:
-        if executable is None:
-            executable = shutil.which("ResInsight")
+    def __init__(self, executable: str = "") -> None:
         self._executable = executable
         signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
         signal.signal(signal.SIGINT, lambda *_: sys.exit(0))
 
     def __enter__(self) -> rips.Instance:
         logger.info("Launching ResInsight...")
-        instance = rips.Instance.launch(str(self._executable), console=True)
+        instance = rips.Instance.launch(self._executable, console=True)
         if instance is None:
-            raise ConnectionError(f"Failed to launch ResInsight: {self._executable}")
+            msg = (
+                "Failed to launch ResInsight: no executable found"
+                if self._executable == ""
+                else f"Failed to launch ResInsight executable: {self._executable}"
+            )
+            raise ConnectionError(msg)
+
         self._instance = instance
         return instance
 
@@ -52,10 +55,9 @@ def well_trajectory_resinsight(
     guide_points: Dict[str, Trajectory],
     project_path: Path = Path.cwd(),
 ) -> None:
-    if config.resinsight_binary is None:
-        raise ValueError("Missing resinsight binary path")
-
-    with ResInsight(config.resinsight_binary) as resinsight:
+    with ResInsight(
+        "" if config.resinsight_binary is None else str(config.resinsight_binary)
+    ) as resinsight:
         with resinsight_project(
             resinsight.project,
             str(eclipse_model.with_suffix(".EGRID")),
