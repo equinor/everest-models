@@ -2,9 +2,11 @@ import os
 import pathlib
 import shutil
 import sys
+from typing import Any, Sequence
 
 import pluggy
 import pytest
+import rips
 from hypothesis import HealthCheck, settings
 
 sys.modules["everest.plugins"] = type(sys)("everest.plugins")
@@ -18,6 +20,34 @@ settings.register_profile(
     deadline=None,
     suppress_health_check=[HealthCheck.too_slow],
 )
+
+
+def pytest_addoption(parser: Any) -> Any:
+    parser.addoption(
+        "--test-resinsight",
+        action="store_true",
+        default=False,
+        help="Run ResInsight tests",
+    )
+
+
+def pytest_collection_modifyitems(config: Any, items: Sequence[Any]) -> None:
+    if config.getoption("--test-resinsight"):
+        instance = rips.Instance.launch(console=True)
+        if instance is None:
+            msg = (
+                "Tests marked as `resinsight` require the RESINSIGHT_EXECUTABLE environment variable, "
+                "or that it is configured via the `rips` installation"
+            )
+            pytest.exit(msg, returncode=pytest.ExitCode.USAGE_ERROR)
+        instance.exit()
+    else:
+        skip_resinsight = pytest.mark.skip(
+            reason="need --test-resinsight option to run"
+        )
+        for item in items:
+            if "resinsight" in item.keywords:
+                item.add_marker(skip_resinsight)
 
 
 class TestSpec:
