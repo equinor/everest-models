@@ -1,0 +1,36 @@
+[
+  {
+    "name": "unrelated",
+    "ops": [
+      {
+        "date": "2026-11-01",
+        "opname": "efac",
+        "template": "./templates/efac.jinja",
+        "tokens": {
+          "gefac": 0.9,
+          "group": "OP",
+          "wefac": 0.8,
+          "welllist": "*OP"
+        }
+      },
+      {
+        "date": "2025-12-01",
+        "opname": "wefac",
+        "template": "./templates/wefac.jinja",
+        "tokens": {
+          "wefac": 0.5,
+          "welllist": "*OP"
+        }
+      },
+      {
+        "date": "2021-01-01",
+        "opname": "gefac",
+        "template": "./templates/gefac.jinja",
+        "tokens": {
+          "gefac": 0.23,
+          "group": "OP"
+        }
+      }
+    ]
+  }
+]

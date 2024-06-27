@@ -10,7 +10,7 @@ Operation Remover has the following criteria:
 - remove well operations from wells.json where well names intersect.
 - If no operation present **do nothing**
 
-We will try as much as possible to adhere the existing [Project Structure](../explanation.md#project-structure)
+We will try as much as possible to adhere the existing [Project Structure](../explanations/project_structure.md)
 
 ```bash
 # From project root

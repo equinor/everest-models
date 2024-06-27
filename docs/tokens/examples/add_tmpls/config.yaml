@@ -1,0 +1,14 @@
+templates:
+  -
+    file: 'templates/efac.jinja'
+    keys:
+        welllist: "*OP"
+        group: "OP"
+  -
+    file: 'templates/wefac.jinja'
+    keys:
+        welllist: "*OP"
+  -
+    file: 'templates/gefac.jinja'
+    keys:
+        group: "OP"

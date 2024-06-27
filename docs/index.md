@@ -16,6 +16,7 @@ of the following:
     - [Well Order Optimization](https://fmu-docs.equinor.com/docs/everest/tutorial/well_order_optimisation.html#forward-models)
     - [Well Rate Optimization](https://fmu-docs.equinor.com/docs/everest/tutorial/well_rate_optimisation.html#forward-models)
     - [Well Selection Optimization](https://fmu-docs.equinor.com/docs/everest/tutorial/well_selection.html#forward-models)
+    - [Tokens](tokens/how_to_guide.md)
 - Reference:
     - Jobs:
         - [Add Templates](reference/add_templates/reference.md)
@@ -38,4 +39,6 @@ of the following:
         - [Models](reference/shared/models.md)
         - [Arguments](reference/shared/arguments.md)
         - [Hook](reference/hook.md)
-- [Explanation](explanation.md)
+- Explanation:
+    - [Project Structure](explanations/project_structure.md)
+    - [Operations Rework](explanations/operations_rework.md)
