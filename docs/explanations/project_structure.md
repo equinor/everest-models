@@ -1,5 +1,3 @@
-## Project Structure
-
 ```bash
 > tree -Id __pycache__ src
 src

@@ -157,8 +157,8 @@ platforms:
   z: 0.0
 
     # Datatype: number
-    # Required: False
-    # Default: null
+    # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+    # Required: True
   k: '...'  # ← REPLACE
 
 # Datatype: [WellConfig map]
