@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Dict, Final, Iterable, NamedTuple, Optional, Tuple
 
 import numpy
+import pandas as pd
 
 from ..shared.io_utils import load_json
 from .models.config import PlatformConfig, ReferencesConfig, ScalesConfig, WellConfig
@@ -15,6 +16,10 @@ P1: Final = tuple(f"p1_{tag}" for tag in ("x", "y", "z"))
 P2: Final = tuple(f"p2_{tag}" for tag in ("a", "b", "c"))
 P3: Final = tuple(f"p3_{tag}" for tag in ("x", "y", "z"))
 PLATFORMS: Final = tuple(f"platform_{tag}" for tag in ("x", "y", "z", "k"))
+M1: Final = "mlt_md"
+M2: Final = tuple(f"mlt_p2_{tag}" for tag in ("a", "b", "c"))
+M3: Final = tuple(f"mlt_p3_{tag}" for tag in ("x", "y", "z"))
+
 
 ROUND = 3
 
@@ -172,3 +177,11 @@ def read_trajectories(
         )
         for well in wells
     }
+
+
+def _find_point_at_md(
+    md: float, trajectory: pd.DataFrame
+) -> Tuple[float, float, float, float]:
+    traj_md = trajectory["md"].to_numpy()
+    md_idx = numpy.argmin(numpy.abs(traj_md - md))
+    return tuple(trajectory[label].iloc[md_idx] for label in ("x", "y", "z", "md"))
