@@ -4,7 +4,7 @@ import signal
 import sys
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
 import rips
 
@@ -53,8 +53,10 @@ def well_trajectory_resinsight(
     config: ConfigSchema,
     eclipse_model: Path,
     guide_points: Dict[str, Trajectory],
-    project_path: Path = Path.cwd(),
+    project_path: Optional[Path] = None,
 ) -> None:
+    if project_path is None:
+        project_path = Path.cwd()
     with ResInsight(
         "" if config.resinsight_binary is None else str(config.resinsight_binary)
     ) as resinsight:

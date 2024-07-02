@@ -12,6 +12,7 @@ repos:
       - id: end-of-file-fixer
         exclude: tests/testdata
       - id: trailing-whitespace
+        exclude: tests/testdata/well_trajectory/spe1case1/expected
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.1.2
     hooks:

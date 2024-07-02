@@ -131,9 +131,8 @@ class ConfigSchema(ModelConfig):
         cls, wells: Tuple[WellConfig, ...], values: ValidationInfo
     ) -> Tuple[WellConfig, ...]:
         for well in wells:
-            if getattr(cls, "_platforms", None) is None:
-                cls._platforms = [item.name for item in values.data["platforms"]]
-            if well.platform is not None and well.platform not in cls._platforms:
+            _platforms = [item.name for item in values.data["platforms"]]
+            if well.platform is not None and well.platform not in _platforms:
                 raise ValueError(
                     f"Platform '{well.platform}' for well '{well.name}' not defined"
                 )

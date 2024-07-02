@@ -120,4 +120,5 @@ ignore = [
     "E501",  # line too long, handled by black
     "B008",  # do not perform function calls in argument defaults
     "C901",  # too complex
+    "W191",  # not to be used in combination with a formatter
 ]
