@@ -1,0 +1,49 @@
+scales:
+    x: 10000
+    y: 10000
+    z: 100
+    k: 50
+references:
+    x: 5000
+    y: 5000
+    z: 8375
+    k: 50
+interpolation:
+    type: resinsight
+    measured_depth_step: 5.0
+connections:
+    type: resinsight
+    date: 2015-01-01
+    formations_file: ./formations.lyr
+    perforations:
+        - well: INJ
+          formations: [0]
+        - well: PROD
+          formations: [2]
+wells:
+    - name: INJ
+      group: G1
+      phase: GAS
+      platform: INJ
+      cost: 0
+      dogleg: 4
+    - name: PROD
+      group: G1
+      phase: OIL
+      platform: PROD
+      cost: 0
+      dogleg: 4
+platforms:
+    - name: INJ
+      x: 2500
+      y: 2500
+      z: 0
+      k: 50
+    - name: PROD
+      x: 7500
+      y: 7500
+      z: 0
+      k: 50
+outputs:
+    save_paths: true
+    guide_points: guide_points.json

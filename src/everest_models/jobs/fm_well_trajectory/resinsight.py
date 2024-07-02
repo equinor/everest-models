@@ -150,10 +150,6 @@ def create_well(
     logger.info(
         f"Calling 'export_well_paths' on the resinsight project" f"\ncwd = {Path.cwd()}"
     )
-    # This log is deceving, it assumes that rips.Project().export_well_paths()
-    # exports the file to current workig dircetory (cwd) which is not true.
-    # pytest changes the working directory to '/tmp' but '.export_well_paths`
-    # keeps exporting the file to the project root directory
     project.export_well_paths(well_paths=None, md_step_size=measured_depth_step)
 
     return project

@@ -22,22 +22,22 @@ def well_trajectory_output_files():
     )
 
 
-def test_well_trajectory_main_entry_point(
+def test_well_trajectory_simple_main_entry_point(
     well_trajectory_arguments, well_trajectory_output_files, copy_testdata_tmpdir
 ):
-    copy_testdata_tmpdir(TEST_DATA)
+    copy_testdata_tmpdir(Path(TEST_DATA) / "simple")
     main_entry_point(well_trajectory_arguments)
 
     assert all(
-        path.read_bytes() == path.with_suffix(f"{path.suffix}.expected").read_bytes()
+        path.read_bytes() == (Path("expected") / path).read_bytes()
         for path in map(Path, well_trajectory_output_files)
     )
 
 
-def test_well_trajectory_main_entry_point_lint(
+def test_well_trajectory_simple_main_entry_point_lint(
     well_trajectory_arguments, well_trajectory_output_files, copy_testdata_tmpdir
 ):
-    copy_testdata_tmpdir(TEST_DATA)
+    copy_testdata_tmpdir(Path(TEST_DATA) / "simple")
     with pytest.raises(SystemExit):
         main_entry_point([*well_trajectory_arguments, "--lint"])
 
