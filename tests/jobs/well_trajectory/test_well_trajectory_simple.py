@@ -1,3 +1,4 @@
+import filecmp
 from pathlib import Path
 
 import pytest
@@ -10,35 +11,26 @@ def well_trajectory_arguments():
     return ("-c config.yml").split()
 
 
-@pytest.fixture(scope="module")
-def well_trajectory_output_files():
-    return (
-        "well_geometry.txt",
-        "wellpaths/OP_4.dev",
-        "wellpaths/WI_1.dev",
-        "PATH_OP_4.txt",
-        "PATH_WI_1.txt",
-        "guide_points.json",
-    )
-
-
 def test_well_trajectory_simple_main_entry_point(
-    well_trajectory_arguments, well_trajectory_output_files, copy_testdata_tmpdir
+    well_trajectory_arguments, copy_testdata_tmpdir
 ):
     copy_testdata_tmpdir(Path(TEST_DATA) / "simple")
     main_entry_point(well_trajectory_arguments)
 
-    assert all(
-        path.read_bytes() == (Path("expected") / path).read_bytes()
-        for path in map(Path, well_trajectory_output_files)
-    )
+    for expected in Path("expected").glob("**/*"):
+        if expected.is_file():
+            output = expected.relative_to("expected")
+            assert output.is_file()
+            assert filecmp.cmp(expected, output, shallow=False)
 
 
 def test_well_trajectory_simple_main_entry_point_lint(
-    well_trajectory_arguments, well_trajectory_output_files, copy_testdata_tmpdir
+    well_trajectory_arguments, copy_testdata_tmpdir
 ):
     copy_testdata_tmpdir(Path(TEST_DATA) / "simple")
     with pytest.raises(SystemExit):
         main_entry_point([*well_trajectory_arguments, "--lint"])
 
-    assert not any(path.exists() for path in map(Path, well_trajectory_output_files))
+    assert not any(
+        path.relative_to("expected").exists() for path in Path("expected").glob("**/*")
+    )

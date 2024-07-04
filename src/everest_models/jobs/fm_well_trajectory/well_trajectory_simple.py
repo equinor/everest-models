@@ -1,6 +1,6 @@
 import logging
 import pathlib
-from typing import Dict, Iterable, Iterator, Tuple
+from typing import Dict, Iterable, Iterator, Optional, Tuple
 
 import numpy
 from numpy.typing import NDArray
@@ -8,7 +8,7 @@ from numpy.typing import NDArray
 from .dogleg import compute_dogleg_severity, try_fixing_dog_leg
 from .geometry import compute_geometry
 from .interpolation import interpolate_points
-from .models.config import OutputsConfig, SimpleInterpolationConfig, WellConfig
+from .models.config import SimpleInterpolationConfig, WellConfig
 from .models.data_structs import CalculatedTrajectory, Trajectory
 from .outputs import write_path_files, write_resinsight, write_well_costs, write_wicalc
 from .well_costs import compute_well_costs
@@ -72,26 +72,24 @@ def _compute_well_trajectory(
 def well_trajectory_simple(
     wells: Iterable[WellConfig],
     interpolation: SimpleInterpolationConfig,
-    outputs: OutputsConfig,
+    npv_input_file: Optional[pathlib.Path],
     guide_points: Dict[str, Trajectory],
 ) -> None:
     points = _compute_well_trajectory(wells, interpolation, guide_points)
-    if outputs.geometry is not None:
-        logger.info(f"Writing interpolation results to: {outputs.geometry}")
-        write_wicalc(
-            results=points,
-            path=outputs.geometry,
-            wells={well.name: well for well in wells},
-        )
+    logger.info("Writing interpolation results to 'well_geometry.txt;")
+    write_wicalc(
+        results=points,
+        path=pathlib.Path("well_geometry.txt"),
+        wells={well.name: well for well in wells},
+    )
     logger.info("Writing ResInsight files")
     write_resinsight(points)
-    if outputs.npv_input is not None:
+    if npv_input_file is not None:
         costs = compute_well_costs(wells)
         logger.info("Writing well costs")
-        write_well_costs(costs, outputs.npv_input)
-    if outputs.save_paths:
-        logger.info("Writing PATH files")
-        write_path_files(
-            (pathlib.Path(f"PATH_{well}").with_suffix(".txt"), trajectory)
-            for well, trajectory in points.items()
-        )
+        write_well_costs(costs, npv_input_file)
+    logger.info("Writing PATH files")
+    write_path_files(
+        (pathlib.Path(f"PATH_{well}").with_suffix(".txt"), trajectory)
+        for well, trajectory in points.items()
+    )

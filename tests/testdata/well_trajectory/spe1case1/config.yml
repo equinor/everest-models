@@ -44,6 +44,3 @@ platforms:
       y: 7500
       z: 0
       k: 50
-outputs:
-    save_paths: true
-    guide_points: guide_points.json

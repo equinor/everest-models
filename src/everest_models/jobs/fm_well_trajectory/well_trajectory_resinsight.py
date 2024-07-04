@@ -9,7 +9,7 @@ from typing import Dict, Optional
 import rips
 
 from .models.config import ConfigSchema, ResInsightInterpolationConfig
-from .outputs import write_well_costs, write_well_geometry
+from .outputs import write_well_costs
 from .resinsight import create_well, create_well_logs, make_perforations, read_wells
 from .well_costs import compute_well_costs
 from .well_trajectory_simple import Trajectory
@@ -77,8 +77,6 @@ def well_trajectory_resinsight(
                         project,
                         project_path,
                     )
-
-                write_well_geometry(config)
             else:
                 # Simple interpolation, use saved trajectories:
                 project = read_wells(
@@ -107,10 +105,10 @@ def well_trajectory_resinsight(
                     for well_path in project.well_paths()
                 ),
             )
-            if config.outputs.npv_input is not None:
+            if config.npv_input_file is not None:
                 write_well_costs(
                     costs=compute_well_costs(wells),
-                    npv_file=config.outputs.npv_input,
+                    npv_file=config.npv_input_file,
                 )
             else:
                 all(wells)  # consume generator without collecting yields

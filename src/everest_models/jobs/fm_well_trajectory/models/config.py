@@ -97,13 +97,6 @@ class WellConfig(ModelConfig):
     platform: Annotated[str, Field(default=None, description="")]
 
 
-class OutputsConfig(ModelConfig):
-    save_paths: Annotated[bool, Field(default=False, description="")]
-    guide_points: Annotated[Path, Field(default=None, description="")]
-    geometry: Annotated[Path, Field(default=None, description="")]
-    npv_input: Annotated[Path, Field(default=None, description="")]
-
-
 class ConfigSchema(ModelConfig):
     scales: Annotated[ScalesConfig, Field(description="")]
     references: Annotated[ReferencesConfig, Field(description="")]
@@ -118,13 +111,13 @@ class ConfigSchema(ModelConfig):
         Tuple[PlatformConfig, ...], Field(default_factory=tuple, description="")
     ]
     wells: Annotated[Tuple[WellConfig, ...], Field(description="")]
-    outputs: Annotated[OutputsConfig, Field(description="", default=None)]
     eclipse_model: Annotated[
         Path,
         AfterValidator(validate_eclipse_path),
         Field(description="", default=None),
     ]
     resinsight_binary: Annotated[FilePath, Field(default=None, description="")]
+    npv_input_file: Annotated[FilePath, Field(default=None, description="")]
 
     @field_validator("wells")
     def _validate_wells(
