@@ -78,7 +78,7 @@ class Wrapper(ModelConfig):
                 user_id: 213
 
                 # Datatype: Path
-                # Examples: /path/to/file.ext, /path/to/dirictory/
+                # Examples: /path/to/file.ext, /path/to/directory/
                 # Required: True
                 data: '...'  # ← REPLACE
                 """

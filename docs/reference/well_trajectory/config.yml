@@ -71,7 +71,7 @@ connections:
   date: '...'  # ← REPLACE
 
   # Datatype: Path
-  # Examples: /path/to/file.ext, /path/to/dirictory/
+  # Examples: /path/to/file.ext, /path/to/directory/
   # Required: True
   formations_file: '...'  # ← REPLACE
 
@@ -223,31 +223,31 @@ outputs:
   save_paths: false
 
   # Datatype: Path
-  # Examples: /path/to/file.ext, /path/to/dirictory/
+  # Examples: /path/to/file.ext, /path/to/directory/
   # Required: False
   # Default: null
   guide_points: null
 
   # Datatype: Path
-  # Examples: /path/to/file.ext, /path/to/dirictory/
+  # Examples: /path/to/file.ext, /path/to/directory/
   # Required: False
   # Default: null
   geometry: null
 
   # Datatype: Path
-  # Examples: /path/to/file.ext, /path/to/dirictory/
+  # Examples: /path/to/file.ext, /path/to/directory/
   # Required: False
   # Default: null
   npv_input: null
 
 # Datatype: Path
-# Examples: /path/to/file.ext, /path/to/dirictory/
+# Examples: /path/to/file.ext, /path/to/directory/
 # Required: False
 # Default: null
 eclipse_model: null
 
 # Datatype: Path
-# Examples: /path/to/file.ext, /path/to/dirictory/
+# Examples: /path/to/file.ext, /path/to/directory/
 # Required: False
 # Default: null
 resinsight_binary: null

@@ -154,12 +154,12 @@ well_costs:
 summary:
 
   # Datatype: Path
-  # Examples: /path/to/file.ext, /path/to/dirictory/
+  # Examples: /path/to/file.ext, /path/to/directory/
   # Required: True
   main: '...'  # ← REPLACE
 
   # Datatype: Path
-  # Examples: /path/to/file.ext, /path/to/dirictory/
+  # Examples: /path/to/file.ext, /path/to/directory/
   # Required: False
   # Default: null
   reference: null
@@ -170,7 +170,7 @@ summary:
   - '...'
 
 # Datatype: Path
-# Examples: /path/to/file.ext, /path/to/dirictory/
+# Examples: /path/to/file.ext, /path/to/directory/
 # Required: False
 # Default: null
 wells_input: null
@@ -180,7 +180,7 @@ wells_input: null
 output:
 
   # Datatype: Path
-  # Examples: /path/to/file.ext, /path/to/dirictory/
+  # Examples: /path/to/file.ext, /path/to/directory/
   # Required: True
   file: '...'  # ← REPLACE
 

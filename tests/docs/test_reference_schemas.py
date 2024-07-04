@@ -1,3 +1,4 @@
+import filecmp
 import importlib
 import sys
 from pathlib import Path
@@ -13,12 +14,8 @@ def test_doc_schemas(reference_docs: Path, tmp_path: Path):
     my_script = importlib.util.module_from_spec(spec)
     sys.modules["doc_schemas"] = my_script
     spec.loader.exec_module(my_script)
-
     my_script.main(["--output-directory", str(tmp_path)])
     assert any(tmp_path.iterdir())
-    assert (
-        temp.read_bytes() == docs.read_bytes()
-        for temp, docs in zip(
-            tmp_path.glob("**/*.yml"), reference_docs.glob("**/*.yml")
-        )
-    )
+    for doc in tmp_path.glob("**/*.yml"):
+        relative_path = doc.relative_to(tmp_path)
+        assert filecmp.cmp(reference_docs / relative_path, doc, shallow=False)
