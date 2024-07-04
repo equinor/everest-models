@@ -39,8 +39,3 @@ platforms:
     y: 5933608.04
     z: 0.0
     k: 200.0
-
-outputs:
-  save_paths: True
-  geometry: well_geometry.txt
-  guide_points: guide_points.json

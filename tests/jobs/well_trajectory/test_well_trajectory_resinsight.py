@@ -1,3 +1,4 @@
+import filecmp
 import logging
 from pathlib import Path
 
@@ -10,18 +11,6 @@ from sub_testdata import WELL_TRAJECTORY as TEST_DATA
 @pytest.fixture(scope="module")
 def well_trajectory_arguments():
     return ("-c config.yml -E SPE1CASE1").split()
-
-
-@pytest.fixture(scope="module")
-def well_trajectory_output_files():
-    return (
-        "well_geometry.txt",
-        "wellpaths/INJ.dev",
-        "wellpaths/PROD.dev",
-        "INJ.SCH",
-        "PROD.SCH",
-        "guide_points.json",
-    )
 
 
 @pytest.mark.resinsight
@@ -45,22 +34,26 @@ def test_start_resinsight(caplog):
 
 @pytest.mark.resinsight
 def test_well_trajectory_resinsight_main_entry_point(
-    well_trajectory_arguments, well_trajectory_output_files, copy_testdata_tmpdir
+    well_trajectory_arguments, copy_testdata_tmpdir
 ):
     copy_testdata_tmpdir(Path(TEST_DATA) / "spe1case1")
     main_entry_point(well_trajectory_arguments)
-    assert all(
-        path.read_bytes() == (Path("expected") / path).read_bytes()
-        for path in map(Path, well_trajectory_output_files)
-    )
+
+    for expected in Path("expected").glob("**/*"):
+        if expected.is_file():
+            output = expected.relative_to("expected")
+            assert output.is_file()
+            assert filecmp.cmp(expected, output, shallow=False)
 
 
 @pytest.mark.resinsight
 def test_well_trajectory_resinsight_main_entry_point_lint(
-    well_trajectory_arguments, well_trajectory_output_files, copy_testdata_tmpdir
+    well_trajectory_arguments, copy_testdata_tmpdir
 ):
     copy_testdata_tmpdir(Path(TEST_DATA) / "spe1case1")
     with pytest.raises(SystemExit):
         main_entry_point([*well_trajectory_arguments, "--lint"])
 
-    assert not any(path.exists() for path in map(Path, well_trajectory_output_files))
+    assert not any(
+        path.relative_to("expected").exists() for path in Path("expected").glob("**/*")
+    )

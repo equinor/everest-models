@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import logging
+from pathlib import Path
 
 from .outputs import write_guide_points
 from .parser import build_argument_parser
@@ -24,15 +25,14 @@ def main_entry_point(args=None):
         options.config.wells,
         options.config.platforms,
     )
-    if options.config.outputs.guide_points is not None:
-        logger.info(f"Writing guide points to: {options.config.outputs.guide_points}")
-        write_guide_points(guide_points, options.config.outputs.guide_points)
+    logger.info("Writing guide points to 'guide_points.json'")
+    write_guide_points(guide_points, Path("guide_points.json"))
 
     if options.config.interpolation.type == "simple":
         well_trajectory_simple(
             options.config.wells,
             options.config.interpolation,
-            options.config.outputs,
+            options.config.npv_input_file,
             guide_points,
         )
 

@@ -3,11 +3,9 @@ import math
 from pathlib import Path
 from typing import Dict, Iterable, Tuple
 
-import pandas
-
 from everest_models.jobs.shared import io_utils as io
 
-from .models.config import ConfigSchema, WellConfig
+from .models.config import WellConfig
 from .models.data_structs import CalculatedTrajectory, Trajectory
 
 
@@ -97,36 +95,6 @@ def write_guide_points(guide_points: Dict[str, Trajectory], filename: Path) -> N
         writer(filename, guide_points)
     else:
         raise RuntimeError("guide points file format not supported")
-
-
-def write_well_geometry(config: ConfigSchema) -> None:
-    with open("well_geometry.txt", "w") as fp_well_geometry:
-        for well in config.wells:
-            # Read .dev file
-            with open(f"wellpaths/{well.name}.dev", "r") as fp_dev:
-                path = pandas.read_csv(
-                    fp_dev,
-                    delim_whitespace=True,
-                    skiprows=2,
-                    skipfooter=2,
-                    names=["X", "Y", "TVDMSL", "MDMSL"],
-                    engine="python",
-                )
-                for idx, _ in enumerate(path.index[:-1]):
-                    line = (
-                        f"{well.name}\t"
-                        f"{path.iloc[idx]['X']}\t"
-                        f"{path.iloc[idx]['Y']}\t"
-                        f"{path.iloc[idx]['TVDMSL']}\t"
-                        f"{path.iloc[idx+1]['X']}\t"
-                        f"{path.iloc[idx+1]['Y']}\t"
-                        f"{path.iloc[idx+1]['TVDMSL']}\t"
-                        f"{path.iloc[idx]['MDMSL']}\t"
-                        f"{path.iloc[idx+1]['MDMSL']}\t"
-                        f"{well.radius}\t"
-                        f"{well.skin}\n"
-                    )
-                    fp_well_geometry.write(line)
 
 
 def write_well_costs(costs: Dict[str, float], npv_file: Path) -> None:
