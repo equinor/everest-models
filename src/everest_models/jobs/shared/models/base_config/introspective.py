@@ -44,9 +44,15 @@ def builtin_datatypes(value: Any) -> str:
         except AttributeError:
             value = next(iter(value)).value
         return builtin_datatypes(value)
-    # check for nametuples
-    if is_related(value, Sequence) and hasattr(value, "_field_types"):
-        return str([builtin_datatypes(type_) for type_ in value._field_types.values()])
+    # check for namedtuples
+    if (
+        is_related(value, tuple)
+        and hasattr(value, "_asdict")
+        and hasattr(value, "__annotations__")
+    ):
+        return str(
+            [builtin_datatypes(type_) for type_ in value.__annotations__.values()]
+        )
     if origin := get_origin(value):
         if origin is Literal:
             return ", ".join(item for item in get_args(value))
@@ -76,7 +82,7 @@ def _example_types(value: Any) -> str:
     if is_related(value, str):
         return f"{prefix}: a string value"
     if is_related(value, Path):
-        return f"{prefix}: /path/to/file.ext, /path/to/dirictory/"
+        return f"{prefix}: /path/to/file.ext, /path/to/directory/"
     if is_related(value, date) or is_related(value, datetime):
         return f"{prefix}: 2024-01-31, 2024-01-31T11:06"
     if is_related(value, Enum):
@@ -119,12 +125,12 @@ def build_yaml_structure(data: Any, level: int = 0):
     This function recursively builds a commented YAML structure from CommentedObjects.
 
     It handles different types of containers, mappings, sequences, and CommentedObjects.
-    recursively break containers down to the essientials and and insert into yaml
+    recursively break containers down to the essentials and and insert into yaml
     container structure.
     For mappings, it creates a CommentedMap. If a value is a CommentedObject,
     For sequences, it creates a CommentedSeq. If an item is a CommentedObject,
     For standalone CommentedObject, extract elements (comments and value) from object
-    If the data is callable (default_factory), envoke it
+    If the data is callable (default_factory), evoke it
 
     Note: CommentedObject classes for handling comments in the YAML structure.
 
@@ -218,7 +224,7 @@ def parse_field_info(info: FieldInfo, minimal: bool, no_comment: bool) -> Any:
 
     no_comment (bool): A flag indicating whether comments should be included,
     False: will build comment string from parsed info data
-    and package the comment together with defualt value into a CommentedObject
+    and package the comment together with default value into a CommentedObject
     True: only default value is extracted
 
     Returns:

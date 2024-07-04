@@ -9,7 +9,7 @@ templates:
 
     # File path to jinja template
     # Datatype: Path
-    # Examples: /path/to/file.ext, /path/to/dirictory/
+    # Examples: /path/to/file.ext, /path/to/directory/
     # Required: True
   file: '...'  # ← REPLACE
 

@@ -178,7 +178,7 @@ class StateConfig(ModelConfig):
             default=True,
             description=(
                 "Are cases allowed to stay at the same state?\n"
-                "False: Inforce cases to change state each iteration, (can cause state lock)\n"
+                "False: Enforce cases to change state each iteration, (can cause state lock)\n"
                 "True: Cases are allowed to stay at same state between iterations\n"
             ),
         ),

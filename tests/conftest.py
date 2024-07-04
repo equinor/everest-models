@@ -29,9 +29,20 @@ def pytest_addoption(parser: Any) -> Any:
         default=False,
         help="Run ResInsight tests",
     )
+    parser.addoption(
+        "--run-slow",
+        action="store_true",
+        default=False,
+        help="Run slow tests",
+    )
 
 
 def pytest_collection_modifyitems(config: Any, items: Sequence[Any]) -> None:
+    if not config.getoption("--run-slow"):
+        skip_slow = pytest.mark.skip(reason="need --run-slow option to run")
+        for item in items:
+            if "slow" in item.keywords:
+                item.add_marker(skip_slow)
     if config.getoption("--test-resinsight"):
         instance = rips.Instance.launch(console=True)
         if instance is None:

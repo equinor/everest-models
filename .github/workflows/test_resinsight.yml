@@ -15,11 +15,10 @@ env:
 
 jobs:
   build_dependencies:
-    name: "build-deps_${{ matrix.os }}_py-${{ matrix.python-version }}"
+    name: "build-deps_${{ matrix.os }}"
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.8]
         os: [ubuntu-22.04]
     runs-on: ${{ matrix.os }}
 
@@ -88,7 +87,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.8]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
         os: [ubuntu-22.04]
     runs-on: ${{ matrix.os }}
     steps:
