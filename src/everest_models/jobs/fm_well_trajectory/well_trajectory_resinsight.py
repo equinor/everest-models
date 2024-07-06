@@ -2,7 +2,6 @@ import itertools
 import logging
 import signal
 import sys
-from contextlib import contextmanager
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -10,6 +9,7 @@ import rips
 
 from .models.config import ConfigSchema, ResInsightInterpolationConfig
 from .outputs import write_well_costs
+from .read_trajectories import read_laterals
 from .resinsight import create_well, create_well_logs, make_perforations, read_wells
 from .well_costs import compute_well_costs
 from .well_trajectory_simple import Trajectory
@@ -41,12 +41,18 @@ class ResInsight:
         self._instance.exit()
 
 
-@contextmanager
-def resinsight_project(project: rips.Project, egrid_path: str, project_file: str):
-    project.load_case(egrid_path)
-    yield project
+def _save_project(project_path: str, project: rips.Project):
+    project_file = str(project_path / "model.rsp")
     logger.info(f"Saving project to: {project_file}")
     project.save(project_file)
+
+
+def _save_paths(project_path: str, project: rips.Project, mds: float):
+    _save_project(project_path, project)
+    logger.info(
+        f"Calling 'export_well_paths' on the resinsight project" f"\ncwd = {Path.cwd()}"
+    )
+    project.export_well_paths(well_paths=None, md_step_size=mds)
 
 
 def well_trajectory_resinsight(
@@ -55,59 +61,74 @@ def well_trajectory_resinsight(
     guide_points: Dict[str, Trajectory],
     project_path: Optional[Path] = None,
 ) -> None:
+    mlt_guide_points = {}
     if project_path is None:
         project_path = Path.cwd()
     with ResInsight(
         "" if config.resinsight_binary is None else str(config.resinsight_binary)
     ) as resinsight:
-        with resinsight_project(
-            resinsight.project,
-            str(eclipse_model.with_suffix(".EGRID")),
-            str(project_path / "model.rsp"),
-        ) as project:
-            if isinstance(config.interpolation, ResInsightInterpolationConfig):
-                # Interpolate trajectories and save smooth trajectories:
-                for well in config.wells:
-                    project = create_well(
-                        config.connections,
-                        config.interpolation.measured_depth_step,
-                        well,
-                        guide_points[well.name],
-                        project,
-                        project_path,
-                    )
-            else:
-                # Simple interpolation, use saved trajectories:
-                project = read_wells(
-                    project,
-                    project_path / "wellpaths",
-                    [well.name for well in config.wells],
+        resinsight.project.load_case(str(eclipse_model.with_suffix(".EGRID")))
+
+        if isinstance(config.interpolation, ResInsightInterpolationConfig):
+            # Interpolate trajectories and save smooth trajectories:
+            for well_config in config.wells:
+                create_well(
                     config.connections,
+                    well_config,
+                    guide_points[well_config.name],
+                    resinsight.project,
                 )
-            project = create_well_logs(
-                config.connections.perforations,
-                project,
-                eclipse_model,
+            _save_paths(
                 project_path,
-                config.connections.date,
+                resinsight.project,
+                config.interpolation.measured_depth_step,
             )
-            wells = itertools.filterfalse(
-                lambda x: x is None,
-                (
-                    make_perforations(
-                        project,
-                        well_path.name,
-                        config.connections.perforations,
-                        config.wells,
-                        project_path,
-                    )
-                    for well_path in project.well_paths()
-                ),
+
+            mlt_guide_points = read_laterals(
+                config.scales, config.references, config.wells
             )
-            if config.npv_input_file is not None:
-                write_well_costs(
-                    costs=compute_well_costs(wells),
-                    npv_file=config.npv_input_file,
+            if mlt_guide_points:
+                _save_paths(
+                    project_path,
+                    resinsight.project,
+                    config.interpolation.measured_depth_step,
                 )
-            else:
-                all(wells)  # consume generator without collecting yields
+        else:
+            # Simple interpolation, use saved trajectories:
+            read_wells(
+                resinsight.project,
+                project_path / "wellpaths",
+                [well.name for well in config.wells],
+                config.connections,
+            )
+        create_well_logs(
+            config.connections.perforations,
+            resinsight.project,
+            eclipse_model,
+            project_path,
+            config.connections.date,
+        )
+        wells = itertools.filterfalse(
+            lambda x: x is None,
+            (
+                make_perforations(
+                    resinsight.project,
+                    well_path.name,
+                    config.connections.perforations,
+                    config.wells,
+                    project_path,
+                )
+                for well_path in resinsight.project.well_paths()
+            ),
+        )
+        if config.npv_input_file is not None:
+            write_well_costs(
+                costs=compute_well_costs(wells),
+                npv_file=config.npv_input_file,
+            )
+        else:
+            all(wells)  # consume generator without collecting yields
+
+        _save_project(project_path, resinsight.project)
+
+    return mlt_guide_points

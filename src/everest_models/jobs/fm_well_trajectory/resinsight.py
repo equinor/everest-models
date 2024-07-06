@@ -37,7 +37,7 @@ def read_wells(
     well_path_folder: Path,
     well_names: Iterable[str],
     connection: Optional[ResInsightConnectionConfig],
-) -> rips.Project:
+) -> None:
     project.import_well_paths(
         well_path_files=[
             str(well_path_folder / f"{well_name}.dev") for well_name in well_names
@@ -56,42 +56,38 @@ def read_wells(
 
     project.update()
 
-    return project
-
 
 def create_well(
     connection: ResInsightConnectionConfig,
-    measured_depth_step: float,
-    well: WellConfig,
-    trajectory: Trajectory,
+    well_config: WellConfig,
+    guide_points: Trajectory,
     project: rips.Project,
-    project_path: Path,
-) -> rips.Project:
+) -> None:
     _create_perforation_view(
         connection.perforations,
         connection.formations_file,
         project.cases()[0],
-        well.name,
+        well_config.name,
     )
 
     well_path_collection = project.descendants(rips.WellPathCollection)[0]
     well_path = well_path_collection.add_new_object(rips.ModeledWellPath)
-    well_path.name = well.name
+    well_path.name = well_config.name
     well_path.update()
 
     geometry = well_path.well_path_geometry()
     reference_point = geometry.reference_point
-    reference_point[0] = str(trajectory.x[0])
-    reference_point[1] = str(trajectory.y[0])
-    reference_point[2] = str(trajectory.z[0])
+    reference_point[0] = str(guide_points.x[0])
+    reference_point[1] = str(guide_points.y[0])
+    reference_point[2] = str(guide_points.z[0])
     geometry.update()
 
     intersection_points = []
-    for point in zip(trajectory.x[1:], trajectory.y[1:], trajectory.z[1:]):
+    for point in zip(guide_points.x[1:], guide_points.y[1:], guide_points.z[1:]):
         coord = [str(item) for item in point]
         target = geometry.append_well_target(coordinate=coord, absolute=True)
-        target.dogleg1 = well.dogleg
-        target.dogleg2 = well.dogleg
+        target.dogleg1 = well_config.dogleg
+        target.dogleg2 = well_config.dogleg
         target.update()
         intersection_points.append(coord)
     geometry.update()
@@ -112,17 +108,6 @@ def create_well(
                 )
             )
         )
-
-    project_file = project_path / "model.rsp"
-    logger.info(f"Saving project to: {project_file}")
-    project.save(str(project_file))
-
-    logger.info(
-        f"Calling 'export_well_paths' on the resinsight project" f"\ncwd = {Path.cwd()}"
-    )
-    project.export_well_paths(well_paths=None, md_step_size=measured_depth_step)
-
-    return project
 
 
 def _find_time_step(
@@ -160,7 +145,7 @@ def create_well_logs(
     eclipse_model: Path,
     project_path: Path,
     date: Optional[datetime.date] = None,
-) -> rips.Project:
+) -> None:
     case = project.cases()[0]
 
     well_log_plot_collection = project.descendants(rips.WellLogPlotCollection)[0]
@@ -211,8 +196,6 @@ def create_well_logs(
         well_log_plot.export_data_as_las(export_folder=str(project_path))
 
     project.update()
-
-    return project
 
 
 def _filter_properties(
