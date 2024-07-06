@@ -13,6 +13,7 @@ def well_trajectory_arguments():
     return ("-c config.yml -E SPE1CASE1").split()
 
 
+@pytest.mark.slow
 @pytest.mark.resinsight
 def test_failing_start_resinsight(caplog):
     caplog.set_level(logging.INFO)

@@ -16,8 +16,6 @@ P2: Final = tuple(f"p2_{tag}" for tag in ("a", "b", "c"))
 P3: Final = tuple(f"p3_{tag}" for tag in ("x", "y", "z"))
 PLATFORMS: Final = tuple(f"platform_{tag}" for tag in ("x", "y", "k"))
 
-ROUND = 3
-
 
 class _Point(NamedTuple):
     x: float
@@ -61,9 +59,6 @@ def _read_platform_and_kickoff(
             # If necessary, get the value from the platform configuration:
             value = getattr(platform_config, attr)
 
-        if value is not None:
-            value = round(value, ROUND)
-
         return value
 
     px = _get_from_platform_file("platform_x", "x")
@@ -86,25 +81,20 @@ def _get_rescaled_point(
 ) -> _Point:
     px, py, pz = (input_files[item][well_name] for item in point_files)
     return _Point(
-        x=round(_rescale(px, scales.x, references.x), ROUND),
-        y=round(_rescale(py, scales.y, references.y), ROUND),
-        z=round(_rescale(pz, scales.z, references.z), ROUND),
+        x=_rescale(px, scales.x, references.x),
+        y=_rescale(py, scales.y, references.y),
+        z=_rescale(pz, scales.z, references.z),
     )
 
 
 def _construct_midpoint(
     well: str, input_files: Dict[str, Any], p1: _Point, p3: _Point
 ) -> Tuple[float, float, float]:
-    a, b, c = [round(input_files[key][well], ROUND) for key in P2]
-    return _Point._make(
-        numpy.round(
-            [
-                b * (p3.y - p1.y) + a * (p3.x - p1.x) + p1.x,
-                b * (p1.x - p3.x) + a * (p3.y - p1.y) + p1.y,
-                p3.z + c * (p1.z - p3.z),
-            ],
-            ROUND,
-        )
+    a, b, c = [input_files[key][well] for key in P2]
+    return _Point(
+        x=b * (p3.y - p1.y) + a * (p3.x - p1.x) + p1.x,
+        y=b * (p1.x - p3.x) + a * (p3.y - p1.y) + p1.y,
+        z=p3.z + c * (p1.z - p3.z),
     )
 
 
