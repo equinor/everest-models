@@ -1,4 +1,3 @@
-import csv
 import math
 from pathlib import Path
 from typing import Dict, Iterable, Tuple
@@ -69,32 +68,41 @@ def write_path_files(results: Iterable[Tuple[Path, CalculatedTrajectory]]) -> No
             )
 
 
-def _csv_writer(path: Path, guide_points: Dict[str, Trajectory]):
-    with path.open("w", encoding="utf-8") as csv_file:
-        writer = csv.writer(csv_file, delimiter=";", lineterminator="\n")
-        writer.writerow(["well", "x", "y", "z"])
-        writer.writerows(
-            [well, x, y, z]
-            for well, data in guide_points.items()
-            for x, y, z in zip(data.x, data.y, data.z)
-        )
-
-
-def _json_writer(path: Path, guide_points: Dict[str, Trajectory]):
+def write_guide_points(guide_points: Dict[str, Trajectory], filename: Path) -> None:
     io.dump_json(
         {
             well: [data.x.tolist(), data.y.tolist(), data.z.tolist()]
             for well, data in guide_points.items()
         },
-        path,
+        filename,
     )
 
 
-def write_guide_points(guide_points: Dict[str, Trajectory], filename: Path) -> None:
-    if writer := {".csv": _csv_writer, ".json": _json_writer}.get(filename.suffix):
-        writer(filename, guide_points)
-    else:
-        raise RuntimeError("guide points file format not supported")
+def write_mlt_guide_points(guide_points: Dict[str, Trajectory], filename: Path) -> None:
+    io.dump_json(
+        {
+            well: {
+                branch: [
+                    branch_data[1].x.tolist(),
+                    branch_data[1].y.tolist(),
+                    branch_data[1].z.tolist(),
+                ]
+                for branch, branch_data in well_data.items()
+            }
+            for well, well_data in guide_points.items()
+        },
+        filename,
+    )
+
+
+def write_mlt_guide_md(guide_points: Dict[str, Trajectory], filename: Path) -> None:
+    io.dump_json(
+        {
+            well: {branch: branch_data[0] for branch, branch_data in well_data.items()}
+            for well, well_data in guide_points.items()
+        },
+        filename,
+    )
 
 
 def write_well_costs(costs: Dict[str, float], npv_file: Path) -> None:
