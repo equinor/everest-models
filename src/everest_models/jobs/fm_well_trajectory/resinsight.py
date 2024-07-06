@@ -1,7 +1,7 @@
 import datetime
 import logging
 from pathlib import Path
-from typing import Iterable, Optional, Tuple
+from typing import Any, Dict, Iterable, Optional, Tuple
 
 import lasio
 import pandas
@@ -62,7 +62,7 @@ def create_well(
     well_config: WellConfig,
     guide_points: Trajectory,
     project: rips.Project,
-) -> None:
+) -> Any:
     _create_perforation_view(
         connection.perforations,
         connection.formations_file,
@@ -109,6 +109,34 @@ def create_well(
             )
         )
 
+    return well_path
+
+
+def create_branches(
+    well_config: WellConfig,
+    well_path: Any,
+    mlt_guide_points: Dict[str, Tuple[float, Trajectory]],
+    project: rips.Project,
+) -> Any:
+    for md, guide_points in mlt_guide_points.values():
+        lateral = well_path.append_lateral(md)
+        geometry = lateral.well_path_geometry()
+
+        intersection_points = []
+        for point in zip(guide_points.x[1:], guide_points.y[1:], guide_points.z[1:]):
+            coord = [str(item) for item in point]
+            target = geometry.append_well_target(coordinate=coord, absolute=True)
+            target.dogleg1 = well_config.dogleg
+            target.dogleg2 = well_config.dogleg
+            target.update()
+            intersection_points.append(coord)
+        geometry.update()
+
+        intersection_collection = project.descendants(rips.IntersectionCollection)[0]
+        intersection = intersection_collection.add_new_object(rips.CurveIntersection)
+        intersection.points = intersection_points
+        intersection.update()
+
 
 def _find_time_step(
     case: rips.Case, date: Optional[datetime.date] = None
@@ -144,7 +172,8 @@ def create_well_logs(
     project: rips.Project,
     eclipse_model: Path,
     project_path: Path,
-    date: Optional[datetime.date] = None,
+    date: Optional[datetime.date],
+    has_mlt: bool,
 ) -> None:
     case = project.cases()[0]
 
@@ -155,7 +184,15 @@ def create_well_logs(
 
         well_log_plot = well_log_plot_collection.new_well_log_plot(case, well_path)
 
-        perforation = next(item for item in perforations if item.well == well_path.name)
+        # If we created multi-lateral wells, the well path names are stored in
+        # the form "name Y#", e.g., "INJ Y1", where the index Y# indicates the
+        # number of the branch, and Y1 is the main trajectory. We need to split
+        # and take the first part to get the original well name:
+        perforation = next(
+            item
+            for item in perforations
+            if item.well == (well_path.name.split()[0] if has_mlt else well_path.name)
+        )
 
         if perforation.dynamic:
             restart = eclipse_model.with_suffix(".UNRST")
@@ -243,59 +280,6 @@ def _filter_perforation_properties(
     return df_selected["DEPTH"]
 
 
-def _make_perforations(
-    well: WellConfig,
-    case,
-    well_path,
-    perf_depths: pandas.Series,
-    well_depth: Optional[float],
-    project_path: Path,
-) -> None:
-    export_filename = (project_path / well.name.replace(" ", "_")).with_suffix(".SCH")
-
-    diameter = well.radius * 2
-    skin_factor = well.skin
-
-    if well_depth is not None:
-        total_perf_length = 0
-        if perf_depths.size > 0:
-            for start, end in zip(perf_depths.iloc[::2], perf_depths.iloc[1::2]):
-                well_path.append_perforation_interval(
-                    start_md=start,
-                    end_md=end,
-                    diameter=diameter,
-                    skin_factor=skin_factor,
-                )
-
-                total_perf_length = round(total_perf_length + end - start, 2)
-            logger.info(f"Total perforation length is {total_perf_length}")
-
-        else:  # create one dummy connection and shut it thereafter
-            well_path.append_perforation_interval(
-                start_md=well_depth - 1,
-                end_md=well_depth,
-                diameter=diameter,
-                skin_factor=skin_factor,
-            )
-
-        logger.info(
-            f"Exporting well completion data to: {export_filename}"
-            f"\ncwd = {Path.cwd()}"
-        )
-        case.export_well_path_completions(
-            time_step=0,
-            well_path_names=[well_path.name],
-            file_split="UNIFIED_FILE",
-            include_perforations=True,
-            export_comments=False,
-            custom_file_name=str(export_filename),
-        )
-
-    _generate_welspecs(
-        well.name, well.phase, well.group, export_filename, perf_depths, project_path
-    )
-
-
 def _read_las_file(las: Path) -> pandas.DataFrame:
     return lasio.read(las).df().reset_index()
 
@@ -305,21 +289,59 @@ def make_perforations(
     well_name: str,
     perforations: Iterable[PerforationConfig],
     wells: Iterable[WellConfig],
+    has_mlt: bool,
     path: Path,
 ):
-    perforation_depth, well_depth = _select_perforations(
-        perforation=next(item for item in perforations if item.well == well_name),
+    # If we created multi-lateral wells, the well path names are stored in the
+    # form "name Y#", e.g., "INJ Y1", where the index Y# indicates the number of
+    # the branch, and Y1 is the main trajectory. We need to split and take the
+    # first part to get the original well name:
+    well_name_base = well_name.split()[0] if has_mlt else well_name
+    perf_depths, well_depth = _select_perforations(
+        perforation=next(item for item in perforations if item.well == well_name_base),
         df=_read_las_file(next(path.glob(f"{well_name.replace(' ', '_')}*.las"))),
     )
-    well = next(item for item in wells if item.name == well_name)
-    _make_perforations(
-        well=well,
-        case=project.cases()[0],
-        well_path=project.well_path_by_name(well.name),
-        perf_depths=perforation_depth,
-        well_depth=well_depth,
-        project_path=path,
+    well = next(item for item in wells if item.name == well_name_base)
+
+    if well_depth is not None:
+        well_path = project.well_path_by_name(well_name)
+        total_perf_length = 0
+        if perf_depths.size > 0:
+            for start, end in zip(perf_depths.iloc[::2], perf_depths.iloc[1::2]):
+                well_path.append_perforation_interval(
+                    start_md=start,
+                    end_md=end,
+                    diameter=2 * well.radius,
+                    skin_factor=well.skin,
+                )
+                total_perf_length = round(total_perf_length + end - start, 2)
+            logger.info(f"Total perforation length is {total_perf_length}")
+        else:  # create one dummy connection and shut it afterwards:
+            well_path.append_perforation_interval(
+                start_md=well_depth - 1,
+                end_md=well_depth,
+                diameter=2 * well.radius,
+                skin_factor=well.skin,
+            )
+
+        export_filename = (path / well_name.replace(" ", "_")).with_suffix(".SCH")
+        logger.info(
+            f"Exporting well completion data to: {export_filename}"
+            f"\ncwd = {Path.cwd()}"
+        )
+        project.cases()[0].export_well_path_completions(
+            time_step=0,
+            well_path_names=[well_path.name],
+            file_split="UNIFIED_FILE",
+            include_perforations=True,
+            export_comments=False,
+            custom_file_name=str(export_filename),
+        )
+
+    _generate_welspecs(
+        well.name, well.phase, well.group, export_filename, perf_depths, path
     )
+
     project.update()
     return None if well_depth is None else well
 
@@ -366,7 +388,7 @@ def _generate_welspecs(
                 file_obj.write(line)
     else:
         logger.info("Well outside of the grid. Creating dummy shut connection.")
-        # write dummy WELSPECS and COMPDAT
+        # write dummy WELSPECS and COMPDAT:
         dummy = [
             "-- WELL  GROUP           BHP    PHASE  DRAIN  INFLOW  OPEN  CROSS  PVT    HYDS  FIP \n",
             "-- NAME  NAME   I    J   DEPTH  FLUID  AREA   EQUANS  SHUT  FLOW   TABLE  DENS  REGN \n",
@@ -382,7 +404,7 @@ def _generate_welspecs(
         with open(export_filename, "w") as file_obj:
             file_obj.writelines(dummy)
 
-        # TODO: create dummy MSW file as well
+        # Write dummy WELSEGS and COMPSEGS:
         dummy = ["WELSEGS \n", "/ \n", "COMPSEGS \n", "/ \n"]
         export_filename = (project_path / (well + "_MSW")).with_suffix(".SCH")
         with open(export_filename, "w") as file_obj:

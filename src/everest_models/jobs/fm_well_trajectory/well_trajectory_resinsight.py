@@ -10,7 +10,13 @@ import rips
 from .models.config import ConfigSchema, ResInsightInterpolationConfig
 from .outputs import write_well_costs
 from .read_trajectories import read_laterals
-from .resinsight import create_well, create_well_logs, make_perforations, read_wells
+from .resinsight import (
+    create_branches,
+    create_well,
+    create_well_logs,
+    make_perforations,
+    read_wells,
+)
 from .well_costs import compute_well_costs
 from .well_trajectory_simple import Trajectory
 
@@ -42,7 +48,7 @@ class ResInsight:
 
 
 def _save_project(project_path: str, project: rips.Project):
-    project_file = str(project_path / "model.rsp")
+    project_file = str(project_path / ".model.rsp")
     logger.info(f"Saving project to: {project_file}")
     project.save(project_file)
 
@@ -70,14 +76,17 @@ def well_trajectory_resinsight(
         resinsight.project.load_case(str(eclipse_model.with_suffix(".EGRID")))
 
         if isinstance(config.interpolation, ResInsightInterpolationConfig):
-            # Interpolate trajectories and save smooth trajectories:
-            for well_config in config.wells:
-                create_well(
+            # Interpolate trajectories, keep the created well paths inc case we
+            # will turn them into multi-lateral trajectories below:
+            well_paths = {
+                well_config.name: create_well(
                     config.connections,
                     well_config,
                     guide_points[well_config.name],
                     resinsight.project,
                 )
+                for well_config in config.wells
+            }
             _save_paths(
                 project_path,
                 resinsight.project,
@@ -88,6 +97,15 @@ def well_trajectory_resinsight(
                 config.scales, config.references, config.wells
             )
             if mlt_guide_points:
+                # Create multi-lateral trajectories based on the trajectories we
+                # made before:
+                for well_config in config.wells:
+                    create_branches(
+                        well_config,
+                        well_paths[well_config.name],
+                        mlt_guide_points[well_config.name],
+                        resinsight.project,
+                    )
                 _save_paths(
                     project_path,
                     resinsight.project,
@@ -107,6 +125,7 @@ def well_trajectory_resinsight(
             eclipse_model,
             project_path,
             config.connections.date,
+            bool(mlt_guide_points),
         )
         wells = itertools.filterfalse(
             lambda x: x is None,
@@ -116,6 +135,7 @@ def well_trajectory_resinsight(
                     well_path.name,
                     config.connections.perforations,
                     config.wells,
+                    bool(mlt_guide_points),
                     project_path,
                 )
                 for well_path in resinsight.project.well_paths()
