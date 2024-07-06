@@ -58,3 +58,17 @@ def test_well_trajectory_resinsight_main_entry_point_lint(
     assert not any(
         path.relative_to("expected").exists() for path in Path("expected").glob("**/*")
     )
+
+
+@pytest.mark.resinsight
+def test_well_trajectory_resinsight_main_entry_point_mlt(
+    well_trajectory_arguments, copy_testdata_tmpdir
+):
+    copy_testdata_tmpdir(Path(TEST_DATA) / "spe1case1_mlt")
+    main_entry_point(well_trajectory_arguments)
+
+    for expected in Path("expected").glob("**/*"):
+        if expected.is_file():
+            output = expected.relative_to("expected")
+            assert output.is_file()
+            assert filecmp.cmp(expected, output, shallow=False)

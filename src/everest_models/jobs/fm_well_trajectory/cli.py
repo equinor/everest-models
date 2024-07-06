@@ -3,7 +3,7 @@
 import logging
 from pathlib import Path
 
-from .outputs import write_guide_points
+from .outputs import write_guide_points, write_mlt_guide_md, write_mlt_guide_points
 from .parser import build_argument_parser
 from .read_trajectories import read_trajectories
 from .well_trajectory_resinsight import well_trajectory_resinsight
@@ -41,11 +41,14 @@ def main_entry_point(args=None):
             eclipse_model := options.eclipse_model or options.config.eclipse_model
         ) is None:
             args_parser.error("missing eclipse model")
-        well_trajectory_resinsight(
-            options.config,
-            eclipse_model,
-            guide_points,
+        mlt_guide_points = well_trajectory_resinsight(
+            options.config, eclipse_model, guide_points
         )
+        if mlt_guide_points:
+            logger.info("Writing multilateral guide points to 'mlt_guide_points.json'")
+            write_mlt_guide_points(mlt_guide_points, Path("mlt_guide_points.json"))
+            logger.info("Writing multilateral guide md's to 'mlt_guide_md.json'")
+            write_mlt_guide_md(mlt_guide_points, Path("mlt_guide_md.json"))
 
 
 if __name__ == "__main__":

@@ -17,9 +17,9 @@ connections:
     formations_file: ./formations.lyr
     perforations:
         - well: INJ
-          formations: [0]
+          formations: [0, 1, 2]
         - well: PROD
-          formations: [2]
+          formations: [0, 1, 2]
 wells:
     - name: INJ
       group: G1
