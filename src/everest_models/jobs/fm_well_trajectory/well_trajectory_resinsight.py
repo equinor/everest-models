@@ -48,7 +48,7 @@ class ResInsight:
 
 
 def _save_project(project_path: str, project: rips.Project):
-    project_file = str(project_path / "model.rsp")
+    project_file = str(project_path / ".model.rsp")
     logger.info(f"Saving project to: {project_file}")
     project.save(project_file)
 
