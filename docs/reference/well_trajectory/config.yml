@@ -6,21 +6,25 @@
 # Required: True
 scales:
 
+  # Scaling length for coordinate x for the guide points.
   # Datatype: number
   # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
   # Required: True
   x: '...'  # ← REPLACE
 
+  # Scaling length for coordinate y for the guide points.
   # Datatype: number
   # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
   # Required: True
   y: '...' # ← REPLACE
 
+  # Scaling length for coordinate z (positive depth) for the guide points.
   # Datatype: number
   # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
   # Required: True
   z: '...' # ← REPLACE
 
+  # Scaling length for z (positive depth) for the kick-off point.
   # Datatype: number
   # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
   # Required: False
@@ -31,27 +35,32 @@ scales:
 # Required: True
 references:
 
+  # Coordinate x for reference point used in scaling of guide points.
   # Datatype: number
   # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
   # Required: True
   x: '...'  # ← REPLACE
 
+  # Coordinate y for reference point used in scaling of guide points.
   # Datatype: number
   # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
   # Required: True
   y: '...' # ← REPLACE
 
+  # Coordinate z for reference point used in scaling of guide points.
   # Datatype: number
   # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
   # Required: True
   z: '...' # ← REPLACE
 
+  # Coordinate z for reference point used in scaling of kick-off point.
   # Datatype: number
   # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
   # Required: False
   # Default: null
   k: null
 
+# Options related to interpolation of guide points.
 # Datatype: SimpleInterpolationConfig map or ResInsightInterpolationConfig map
 # Required: True
 interpolation: '...'  # ← REPLACE
@@ -65,11 +74,13 @@ connections:
   # Required: True
   type: '...'  # ← REPLACE
 
+  # Simulation date used for grid perforation filtering based on time dynamic grid flow simulation data.
   # Datatype: date
   # Examples: 2024-01-31, 2024-01-31T11:06
   # Required: True
   date: '...'  # ← REPLACE
 
+  # File defining list of grid based geological formations used for perforation filtering based on formations.
   # Datatype: Path
   # Examples: /path/to/file.ext, /path/to/directory/
   # Required: True
@@ -80,6 +91,7 @@ connections:
   perforations:
   -
 
+      # Well name.
       # Datatype: string
       # Examples: a string value
       # Required: True
@@ -90,16 +102,19 @@ connections:
     dynamic:
     -
 
+          # Keyword representing a cell property in flow simulator which will be accepted in filtering.
           # Datatype: string
           # Examples: a string value
           # Required: True
       key: '...'  # ← REPLACE
 
+          # Minimum value.
           # Datatype: number
           # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
           # Required: True
       min: '...' # ← REPLACE
 
+          # Maximum value.
           # Datatype: number
           # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
           # Required: True
@@ -110,21 +125,25 @@ connections:
     static:
     -
 
+          # Keyword representing a cell property in flow simulator which will be accepted in filtering.
           # Datatype: string
           # Examples: a string value
           # Required: True
       key: '...'  # ← REPLACE
 
+          # Minimum value.
           # Datatype: number
           # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
           # Required: True
       min: '...' # ← REPLACE
 
+          # Maximum value.
           # Datatype: number
           # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
           # Required: True
       max: '...' # ← REPLACE
 
+      # List of indexes of formations (starting from 0) from formations file which will be accepted in filtering.
       # Datatype: [integer]
       # Required: False
     formations:
@@ -135,21 +154,25 @@ connections:
 platforms:
 -
 
+    # Name for platform.
     # Datatype: string
     # Examples: a string value
     # Required: True
   name: '...'  # ← REPLACE
 
+    # Coordinate x of the platform at depth 0.
     # Datatype: number
     # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
     # Required: True
   x: '...' # ← REPLACE
 
+    # Coordinate y of the platform at depth 0.
     # Datatype: number
     # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
     # Required: True
   y: '...' # ← REPLACE
 
+    # Coordinate z of the kick-off (directly under the platform.)
     # Datatype: number
     # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
     # Required: False
@@ -161,63 +184,74 @@ platforms:
 wells:
 -
 
+    # Well name.
     # Datatype: string
     # Examples: a string value
     # Required: True
   name: '...'  # ← REPLACE
 
+    # Well group name to be assigned to well in flow simulator
     # Datatype: string
     # Examples: a string value
     # Required: True
   group: '...'  # ← REPLACE
 
+    # Well phase name to be assigned to well in flow simulator.
     # Datatype: string
     # Choices: WATER, GAS, OIL
     # Required: True
   phase: '...' # ← REPLACE
 
+    # Well skin value to be assigned to well in flow simulator.
     # Datatype: number
     # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
     # Required: False
     # Default: 0.0
   skin: 0.0
 
+    # Well radius value to be assigned to well in flow simulator.
     # Datatype: number
     # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
     # Required: False
     # Default: 0.15
   radius: 0.15
 
+    # Well maximum dogleg used for interpolating well trajectory.
     # Datatype: number
     # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
     # Required: False
     # Default: 4.0
   dogleg: 4.0
 
+    # Drilling cost per kilometer. Used to update well costs in the input file for NPV.
     # Datatype: number
     # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
     # Required: False
     # Default: 0.0
   cost: 0.0
 
+    # Name of the platform selected for the well.
     # Datatype: string
     # Examples: a string value
     # Required: False
     # Default: null
   platform: null
 
+# Path and name of the flow simulation grid model. Ignored if passed as argument instead.
 # Datatype: Path
 # Examples: /path/to/file.ext, /path/to/directory/
 # Required: False
 # Default: null
 eclipse_model: null
 
+# Path to ResInsight executable. Defaults to system path.
 # Datatype: Path
 # Examples: /path/to/file.ext, /path/to/directory/
 # Required: False
 # Default: null
 resinsight_binary: null
 
+# Path to YAML file (input to fm_npv) used to update the well costs.
 # Datatype: Path
 # Examples: /path/to/file.ext, /path/to/directory/
 # Required: False
