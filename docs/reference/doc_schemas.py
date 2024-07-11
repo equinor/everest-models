@@ -1,5 +1,4 @@
 #! /usr/bin/env python
-import contextlib
 import os
 import pathlib
 import re
@@ -87,8 +86,11 @@ def main(args: Optional[Sequence[str]] = None) -> None:
     args_parser = build_argument_parser()
     options = args_parser.parse_args(args)
     for job in forward_models(options.forward_models):
-        with contextlib.suppress(subprocess.CalledProcessError):
+        try:
             write_to_reference_docs(job, options.output_directory)
+        except subprocess.CalledProcessError as exc:
+            if "--schema" in " ".join(exc.cmd) and "usage:" in str(exc.output):
+                print(f"Skipping `{job}`: no schema generator implemented")
 
 
 if __name__ == "__main__":

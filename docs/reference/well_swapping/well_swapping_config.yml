@@ -1,9 +1,8 @@
 # -c/--config specification:
-# '...' are REQUIRED fields that needs replacing
+# <REPLACE> is a REQUIRED field that needs replacing
 
 
 # Backup values for case priorities if priority JSON file is missing.
-# Datatype: Priorities map
 # Required: False
 # Default: null
 priorities:
@@ -13,8 +12,8 @@ priorities:
   # Required: False
   # Default: null
   fallback_values:
-    <string>:
-    - '...'
+    <STRING>:
+      - <REPLACE>
 
 
 # Make sure the following are present in you Everest configuration file.
@@ -30,12 +29,10 @@ priorities:
 #     variables:
 #     - { name: state_duration, initial_guess: [z0, z1, ..., zn] }
 
-# Datatype: Constraints map
 # Required: True
 constraints:
 
   # Constraint information for the time duration of any given state per iteraton
-  # Datatype: Constraint map
   # Required: True
   state_duration:
 
@@ -45,30 +42,28 @@ constraints:
     # Examples: [150, 200, 500], 200
     # Required: False
     # Default: null
-    fallback_values: '...'  # ← REPLACE
+    fallback_values: <REPLACE>
 
     # Scaling data used by everest for producing constraint files,
     # given these values this forward model will rescale the constraints
-    # Datatype: Scaling map
     # Required: True
     scaling:
 
       # [min, max] values for scaling source
       # Datatype: ['number', 'number']
       # Required: True
-      source: '...'  # ← REPLACE
+      source: <REPLACE>
 
       # [min, max] values for scaling target
       # Datatype: ['number', 'number']
       # Required: True
-      target: '...' # ← REPLACE
+      target: <REPLACE>
 
 # Datatype: date
 # Examples: 2024-01-31, 2024-01-31T11:06
 # Required: True
-start_date: '...' # ← REPLACE
+start_date: <REPLACE>
 
-# Datatype: StateConfig map
 # Required: True
 state:
 
@@ -76,16 +71,15 @@ state:
   # Note: values must be unique!
   # Tip: highest is the default target state
   # and lowest is the default initial state
-  # Datatype: [StateHierarchy map]
   # Required: True
   hierarchy:
-  -
+    -
 
       # State's label/name.
       # Datatype: string
       # Examples: a string value
       # Required: True
-    label: '...'  # ← REPLACE
+      label: <REPLACE>
 
       # Case state toggle quota per iteration.
       # Tip: '_', (infinity) alias can be used to pad array
@@ -95,7 +89,7 @@ state:
       # Examples: [_, 4, _, 2], 2
       # Required: False
       # Default: null
-    quotas: '...' # ← REPLACE
+      quotas: <REPLACE>
 
   # States to set cases to at initial iteration.
   # Tip: fill only cases that differ from default (lowest priority level in hierarchy),
@@ -105,7 +99,7 @@ state:
   # Datatype: {string: string} or string
   # Required: False
   # Default: null
-  initial: '...' # ← REPLACE
+  initial: <REPLACE>
 
   # Target States for each iteration.
   # Tip: '_', default alias can be used to pad array(highest priority level in hierarchy),
@@ -116,7 +110,7 @@ state:
   # Examples: _, sitting, _, standing], sitting
   # Required: False
   # Default: null
-  targets: '...' # ← REPLACE
+  targets: <REPLACE>
 
   # List of directional (source → target) state actions.
   # Note: action context is set with the 'forbiden_actions' field
@@ -124,7 +118,7 @@ state:
   # Required: False
   # Default: null
   actions:
-  - '...'
+    - <REPLACE>
 
   # Are cases allowed to stay at the same state?
   # False: Enforce cases to change state each iteration, (can cause state lock)

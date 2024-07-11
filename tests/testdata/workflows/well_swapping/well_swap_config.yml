@@ -1,7 +1,6 @@
 # config specification:
-# '...' are REQUIRED fields that needs replacing
+# <REPLACE> is a REQUIRED field that needs replacing
 
-# Datatype: Priorities map
 # Required: True
 priorities:
   # fallback priorities if priorities file is not given
@@ -29,11 +28,9 @@ priorities:
 #     - { name: max_n_cases, initial_guess: [x0, x1, ..., xn] }
 #     - { name: state_duration, initial_guess: [z0, z1, ..., zn] }
 
-# Datatype: Constraints map
 # Required: True
 constraints:
   # Constraint information for the time duration of any given state per iteraton
-  # Datatype: Constraint map
   # Required: True
   state_duration:
     # A list of values to fallback on if constraint json file is not present
@@ -45,7 +42,6 @@ constraints:
 
     # Scaling data used by everest for producing constraint files,
     # given these values this well swapping forward model will rescale the constraints
-    # Datatype: Scaling map
     # Required: True
     scaling:
       # [min, max] values for scaling source
@@ -63,14 +59,12 @@ constraints:
 # Required: True
 start_date: 2022-06-01
 
-# Datatype: State map
 # Required: True
 state:
   # State hierarchy in decending order [highest, ..., lowest]
   # Note: values must be unique!
   # Tip: highest is the default target state
   # and lowest is the default initial state
-  # Datatype: [StateHierarchy map]
   # Required: True
   hierarchy:
     - # State's label/name.

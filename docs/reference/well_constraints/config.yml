@@ -1,10 +1,9 @@
 # -c/--config specification:
-# '...' are REQUIRED fields that needs replacing
+# <REPLACE> is a REQUIRED field that needs replacing
 
-<string>:
-  <integer>:
+<STRING>:
+  <INTEGER>:
 
-    # Datatype: Phase map
     # Required: True
     phase:
 
@@ -12,7 +11,7 @@
       # Required: False
       # Default: null
       options:
-      - '...'
+        - <REPLACE>
 
       # Datatype: string
       # Choices: WATER, GAS, OIL
@@ -20,7 +19,6 @@
       # Default: null
       value: null
 
-    # Datatype: Tolerance map
     # Required: True
     rate:
 
@@ -42,7 +40,6 @@
       # Default: null
       value: null
 
-    # Datatype: Tolerance map
     # Required: True
     duration:
 
