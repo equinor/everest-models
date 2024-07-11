@@ -8,7 +8,7 @@ from numpy.typing import NDArray
 from .dogleg import compute_dogleg_severity, try_fixing_dog_leg
 from .geometry import compute_geometry
 from .interpolation import interpolate_points
-from .models.config import SimpleInterpolationConfig, WellConfig
+from .models.config import InterpolationConfig, WellConfig
 from .models.data_structs import CalculatedTrajectory, Trajectory
 from .outputs import write_path_files, write_resinsight, write_well_costs, write_wicalc
 from .well_costs import compute_well_costs
@@ -35,7 +35,7 @@ def _check_kickoff_alignment(
 
 def _generate_coordinates_dogleg(
     wells: Iterable[WellConfig],
-    interpolation: SimpleInterpolationConfig,
+    interpolation: InterpolationConfig,
     trajectories: Dict[str, Trajectory],
 ) -> Iterator[Tuple[str, Trajectory, NDArray[numpy.float64]]]:
     for well in wells:
@@ -57,7 +57,7 @@ def _generate_coordinates_dogleg(
 
 def _compute_well_trajectory(
     wells: Iterable[WellConfig],
-    interpolation: SimpleInterpolationConfig,
+    interpolation: InterpolationConfig,
     trajectories: Dict[str, Trajectory],
 ) -> Dict[str, CalculatedTrajectory]:
     _check_kickoff_alignment(wells, trajectories)
@@ -71,7 +71,7 @@ def _compute_well_trajectory(
 
 def well_trajectory_simple(
     wells: Iterable[WellConfig],
-    interpolation: SimpleInterpolationConfig,
+    interpolation: InterpolationConfig,
     npv_input_file: Optional[pathlib.Path],
     guide_points: Dict[str, Trajectory],
 ) -> None:

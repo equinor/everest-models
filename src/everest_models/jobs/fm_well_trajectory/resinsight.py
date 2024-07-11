@@ -1,7 +1,7 @@
 import datetime
 import logging
 from pathlib import Path
-from typing import Any, Dict, Iterable, Optional, Tuple
+from typing import Any, Dict, Iterable, Optional, Tuple, Union
 
 import lasio
 import pandas
@@ -10,9 +10,10 @@ import rips
 from everest_models.jobs.shared.models.phase import PhaseEnum
 
 from .models.config import (
-    DomainProperty,
+    ConnectionConfig,
+    DynamicDomainProperty,
     PerforationConfig,
-    ResInsightConnectionConfig,
+    StaticDomainProperty,
     WellConfig,
 )
 from .models.data_structs import Trajectory
@@ -36,7 +37,7 @@ def read_wells(
     project: rips.Project,
     well_path_folder: Path,
     well_names: Iterable[str],
-    connection: Optional[ResInsightConnectionConfig],
+    connection: Optional[ConnectionConfig],
 ) -> None:
     project.import_well_paths(
         well_path_files=[
@@ -58,7 +59,7 @@ def read_wells(
 
 
 def create_well(
-    connection: ResInsightConnectionConfig,
+    connection: ConnectionConfig,
     well_config: WellConfig,
     guide_points: Trajectory,
     project: rips.Project,
@@ -234,7 +235,7 @@ def create_well_logs(
 def _filter_properties(
     conditions: pandas.Series,
     df: pandas.DataFrame,
-    properties: Tuple[DomainProperty, ...],
+    properties: Tuple[Union[DynamicDomainProperty, StaticDomainProperty], ...],
 ) -> pandas.Series:
     for property in properties:
         if property.min is not None:

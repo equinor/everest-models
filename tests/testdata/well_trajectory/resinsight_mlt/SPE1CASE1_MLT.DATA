@@ -296,8 +296,8 @@ DRSDT
 -- dissolve in undersaturated oil -> constant bubble point pressure
 
 -- Modified wells - multilateral
-  
--- WELL  GROUP        BHP    PHASE  DRAIN  INFLOW  OPEN  CROSS  PVT    HYDS  FIP 
+
+-- WELL  GROUP        BHP    PHASE  DRAIN  INFLOW  OPEN  CROSS  PVT    HYDS  FIP
 -- NAME  NAME   I  J  DEPTH  FLUID  AREA   EQUANS  SHUT  FLOW   TABLE  DENS  REGN
 WELSPECS
    INJ   G1     5  4  1*     GAS    0.0    STD     STOP  YES    0      SEG   0    /
@@ -310,7 +310,7 @@ COMPDAT
    INJ    5   4   3    3    OPEN   1*    7.456390E+01   0.30000   9.999988E+03   0.00000   1*     'Z' /
 /
 
--- WELL  GROUP        BHP    PHASE  DRAIN  INFLOW  OPEN  CROSS  PVT    HYDS  FIP 
+-- WELL  GROUP        BHP    PHASE  DRAIN  INFLOW  OPEN  CROSS  PVT    HYDS  FIP
 -- NAME  NAME   I  J  DEPTH  FLUID  AREA   EQUANS  SHUT  FLOW   TABLE  DENS  REGN
 WELSPECS
    INJ   G1     5  4  1*     GAS    0.0    STD     STOP  YES    0      SEG   0    /
@@ -323,7 +323,7 @@ COMPDAT
    INJ    4   4   3    3    OPEN   1*    1.468611E+02   0.30000   1.899792E+04   0.00000   1*     'Z' /
 /
 
--- WELL  GROUP        BHP    PHASE  DRAIN  INFLOW  OPEN  CROSS  PVT    HYDS  FIP 
+-- WELL  GROUP        BHP    PHASE  DRAIN  INFLOW  OPEN  CROSS  PVT    HYDS  FIP
 -- NAME  NAME   I  J  DEPTH  FLUID  AREA   EQUANS  SHUT  FLOW   TABLE  DENS  REGN
 WELSPECS
    INJ   G1     5  4  1*     GAS    0.0    STD     STOP  YES    0      SEG   0    /
@@ -337,7 +337,7 @@ COMPDAT
    INJ    5   5   3    3    OPEN   1*    5.243721E+02   0.30000   6.701535E+04   0.00000   1*     'Z' /
 /
 
--- WELL  GROUP        BHP    PHASE  DRAIN  INFLOW  OPEN  CROSS  PVT    HYDS  FIP 
+-- WELL  GROUP        BHP    PHASE  DRAIN  INFLOW  OPEN  CROSS  PVT    HYDS  FIP
 -- NAME  NAME   I  J  DEPTH  FLUID  AREA   EQUANS  SHUT  FLOW   TABLE  DENS  REGN
 WELSPECS
    PROD  G1     6  7  1*     OIL    0.0    STD     STOP  YES    0      SEG   0    /
@@ -350,7 +350,7 @@ COMPDAT
    PROD   6   7   3    3    OPEN   1*    7.341413E+01   0.30000   9.845788E+03   0.00000   1*     'Z' /
 /
 
--- WELL  GROUP        BHP    PHASE  DRAIN  INFLOW  OPEN  CROSS  PVT    HYDS  FIP 
+-- WELL  GROUP        BHP    PHASE  DRAIN  INFLOW  OPEN  CROSS  PVT    HYDS  FIP
 -- NAME  NAME   I  J  DEPTH  FLUID  AREA   EQUANS  SHUT  FLOW   TABLE  DENS  REGN
 WELSPECS
    PROD  G1     6  7  1*     OIL    0.0    STD     STOP  YES    0      SEG   0    /

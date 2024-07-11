@@ -7,7 +7,7 @@ from typing import Dict, Optional
 
 import rips
 
-from .models.config import ConfigSchema, ResInsightInterpolationConfig
+from .models.config import ConfigSchema
 from .outputs import write_well_costs
 from .read_trajectories import read_laterals
 from .resinsight import (
@@ -75,7 +75,7 @@ def well_trajectory_resinsight(
     ) as resinsight:
         resinsight.project.load_case(str(eclipse_model.with_suffix(".EGRID")))
 
-        if isinstance(config.interpolation, ResInsightInterpolationConfig):
+        if config.interpolation.type == "resinsight":
             # Interpolate trajectories and save smooth trajectories:
             well_paths = {
                 well_config.name: create_well(
