@@ -13,7 +13,7 @@ def test_parameters_config_simple(path_test_data):
 
 
 def test_parameters_config_resinsight(copy_testdata_tmpdir):
-    copy_testdata_tmpdir(Path(TEST_DATA) / "spe1case1")
+    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight_mlt")
     config = load_yaml("config.yml")
     ConfigSchema.model_validate(config)
 
