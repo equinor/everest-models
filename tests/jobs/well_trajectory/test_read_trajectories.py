@@ -1,4 +1,3 @@
-import shutil
 from pathlib import Path
 
 import numpy as np
@@ -131,7 +130,7 @@ def test_read_trajectories_no_kickoff(copy_testdata_tmpdir):
 
 
 def test_read_laterals_orphaned_branches(copy_testdata_tmpdir):
-    copy_testdata_tmpdir(Path(TEST_DATA) / "spe1case1_mlt")
+    copy_testdata_tmpdir(Path(TEST_DATA) / "read_laterals")
     config = ConfigSchema.model_validate(load_yaml("config.yml"))
     mlt_p1_z = load_json("mlt_p1_z.json")
     mlt_p1_z["DUMMY"] = {"1": 0.0}
@@ -143,7 +142,7 @@ def test_read_laterals_orphaned_branches(copy_testdata_tmpdir):
 
 
 def test_read_laterals_missing_files(copy_testdata_tmpdir):
-    copy_testdata_tmpdir(Path(TEST_DATA) / "spe1case1_mlt")
+    copy_testdata_tmpdir(Path(TEST_DATA) / "read_laterals")
     config = ConfigSchema.model_validate(load_yaml("config.yml"))
     Path("mlt_p2_b.json").unlink()
     Path("mlt_p3_x.json").unlink()
@@ -155,7 +154,7 @@ def test_read_laterals_missing_files(copy_testdata_tmpdir):
 
 
 def test_read_laterals_missing_wells(copy_testdata_tmpdir):
-    copy_testdata_tmpdir(Path(TEST_DATA) / "spe1case1_mlt")
+    copy_testdata_tmpdir(Path(TEST_DATA) / "read_laterals")
     config = ConfigSchema.model_validate(load_yaml("config.yml"))
     mlt_p2_b = load_json("mlt_p2_b.json")
     mlt_p3_x = load_json("mlt_p3_x.json")
@@ -171,7 +170,7 @@ def test_read_laterals_missing_wells(copy_testdata_tmpdir):
 
 
 def test_read_laterals_missing_branches(copy_testdata_tmpdir):
-    copy_testdata_tmpdir(Path(TEST_DATA) / "spe1case1_mlt")
+    copy_testdata_tmpdir(Path(TEST_DATA) / "read_laterals")
     config = ConfigSchema.model_validate(load_yaml("config.yml"))
     mlt_p2_b = load_json("mlt_p2_b.json")
     mlt_p3_x = load_json("mlt_p3_x.json")
@@ -187,8 +186,7 @@ def test_read_laterals_missing_branches(copy_testdata_tmpdir):
 
 
 def test_read_laterals_branch_not_on_well(copy_testdata_tmpdir):
-    copy_testdata_tmpdir(Path(TEST_DATA) / "spe1case1_mlt")
-    shutil.copytree("expected/wellpaths", "wellpaths")
+    copy_testdata_tmpdir(Path(TEST_DATA) / "read_laterals")
     config = ConfigSchema.model_validate(load_yaml("config.yml"))
     mlt_p1_z = load_json("mlt_p1_z.json")
     mlt_p1_z["INJ"]["1"] = 1.0
@@ -197,15 +195,8 @@ def test_read_laterals_branch_not_on_well(copy_testdata_tmpdir):
         read_laterals(config.scales, config.references, config.wells)
 
 
-def test_read_laterals_no_branches(copy_testdata_tmpdir):
-    copy_testdata_tmpdir(Path(TEST_DATA) / "spe1case1")
-    config = ConfigSchema.model_validate(load_yaml("config.yml"))
-    assert read_laterals(config.scales, config.references, config.wells) == {}
-
-
 def test_read_laterals(copy_testdata_tmpdir):
-    copy_testdata_tmpdir(Path(TEST_DATA) / "spe1case1_mlt")
-    shutil.copytree("expected/wellpaths", "wellpaths")
+    copy_testdata_tmpdir(Path(TEST_DATA) / "read_laterals")
     config = ConfigSchema.model_validate(load_yaml("config.yml"))
     laterals = read_laterals(config.scales, config.references, config.wells)
 

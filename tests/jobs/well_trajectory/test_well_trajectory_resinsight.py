@@ -10,7 +10,7 @@ from sub_testdata import WELL_TRAJECTORY as TEST_DATA
 
 @pytest.fixture(scope="module")
 def well_trajectory_arguments():
-    return ("-c config.yml -E SPE1CASE1").split()
+    return ("-c config.yml -E SPE1CASE1_MLT").split()
 
 
 @pytest.mark.slow
@@ -34,10 +34,25 @@ def test_start_resinsight(caplog):
 
 
 @pytest.mark.resinsight
+def test_well_trajectory_resinsight_main_entry_point_lint(
+    well_trajectory_arguments, copy_testdata_tmpdir
+):
+    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight_mlt")
+    with pytest.raises(SystemExit):
+        main_entry_point([*well_trajectory_arguments, "--lint"])
+
+    assert not any(
+        path.relative_to("expected").exists() for path in Path("expected").glob("**/*")
+    )
+
+
+@pytest.mark.resinsight
 def test_well_trajectory_resinsight_main_entry_point(
     well_trajectory_arguments, copy_testdata_tmpdir
 ):
-    copy_testdata_tmpdir(Path(TEST_DATA) / "spe1case1")
+    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight_mlt")
+    for path in Path.cwd().glob("mlt_*.json"):
+        path.unlink()
     main_entry_point(well_trajectory_arguments)
 
     for expected in Path("expected").glob("**/*"):
@@ -48,27 +63,14 @@ def test_well_trajectory_resinsight_main_entry_point(
 
 
 @pytest.mark.resinsight
-def test_well_trajectory_resinsight_main_entry_point_lint(
-    well_trajectory_arguments, copy_testdata_tmpdir
-):
-    copy_testdata_tmpdir(Path(TEST_DATA) / "spe1case1")
-    with pytest.raises(SystemExit):
-        main_entry_point([*well_trajectory_arguments, "--lint"])
-
-    assert not any(
-        path.relative_to("expected").exists() for path in Path("expected").glob("**/*")
-    )
-
-
-@pytest.mark.resinsight
 def test_well_trajectory_resinsight_main_entry_point_mlt(
     well_trajectory_arguments, copy_testdata_tmpdir
 ):
-    copy_testdata_tmpdir(Path(TEST_DATA) / "spe1case1_mlt")
+    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight_mlt")
     main_entry_point(well_trajectory_arguments)
 
-    for expected in Path("expected").glob("**/*"):
+    for expected in Path("expected_mlt").glob("**/*"):
         if expected.is_file():
-            output = expected.relative_to("expected")
+            output = expected.relative_to("expected_mlt")
             assert output.is_file()
             assert filecmp.cmp(expected, output, shallow=False)
