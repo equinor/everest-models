@@ -47,7 +47,6 @@ class Wrapper(ModelConfig):
             dedent(
                 """
                 # User description. A relatively simple data.
-                # Datatype: User map
                 # Required: True
                 user:
 
@@ -62,7 +61,7 @@ class Wrapper(ModelConfig):
                   # Datatype: integer
                   # Examples: 5, 1.5e4
                   # Required: True
-                  age: '...'  # ← REPLACE
+                  age: <REPLACE>
 
                   # Sex of the user
                   # Datatype: string
@@ -72,7 +71,7 @@ class Wrapper(ModelConfig):
                   sex: male
 
                 # Datatype: integer
-                # Examples: 1, 1.34E5, 1.34e5
+                # Examples: 1, 1.34E5
                 # Required: False
                 # Default: 213
                 user_id: 213
@@ -80,7 +79,7 @@ class Wrapper(ModelConfig):
                 # Datatype: Path
                 # Examples: /path/to/file.ext, /path/to/directory/
                 # Required: True
-                data: '...'  # ← REPLACE
+                data: <REPLACE>
                 """
             ),
             id="wrapper over user",
@@ -102,7 +101,7 @@ class Wrapper(ModelConfig):
                   # Datatype: integer
                   # Examples: 5, 1.5e4
                   # Required: True
-                  age: '...'  # ← REPLACE
+                  age: <REPLACE>
 
                   # Sex of the user
                   # Datatype: string
@@ -118,8 +117,8 @@ class Wrapper(ModelConfig):
             DeepNested,
             dedent(
                 """\
-                <string>:
-                  <integer>:
+                <STRING>:
+                  <INTEGER>:
 
                     # The name of the test model
                     # Datatype: string
@@ -132,7 +131,7 @@ class Wrapper(ModelConfig):
                     # Datatype: integer
                     # Examples: 5, 1.5e4
                     # Required: True
-                    age: '...'  # ← REPLACE
+                    age: <REPLACE>
 
                     # Sex of the user
                     # Datatype: string

@@ -1,84 +1,80 @@
 # -c/--config specification:
-# '...' are REQUIRED fields that needs replacing
+# <REPLACE> is a REQUIRED field that needs replacing
 
 
 # Datatype: date
 # Examples: 2024-01-31, 2024-01-31T11:06
 # Required: True
-start_date: '...'  # ← REPLACE
+start_date: <REPLACE>
 
 # Datatype: date
 # Examples: 2024-01-31, 2024-01-31T11:06
 # Required: True
-end_date: '...'  # ← REPLACE
+end_date: <REPLACE>
 
-# Datatype: [Rig map]
 # Required: True
 rigs:
--
+  -
 
     # Datatype: string
     # Examples: a string value
     # Required: True
-  name: '...'  # ← REPLACE
+    name: <REPLACE>
 
     # Datatype: [string]
     # Required: False
-  wells:
-  - '...'
+    wells:
+      - <REPLACE>
 
-    # Datatype: [Unavailability map]
     # Required: False
-  unavailability:
-  -
+    unavailability:
+      -
 
         # Datatype: date
         # Examples: 2024-01-31, 2024-01-31T11:06
         # Required: True
-    start: '...'  # ← REPLACE
+        start: <REPLACE>
 
         # Datatype: date
         # Examples: 2024-01-31, 2024-01-31T11:06
         # Required: True
-    stop: '...' # ← REPLACE
+        stop: <REPLACE>
 
     # Datatype: [string]
     # Required: False
-  slots:
-  - '...'
+    slots:
+      - <REPLACE>
 
     # Datatype: integer
-    # Examples: 1, 1.34E5, 1.34e5
+    # Examples: 1, 1.34E5
     # Required: False
     # Default: 0
-  delay: 0
+    delay: 0
 
-# Datatype: [Slot map]
 # Required: False
 slots:
--
+  -
 
     # Datatype: string
     # Examples: a string value
     # Required: True
-  name: '...'  # ← REPLACE
+    name: <REPLACE>
 
     # Datatype: [string]
     # Required: False
-  wells:
-  - '...'
+    wells:
+      - <REPLACE>
 
-    # Datatype: [Unavailability map]
     # Required: False
-  unavailability:
-  -
+    unavailability:
+      -
 
         # Datatype: date
         # Examples: 2024-01-31, 2024-01-31T11:06
         # Required: True
-    start: '...'  # ← REPLACE
+        start: <REPLACE>
 
         # Datatype: date
         # Examples: 2024-01-31, 2024-01-31T11:06
         # Required: True
-    stop: '...' # ← REPLACE
+        stop: <REPLACE>

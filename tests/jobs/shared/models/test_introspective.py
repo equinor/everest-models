@@ -18,7 +18,7 @@ from ruamel.yaml import YAML
 @pytest.fixture(scope="package")
 def yaml() -> YAML:
     _yaml = YAML()
-    _yaml.indent(mapping=2, sequence=2, offset=0)
+    _yaml.indent(mapping=2, sequence=4, offset=2)
     return _yaml
 
 
@@ -53,14 +53,17 @@ def yaml() -> YAML:
             id="nested mapping",
         ),
         pytest.param(
-            [
-                CommentedObject(1, inline_comment="First item"),
-                CommentedObject(2, "Second item"),
-            ],
+            {
+                "inline": [
+                    CommentedObject(1, inline_comment="First item"),
+                    CommentedObject(2, "Second item"),
+                ]
+            },
             dedent(
                 """\
-                - 1  # First item
-                - 2
+                inline:
+                  - 1  # First item
+                  - 2
                 """
             ),
             id="sequence",
@@ -71,7 +74,7 @@ def yaml() -> YAML:
                 """\
                 # List item comment
                 list:
-                - dict_in_list: true
+                  - dict_in_list: true
                 """
             ),
             id="mixed data",
@@ -96,12 +99,12 @@ def yaml() -> YAML:
                 """\
                 # List item comment
                 list:
-                - string_a:
-                  - true
-                  - false
+                  - string_a:
+                      - true
+                      - false
                     # string_b comment
-                  string_b:  # TODO: I will not do it
-                    string_x: 0.5
+                    string_b:  # TODO: I will not do it
+                      string_x: 0.5
                 """
             ),
             id="deeply nested",
@@ -138,7 +141,7 @@ def test_builtin_datatypes_with_base_model():
     class MyModel(BaseModel):
         pass
 
-    assert builtin_datatypes(MyModel) == "MyModel map"
+    assert builtin_datatypes(MyModel) == "__remove__"
 
 
 def test_builtin_datatypes_with_enum():

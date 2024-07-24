@@ -55,5 +55,5 @@ def dump_yaml(
     _yaml.representer.add_representer(
         type(None), lambda x, _: x.represent_scalar("tag:yaml.org,2002:null", "null")
     )
-    _yaml.indent(mapping=2, sequence=2, offset=0)
+    _yaml.indent(mapping=2, sequence=4, offset=2)
     _yaml.dump(data, fp)
