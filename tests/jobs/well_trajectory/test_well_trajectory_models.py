@@ -1,10 +1,28 @@
 from pathlib import Path
 
 import pytest
-from everest_models.jobs.fm_well_trajectory.models.config import ConfigSchema
+from everest_models.jobs.fm_well_trajectory.models.config import (
+    ConfigSchema,
+    InterpolationConfig,
+)
 from everest_models.jobs.shared.io_utils import load_yaml
 from pydantic import ValidationError
 from sub_testdata import WELL_TRAJECTORY as TEST_DATA
+
+
+def test_interpolation_config():
+    with pytest.raises(
+        ValidationError,
+        match=r"Interpolation type 'simple': 'measured_depth_step' not allowed",
+    ):
+        InterpolationConfig.model_validate({"type": "simple", "measured_depth_step": 1})
+    with pytest.raises(
+        ValidationError,
+        match=r"Interpolation type 'resinsight': fields not allowed: \['length', 'trial_number', 'trial_step'\]",
+    ):
+        InterpolationConfig.model_validate(
+            {"type": "resinsight", "length": 1, "trial_step": 0.1}
+        )
 
 
 def test_parameters_config_simple(path_test_data):
