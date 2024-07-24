@@ -1,5 +1,5 @@
 # -pc/--phase-constraints specification:
-# '...' are REQUIRED fields that needs replacing
+# <REPLACE> is a REQUIRED field that needs replacing
 
-<string>:
-  <integer>: '...'
+<STRING>:
+  <INTEGER>: <REPLACE>

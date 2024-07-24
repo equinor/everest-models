@@ -1,25 +1,24 @@
 # -c/--config specification:
-# '...' are REQUIRED fields that needs replacing
+# <REPLACE> is a REQUIRED field that needs replacing
 
 
-# Datatype: ScalesConfig map
 # Required: True
 scales:
 
   # Datatype: number
   # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
   # Required: True
-  x: '...'  # ← REPLACE
+  x: <REPLACE>
 
   # Datatype: number
   # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
   # Required: True
-  y: '...' # ← REPLACE
+  y: <REPLACE>
 
   # Datatype: number
   # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
   # Required: True
-  z: '...' # ← REPLACE
+  z: <REPLACE>
 
   # Datatype: number
   # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
@@ -27,24 +26,23 @@ scales:
   # Default: null
   k: null
 
-# Datatype: ReferencesConfig map
 # Required: True
 references:
 
   # Datatype: number
   # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
   # Required: True
-  x: '...'  # ← REPLACE
+  x: <REPLACE>
 
   # Datatype: number
   # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
   # Required: True
-  y: '...' # ← REPLACE
+  y: <REPLACE>
 
   # Datatype: number
   # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
   # Required: True
-  z: '...' # ← REPLACE
+  z: <REPLACE>
 
   # Datatype: number
   # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
@@ -52,159 +50,152 @@ references:
   # Default: null
   k: null
 
-# Datatype: SimpleInterpolationConfig map or ResInsightInterpolationConfig map
 # Required: True
-interpolation: '...'  # ← REPLACE
+interpolation: <REPLACE>
 
-# Datatype: ResInsightConnectionConfig map
 # Required: False
 # Default: null
 connections:
 
   # Datatype: resinsight
   # Required: True
-  type: '...'  # ← REPLACE
+  type: <REPLACE>
 
   # Datatype: date
   # Examples: 2024-01-31, 2024-01-31T11:06
   # Required: True
-  date: '...'  # ← REPLACE
+  date: <REPLACE>
 
   # Datatype: Path
   # Examples: /path/to/file.ext, /path/to/directory/
   # Required: True
-  formations_file: '...'  # ← REPLACE
+  formations_file: <REPLACE>
 
-  # Datatype: [PerforationConfig map]
   # Required: True
   perforations:
-  -
+    -
 
       # Datatype: string
       # Examples: a string value
       # Required: True
-    well: '...'  # ← REPLACE
+      well: <REPLACE>
 
-      # Datatype: [DomainProperty map]
       # Required: False
-    dynamic:
-    -
+      dynamic:
+        -
 
           # Datatype: string
           # Examples: a string value
           # Required: True
-      key: '...'  # ← REPLACE
+          key: <REPLACE>
 
           # Datatype: number
           # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
           # Required: True
-      min: '...' # ← REPLACE
+          min: <REPLACE>
 
           # Datatype: number
           # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
           # Required: True
-      max: '...' # ← REPLACE
+          max: <REPLACE>
 
-      # Datatype: [DomainProperty map]
       # Required: False
-    static:
-    -
+      static:
+        -
 
           # Datatype: string
           # Examples: a string value
           # Required: True
-      key: '...'  # ← REPLACE
+          key: <REPLACE>
 
           # Datatype: number
           # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
           # Required: True
-      min: '...' # ← REPLACE
+          min: <REPLACE>
 
           # Datatype: number
           # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
           # Required: True
-      max: '...' # ← REPLACE
+          max: <REPLACE>
 
       # Datatype: [integer]
       # Required: False
-    formations:
-    - '...'
+      formations:
+        - <REPLACE>
 
-# Datatype: [PlatformConfig map]
 # Required: False
 platforms:
--
+  -
 
     # Datatype: string
     # Examples: a string value
     # Required: True
-  name: '...'  # ← REPLACE
+    name: <REPLACE>
 
     # Datatype: number
     # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
     # Required: True
-  x: '...' # ← REPLACE
+    x: <REPLACE>
 
     # Datatype: number
     # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
     # Required: True
-  y: '...' # ← REPLACE
+    y: <REPLACE>
 
     # Datatype: number
     # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
     # Required: False
     # Default: null
-  k: null
+    k: null
 
-# Datatype: [WellConfig map]
 # Required: True
 wells:
--
+  -
 
     # Datatype: string
     # Examples: a string value
     # Required: True
-  name: '...'  # ← REPLACE
+    name: <REPLACE>
 
     # Datatype: string
     # Examples: a string value
     # Required: True
-  group: '...'  # ← REPLACE
+    group: <REPLACE>
 
     # Datatype: string
     # Choices: WATER, GAS, OIL
     # Required: True
-  phase: '...' # ← REPLACE
+    phase: <REPLACE>
 
     # Datatype: number
     # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
     # Required: False
     # Default: 0.0
-  skin: 0.0
+    skin: 0.0
 
     # Datatype: number
     # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
     # Required: False
     # Default: 0.15
-  radius: 0.15
+    radius: 0.15
 
     # Datatype: number
     # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
     # Required: False
     # Default: 4.0
-  dogleg: 4.0
+    dogleg: 4.0
 
     # Datatype: number
     # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
     # Required: False
     # Default: 0.0
-  cost: 0.0
+    cost: 0.0
 
     # Datatype: string
     # Examples: a string value
     # Required: False
     # Default: null
-  platform: null
+    platform: null
 
 # Datatype: Path
 # Examples: /path/to/file.ext, /path/to/directory/

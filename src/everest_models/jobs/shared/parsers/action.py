@@ -16,6 +16,7 @@ from ruamel.yaml.comments import CommentedMap, CommentedSeq
 from .. import is_related
 from ..io_utils import dump_yaml
 from ..models import Model, ModelConfig, Wells
+from ..models.base_config.introspective import PLACEHOLDER
 
 
 def _get_filepath(base_name: str, no_overwrite: bool, minimal: bool) -> Path:
@@ -28,7 +29,7 @@ def _get_filepath(base_name: str, no_overwrite: bool, minimal: bool) -> Path:
     )
 
 
-def _model_specsifactions(
+def _model_specificactions(
     argument: str, model: ModelConfig, minimal: bool, no_comment: bool
 ) -> Union[Dict[str, Any], CommentedSeq, CommentedMap]:
     if no_comment:
@@ -36,7 +37,7 @@ def _model_specsifactions(
 
     data = model.commented_map(minimal)
     data.yaml_set_start_comment(
-        f"{argument} specification:\n'...' are REQUIRED fields that needs replacing\n\n"
+        f"{argument} specification:\n{PLACEHOLDER} is a REQUIRED field that needs replacing\n\n"
     )
     return data
 
@@ -55,7 +56,7 @@ class SchemaAction(Action):
             (
                 argument.split("/")[-1].lstrip("-"),
                 model,
-                _model_specsifactions(argument, model, minimal, no_comment),
+                _model_specificactions(argument, model, minimal, no_comment),
             )
             for argument, model in self._models.items()
         )

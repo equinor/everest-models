@@ -15,7 +15,7 @@ from everest_models.jobs.shared import is_related
 __all__ = ["builtin_datatypes", "build_yaml_structure"]
 
 
-INLINE_REPLACE = "← REPLACE"
+PLACEHOLDER = "<REPLACE>"
 
 
 @dataclass
@@ -37,7 +37,7 @@ def builtin_datatypes(value: Any) -> str:
     if is_related(value, str):
         return "string"
     if is_related(value, BaseModel):
-        return f"{value.__name__.lstrip('_')} map"
+        return "__remove__"
     if is_related(value, Enum):
         try:
             value = value.value
@@ -76,7 +76,7 @@ def _example_types(value: Any) -> str:
     if is_related(value, bool):
         return "Choices: true, false"
     if is_related(value, int):
-        return f"{prefix}: 1, 1.34E5, 1.34e5"
+        return f"{prefix}: 1, 1.34E5"
     if is_related(value, float):
         return f"{prefix}: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5"
     if is_related(value, str):
@@ -101,18 +101,19 @@ def _build_comment(info: FieldInfo) -> str:
 
     default = default.value if is_related(default, Enum) else default  # type: ignore
     typ = typ if typ is None else builtin_datatypes(typ)
-    examples = (
-        ("Examples: " + ", ".join(map(str, info.examples)))
-        if info.examples
-        else _example_types(info.annotation)
-    )
+    example = info.examples
+    if example:
+        example = example if isinstance(example, str) else ", ".join(map(str, example))
+        example = f"Examples: {example}"
+    else:
+        example = _example_types(info.annotation)
     return "\n" + "\n".join(
         filter(
             lambda x: x,
             (  # type: ignore
                 info.description,
-                f"Datatype: {typ or '_'}",
-                examples,
+                "" if "__remove__" in typ else f"Datatype: {typ or '_'}",
+                example,
                 f"Required: {info.is_required()}",
                 default if default is None else f"Default: {default}",
             ),
@@ -152,7 +153,7 @@ def build_yaml_structure(data: Any, level: int = 0):
                 sub_result = build_yaml_structure(value.value, level + 1)
                 if value.comment:
                     result.yaml_set_comment_before_after_key(
-                        key, before=value.comment, indent=level * 2
+                        key, before=value.comment, indent=2 * level
                     )
                 if value.inline_comment:
                     result.yaml_add_eol_comment(value.inline_comment, key=key)
@@ -189,7 +190,9 @@ def parse_annotation(annotation: Any, minimal: bool, no_comment: bool) -> Any:
     if is_related(origin, Mapping):
         key, value = args
         return {
-            f"<{builtin_datatypes(key)}>": parse_annotation(value, minimal, no_comment)
+            f"<{builtin_datatypes(key).upper()}>": parse_annotation(
+                value, minimal, no_comment
+            )
         }
     if is_related(origin, Sequence):
         return [
@@ -197,7 +200,7 @@ def parse_annotation(annotation: Any, minimal: bool, no_comment: bool) -> Any:
             for arg in args
             if arg is not Ellipsis
         ]
-    return "..."
+    return PLACEHOLDER
 
 
 def _parse_field_info(info: FieldInfo, minimal: bool, no_comment: bool) -> Any:
@@ -206,7 +209,7 @@ def _parse_field_info(info: FieldInfo, minimal: bool, no_comment: bool) -> Any:
     if info.default_factory is not None:
         return info.default_factory
     if info.default is PydanticUndefined:
-        return "..."
+        return PLACEHOLDER
     return info.default.value if isinstance(info.default, Enum) else info.default
 
 
@@ -239,5 +242,4 @@ def parse_field_info(info: FieldInfo, minimal: bool, no_comment: bool) -> Any:
     return CommentedObject(
         value,
         _build_comment(info),
-        INLINE_REPLACE if is_related(value, str) and value == "..." else None,
     )

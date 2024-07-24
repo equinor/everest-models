@@ -1,28 +1,27 @@
 # -c/--config specification:
-# '...' are REQUIRED fields that needs replacing
+# <REPLACE> is a REQUIRED field that needs replacing
 
 
-# Datatype: {string: [CurrencyRate map]}
 # Required: True
 prices:
-  <string>:
-  -
+  <STRING>:
+    -
 
       # Datatype: number
       # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
       # Required: True
-    value: '...'  # ← REPLACE
+      value: <REPLACE>
 
       # Datatype: string
       # Examples: a string value
       # Required: False
       # Default: null
-    currency: null
+      currency: null
 
       # Datatype: date
       # Examples: 2024-01-31, 2024-01-31T11:06
       # Required: True
-    date: '...'  # ← REPLACE
+      date: <REPLACE>
 
 # Datatype: integer
 # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
@@ -42,7 +41,6 @@ default_exchange_rate: 1
 # Default: 0.08
 default_discount_rate: 0.08
 
-# Datatype: Dates map
 # Required: False
 dates:
 
@@ -64,99 +62,94 @@ dates:
   # Default: null
   ref_date: null
 
-# Datatype: {string: [CurrencyRate map]}
 # Required: False
 exchange_rates:
-  <string>:
-  -
+  <STRING>:
+    -
 
       # Datatype: number
       # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
       # Required: True
-    value: '...'  # ← REPLACE
+      value: <REPLACE>
 
       # Datatype: string
       # Examples: a string value
       # Required: False
       # Default: null
-    currency: null
+      currency: null
 
       # Datatype: date
       # Examples: 2024-01-31, 2024-01-31T11:06
       # Required: True
-    date: '...'  # ← REPLACE
+      date: <REPLACE>
 
-# Datatype: [CurrencyRate map]
 # Required: False
 discount_rates:
--
+  -
 
     # Datatype: number
     # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
     # Required: True
-  value: '...'  # ← REPLACE
+    value: <REPLACE>
 
     # Datatype: string
     # Examples: a string value
     # Required: False
     # Default: null
-  currency: null
+    currency: null
 
     # Datatype: date
     # Examples: 2024-01-31, 2024-01-31T11:06
     # Required: True
-  date: '...'  # ← REPLACE
+    date: <REPLACE>
 
-# Datatype: [CurrencyRate map]
 # Required: False
 costs:
--
+  -
 
     # Datatype: number
     # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
     # Required: True
-  value: '...'  # ← REPLACE
+    value: <REPLACE>
 
     # Datatype: string
     # Examples: a string value
     # Required: False
     # Default: null
-  currency: null
+    currency: null
 
     # Datatype: date
     # Examples: 2024-01-31, 2024-01-31T11:06
     # Required: True
-  date: '...'  # ← REPLACE
+    date: <REPLACE>
 
-# Datatype: [WellCost map]
 # Required: False
 well_costs:
--
+  -
 
     # Datatype: number
     # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
     # Required: True
-  value: '...'  # ← REPLACE
+    value: <REPLACE>
 
     # Datatype: string
     # Examples: a string value
     # Required: False
     # Default: null
-  currency: null
+    currency: null
 
     # Datatype: string
     # Examples: a string value
     # Required: True
-  well: '...' # ← REPLACE
+    well: <REPLACE>
 
-# Datatype: EclipseSummaryConfig map
 # Required: True
 summary:
 
   # Datatype: Path
   # Examples: /path/to/file.ext, /path/to/directory/
   # Required: True
-  main: '...'  # ← REPLACE
+  main: <REPLACE>
 
   # Datatype: Path
   # Examples: /path/to/file.ext, /path/to/directory/
@@ -167,7 +160,7 @@ summary:
   # Datatype: [string]
   # Required: False
   keys:
-  - '...'
+    - <REPLACE>
 
 # Datatype: Path
 # Examples: /path/to/file.ext, /path/to/directory/
@@ -175,14 +168,13 @@ summary:
 # Default: null
 wells_input: null
 
-# Datatype: OutputConfig map
 # Required: True
 output:
 
   # Datatype: Path
   # Examples: /path/to/file.ext, /path/to/directory/
   # Required: True
-  file: '...'  # ← REPLACE
+  file: <REPLACE>
 
   # Datatype: string
   # Examples: a string value
@@ -190,29 +182,27 @@ output:
   # Default: null
   currency: null
 
-  # Datatype: [CurrencyRate map]
   # Required: False
   # Default: null
   currency_rate:
-  -
+    -
 
       # Datatype: number
       # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
       # Required: True
-    value: '...'  # ← REPLACE
+      value: <REPLACE>
 
       # Datatype: string
       # Examples: a string value
       # Required: False
       # Default: null
-    currency: null
+      currency: null
 
       # Datatype: date
       # Examples: 2024-01-31, 2024-01-31T11:06
       # Required: True
-    date: '...'  # ← REPLACE
+      date: <REPLACE>
 
-# Datatype: OilEquivalentConversionConfig map
 # Required: False
 # Default: null
 oil_equivalent:
@@ -220,11 +210,11 @@ oil_equivalent:
   # Datatype: {string: number}
   # Required: True
   oil:
-    <string>: '...'
+    <STRING>: <REPLACE>
 
   # Datatype: {string: {string: number}}
   # Required: False
   # Default: null
   remap:
-    <string>:
-      <string>: '...'
+    <STRING>:
+      <STRING>: <REPLACE>
