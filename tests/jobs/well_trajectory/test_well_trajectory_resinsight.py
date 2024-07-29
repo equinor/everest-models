@@ -1,4 +1,5 @@
 import filecmp
+import json
 import logging
 from pathlib import Path
 
@@ -47,7 +48,7 @@ def test_well_trajectory_resinsight_main_entry_point_lint(
 
 
 @pytest.mark.resinsight
-def test_well_trajectory_resinsight_main_entry_point(
+def test_well_trajectory_resinsight_main_entry_point_no_mlt(
     well_trajectory_arguments, copy_testdata_tmpdir
 ):
     copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight_mlt")
@@ -72,5 +73,25 @@ def test_well_trajectory_resinsight_main_entry_point_mlt(
     for expected in Path("expected_mlt").glob("**/*"):
         if expected.is_file():
             output = expected.relative_to("expected_mlt")
+            assert output.is_file()
+            assert filecmp.cmp(expected, output, shallow=False)
+
+
+@pytest.mark.resinsight
+def test_well_trajectory_resinsight_main_entry_point_mixed(
+    well_trajectory_arguments, copy_testdata_tmpdir
+):
+    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight_mlt")
+    for path in Path.cwd().glob("mlt_*.json"):
+        with path.open(encoding="utf-8") as fp:
+            guide_points = json.load(fp)
+        del guide_points["PROD"]
+        with path.open("w", encoding="utf-8") as fp:
+            json.dump(guide_points, fp)
+    main_entry_point(well_trajectory_arguments)
+
+    for expected in Path("expected_mixed").glob("**/*"):
+        if expected.is_file():
+            output = expected.relative_to("expected_mixed")
             assert output.is_file()
             assert filecmp.cmp(expected, output, shallow=False)

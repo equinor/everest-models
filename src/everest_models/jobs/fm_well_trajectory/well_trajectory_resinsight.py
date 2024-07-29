@@ -100,12 +100,13 @@ def well_trajectory_resinsight(
                 # Create multi-lateral trajectories based on the trajectories we
                 # made before:
                 for well_config in config.wells:
-                    create_branches(
-                        well_config,
-                        well_paths[well_config.name],
-                        mlt_guide_points[well_config.name],
-                        resinsight.project,
-                    )
+                    if well_config.name in mlt_guide_points:
+                        create_branches(
+                            well_config,
+                            well_paths[well_config.name],
+                            mlt_guide_points[well_config.name],
+                            resinsight.project,
+                        )
                 _save_paths(
                     project_path,
                     resinsight.project,
@@ -125,7 +126,6 @@ def well_trajectory_resinsight(
             eclipse_model,
             project_path,
             config.connections.date,
-            bool(mlt_guide_points),
         )
         wells = itertools.filterfalse(
             lambda x: x is None,
@@ -135,7 +135,6 @@ def well_trajectory_resinsight(
                     well_path.name,
                     config.connections.perforations,
                     config.wells,
-                    bool(mlt_guide_points),
                     project_path,
                 )
                 for well_path in resinsight.project.well_paths()

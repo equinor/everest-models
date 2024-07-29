@@ -174,7 +174,6 @@ def create_well_logs(
     eclipse_model: Path,
     project_path: Path,
     date: Optional[datetime.date],
-    has_mlt: bool,
 ) -> None:
     case = project.cases()[0]
 
@@ -189,11 +188,9 @@ def create_well_logs(
         # the form "name Y#", e.g., "INJ Y1", where the index Y# indicates the
         # number of the branch, and Y1 is the main trajectory. We need to split
         # and take the first part to get the original well name:
-        perforation = next(
-            item
-            for item in perforations
-            if item.well == (well_path.name.split()[0] if has_mlt else well_path.name)
-        )
+        well_name_base = well_path.name.partition(" Y")[0].strip()
+
+        perforation = next(item for item in perforations if item.well == well_name_base)
 
         if perforation.dynamic:
             restart = eclipse_model.with_suffix(".UNRST")
@@ -290,14 +287,14 @@ def make_perforations(
     well_name: str,
     perforations: Iterable[PerforationConfig],
     wells: Iterable[WellConfig],
-    has_mlt: bool,
     path: Path,
 ):
     # If we created multi-lateral wells, the well path names are stored in the
     # form "name Y#", e.g., "INJ Y1", where the index Y# indicates the number of
     # the branch, and Y1 is the main trajectory. We need to split and take the
     # first part to get the original well name:
-    well_name_base = well_name.split()[0] if has_mlt else well_name
+    well_name_base = well_name.partition(" Y")[0].strip()
+
     perf_depths, well_depth = _select_perforations(
         perforation=next(item for item in perforations if item.well == well_name_base),
         df=_read_las_file(next(path.glob(f"{well_name.replace(' ', '_')}*.las"))),
