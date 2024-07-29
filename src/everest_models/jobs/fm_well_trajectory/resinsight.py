@@ -301,6 +301,8 @@ def make_perforations(
     )
     well = next(item for item in wells if item.name == well_name_base)
 
+    export_filename: Optional[Path] = None
+
     if well_depth is not None:
         well_path = project.well_path_by_name(well_name)
         total_perf_length = 0
@@ -336,9 +338,10 @@ def make_perforations(
             custom_file_name=str(export_filename),
         )
 
-    _generate_welspecs(
-        well.name, well.phase, well.group, export_filename, perf_depths, path
-    )
+    if export_filename is not None:
+        _generate_welspecs(
+            well.name, well.phase, well.group, export_filename, perf_depths, path
+        )
 
     project.update()
     return None if well_depth is None else well
