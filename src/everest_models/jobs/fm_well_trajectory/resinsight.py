@@ -301,7 +301,7 @@ def make_perforations(
     )
     well = next(item for item in wells if item.name == well_name_base)
 
-    export_filename: Optional[Path] = None
+    export_filename = (path / well_name.replace(" ", "_")).with_suffix(".SCH")
 
     if well_depth is not None:
         well_path = project.well_path_by_name(well_name)
@@ -324,7 +324,6 @@ def make_perforations(
                 skin_factor=well.skin,
             )
 
-        export_filename = (path / well_name.replace(" ", "_")).with_suffix(".SCH")
         logger.info(
             f"Exporting well completion data to: {export_filename}"
             f"\ncwd = {Path.cwd()}"
@@ -338,10 +337,9 @@ def make_perforations(
             custom_file_name=str(export_filename),
         )
 
-    if export_filename is not None:
-        _generate_welspecs(
-            well.name, well.phase, well.group, export_filename, perf_depths, path
-        )
+    _generate_welspecs(
+        well.name, well.phase, well.group, export_filename, perf_depths, path
+    )
 
     project.update()
     return None if well_depth is None else well
