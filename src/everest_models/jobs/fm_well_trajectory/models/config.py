@@ -10,8 +10,6 @@ from pydantic import (
     FilePath,
     PlainSerializer,
     StringConstraints,
-    ValidationInfo,
-    field_validator,
     model_validator,
 )
 from typing_extensions import Annotated
@@ -400,14 +398,12 @@ class ConfigSchema(ModelConfig):
         ),
     ]
 
-    @field_validator("wells")
-    def _validate_wells(
-        cls, wells: Tuple[WellConfig, ...], values: ValidationInfo
-    ) -> Tuple[WellConfig, ...]:
-        for well in wells:
-            _platforms = [item.name for item in values.data["platforms"]]
+    @model_validator(mode="after")
+    def _validate_wells(self) -> ConfigSchema:
+        _platforms = [item.name for item in self.platforms]
+        for well in self.wells:
             if well.platform is not None and well.platform not in _platforms:
                 raise ValueError(
                     f"Platform '{well.platform}' for well '{well.name}' not defined"
                 )
-        return wells
+        return self
