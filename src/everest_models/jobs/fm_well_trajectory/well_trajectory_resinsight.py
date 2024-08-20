@@ -31,7 +31,7 @@ class ResInsight:
 
     def __enter__(self) -> rips.Instance:
         logger.info("Launching ResInsight...")
-        instance = rips.Instance.launch(self._executable, console=True)
+        instance = rips.Instance.launch(self._executable, console=True, launch_port=0)
         if instance is None:
             msg = (
                 "Failed to launch ResInsight: no executable found"
