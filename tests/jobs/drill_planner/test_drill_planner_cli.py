@@ -1,9 +1,10 @@
 import pathlib
 
 import pytest
+from sub_testdata import DRILL_PLANNER as TEST_DATA
+
 from everest_models.jobs.fm_drill_planner.cli import main_entry_point
 from everest_models.jobs.fm_drill_planner.manager import ScheduleError
-from sub_testdata import DRILL_PLANNER as TEST_DATA
 
 OUTPUT_FILENAME = "out.json"
 

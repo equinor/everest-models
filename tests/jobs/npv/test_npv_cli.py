@@ -3,12 +3,13 @@ import logging
 import pathlib
 
 import pytest
+from jobs.npv.parser import MockParser, Options
+from sub_testdata import NPV as TEST_DATA
+
 from everest_models.jobs.fm_npv import cli
 from everest_models.jobs.fm_npv.npv_config import NPVConfig
 from everest_models.jobs.shared.models import Wells
 from everest_models.jobs.shared.validators import parse_file
-from jobs.npv.parser import MockParser, Options
-from sub_testdata import NPV as TEST_DATA
 
 _CONFIG_FILE = "input_data.yml"
 _CONFIG_FILE_NO_WELL_COSTS = "input_data_no_well_costs.yml"

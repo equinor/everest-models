@@ -21,8 +21,7 @@ def pairwise(iterable):
     return zip(a, b)
 
 
-class ScheduleError(Exception):
-    ...
+class ScheduleError(Exception): ...
 
 
 class FieldManager:

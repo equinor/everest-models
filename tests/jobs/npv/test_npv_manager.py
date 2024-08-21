@@ -3,11 +3,12 @@ import datetime
 from typing import Any, Dict
 
 import pytest
+from jobs.npv.parser import ecl_summary_npv
+from sub_testdata import NPV as TEST_DATA
+
 from everest_models.jobs.fm_npv.manager import NPVCalculator
 from everest_models.jobs.fm_npv.npv_config import NPVConfig
 from everest_models.jobs.shared.validators import valid_input_file
-from jobs.npv.parser import ecl_summary_npv
-from sub_testdata import NPV as TEST_DATA
 
 
 @pytest.fixture(scope="module")

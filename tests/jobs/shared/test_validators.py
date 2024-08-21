@@ -4,6 +4,10 @@ import pathlib
 from typing import Dict
 
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
+from pydantic import FilePath
+
 from everest_models.jobs.shared.models.base_config import ModelConfig, RootModelConfig
 from everest_models.jobs.shared.validators import (
     _prettify_validation_error_message,
@@ -13,9 +17,6 @@ from everest_models.jobs.shared.validators import (
     valid_input_file,
     valid_iso_date,
 )
-from hypothesis import given
-from hypothesis import strategies as st
-from pydantic import FilePath
 
 
 def write_file(path, txt):

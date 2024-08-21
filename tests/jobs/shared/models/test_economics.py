@@ -1,6 +1,7 @@
 import pytest
-from everest_models.jobs.shared.models.economics import EconomicConfig, _Capital
 from pydantic import ValidationError
+
+from everest_models.jobs.shared.models.economics import EconomicConfig, _Capital
 
 
 def test_economic_currency_bad():

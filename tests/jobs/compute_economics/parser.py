@@ -4,10 +4,11 @@ import sys
 from types import SimpleNamespace
 from typing import NamedTuple, Optional
 
+from resdata.summary import Summary
+
 from everest_models.jobs.fm_compute_economics.economic_indicator_config_model import (
     EconomicIndicatorConfig,
 )
-from resdata.summary import Summary
 
 
 def ecl_summary_economic_indicator(*args, **kwargs):

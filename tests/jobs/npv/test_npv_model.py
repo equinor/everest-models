@@ -1,6 +1,7 @@
 import pytest
-from everest_models.jobs.fm_npv.npv_config import NPVConfig
 from pydantic import ValidationError
+
+from everest_models.jobs.fm_npv.npv_config import NPVConfig
 
 
 def test_npv_config_summary_keys():

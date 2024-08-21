@@ -3,7 +3,7 @@ import linecache
 from pathlib import Path
 from typing import Any, Optional, TextIO, Union
 
-import ruamel.yaml as yaml
+from ruamel.yaml import YAML, YAMLError
 
 
 def load_json(path: Union[Path, str]):
@@ -14,15 +14,15 @@ def load_json(path: Union[Path, str]):
 def load_yaml(path: Union[Path, str]):
     path = Path(path)
     try:
-        return yaml.YAML(typ="safe", pure=True).load(path.read_bytes())
-    except yaml.YAMLError as ye:
+        return YAML(typ="safe", pure=True).load(path.read_bytes())
+    except YAMLError as ye:
         if mark := getattr(ye, "problem_mark", None):
-            raise yaml.YAMLError(
+            raise YAMLError(
                 f"Error in file '{path}' (line {mark.line + 1}):"
                 f"\n\t{linecache.getline(str(path), mark.line + 1)}"
                 f"\t{' ' * mark.column}^"
             ) from ye
-        raise yaml.YAMLError(str(ye)) from ye
+        raise YAMLError(str(ye)) from ye
 
 
 def load_supported_file_encoding(path: Path) -> Any:
@@ -48,7 +48,7 @@ def dump_yaml(
     explicit: bool = False,
     default_flow_style: Optional[bool] = None,
 ):
-    _yaml = yaml.YAML()
+    _yaml = YAML()
     _yaml.default_flow_style = default_flow_style
     _yaml.explicit_start = explicit
     _yaml.explicit_end = explicit

@@ -1,5 +1,7 @@
 import string
 
+from hypothesis import strategies
+
 # from everest_models.jobs.fm_drill_planner.manager import get_field_manager
 from everest_models.jobs.fm_drill_planner.data import (
     DayRange,
@@ -9,7 +11,6 @@ from everest_models.jobs.fm_drill_planner.data import (
     WellPriority,
 )
 from everest_models.jobs.fm_drill_planner.planner.optimized import _DrillConstraints
-from hypothesis import strategies
 
 MAX_SIZE = 3
 MIN_SIZE = 1

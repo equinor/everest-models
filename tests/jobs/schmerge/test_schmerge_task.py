@@ -2,9 +2,10 @@ import datetime
 import pathlib
 
 import pytest
+from sub_testdata import SCHMERGE as TEST_DATA
+
 from everest_models.jobs.fm_schmerge.tasks import merge_operations_onto_schedule
 from everest_models.jobs.shared.models.phase import PhaseEnum
-from sub_testdata import SCHMERGE as TEST_DATA
 
 SCHEDULE_HEAD = """
 RPTRST

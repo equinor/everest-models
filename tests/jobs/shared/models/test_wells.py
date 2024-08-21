@@ -3,8 +3,9 @@ import pathlib
 from typing import Any, Dict, List
 
 import pytest
-from everest_models.jobs.shared.models import Operation, PhaseEnum, Well, Wells
 from pydantic import ValidationError
+
+from everest_models.jobs.shared.models import Operation, PhaseEnum, Well, Wells
 
 
 @pytest.fixture(scope="module")

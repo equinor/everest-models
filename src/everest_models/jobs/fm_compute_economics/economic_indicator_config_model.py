@@ -47,9 +47,10 @@ class EconomicIndicatorConfig(EconomicConfig):
         if isinstance(values["summary"], dict):
             if not ("keys" in values["summary"] and values["summary"]["keys"]):
                 values["summary"]["keys"] = tuple(values["prices"])
-        elif isinstance(values["summary"], EclipseSummaryConfig):
-            if not (hasattr(values["summary"], "keys") and values["summary"].keys):
-                values["summary"].keys = tuple(values["prices"])
+        elif isinstance(values["summary"], EclipseSummaryConfig) and not (
+            hasattr(values["summary"], "keys") and values["summary"].keys
+        ):
+            values["summary"].keys = tuple(values["prices"])
         return values
 
     @model_validator(mode="before")

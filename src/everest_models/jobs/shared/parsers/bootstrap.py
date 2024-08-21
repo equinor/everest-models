@@ -36,8 +36,7 @@ class CustomFormatter(ArgumentDefaultsHelpFormatter):
 class ParserBuilder(Protocol):
     def __call__(
         self, parser: Parser, legacy: bool = False, lint: bool = False
-    ) -> None:
-        ...
+    ) -> None: ...
 
 
 def build_schema_sub_parser(schema: ArgumentParser) -> None:

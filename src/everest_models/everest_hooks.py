@@ -4,6 +4,7 @@ Function that will be exposed by the plugin.
 This project uses the plugin management library [pluggy](https://pluggy.readthedocs.io/en/stable/)
 to expose its functions
 """
+
 import logging
 import pathlib
 import sys

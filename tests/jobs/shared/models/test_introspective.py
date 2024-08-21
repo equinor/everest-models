@@ -4,15 +4,16 @@ from textwrap import dedent
 from typing import Any, List, Optional, Sequence, Set, Tuple, Type, Union
 
 import pytest
+from hypothesis import given
+from hypothesis.strategies import booleans, floats, integers, text
+from pydantic import BaseModel
+from ruamel.yaml import YAML
+
 from everest_models.jobs.shared.models.base_config.introspective import (
     CommentedObject,
     build_yaml_structure,
     builtin_datatypes,
 )
-from hypothesis import given
-from hypothesis.strategies import booleans, floats, integers, text
-from pydantic import BaseModel
-from ruamel.yaml import YAML
 
 
 @pytest.fixture(scope="package")

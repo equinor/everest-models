@@ -4,13 +4,14 @@ import typing
 from functools import partial
 
 import pytest
-import ruamel.yaml as yaml
+from ruamel.yaml import YAML
+from sub_testdata import WELL_CONSTRAINTS as TEST_DATA
+
 from everest_models.jobs.fm_well_constraints import cli, parser
 from everest_models.jobs.fm_well_constraints.models import (
     Constraint,
     WellConstraintConfig,
 )
-from sub_testdata import WELL_CONSTRAINTS as TEST_DATA
 
 
 @pytest.fixture(scope="module")
@@ -59,7 +60,7 @@ def constraints_parser_action_injector(
 
 @pytest.fixture(scope="module")
 def well_config_parser_action_injector(path_test_data):
-    data = yaml.YAML(typ="safe", pure=True).load(
+    data = YAML(typ="safe", pure=True).load(
         (path_test_data / TEST_DATA / "well_constraint_input.yml").read_bytes()
     )
     data["PRODUCE1"] = data.pop("INJECT2")

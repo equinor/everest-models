@@ -3,17 +3,18 @@ import datetime
 from unittest.mock import patch
 
 import pytest
-from everest_models.jobs.fm_compute_economics.economic_indicator_config_model import (
-    EconomicIndicatorConfig,
-)
-from everest_models.jobs.fm_compute_economics.manager import NPVCalculator
-from everest_models.jobs.shared.validators import valid_input_file
 from jobs.compute_economics.parser import (
     ecl_reference_summary_economic_indicator,
     ecl_reference_summary_economic_indicator_not_consistent,
     ecl_summary_economic_indicator,
 )
 from sub_testdata import ECONOMIC_INDICATOR as TEST_DATA
+
+from everest_models.jobs.fm_compute_economics.economic_indicator_config_model import (
+    EconomicIndicatorConfig,
+)
+from everest_models.jobs.fm_compute_economics.manager import NPVCalculator
+from everest_models.jobs.shared.validators import valid_input_file
 
 
 @pytest.fixture(scope="module")
