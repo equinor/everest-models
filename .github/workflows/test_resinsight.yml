@@ -87,7 +87,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         os: [ubuntu-22.04]
     runs-on: ${{ matrix.os }}
     steps:
@@ -109,7 +109,7 @@ jobs:
           tar zxf resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
       - name: "Install the package"
         run: |
-          pip install --upgrade pip setuptools
+          pip install --upgrade pip
           # Make sure we use a compatible rips:
           pip install rips==${{ env.RIPS_VERSION }}
           pip install .[test]
