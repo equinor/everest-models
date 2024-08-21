@@ -1,6 +1,8 @@
 name: Test ResInsight
 
 on:
+  schedule:
+    - cron: "00 14 * * 0,3"
   push:
     branches:
       - main
