@@ -2,13 +2,14 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from sub_testdata import WELL_TRAJECTORY as TEST_DATA
+
 from everest_models.jobs.fm_well_trajectory.models.config import ConfigSchema
 from everest_models.jobs.fm_well_trajectory.read_trajectories import (
     read_laterals,
     read_trajectories,
 )
 from everest_models.jobs.shared.io_utils import dump_json, load_json, load_yaml
-from sub_testdata import WELL_TRAJECTORY as TEST_DATA
 
 
 def test_read_trajectories(copy_testdata_tmpdir):

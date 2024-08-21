@@ -3,10 +3,11 @@ import sys
 from pathlib import Path
 
 import pytest
-import ruamel.yaml as yaml
-from everest_models.jobs.fm_add_templates.config_model import TemplateConfig
 from pydantic import BaseModel, ConfigDict
+from ruamel.yaml import YAML
 from sub_testdata import ADD_TEMPLATE as TEST_DATA
+
+from everest_models.jobs.fm_add_templates.config_model import TemplateConfig
 
 FORWARD_MODEL_DIR = "forward_models"
 
@@ -72,7 +73,7 @@ class SchemaModel(BaseModel):
 def test_parse_forward_model_schema_hook(switch_cwd_tmp_path, plugin_manager):
     path = "config.yml"
     with open(path, "w") as fd:
-        yaml.YAML(typ="safe", pure=True).dump({"content": "good"}, fd)
+        YAML(typ="safe", pure=True).dump({"content": "good"}, fd)
     assert plugin_manager.hook.parse_forward_model_schema(
         path=path,
         schema=SchemaModel,

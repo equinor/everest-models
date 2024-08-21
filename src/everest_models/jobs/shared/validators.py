@@ -161,7 +161,7 @@ def valid_input_file(value: str) -> Any:
 
 def valid_optimizer(value: str) -> List[Dict[str, float]]:
     data = valid_input_file(value)
-    index_counts = Counter(key for _value in data.values() for key in _value.keys())
+    index_counts = Counter(key for _value in data.values() for key in _value)
     if not all(count == len(data) for count in index_counts.values()):
         raise argparse.ArgumentTypeError(
             "All entries must contain the same amount of elements/indexes"

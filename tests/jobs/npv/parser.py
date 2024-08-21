@@ -3,9 +3,10 @@ import pathlib
 import sys
 from typing import NamedTuple, Optional
 
+from resdata.summary import Summary
+
 from everest_models.jobs.fm_npv.npv_config import NPVConfig
 from everest_models.jobs.shared.models import Wells
-from resdata.summary import Summary
 
 
 def ecl_summary_npv(*args, **kwargs):

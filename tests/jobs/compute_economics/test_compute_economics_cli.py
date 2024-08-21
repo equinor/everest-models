@@ -3,12 +3,13 @@ import logging
 import pathlib
 
 import pytest
+from jobs.compute_economics.parser import Options
+from sub_testdata import ECONOMIC_INDICATOR as TEST_DATA
+
 from everest_models.jobs.fm_compute_economics import cli
 from everest_models.jobs.fm_compute_economics.economic_indicator_config_model import (
     EconomicIndicatorConfig,
 )
-from jobs.compute_economics.parser import Options
-from sub_testdata import ECONOMIC_INDICATOR as TEST_DATA
 
 
 @pytest.mark.parametrize(

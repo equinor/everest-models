@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Literal, NamedTuple, Optional, Tuple, TypedDict
 
 import pytest
+
 from everest_models.jobs.fm_well_swapping.models import ConfigSchema
 from everest_models.jobs.fm_well_swapping.tasks import (
     Data,

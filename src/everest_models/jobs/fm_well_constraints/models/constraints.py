@@ -32,12 +32,10 @@ class Constraint(RootModelConfig):
         return iter(self.root)
 
     @overload
-    def get(self, __key: str) -> Dict[int, float]:
-        ...
+    def get(self, __key: str) -> Dict[int, float]: ...
 
     @overload
-    def get(self, __key: str, __default: Dict[int, float]) -> Dict[int, float]:
-        ...
+    def get(self, __key: str, __default: Dict[int, float]) -> Dict[int, float]: ...
 
     def get(
         self, __key: str, __default: Optional[Dict[int, float]] = None

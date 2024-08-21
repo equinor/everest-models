@@ -4,9 +4,10 @@ import logging
 from pathlib import Path
 
 import pytest
+from sub_testdata import WELL_TRAJECTORY as TEST_DATA
+
 from everest_models.jobs.fm_well_trajectory.cli import main_entry_point
 from everest_models.jobs.fm_well_trajectory.well_trajectory_resinsight import ResInsight
-from sub_testdata import WELL_TRAJECTORY as TEST_DATA
 
 
 @pytest.fixture(scope="module")
@@ -21,9 +22,8 @@ def test_failing_start_resinsight(caplog):
     with pytest.raises(
         ConnectionError,
         match="Failed to launch ResInsight executable: _non_existing_binary_",
-    ):
-        with ResInsight("_non_existing_binary_"):
-            pass
+    ), ResInsight("_non_existing_binary_"):
+        pass
     assert "Launching ResInsight..." in caplog.text
 
 

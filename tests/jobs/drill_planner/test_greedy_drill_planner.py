@@ -2,6 +2,7 @@ import datetime
 from copy import deepcopy
 
 import pytest
+
 from everest_models.jobs.fm_drill_planner.data import DayRange, Rig, Slot, WellPriority
 from everest_models.jobs.fm_drill_planner.planner.greedy import (
     _combine_slot_rig_unavailability,

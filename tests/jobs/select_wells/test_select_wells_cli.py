@@ -1,8 +1,9 @@
 import pathlib
 
 import pytest
-from everest_models.jobs.fm_select_wells.cli import main_entry_point
 from sub_testdata import SELECT_WELLS as TEST_DATA
+
+from everest_models.jobs.fm_select_wells.cli import main_entry_point
 
 
 @pytest.fixture(scope="module")

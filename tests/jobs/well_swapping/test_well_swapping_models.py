@@ -1,11 +1,12 @@
 from typing import Any, Dict, Tuple
 
 import pytest
+from pydantic import ValidationError
+from sub_testdata import WELL_SWAPPING as TEST_DATA
+
 from everest_models.jobs.fm_well_swapping.models import StateConfig
 from everest_models.jobs.fm_well_swapping.models.constraints import _Scaling
 from everest_models.jobs.shared.io_utils import load_yaml
-from pydantic import ValidationError
-from sub_testdata import WELL_SWAPPING as TEST_DATA
 
 
 @pytest.fixture(scope="module")

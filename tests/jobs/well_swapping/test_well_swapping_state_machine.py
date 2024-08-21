@@ -2,6 +2,7 @@ from textwrap import dedent
 from typing import Any, Dict, Optional
 
 import pytest
+
 from everest_models.jobs.fm_well_swapping.models.state import StateConfig
 from everest_models.jobs.fm_well_swapping.state_machine import State, StateMachine
 

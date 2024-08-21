@@ -1,6 +1,7 @@
 from typing import Dict, List
 
 import pytest
+
 from everest_models.jobs.fm_well_swapping.models import Case, Quota, State
 from everest_models.jobs.fm_well_swapping.state_machine import StateMachine
 from everest_models.jobs.fm_well_swapping.state_processor import StateProcessor

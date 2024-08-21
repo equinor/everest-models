@@ -2,9 +2,10 @@ import json
 from pathlib import Path
 
 import pytest
+from sub_testdata import WELL_SWAPPING as TEST_DATA
+
 from everest_models.jobs.fm_well_swapping.cli import main_entry_point
 from everest_models.jobs.shared.io_utils import load_json
-from sub_testdata import WELL_SWAPPING as TEST_DATA
 
 
 def test_well_swapping_main_entrypoint_run(copy_testdata_tmpdir) -> None:

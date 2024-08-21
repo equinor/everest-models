@@ -2,8 +2,9 @@ import pathlib
 from typing import Tuple
 
 import pytest
-from everest_models.jobs.fm_schmerge.cli import main_entry_point
 from sub_testdata import SCHMERGE as TEST_DATA
+
+from everest_models.jobs.fm_schmerge.cli import main_entry_point
 
 
 @pytest.fixture(scope="module")

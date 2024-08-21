@@ -89,14 +89,12 @@ class WellConstraintConfig(RootModelConfig):
         return iter(self.root)
 
     @overload
-    def get(self, __key: str) -> Dict[int, Constraints]:
-        ...
+    def get(self, __key: str) -> Dict[int, Constraints]: ...
 
     @overload
     def get(
         self, __key: str, __default: Dict[int, Constraints]
-    ) -> Dict[int, Constraints]:
-        ...
+    ) -> Dict[int, Constraints]: ...
 
     def get(
         self, __key: str, __default: Optional[Dict[int, Constraints]] = None

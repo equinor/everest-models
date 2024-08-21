@@ -1,10 +1,11 @@
 import logging
 
+from sub_testdata import ADD_TEMPLATE as TEST_DATA
+
 from everest_models.jobs.fm_add_templates.config_model import Template
 from everest_models.jobs.fm_add_templates.tasks import add_templates, collect_matching
 from everest_models.jobs.shared.models import Operation, Wells
 from everest_models.jobs.shared.validators import parse_file
-from sub_testdata import ADD_TEMPLATE as TEST_DATA
 
 
 def test_collect_matching(add_tmpl_config):

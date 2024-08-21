@@ -31,8 +31,7 @@ class _DrillSubject(ModelConfig):
     ]
 
 
-class Slot(_DrillSubject):
-    ...
+class Slot(_DrillSubject): ...
 
 
 class Rig(_DrillSubject):

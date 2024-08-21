@@ -2,18 +2,19 @@ from copy import deepcopy
 from typing import Any, Callable, Dict, Iterator, Optional
 
 import pytest
-from everest_models.jobs.fm_compute_economics import cli
-from everest_models.jobs.fm_compute_economics.economic_indicator_config_model import (
-    EconomicIndicatorConfig,
-)
-from everest_models.jobs.fm_compute_economics.manager import EclipseSummary
-from everest_models.jobs.shared.validators import valid_input_file
 from jobs.compute_economics.parser import (
     MockParser,
     Options,
     ecl_summary_economic_indicator,
 )
 from sub_testdata import ECONOMIC_INDICATOR as TEST_DATA
+
+from everest_models.jobs.fm_compute_economics import cli
+from everest_models.jobs.fm_compute_economics.economic_indicator_config_model import (
+    EconomicIndicatorConfig,
+)
+from everest_models.jobs.fm_compute_economics.manager import EclipseSummary
+from everest_models.jobs.shared.validators import valid_input_file
 
 
 @pytest.fixture(scope="package")

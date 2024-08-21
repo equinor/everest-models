@@ -2,9 +2,10 @@ import datetime
 import filecmp
 
 import pytest
-from everest_models.jobs.fm_strip_dates.tasks import strip_dates
 from resdata.summary import Summary
 from sub_testdata import STRIP_DATES as TEST_DATA
+
+from everest_models.jobs.fm_strip_dates.tasks import strip_dates
 
 SUMMARY_CASE = "EGG.UNSMRY"
 

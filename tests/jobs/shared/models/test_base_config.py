@@ -4,10 +4,11 @@ from textwrap import dedent
 from typing import Any, Dict, Tuple
 
 import pytest
-from everest_models.jobs.shared.models import ModelConfig, RootModelConfig
 from pydantic import Field, FilePath, ValidationError
 from ruamel.yaml import YAML
 from typing_extensions import Annotated
+
+from everest_models.jobs.shared.models import ModelConfig, RootModelConfig
 
 
 class Sex(Enum):

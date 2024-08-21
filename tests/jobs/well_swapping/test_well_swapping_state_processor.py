@@ -3,6 +3,7 @@ from textwrap import dedent
 from typing import Dict
 
 import pytest
+
 from everest_models.jobs.fm_well_swapping.models.state import Quota, State
 from everest_models.jobs.fm_well_swapping.state_processor import StateProcessor
 

@@ -1,6 +1,7 @@
 from copy import deepcopy
 
 import pytest
+
 from everest_models.jobs.fm_drill_planner.data import (
     DayRange,
     Event,
