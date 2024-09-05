@@ -41,10 +41,11 @@ dynamic = [
 
 [project.optional-dependencies]
 test = [
-    "pytest",
     "decorator",
-    "mock",
     "hypothesis",
+    "mock",
+    "pytest",
+    "pytest-cov",
     "pytest-timeout",
 ]
 
