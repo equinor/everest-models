@@ -1,0 +1,62 @@
+name: Python coverage
+
+on:
+ push:
+   branches:
+     - main
+     - 'version-**'
+   tags: "*"
+ pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  python-test-coverage:
+    name: Python Coverage
+    timeout-minutes: 40
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        submodules: true
+        lfs: true
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: "pip"
+        cache-dependency-path: |
+          pyproject.toml
+
+    - name: Install with dependencies
+      run: |
+        pip install ".[test]"
+
+    - name: Test Code Coverage
+      run: |
+        pytest tests --cov=everest-models --cov-report=xml:cov.xml -sv --run-slow
+
+    - name: Upload python coverage to Codecov
+      uses: codecov/codecov-action@v4
+      id: codecov1
+      continue-on-error: true
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: true
+        files: cov.xml
+        flags: ${{ matrix.test-type }}
+    - name: codecov retry sleep
+      if: steps.codecov1.outcome == 'failure'
+      run: |
+        sleep 30
+    - name: Codecov retry
+      uses: codecov/codecov-action@v4
+      if: steps.codecov1.outcome == 'failure'
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: cov.xml
+        fail_ci_if_error: ${{ github.ref == 'refs/heads/main' }}
