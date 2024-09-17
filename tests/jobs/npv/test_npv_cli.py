@@ -34,7 +34,7 @@ def test_npv_main_entry_point(copy_testdata_tmpdir, monkeypatch, input_file):
         ),
     )
     cli.main_entry_point()
-    assert pathlib.Path("test_0").read_text() == "691981114.68"
+    assert pathlib.Path("test").read_text() == "691981114.68"
 
 
 def test_npv_main_entry_point_no_input_error(copy_testdata_tmpdir, monkeypatch, capsys):
@@ -91,7 +91,7 @@ def test_npv_main_entry_point_no_input(copy_testdata_tmpdir, monkeypatch):
         ),
     )
     cli.main_entry_point()
-    assert pathlib.Path("test_0").read_text() == "865092178.90"
+    assert pathlib.Path("test").read_text() == "865092178.90"
 
 
 @pytest.mark.parametrize(
@@ -146,4 +146,4 @@ def test_npv_main_entry_lint_ignore_overwrite_config(
         cli.main_entry_point()
     assert e.value.code == 0
     assert "Overwrite config field with 'multiplier' CLI argument" not in caplog.text
-    assert not pathlib.Path("test_0").exists()
+    assert not pathlib.Path("test").exists()
