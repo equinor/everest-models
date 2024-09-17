@@ -36,7 +36,7 @@ def test_stea(copy_testdata_tmpdir, stea_args, monkeypatch):
     # run stea job
     main_entry_point(stea_args)
     files = os.listdir(os.getcwd())
-    assert "NPV_0" in files
+    assert "NPV" in files
 
 
 def test_stea_lint(copy_testdata_tmpdir, stea_args):
