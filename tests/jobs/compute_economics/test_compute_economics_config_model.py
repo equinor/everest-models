@@ -26,7 +26,7 @@ def test_economic_indicator_config_defaults():
                 },
                 {"date": "1999-10-01", "value": 20000000},
             ],
-            "output": {"file": "test_0", "currency": "USD"},
+            "output": {"file": "test", "currency": "USD"},
         }
     )
 
@@ -40,5 +40,5 @@ def test_economic_indicator_config_defaults():
     assert not config.discount_rates and isinstance(config.discount_rates, tuple)
     assert not config.well_costs and isinstance(config.well_costs, tuple)
     assert isinstance(config.output, OutputConfig)
-    assert config.output.file == pathlib.Path("test_0")
+    assert config.output.file == pathlib.Path("test")
     assert config.output.currency == "USD"
