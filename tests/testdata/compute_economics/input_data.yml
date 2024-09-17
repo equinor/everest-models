@@ -66,4 +66,4 @@ oil_equivalent:
       FW2PT: 3.0
 
 output:
-  file: test_0
+  file: test

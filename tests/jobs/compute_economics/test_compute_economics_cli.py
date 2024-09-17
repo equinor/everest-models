@@ -52,7 +52,7 @@ def test_economic_indicator_main_entry_point(
     )
 
     cli.main_entry_point()
-    assert pathlib.Path("test_0").read_text() == expected
+    assert pathlib.Path("test").read_text() == expected
 
 
 @pytest.mark.parametrize(
@@ -71,7 +71,7 @@ def test_economic_indicator_main_entry_point_npv_output_currency_USD(
     )
 
     cli.main_entry_point()
-    assert pathlib.Path("test_0").read_text() == "77942465.48"
+    assert pathlib.Path("test").read_text() == "77942465.48"
 
 
 @pytest.mark.parametrize(
@@ -131,7 +131,7 @@ def test_economic_indicator_main_entry_point_no_input(
     )
 
     cli.main_entry_point()
-    assert pathlib.Path("test_0").read_text() == expected
+    assert pathlib.Path("test").read_text() == expected
 
 
 @pytest.mark.parametrize(
@@ -186,4 +186,4 @@ def test_bep_main_entry_lint_ignore_overwrite_config(
         cli.main_entry_point()
     assert e.value.code == 0
     assert "Overwrite config field with 'multiplier' CLI argument" not in caplog.text
-    assert not pathlib.Path("test_0").exists()
+    assert not pathlib.Path("test").exists()

@@ -12,7 +12,7 @@ def build_argument_parser():
         "projects, large and small portfolios and complex decision trees. "
         "As output, for each of the entries in the result section of the "
         "yaml config file, STEA will create result files "
-        "ex: Res1_0, Res2_0, .. Res#_0"
+        "ex: Res1, Res2, .. Res#"
     )
     parser, required_group = get_parser(description=description)
     add_lint_argument(parser)

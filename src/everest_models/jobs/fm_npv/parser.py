@@ -36,7 +36,7 @@ def build_argument_parser():
     add_output_argument(
         parser,
         required=False,
-        default="npv_0",
+        default="npv",
         help="Path to output-file where the NPV result is written to.",
     )
     required_group.add_argument(

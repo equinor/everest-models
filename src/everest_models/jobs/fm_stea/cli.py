@@ -18,7 +18,7 @@ def main_entry_point(args=None):
     for res, value in (
         stea.calculate(options.config).results(stea.SteaKeys.CORPORATE).items()
     ):
-        with open(f"{res}_0", "w") as ofh:
+        with open(f"{res}", "w") as ofh:
             ofh.write(f"{value}\n")
 
 

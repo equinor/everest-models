@@ -54,7 +54,7 @@ class Options(NamedTuple):
     lint: Optional[bool] = None
     multiplier: float = 1.0
     summary: Summary = ecl_summary_npv()
-    output: pathlib.Path = pathlib.Path("test_0")
+    output: pathlib.Path = pathlib.Path("test")
 
 
 class MockParser:
