@@ -26,6 +26,12 @@ def main_entry_point(args=None):
             "must always be paired; one of the two is missing."
         )
 
+    if args and "-o" not in args and "--output" not in args:
+        logger.warning(
+            "Objective names ending in '_0' have been deprecated by everest! "
+            "Replace objective `npv_0` with `npv` in the everest config file."
+        )
+
     if options.lint:
         args_parser.exit()
 
