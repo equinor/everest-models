@@ -38,7 +38,7 @@ jobs:
 
     - name: Test Code Coverage
       run: |
-        pytest tests --cov=everest-models --cov-report=xml:cov.xml -sv --run-slow
+        pytest tests --cov=everest_models --cov-report=xml:cov.xml -sv --run-slow
 
     - name: Upload python coverage to Codecov
       uses: codecov/codecov-action@v4
