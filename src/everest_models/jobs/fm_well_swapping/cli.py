@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from logging import getLogger
 from typing import Optional, Sequence
 
 from .tasks import (
@@ -10,7 +9,7 @@ from .tasks import (
     inject_case_operations,
 )
 
-logger = getLogger("Well Swapping")
+FULL_JOB_NAME = "Well swapping"
 
 
 def main_entry_point(args: Optional[Sequence[str]] = None):

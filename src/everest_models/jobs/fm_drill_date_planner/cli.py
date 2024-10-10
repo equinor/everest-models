@@ -7,6 +7,8 @@ from everest_models.jobs.shared.converters import rescale_value
 
 logger = logging.getLogger(__name__)
 
+FULL_JOB_NAME = "Drill date planner"
+
 
 def main_entry_point(args=None):
     args_parser = build_argument_parser()

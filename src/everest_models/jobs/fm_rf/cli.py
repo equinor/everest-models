@@ -6,6 +6,8 @@ from everest_models.jobs.fm_rf.tasks import recovery_factor
 
 logger = logging.getLogger(__name__)
 
+FULL_JOB_NAME = "Recovery factor"
+
 
 def main_entry_point(args=None):
     options = args_parser.parse_args(args)

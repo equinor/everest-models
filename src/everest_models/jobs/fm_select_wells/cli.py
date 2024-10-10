@@ -6,6 +6,8 @@ from everest_models.jobs.fm_select_wells.parser import build_argument_parser
 
 logger = logging.getLogger(__name__)
 
+FULL_JOB_NAME = "Select wells"
+
 
 def main_entry_point(args=None):
     args_parser = build_argument_parser()
