@@ -4,6 +4,9 @@ from everest_models.jobs.fm_drill_planner.manager import get_field_manager
 from everest_models.jobs.fm_drill_planner.parser import build_argument_parser
 from everest_models.jobs.fm_drill_planner.tasks import orcastrate_drill_schedule
 
+FULL_JOB_NAME = "Drill planner"
+
+
 
 def main_entry_point(args=None):
     args_parser = build_argument_parser()
