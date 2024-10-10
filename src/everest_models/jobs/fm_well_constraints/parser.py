@@ -37,20 +37,16 @@ constraint_parameters = {
 def build_argument_parser() -> argparse.ArgumentParser:
     SchemaAction.register_models(SCHEMAS)
     parser, required_group = get_parser(
-        description="""
-        A module that given a list of boundaries and well constraints creates a list of
-        well events. Varying phase, rate and time of each event is supported. Rate and
-        duration boundaries are given as min/max, and phase as a list of possibilities
-        to choose from. Also support constants if boundaries are replaced by value.
-        """
+        description="A module that given a list of boundaries and well constraints creates a "
+        "list of well events. Varying phase, rate and time of each event is supported. Rate and "
+        "duration boundaries are given as min/max, and phase as a list of possibilities "
+        "to choose from. Also support constants if boundaries are replaced by value.",
     )
     add_wells_input_argument(
         required_group,
         schema=Wells,
-        help="""
-        File in json format containing well names and well opening times,
-        should be specified in Everest config (wells.json).
-        """,
+        help="File in json format containing well names and well opening times, "
+        "should be specified in Everest config (wells.json).",
     )
     add_file_schemas(parser)
     add_lint_argument(parser)
@@ -62,41 +58,32 @@ def build_argument_parser() -> argparse.ArgumentParser:
         *CONFIG_ARG_KEY.split("/"),
         required=True,
         type=partial(parse_file, schema=WellConstraintConfig),
-        help="""
-        Configuration file in yaml format with names, events and boundaries for
-        constraints
-        """,
+        help="Configuration file in yaml format with names, events and boundaries for constraints",
     )
     parser.add_argument(
         *RATE_CONSTRAINTS_ARG_KEY.split("/"),
-        help="""
-        Rate constraints file in json format, from controls section of Everest config,
-        must be indexed format. Values must be in the interval [0, 1],
-        where 0 corresponds to the minimum possible rate value of the well
-        the given index and 1 corresponds to the maximum possible value
-        of the well at the given index.
-        """,
+        help="Rate constraints file in json format, from controls section of Everest config, "
+        "must be indexed format. Values must be in the interval [0, 1], "
+        "where 0 corresponds to the minimum possible rate value of the well "
+        "the given index and 1 corresponds to the maximum possible value "
+        "of the well at the given index.",
         **constraint_parameters,
     )
     parser.add_argument(
         *PHASE_CONSTRAINTS_ARG_KEY.split("/"),
-        help="""
-        Phase constraints file in json format, from controls section of Everest config,
-        must be indexed format. Values must be in the interval [0,1], i.e
-        in a two phase case ["water", "gas"], any control value in the
-        interval [0, 0.5] will be attributed to "water" and any control
-        value in the interval (0.5, 1] will be attributed to "gas".
-        """,
+        help="Phase constraints file in json format, from controls section of Everest config, "
+        "must be indexed format. Values must be in the interval [0,1], i.e "
+        'in a two phase case ["water", "gas"], any control value in the '
+        'interval [0, 0.5] will be attributed to "water" and any control '
+        'value in the interval (0.5, 1] will be attributed to "gas".',
         **constraint_parameters,
     )
     parser.add_argument(
         *DURATION_CONSTRAINTS_ARG_KEY.split("/"),
-        help="""
-        Duration constraints file in json format, from controls section of Everest
-        config, must be indexed format. Values must be in the interval [0, 1],
-        where 0 corresponds to the minimum possible drill time for well,
-        if given, 1 corresponds to the maximum drill time of the well if given.
-        """,
+        help="Duration constraints file in json format, from controls section of Everest "
+        "config, must be indexed format. Values must be in the interval [0, 1], "
+        "where 0 corresponds to the minimum possible drill time for well, "
+        "if given, 1 corresponds to the maximum drill time of the well if given.",
         **constraint_parameters,
     )
     return parser

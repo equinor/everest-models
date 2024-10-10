@@ -9,7 +9,7 @@ import logging
 import pathlib
 import sys
 from importlib import import_module, resources
-from typing import Dict, List, Sequence, Type
+from typing import Any, Dict, List, Sequence, Type
 
 from pydantic import BaseModel
 
@@ -112,3 +112,20 @@ def lint_forward_model(job: str, args: Sequence[str]) -> List[str]:
         .clean_parsed_data(("lint", *args), hook_call=True)
         .errors
     )
+
+
+@hookimpl
+def get_forward_model_documentations() -> Dict[str, Any]:
+    docs: Dict[str, Any] = {}
+    for job in _get_jobs():
+        cmd_name = job
+        full_job_name = getattr(
+            import_module(f"{JOBS}.{job}.cli"), "FULL_JOB_NAME", cmd_name
+        )
+        examples = getattr(import_module(f"{JOBS}.{job}.cli"), "EXAMPLES", None)
+        docs[job.lstrip("fm_")] = {
+            "cmd_name": cmd_name,
+            "examples": examples,
+            "full_job_name": full_job_name,
+        }
+    return docs

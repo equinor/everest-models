@@ -11,6 +11,8 @@ from .well_trajectory_simple import well_trajectory_simple
 
 logger = logging.getLogger(__name__)
 
+FULL_JOB_NAME = "Well trajectory"
+
 
 def main_entry_point(args=None):
     args_parser = build_argument_parser()
