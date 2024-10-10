@@ -4,12 +4,12 @@ Function that will be exposed by the plugin.
 This project uses the plugin management library [pluggy](https://pluggy.readthedocs.io/en/stable/)
 to expose its functions
 """
-
+import io
 import logging
 import pathlib
 import sys
 from importlib import import_module, resources
-from typing import Dict, List, Sequence, Type
+from typing import Any, Dict, List, Sequence, Type
 
 from pydantic import BaseModel
 
@@ -112,3 +112,29 @@ def lint_forward_model(job: str, args: Sequence[str]) -> List[str]:
         .clean_parsed_data(("lint", *args), hook_call=True)
         .errors
     )
+
+
+
+@hookimpl
+def get_forward_model_documentations() -> Dict[str, Any]:
+    docs : Dict[str, Any] = {}
+    for job in _get_jobs():
+        cmd_name= job
+        full_job_name = getattr(import_module(f"{JOBS}.{job}.cli"), "FULL_JOB_NAME", cmd_name)
+
+        buffer = io.StringIO()
+        import_module(f"{JOBS}.{job}.parser").build_argument_parser().print_help(file=buffer)
+
+        docs[job.lstrip("fm_")] = {
+            "help" : buffer.getvalue(),
+            "cmd_name" : cmd_name,
+            "full_job_name" : full_job_name,
+        }
+
+        buffer.close()
+
+    return docs
+
+
+
+#print(get_forward_model_documentations())
