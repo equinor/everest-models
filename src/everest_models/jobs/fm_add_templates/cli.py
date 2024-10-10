@@ -12,6 +12,8 @@ from .tasks import insert_template_with_matching_well_operation
 
 logger = logging.getLogger(__name__)
 
+FULL_JOB_NAME = "Add templates"
+
 
 def _duplicate_template_msg(templates: Iterable[Template]) -> str:
     return "\n".join(

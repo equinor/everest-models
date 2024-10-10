@@ -11,6 +11,9 @@ from everest_models.jobs.shared.validators import parse_file
 logger = logging.getLogger(__name__)
 
 
+FULL_JOB_NAME = "Compute economics"
+
+
 def _set_output_currency(currency, exchange_rates):
     if exchange_rates.get(currency, None) is None:
         rate_default_currency = None
