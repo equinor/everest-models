@@ -8,6 +8,8 @@ from everest_models.jobs.fm_extract_summary_data.tasks import (
 
 logger = logging.getLogger(__name__)
 
+FULL_JOB_NAME = "Extract summary data"
+
 
 def main_entry_point(args=None):
     options = args_parser.parse_args(args)
