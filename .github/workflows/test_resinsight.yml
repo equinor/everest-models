@@ -11,8 +11,8 @@ on:
 
 env:
   ERT_SHOW_BACKTRACE: 1
-  RESINSIGHT_VERSION: "2024.03.3"
-  RIPS_VERSION: "2024.3.3.3"
+  RESINSIGHT_VERSION: "2024.09.1"
+  RIPS_VERSION: "2024.9.1.3"
   INSTALL_DIR: resinsight_bin
 
 jobs:
@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04]
+        os: [ubuntu-24.04]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -30,17 +30,39 @@ jobs:
         with:
           key: ${{ matrix.os }}_resinsight_${{ env.RESINSIGHT_VERSION }}
           path: ${{ github.workspace }}/resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
+      - name: Free Disk Space (Ubuntu) # To avoid disk space issues on runners
+        if: steps.cache-package.outputs.cache-hit != 'true'
+        uses: jlumbroso/free-disk-space@main
+        with:
+          # this might remove tools that are actually needed,
+          # if set to "true" but frees about 6 GB
+          tool-cache: false
+
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+          vswap-storage: true
       - name: Install dependencies
         if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
-          sudo apt update
-          sudo apt -y install build-essential gcc-12 g++-12 curl zip unzip tar
-          sudo apt -y install qtbase5-dev qtbase5-private-dev libqt5charts5-dev libqt5svg5-dev
+          sudo apt-get update
+          sudo apt-get -y install build-essential gcc-10 g++-10 curl zip unzip tar linux-libc-dev
+          sudo apt-get install libxkbcommon-x11-0 libgl1-mesa-dev mesa-common-dev libglfw3-dev libglu1-mesa-dev libhdf5-dev
+      - name: Install Qt
+        if: steps.cache-package.outputs.cache-hit != 'true'
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: 5.12.12
+          dir: "${{ github.workspace }}/Qt/"
+          cache: true
+          modules: "qtnetworkauth"
       - name: Switch cpp compiler
         if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 12
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 12
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 10
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 10
           sudo update-alternatives --auto g++
           sudo update-alternatives --auto gcc
       - name: Clone ResInsight
@@ -53,7 +75,6 @@ jobs:
           cd ResInsight
           git submodule update --init
           ThirdParty/vcpkg/bootstrap-vcpkg.sh
-          ThirdParty/vcpkg/vcpkg install grpc boost-filesystem boost-spirit eigen3
       - name: Build ResInsight
         if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
@@ -90,7 +111,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
-        os: [ubuntu-22.04]
+        os: [ubuntu-24.04]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: "actions/setup-python@v5"
@@ -104,9 +125,17 @@ jobs:
         with:
           key: ${{ matrix.os }}_resinsight_${{ env.RESINSIGHT_VERSION }}
           path: ${{ github.workspace }}/resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: 5.12.12
+          dir: "${{ github.workspace }}/Qt/"
+          cache: true
+          modules: "qtnetworkauth"
       - name: Install ResInsight
         run: |
-          sudo apt -y install qtbase5-dev qtbase5-private-dev libqt5charts5-dev libqt5svg5-dev
+          sudo apt-get update
+          sudo apt-get install libxkbcommon-x11-0 libgl1-mesa-dev mesa-common-dev libglfw3-dev libglu1-mesa-dev
           # Unpack after checking out, otherwise the checkout action would delete it:
           tar zxf resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
       - name: "Install the package"

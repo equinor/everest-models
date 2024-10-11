@@ -28,7 +28,7 @@ dependencies = [
     "fmu-steaclient @ git+https://github.com/equinor/fmu-steaclient",
     "pydantic",
     "ortools>=9.3",
-    "rips<=2024.3.3.3",
+    "rips>=2024.9.1.3",
     "lasio",
     "scipy"
 ]
