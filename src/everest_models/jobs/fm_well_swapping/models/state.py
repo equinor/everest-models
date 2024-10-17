@@ -1,6 +1,7 @@
 from collections.abc import Collection, Sequence
 from functools import cached_property
 from logging import getLogger
+from textwrap import dedent
 from typing import (
     Any,
     Dict,
@@ -75,16 +76,16 @@ class Action(NamedTuple):
 
 
 class StateHierarchy(ModelConfig):
-    label: Annotated[str, Field(pattern=SINGLE_WORD, description="State's label/name.")]
+    label: Annotated[str, Field(pattern=SINGLE_WORD, description="State label/name")]
     quotas: Annotated[
         Union[Quota, Tuple[Union[Quota, Literal["_"]], ...]],
         Field(
             default=None,
             description=(
-                "Case state toggle quota per iteration.\n"
+                "Available number of items that can be assigned to the state per swapping interval"
                 "Tip: '_', (infinity) alias can be used to pad array\n"
-                "Thus, if you wish all iteration to infinity, then omit this field\n"
-                "Note: If a integer is given, all iterations will be that string"
+                "If you wish all iteration to infinity, then omit this field\n"
+                "Note: If a single integer is given, all state swapping intervals will be assigned the same quota"
             ),
             examples=[f"[{FILLER}, 4, {FILLER}, 2]", 2],
         ),
@@ -118,11 +119,24 @@ class StateConfig(ModelConfig):
         AfterValidator(unique_values),
         Field(
             min_length=2,
-            description=(
-                "State hierarchy in decending order [highest, ..., lowest]\n"
-                "Note: values must be unique!\n"
-                "Tip: highest is the default target state\n"
-                "and lowest is the default initial state"
+            description=dedent(
+                """\
+                State hierarchy in descending order [highest, ..., lowest]
+                Note: state labels must be unique!
+                Tip: highest is the default target state and lowest is the default initial state
+                Examples:
+                    state:
+                    hierarchy:
+                    -
+                        label: open
+                        quotas: [2, 4, 1, 0]
+                    -
+                        label: closed
+                        quotas: [0, _, 3, 2]
+                    -
+                        label: shut
+                        quotas: _ # ← all 4 entries are taken as '_' (= infinity)
+                """
             ),
         ),
     ]
@@ -131,14 +145,19 @@ class StateConfig(ModelConfig):
         AfterValidator(min_length(1)),
         Field(
             default=None,
-            description=(
-                "States to set cases to at initial iteration.\n"
-                "Tip: fill only cases that differ from default "
-                "(lowest priority level in hierarchy),\n"
-                "since those are automatically populated for you.\n"
-                "Thus, if you wish to initialize all values to default, "
-                "then omit this field\n"
-                "Note: If a string is given, all cases will be initialize to that string"
+            description=dedent(
+                """\
+                States to set items to at the beginning of the iterative state assignment process
+                Tip: fill only items that differ from default (lowest priority level in hierarchy),
+                those are automatically assigned if no value is provided.
+                If you wish to initialize all values to default, then omit this optional field.
+                Note: If a single string is entered, all items will be initialized to the state given by that string.
+                Examples:
+                    initial:
+                        ITEM1: open
+                        ITEM2: closed
+                        ITEM3: shut
+                """
             ),
         ),
     ]
@@ -148,16 +167,15 @@ class StateConfig(ModelConfig):
         Field(
             default=None,
             description=(
-                "Target States for each iteration.\n"
-                "Tip: '_', default alias can be used to pad array"
-                "(highest priority level in hierarchy),\n"
-                "since those are automatically populated for you.\n"
-                "Thus, if you wish to initialize all values to default, "
+                "Target states for each swapping interval.\n"
+                "Tip: '_', default alias can be used to pad array,\n"
+                "this will assign the state with highest priority level in hierarchy as target state for the respective interval.\n"
+                "If you wish to initialize all values to default, then omit this optional field."
                 "then omit this field\n"
-                "Note: If a string is given, all iterations will be initialize to that "
+                "Note: If a single string is entered, all intervals will have the target state assigned to the state given by that string."
                 "string"
             ),
-            examples=[f"{FILLER}, sitting, {FILLER}, standing]", "sitting"],
+            examples=[f"[{FILLER}, sitting, {FILLER}, standing]", "sitting"],
         ),
     ]
     actions: Annotated[
@@ -167,7 +185,7 @@ class StateConfig(ModelConfig):
             default=None,
             min_length=1,
             description=(
-                "List of directional (source → target) state actions.\n"
+                "List of directional (source → target) state update actions.\n"
                 "Note: action context is set with the 'forbiden_actions' field"
             ),
         ),

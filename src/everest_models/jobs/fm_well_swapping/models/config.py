@@ -19,7 +19,18 @@ class Priorities(ModelConfig):
         Dict[Case, List[float]],
         Field(
             default=None,
-            description="fallback priorities if priorities file is not given",
+            description=dedent(
+                """\
+            Fallback priorities if priorities file is not provided
+            Examples:
+                fallback_values:
+                    ITEM1: [.4, 1., 2, 1.5, 7.2E-1, 9.47e-1]
+                    ITEM2: [6.24E-1, 2., .3, 1, 9.4e-1, 1.1]
+                    .
+                    .
+                    .
+            """
+            ),
         ),
     ]
 
@@ -39,26 +50,23 @@ class Priorities(ModelConfig):
 
 
 class ConfigSchema(ModelConfig):
-    priorities: Annotated[
-        Priorities,
-        Field(
-            default=None,
-            description="Backup values for case priorities if priority JSON file is missing.",
-        ),
-    ]
     constraints: Annotated[
         Constraints,
         Field(
             description=dedent(
-                """
-                Make sure the following are present in you Everest configuration file.
+                """\
+                Make sure the following are present in the Everest configuration file:
 
                 create a generic control where the control variables are:
-                    'max_n_cases' and 'state_duration'
+                    'max_instances' and 'state_duration', each with the same number of values
                     and the length of all initial_guesses are n+1,
                     where 'n' is the nth index in the initial_guess array
 
                 controls:
+                - name: <name of priorities file>
+                    type: generic_control
+                    variables:
+                    - { name: ITEM1, initial_guess: [prio0, prio1, ..., prion] }
                 - name: <name of constraint file>
                     type: generic_control
                     variables:
@@ -67,15 +75,27 @@ class ConfigSchema(ModelConfig):
             )
         ),
     ]
-    start_date: date
+    priorities: Annotated[
+        Priorities,
+        Field(
+            default=None,
+            description="Fallback values for item priorities in case priority JSON file is missing (e.g. when priority controls are not defined in Everest configuration file)",
+        ),
+    ]
+    start_date: Annotated[
+        date,
+        Field(
+            description="First state swapping date, other initial swapping dates are determined by time duration of state swapping intervals through state_duration",
+            examples=["2024-01-31", "2024-01-31T11:06"],
+        ),
+    ]
     state: StateConfig
     case_file: Annotated[
         FilePath,
         Field(
             None,
             description=(
-                "Relative or absolute path to Everest generated or forward model modefied "
-                "json case file.\n"
+                "Relative or absolute path to Everest generated or forward model modified JSON case file.\n"
                 "NOTE: cli option argument `--cases CASES` overrides this field"
             ),
         ),

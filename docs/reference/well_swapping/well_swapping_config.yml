@@ -2,28 +2,18 @@
 # <REPLACE> is a REQUIRED field that needs replacing
 
 
-# Backup values for case priorities if priority JSON file is missing.
-# Required: False
-# Default: null
-priorities:
-
-  # fallback priorities if priorities file is not given
-  # Datatype: {string: [number]}
-  # Required: False
-  # Default: null
-  fallback_values:
-    <STRING>:
-      - <REPLACE>
-
-
-# Make sure the following are present in you Everest configuration file.
+# Make sure the following are present in the Everest configuration file:
 
 # create a generic control where the control variables are:
-#     'max_n_cases' and 'state_duration'
+#     'max_instances' and 'state_duration', each with the same number of values
 #     and the length of all initial_guesses are n+1,
 #     where 'n' is the nth index in the initial_guess array
 
 # controls:
+# - name: <name of priorities file>
+#     type: generic_control
+#     variables:
+#     - { name: ITEM1, initial_guess: [prio0, prio1, ..., prion] }
 # - name: <name of constraint file>
 #     type: generic_control
 #     variables:
@@ -32,33 +22,57 @@ priorities:
 # Required: True
 constraints:
 
-  # Constraint information for the time duration of any given state per iteraton
+  # Constraint information for defining time duration of state swapping intervals
   # Required: True
   state_duration:
 
-    # Fallback values for each iteration if constraint json file is missing
-    # Note: If a int is given, all iterations will be initialize to that string
+    # Fallback values for each iteration if constraint JSON file is missing
+    # Note: If a single number is given, all swapping intervals will be assigned that time duration
     # Datatype: [integer] or integer
-    # Examples: [150, 200, 500], 200
+    # Examples: [150.0, 200, 500000.0], 200.0
     # Required: False
     # Default: null
     fallback_values: <REPLACE>
 
-    # Scaling data used by everest for producing constraint files,
-    # given these values this forward model will rescale the constraints
+    # Scaling factors specified by user to define scaled initial_guess values for state_duration control variable in Everest configuration file.
+    # Given these factors the forward model will rescale the state_duration values into physical values (in days)
     # Required: True
     scaling:
 
       # [min, max] values for scaling source
       # Datatype: ['number', 'number']
+      # Examples: [0, 1], [0.0, 1.0], [0.5, 2.0]
       # Required: True
       source: <REPLACE>
 
-      # [min, max] values for scaling target
+      # [min, max] values for scaling target (in days)
       # Datatype: ['number', 'number']
+      # Examples: [0, 500], [100.0, 400.0], [150.0, 1000.0]
       # Required: True
       target: <REPLACE>
 
+# Fallback values for item priorities in case priority JSON file is missing (e.g. when priority controls are not defined in Everest configuration file)
+# Required: False
+# Default: null
+priorities:
+
+  # Fallback priorities if priorities file is not provided
+  # Examples:
+  #     fallback_values:
+  #         ITEM1: [.4, 1., 2, 1.5, 7.2E-1, 9.47e-1]
+  #         ITEM2: [6.24E-1, 2., .3, 1, 9.4e-1, 1.1]
+  #         .
+  #         .
+  #         .
+
+  # Datatype: {string: [number]}
+  # Required: False
+  # Default: null
+  fallback_values:
+    <STRING>:
+      - <REPLACE>
+
+# First state swapping date, other initial swapping dates are determined by time duration of state swapping intervals through state_duration
 # Datatype: date
 # Examples: 2024-01-31, 2024-01-31T11:06
 # Required: True
@@ -67,52 +81,69 @@ start_date: <REPLACE>
 # Required: True
 state:
 
-  # State hierarchy in decending order [highest, ..., lowest]
-  # Note: values must be unique!
-  # Tip: highest is the default target state
-  # and lowest is the default initial state
+  # State hierarchy in descending order [highest, ..., lowest]
+  # Note: state labels must be unique!
+  # Tip: highest is the default target state and lowest is the default initial state
+  # Examples:
+  #     state:
+  #     hierarchy:
+  #     -
+  #         label: open
+  #         quotas: [2, 4, 1, 0]
+  #     -
+  #         label: closed
+  #         quotas: [0, _, 3, 2]
+  #     -
+  #         label: shut
+  #         quotas: _ # ← all 4 entries are taken as '_' (= infinity)
+
   # Required: True
   hierarchy:
     -
 
-      # State's label/name.
+      # State label/name
       # Datatype: string
       # Examples: a string value
       # Required: True
       label: <REPLACE>
 
-      # Case state toggle quota per iteration.
-      # Tip: '_', (infinity) alias can be used to pad array
-      # Thus, if you wish all iteration to infinity, then omit this field
-      # Note: If a integer is given, all iterations will be that string
+      # Available number of items that can be assigned to the state per swapping intervalTip: '_', (infinity) alias can be used to pad array
+      # If you wish all iteration to infinity, then omit this field
+      # Note: If a single integer is given, all state swapping intervals will be assigned the same quota
       # Datatype: integer or [integer or _]
       # Examples: [_, 4, _, 2], 2
       # Required: False
       # Default: null
       quotas: <REPLACE>
 
-  # States to set cases to at initial iteration.
-  # Tip: fill only cases that differ from default (lowest priority level in hierarchy),
-  # since those are automatically populated for you.
-  # Thus, if you wish to initialize all values to default, then omit this field
-  # Note: If a string is given, all cases will be initialize to that string
+  # States to set items to at the beginning of the iterative state assignment process
+  # Tip: fill only items that differ from default (lowest priority level in hierarchy),
+  # those are automatically assigned if no value is provided.
+  # If you wish to initialize all values to default, then omit this optional field.
+  # Note: If a single string is entered, all items will be initialized to the state given by that string.
+  # Examples:
+  #     initial:
+  #         ITEM1: open
+  #         ITEM2: closed
+  #         ITEM3: shut
+
   # Datatype: {string: string} or string
   # Required: False
   # Default: null
   initial: <REPLACE>
 
-  # Target States for each iteration.
-  # Tip: '_', default alias can be used to pad array(highest priority level in hierarchy),
-  # since those are automatically populated for you.
-  # Thus, if you wish to initialize all values to default, then omit this field
-  # Note: If a string is given, all iterations will be initialize to that string
+  # Target states for each swapping interval.
+  # Tip: '_', default alias can be used to pad array,
+  # this will assign the state with highest priority level in hierarchy as target state for the respective interval.
+  # If you wish to initialize all values to default, then omit this optional field.then omit this field
+  # Note: If a single string is entered, all intervals will have the target state assigned to the state given by that string.string
   # Datatype: [string or _] or string
-  # Examples: _, sitting, _, standing], sitting
+  # Examples: [_, sitting, _, standing], sitting
   # Required: False
   # Default: null
   targets: <REPLACE>
 
-  # List of directional (source → target) state actions.
+  # List of directional (source → target) state update actions.
   # Note: action context is set with the 'forbiden_actions' field
   # Datatype: [['string', 'string']]
   # Required: False
@@ -139,7 +170,7 @@ state:
   # Default: False
   forbiden_actions: false
 
-# Relative or absolute path to Everest generated or forward model modefied json case file.
+# Relative or absolute path to Everest generated or forward model modified JSON case file.
 # NOTE: cli option argument `--cases CASES` overrides this field
 # Datatype: Path
 # Examples: /path/to/file.ext, /path/to/directory/
