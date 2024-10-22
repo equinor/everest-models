@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import collections
 import logging
 from typing import Iterable
@@ -64,7 +63,3 @@ def main_entry_point(args=None):
         args_parser.error("No template matched:\n" + msg)
 
     options.input.json_dump(options.output)
-
-
-if __name__ == "__main__":
-    main_entry_point()

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import logging
 
 from everest_models.jobs.fm_select_wells import tasks
@@ -30,7 +29,3 @@ def main_entry_point(args=None):
 
     logger.info(f"Writing results to {options.output}")
     options.input.json_dump(options.output)
-
-
-if __name__ == "__main__":
-    main_entry_point()

@@ -68,7 +68,3 @@ def main_entry_point(args=None):
     )
 
     options.input.json_dump(options.output)
-
-
-if __name__ == "__main__":
-    main_entry_point()

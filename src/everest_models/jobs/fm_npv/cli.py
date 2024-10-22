@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import argparse
 import logging
 
@@ -139,7 +137,3 @@ def main_entry_point(args=None):
     )
 
     options.output.write_text(f"{npv:.2f}")
-
-
-if __name__ == "__main__":
-    main_entry_point()

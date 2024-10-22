@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import logging
 
 import stea
@@ -87,7 +85,3 @@ def main_entry_point(args=None):
     ):
         with open(f"{res}", "w") as ofh:
             ofh.write(f"{value}\n")
-
-
-if __name__ == "__main__":
-    main_entry_point()

@@ -20,7 +20,3 @@ def main_entry_point(args=None):
 
     with options.output.open("w", encoding="utf-8") as fp:
         json.dump([well for well, value in options.input.items() if value >= 0.5], fp)
-
-
-if __name__ == "__main__":
-    main_entry_point()

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import argparse
 import logging
 
@@ -94,7 +92,3 @@ def main_entry_point(args=None):
     )
 
     options.config.output.file.write_text(f"{economic_indicator:.2f}")
-
-
-if __name__ == "__main__":
-    main_entry_point()

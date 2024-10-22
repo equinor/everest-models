@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import itertools
 import logging
 
@@ -49,7 +48,3 @@ def main_entry_point(args=None):
 
     logger.info(f"Writing results to {options.output}")
     options.input.json_dump(options.output)
-
-
-if __name__ == "__main__":
-    main_entry_point()

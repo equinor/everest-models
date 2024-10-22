@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import logging
 
 from everest_models.jobs.fm_strip_dates import tasks
@@ -37,7 +36,3 @@ def main_entry_point(args=None):
     except RuntimeError as err:
         logger.error(str(err))
         args_parser.exit(1, str(err))
-
-
-if __name__ == "__main__":
-    main_entry_point()
