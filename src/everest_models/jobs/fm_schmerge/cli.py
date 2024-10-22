@@ -19,7 +19,3 @@ def main_entry_point(args=None):
         options.input.dated_operations(), options.schedule
     )
     options.output.write_text(schedule)
-
-
-if __name__ == "__main__":
-    main_entry_point()

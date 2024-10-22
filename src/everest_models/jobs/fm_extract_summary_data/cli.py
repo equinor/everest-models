@@ -29,7 +29,3 @@ def main_entry_point(args=None):
         end_date=options.end_date,
     )
     options.output.write_text(f"{result * options.multiplier:.10f}")
-
-
-if __name__ == "__main__":
-    main_entry_point()

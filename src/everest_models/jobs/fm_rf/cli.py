@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import logging
 
 from everest_models.jobs.fm_rf.parser import args_parser
@@ -28,7 +27,3 @@ def main_entry_point(args=None):
     if options.output:
         logger.info(f"Writing results to {options.output}")
         options.output.write_text(f"{rf:.6f}")
-
-
-if __name__ == "__main__":
-    main_entry_point()

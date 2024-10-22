@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from typing import Optional, Sequence
 
 from .tasks import (
@@ -22,7 +20,3 @@ def main_entry_point(args: Optional[Sequence[str]] = None):
         ),
     )
     data.cases.json_dump(data.output)
-
-
-if __name__ == "__main__":
-    main_entry_point()

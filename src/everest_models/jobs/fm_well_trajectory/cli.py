@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import logging
 from pathlib import Path
 
@@ -51,7 +49,3 @@ def main_entry_point(args=None):
             write_mlt_guide_points(mlt_guide_points, Path("mlt_guide_points.json"))
             logger.info("Writing multilateral guide md's to 'mlt_guide_md.json'")
             write_mlt_guide_md(mlt_guide_points, Path("mlt_guide_md.json"))
-
-
-if __name__ == "__main__":
-    main_entry_point()
