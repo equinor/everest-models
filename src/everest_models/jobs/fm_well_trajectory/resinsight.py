@@ -1,6 +1,7 @@
 import datetime
 import logging
 from pathlib import Path
+from textwrap import dedent
 from typing import Any, Dict, Iterable, Optional, Tuple, Union
 
 import lasio
@@ -363,48 +364,58 @@ def _generate_welspecs(
             lines = file_obj.readlines()
 
         with open(export_filename, "w") as file_obj:
-            for idx, line in enumerate(lines):
-                if line.startswith("WELSPECS"):
-                    lines[idx + 1] = lines[idx + 1].replace(
-                        lines[idx + 1].split()[1], group, 1
-                    )
+            welspecs, compdat = False, False
+            for line in lines:
+                stripped_line = line.strip()
+                if not stripped_line or stripped_line.startswith("--"):
+                    pass
+                elif stripped_line.startswith("/"):
+                    welspecs, compdat = False, False
+                elif stripped_line.startswith("WELSPECS"):
+                    welspecs, compdat = True, False
+                elif stripped_line.startswith("COMPDAT"):
+                    welspecs, compdat = False, True
+                elif welspecs:
+                    line = line.replace(line.split()[1], group, 1)
                     logger.info(f"Group name for the well is set to: {group}")
-
-                    lines[idx + 1] = lines[idx + 1].replace(
-                        lines[idx + 1].split()[5], phase.value, 1
-                    )
+                    line = line.replace(line.split()[5], phase.value, 1)
                     logger.info(f"Phase name for the well is set to: {phase.value}")
-
-                if line.startswith("COMPDAT") and perf_depths.size == 0:
-                    comment = (
-                        "-- No interval found that meets the defined perf criteria; "
-                        "create one dummy connection and shut it thereafter."
-                    )
-                    lines[idx + 1] = comment + lines[idx + 1].replace(
-                        lines[idx + 1].split()[5], "SHUT"
-                    )
+                elif compdat and perf_depths.size == 0:
+                    comment = "-- No interval found that meets the defined perforation criteria: shut well\n"
+                    line = comment + line.replace(line.split()[5], "SHUT")
                     logger.info(comment)
                 file_obj.write(line)
     else:
         logger.info("Well outside of the grid. Creating dummy shut connection.")
         # write dummy WELSPECS and COMPDAT:
-        dummy = [
-            "-- WELL  GROUP           BHP    PHASE  DRAIN  INFLOW  OPEN  CROSS  PVT    HYDS  FIP \n",
-            "-- NAME  NAME   I    J   DEPTH  FLUID  AREA   EQUANS  SHUT  FLOW   TABLE  DENS  REGN \n",
-            "WELSPECS \n",
-            f"   {well}  {group}     1  1  1*     {phase.value}    0.0    STD     STOP  YES    0      SEG   0    / \n ",
-            "    / \n",
-            "-- WELL                        OPEN   SAT   CONN           WELL      KH             SKIN      D      DIR \n",
-            "-- NAME   I     J    K1   K2   SHUT   TAB   FACT           DIA       FACT           FACT      FACT   PEN \n",
-            "COMPDAT \n",
-            f"   {well}   1   1   1   1   SHUT   1*    1   0.21600   1   0.00000   1*     'Z' / \n",
-            "  /  \n",
-        ]
+        dummy = dedent(
+            f"""\
+            -- WELL  GROUP       BHP   PHASE DRAIN INFLOW   OPEN  CROSS PVT   HYDS  FIP
+            -- NAME  NAME  I  J  DEPTH FLUID AREA  EQUANS   SHUT  FLOW  TABLE DENS  REGN
+
+            WELSPECS
+               {well}  {group}    1  1  1*    {phase.value}   0.0   STD      STOP  YES   0     SEG     0   /
+            /
+
+            -- WELL              OPEN  SAT   CONN  WELL     KH    SKIN     D     DIR
+            -- NAME  I  J  K1 K2 SHUT  TAB   FACT  DIA      FACT  FACT     FACT  PEN
+            COMPDAT
+            -- No interval found that meets the defined perforation criteria: add dummy connection
+               {well}  1  1  1  1  SHUT  1*    1     0.21600  1     0.00000  1*    'Z'   /
+            /
+            """
+        )
         with open(export_filename, "w") as file_obj:
-            file_obj.writelines(dummy)
+            file_obj.write(dummy)
 
         # Write dummy WELSEGS and COMPSEGS:
-        dummy = ["WELSEGS \n", "/ \n", "COMPSEGS \n", "/ \n"]
-        export_filename = (project_path / (well + "_MSW")).with_suffix(".SCH")
-        with open(export_filename, "w") as file_obj:
-            file_obj.writelines(dummy)
+        dummy = dedent("""\
+                       WELSEGS
+                       /
+                       COMPSEGS
+                       /
+                       """)
+        with open(
+            (project_path / (well + "_MSW")).with_suffix(".SCH"), "w"
+        ) as file_obj:
+            file_obj.write(dummy)
