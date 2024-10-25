@@ -32,7 +32,7 @@ def test_parameters_config_simple(path_test_data):
 
 
 def test_parameters_config_resinsight(copy_testdata_tmpdir):
-    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight_mlt")
+    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight")
     config = load_yaml("config.yml")
     ConfigSchema.model_validate(config)
 
