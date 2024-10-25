@@ -12,7 +12,7 @@ from everest_models.jobs.fm_well_trajectory.well_trajectory_resinsight import Re
 
 @pytest.fixture(scope="module")
 def well_trajectory_arguments():
-    return ("-c config.yml -E SPE1CASE1_MLT").split()
+    return ("-c config.yml -E SPE1CASE1").split()
 
 
 @pytest.mark.slow
@@ -38,7 +38,7 @@ def test_start_resinsight(caplog):
 def test_well_trajectory_resinsight_main_entry_point_lint(
     well_trajectory_arguments, copy_testdata_tmpdir
 ):
-    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight_mlt")
+    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight")
     with pytest.raises(SystemExit):
         main_entry_point([*well_trajectory_arguments, "--lint"])
 
@@ -51,7 +51,7 @@ def test_well_trajectory_resinsight_main_entry_point_lint(
 def test_well_trajectory_resinsight_main_entry_point_no_mlt(
     well_trajectory_arguments, copy_testdata_tmpdir
 ):
-    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight_mlt")
+    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight")
     for path in Path.cwd().glob("mlt_*.json"):
         path.unlink()
     main_entry_point(well_trajectory_arguments)
@@ -67,7 +67,7 @@ def test_well_trajectory_resinsight_main_entry_point_no_mlt(
 def test_well_trajectory_resinsight_main_entry_point_mlt(
     well_trajectory_arguments, copy_testdata_tmpdir
 ):
-    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight_mlt")
+    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight")
     main_entry_point(well_trajectory_arguments)
 
     for expected in Path("expected_mlt").glob("**/*"):
@@ -81,7 +81,7 @@ def test_well_trajectory_resinsight_main_entry_point_mlt(
 def test_well_trajectory_resinsight_main_entry_point_mixed(
     well_trajectory_arguments, copy_testdata_tmpdir
 ):
-    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight_mlt")
+    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight")
     for path in Path.cwd().glob("mlt_*.json"):
         with path.open(encoding="utf-8") as fp:
             guide_points = json.load(fp)
