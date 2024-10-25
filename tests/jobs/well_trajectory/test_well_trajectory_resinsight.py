@@ -127,3 +127,17 @@ def test_well_trajectory_resinsight_main_entry_point_no_mlt_dynamic_perforation(
             output = expected.relative_to("expected")
             assert output.is_file()
             assert filecmp.cmp(expected, output, shallow=False)
+
+
+@pytest.mark.resinsight
+def test_well_trajectory_resinsight_main_entry_point_no_mlt_missing_date(
+    copy_testdata_tmpdir,
+):
+    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight")
+    for path in Path.cwd().glob("mlt_*.json"):
+        path.unlink()
+    with pytest.raises(
+        RuntimeError,
+        match="Connections error: date not found in restart file: 2015-01-03",
+    ):
+        main_entry_point("-c config_missing_date.yml -E SPE1CASE1".split())
