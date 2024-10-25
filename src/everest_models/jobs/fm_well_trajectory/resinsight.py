@@ -151,6 +151,8 @@ def _find_time_step(
             time_step_num = ts_idx
             logger.info(f"Timestep number for the date {date_simgrid}: {time_step_num}")
             break
+    if time_step_num is None:
+        raise RuntimeError(f"Connections error: date not found in restart file: {date}")
     return time_step_num
 
 
@@ -160,7 +162,7 @@ def _create_tracks(
     case: rips.Case,
     well_path: rips.WellPath,
     well_log_plot: rips.WellLogPlot,
-    time_step_num: Optional[int] = None,
+    time_step_num: int,
 ) -> None:
     for property in properties:
         track = well_log_plot.new_well_log_track(
