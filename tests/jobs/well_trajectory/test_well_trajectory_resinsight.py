@@ -95,3 +95,35 @@ def test_well_trajectory_resinsight_main_entry_point_mixed(
             output = expected.relative_to("expected_mixed")
             assert output.is_file()
             assert filecmp.cmp(expected, output, shallow=False)
+
+
+@pytest.mark.resinsight
+def test_well_trajectory_resinsight_main_entry_point_no_mlt_static_perforation(
+    copy_testdata_tmpdir,
+):
+    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight")
+    for path in Path.cwd().glob("mlt_*.json"):
+        path.unlink()
+    main_entry_point("-c config_static_perforation.yml -E SPE1CASE1".split())
+
+    for expected in Path("expected").glob("**/*"):
+        if expected.is_file():
+            output = expected.relative_to("expected")
+            assert output.is_file()
+            assert filecmp.cmp(expected, output, shallow=False)
+
+
+@pytest.mark.resinsight
+def test_well_trajectory_resinsight_main_entry_point_no_mlt_dynamic_perforation(
+    copy_testdata_tmpdir,
+):
+    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight")
+    for path in Path.cwd().glob("mlt_*.json"):
+        path.unlink()
+    main_entry_point("-c config_dynamic_perforation.yml -E SPE1CASE1".split())
+
+    for expected in Path("expected").glob("**/*"):
+        if expected.is_file():
+            output = expected.relative_to("expected")
+            assert output.is_file()
+            assert filecmp.cmp(expected, output, shallow=False)
