@@ -155,7 +155,7 @@ def _find_time_step(
 
 
 def _create_tracks(
-    properties: Iterable[str],
+    properties: Iterable[Union[DynamicDomainProperty, StaticDomainProperty]],
     property_type: str,
     case: rips.Case,
     well_path: rips.WellPath,
@@ -163,9 +163,11 @@ def _create_tracks(
     time_step_num: Optional[int] = None,
 ) -> None:
     for property in properties:
-        track = well_log_plot.new_well_log_track(f"Track: {property}", case, well_path)
+        track = well_log_plot.new_well_log_track(
+            f"Track: {property.key}", case, well_path
+        )
         track.add_extraction_curve(
-            case, well_path, property_type, property, time_step_num
+            case, well_path, property_type, property.key, time_step_num
         )
 
 
