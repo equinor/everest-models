@@ -16,7 +16,7 @@ SCHEMAS = {_CONFIG_ARGUMENT: TemplateConfig}
 
 
 @bootstrap_parser
-def build_argument_parser():
+def build_argument_parser(skip_type=False):
     SchemaAction.register_models(SCHEMAS)
     parser, required_group = get_parser(
         description="Inserts template file paths for all well operations in the "
@@ -29,11 +29,12 @@ def build_argument_parser():
         required_group,
         schema=Wells,
         help="Input file that requires template paths. Json file expected ex: wells.json",
+        skip_type=skip_type,
     )
-    add_output_argument(required_group, help="Output file")
+    add_output_argument(required_group, help="Output file", skip_type=skip_type)
     required_group.add_argument(
         *_CONFIG_ARGUMENT.split("/"),
-        type=partial(parse_file, schema=TemplateConfig),
+        type=partial(parse_file, schema=TemplateConfig) if not skip_type else str,
         required=True,
         help="Config file containing list of template file paths to be injected.",
     )

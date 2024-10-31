@@ -27,6 +27,37 @@ def test_get_forward_model_schemas_hook(plugin_manager):
     }
 
 
+@pytest.mark.parametrize(
+    ["fm_steps", "expected_results"],
+    [
+        (
+            [
+                "well_constraints  -i files/well_readydate.json -c files/wc_config.yml -rc well_rate.json -o out1",
+                "add_templates     -i wc_wells.json -c files/at_config.yml -o out2",
+                "schmerge          -s eclipse/include/schedule/schedule.tmpl -i at_wells.json -o out3",
+                "rf -s TEST -o out4",
+            ],
+            {"out1", "out2", "out3", "out4"},
+        ),
+        (
+            [
+                "well_constraints  -i files/well_readydate.json -c files/wc_config.yml -rc well_rate.json -o out1",
+                "not_add_templates     -i wc_wells.json -c files/at_config.yml -o out2",
+                "schmerge          -s eclipse/include/schedule/schedule.tmpl -i at_wells.json -o out3",
+                "rf -s TEST -o out4",
+            ],
+            {"out1", "out3", "out4"},
+        ),
+        ([], set()),
+    ],
+)
+def test_returns_outputs_for_valid_steps(fm_steps, expected_results, plugin_manager):
+    result = plugin_manager.hook.custom_forward_model_outputs(
+        forward_model_steps=fm_steps
+    )
+    assert result[0] == expected_results
+
+
 def test_get_forward_model_schemas_hook_keys_are_options(plugin_manager):
     assert all(
         schema is not None

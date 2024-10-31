@@ -7,7 +7,7 @@ from everest_models.jobs.shared.arguments import (
 from everest_models.jobs.shared.validators import valid_iso_date
 
 
-def build_argument_parser():
+def build_argument_parser(skip_type=False):
     parser, required_group = get_parser(
         description="Calculates the recovery factor given summary keys and dates.\n"
         "Requires a Summary instance to retrieve the volumes from. The summary "
@@ -15,9 +15,14 @@ def build_argument_parser():
         "the simulation range, they will be clamped to nearest. Will throw an "
         "error if the entire date range is outside the simulation range."
     )
-    add_summary_argument(required_group)
+    add_summary_argument(required_group, skip_type=skip_type)
     add_lint_argument(parser)
-    add_output_argument(parser, required=False, help="Filename of the output file. ")
+    add_output_argument(
+        parser,
+        required=False,
+        help="Filename of the output file. ",
+        skip_type=skip_type,
+    )
     parser.add_argument(
         "-pk",
         "--production_key",

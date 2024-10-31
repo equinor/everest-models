@@ -10,14 +10,14 @@ def _valid_ecl_file(value: str):
     return valid_ecl_summary(value), value
 
 
-def build_argument_parser():
+def build_argument_parser(skip_type=False):
     description = (
         "Makes sure a given summary file contains only report steps at the "
         "list of dates given as an argument"
     )
     parser, required_group = get_parser(description=description)
 
-    add_summary_argument(required_group, func=_valid_ecl_file)
+    add_summary_argument(required_group, func=_valid_ecl_file, skip_type=skip_type)
     add_lint_argument(parser)
     parser.add_argument(
         "-d",

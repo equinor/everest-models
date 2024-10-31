@@ -20,18 +20,18 @@ SCHEMAS = {CONFIG_ARG_KEY: ConfigSchema}
 
 
 @bootstrap_parser
-def build_argument_parser() -> argparse.ArgumentParser:
+def build_argument_parser(skip_type=False) -> argparse.ArgumentParser:
     SchemaAction.register_models(SCHEMAS)
     parser, required_group = get_parser(description="Design a well trajectory.")
     required_group.add_argument(
         *CONFIG_ARG_KEY.split("/"),
         required=True,
-        type=partial(parse_file, schema=ConfigSchema),
+        type=partial(parse_file, schema=ConfigSchema) if not skip_type else str,
         help="forward model configuration file.",
     )
     parser.add_argument(
         *ECLIPSE_FILES_ARG_KEY.split("/"),
-        type=validate_eclipse_path_argparse,
+        type=validate_eclipse_path_argparse if not skip_type else str,
         help="Path to Eclipse model: '/path/to/model'; extension not needed",
     )
 

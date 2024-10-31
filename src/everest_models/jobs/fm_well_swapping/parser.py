@@ -34,21 +34,22 @@ def _clean_constraint(value: str) -> Dict[str, Tuple[float, ...]]:
     prog="Well Swapping",
     description="Swap well operation status over multiple time intervals.",
 )
-def build_argument_parser(parser: Parser, lint: bool = False, *_) -> None:
+def build_argument_parser(parser: Parser, lint: bool = False, **kwargs) -> Parser:
+    skip_type = kwargs.pop("skip_type", False)
     parser.add_argument(
         *_CONFIG_ARGUMENT.split("/"),
         required=True,
-        type=partial(parse_file, schema=ConfigSchema),
+        type=partial(parse_file, schema=ConfigSchema) if not skip_type else str,
         help="well swapping configuration file",
     )
     parser.add_argument(
         *_CONSTRAINTS_ARGUMENT.split("/"),
-        type=_clean_constraint,
+        type=_clean_constraint if not skip_type else str,
         help="Everest generated optimized constraints",
     )
     parser.add_argument(
         *_PRIORITIES_ARGUMENT.split("/"),
-        type=valid_optimizer,
+        type=valid_optimizer if not skip_type else str,
         help="Everest generated optimized priorities",
     )
     parser.add_argument(
@@ -64,10 +65,13 @@ def build_argument_parser(parser: Parser, lint: bool = False, *_) -> None:
         required=False,
         arg=("-cs", "--cases"),
         help="Everest generated wells.json file",
+        skip_type=skip_type,
     )
     if not lint:
         add_output_argument(
             parser,
             required=False,
             help="Where to write output file to",
+            skip_type=skip_type,
         )
+    return parser

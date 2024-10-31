@@ -10,7 +10,7 @@ from .well_model import Wells
 
 
 @bootstrap_parser
-def build_argument_parser():
+def build_argument_parser(skip_type=False):
     parser, required_group = get_parser(
         description="This module works on a schedule file intended for reservoir simulation"
         "(e.g. eclipse or flow), and injects templates at given dates. If the report"
@@ -21,7 +21,7 @@ def build_argument_parser():
         "-s",
         "--schedule",
         required=True,
-        type=valid_schedule_template,
+        type=valid_schedule_template if not skip_type else str,
         help="Schedule file to inject templates into. The only currently"
         " accepted date format is the following: one line consisting of the"
         " DATES keyword, followed by a date in the format of '1 JAN 2000'"
@@ -37,9 +37,11 @@ def build_argument_parser():
         " and the ops is a list of operations to be performed on the well."
         " The operations are defined within a dict with the required keys template,"
         " date and any parameter values that are to be injected into the given template",
+        skip_type=skip_type,
     )
     add_output_argument(
         required_group,
         help="File path to write the resulting schedule file to.",
+        skip_type=skip_type,
     )
     return parser

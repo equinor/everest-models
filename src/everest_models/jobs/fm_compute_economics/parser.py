@@ -18,7 +18,7 @@ SCHEMAS = {CONFIG_ARGUMENT: EconomicIndicatorConfig}
 
 
 @bootstrap_parser
-def build_argument_parser():
+def build_argument_parser(skip_type=False):
     SchemaAction.register_models(SCHEMAS)
     parser, required_group = get_parser(
         description="Module to calculate economical indicators based on an eclipse simulation. "
@@ -33,7 +33,9 @@ def build_argument_parser():
     required_group.add_argument(
         *CONFIG_ARGUMENT.split("/"),
         required=True,
-        type=partial(parse_file, schema=EconomicIndicatorConfig),
+        type=partial(parse_file, schema=EconomicIndicatorConfig)
+        if not skip_type
+        else str,
         help="Path to config file containing at least prices",
     )
     add_output_argument(
@@ -41,6 +43,7 @@ def build_argument_parser():
         required=False,
         default=None,
         help="Path to output-file where the economical indicators result is written to.",
+        skip_type=skip_type,
     )
     parser.add_argument(
         "--output-currency",

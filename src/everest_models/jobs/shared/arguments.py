@@ -37,11 +37,12 @@ def add_input_argument(parser: Parser, *args, **kwargs) -> None:
     Args:
         parser (argparse.ArgumentParser): Argument parser
     """
+    skip_type = kwargs.pop("skip_type") if "skip_type" in kwargs else False
     parser.add_argument(
         "-i",
         "--input",
         *args,
-        type=valid_input_file,
+        type=valid_input_file if not skip_type else str,
         required=True,
         **kwargs,
     )
@@ -78,7 +79,9 @@ def add_file_schemas(parser: Parser) -> None:
     )
 
 
-def add_summary_argument(parser: Parser, *, func: Optional[Callable] = None) -> None:
+def add_summary_argument(
+    parser: Parser, *, func: Optional[Callable] = None, **kwargs
+) -> None:
     """Add summary argument to parser.
 
     - Set type to 'func' or 'valid_ecl_summary' function caller
@@ -88,10 +91,11 @@ def add_summary_argument(parser: Parser, *, func: Optional[Callable] = None) -> 
         parser (argparse.ArgumentParser): Argument parser
         func (Callable, optional): Function caller to use for type. Defaults to None.
     """
+    skip_type = kwargs.pop("skip_type") if "skip_type" in kwargs else False
     parser.add_argument(
         "-s",
         "--summary",
-        type=func or valid_ecl_summary,
+        type=func or valid_ecl_summary if not skip_type else str,
         required=True,
         help="Eclipse summary file",
     )
@@ -115,9 +119,10 @@ def add_wells_input_argument(
         schema (models.BaseConfig, optional):
             Parser and validation schema to use. Defaults to models.WellListModel.
     """
+    skip_type = kwargs.pop("skip_type") if "skip_type" in kwargs else False
     parser.add_argument(
         *arg,
-        type=partial(parse_file, schema=schema),
+        type=partial(parse_file, schema=schema) if not skip_type else str,
         required=required,
         **kwargs,
     )
@@ -133,11 +138,12 @@ def add_output_argument(parser: Parser, *, required: bool = True, **kwargs) -> N
         parser (argparse.ArgumentTypeError): Argument parser
         required (bool, optional): Is this argument required?. Defaults to True.
     """
+    skip_type = kwargs.pop("skip_type") if "skip_type" in kwargs else False
     parser.add_argument(
         "-o",
         "--output",
         required=required,
-        type=is_writable_path,
+        type=is_writable_path if not skip_type else str,
         **kwargs,
     )
 

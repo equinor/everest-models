@@ -28,13 +28,8 @@ SCHEMAS = {
     DURATION_CONSTRAINTS_ARG_KEY: Constraint,
 }
 
-constraint_parameters = {
-    "default": None,
-    "type": partial(parse_file, schema=Constraint),
-}
 
-
-def build_argument_parser() -> argparse.ArgumentParser:
+def build_argument_parser(skip_type=False) -> argparse.ArgumentParser:
     SchemaAction.register_models(SCHEMAS)
     parser, required_group = get_parser(
         description="A module that given a list of boundaries and well constraints creates a "
@@ -42,22 +37,25 @@ def build_argument_parser() -> argparse.ArgumentParser:
         "duration boundaries are given as min/max, and phase as a list of possibilities "
         "to choose from. Also support constants if boundaries are replaced by value.",
     )
+
     add_wells_input_argument(
         required_group,
         schema=Wells,
         help="File in json format containing well names and well opening times, "
         "should be specified in Everest config (wells.json).",
+        skip_type=skip_type,
     )
     add_file_schemas(parser)
     add_lint_argument(parser)
     add_output_argument(
         required_group,
         help="Name of the output file. The format will be yaml.",
+        skip_type=skip_type,
     )
     required_group.add_argument(
         *CONFIG_ARG_KEY.split("/"),
         required=True,
-        type=partial(parse_file, schema=WellConstraintConfig),
+        type=partial(parse_file, schema=WellConstraintConfig) if not skip_type else str,
         help="Configuration file in yaml format with names, events and boundaries for constraints",
     )
     parser.add_argument(
@@ -67,7 +65,8 @@ def build_argument_parser() -> argparse.ArgumentParser:
         "where 0 corresponds to the minimum possible rate value of the well "
         "the given index and 1 corresponds to the maximum possible value "
         "of the well at the given index.",
-        **constraint_parameters,
+        default=None,
+        type=partial(parse_file, schema=Constraint) if not skip_type else str,
     )
     parser.add_argument(
         *PHASE_CONSTRAINTS_ARG_KEY.split("/"),
@@ -76,7 +75,8 @@ def build_argument_parser() -> argparse.ArgumentParser:
         'in a two phase case ["water", "gas"], any control value in the '
         'interval [0, 0.5] will be attributed to "water" and any control '
         'value in the interval (0.5, 1] will be attributed to "gas".',
-        **constraint_parameters,
+        default=None,
+        type=partial(parse_file, schema=Constraint) if not skip_type else str,
     )
     parser.add_argument(
         *DURATION_CONSTRAINTS_ARG_KEY.split("/"),
@@ -84,6 +84,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
         "config, must be indexed format. Values must be in the interval [0, 1], "
         "where 0 corresponds to the minimum possible drill time for well, "
         "if given, 1 corresponds to the maximum drill time of the well if given.",
-        **constraint_parameters,
+        default=None,
+        type=partial(parse_file, schema=Constraint) if not skip_type else str,
     )
     return parser

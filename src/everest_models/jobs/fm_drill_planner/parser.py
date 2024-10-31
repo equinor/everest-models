@@ -18,7 +18,7 @@ SCHEMAS = {
 
 
 @bootstrap_parser
-def build_argument_parser():
+def build_argument_parser(skip_type=False):
     SchemaAction.register_models(SCHEMAS)
     parser, required_group = get_parser(
         description="A module that given a well priority list and a set of "
@@ -35,6 +35,7 @@ def build_argument_parser():
         "consistent with the wells.json file when running everest and can "
         "be used directly.",
         schema=Wells,
+        skip_type=skip_type,
     )
     add_output_argument(
         required_group,
@@ -43,11 +44,12 @@ def build_argument_parser():
         "drill_planner. Please note that it is highly recommended to not use the "
         "same filename as the input-file. In cases where the same workflow is run "
         "twice, it is generally advised that the input-file for each job is consistent",
+        skip_type=skip_type,
     )
     required_group.add_argument(
         *_CONFIG_ARGUMENT.split("/"),
         required=True,
-        type=partial(parse_file, schema=DrillPlanConfig),
+        type=partial(parse_file, schema=DrillPlanConfig) if not skip_type else str,
         help="Configuration file in yaml format describing the constraints of the "
         "field development. The file must contain information about rigs and slots "
         "that the wells can be drilled through. Additional information, such as "
@@ -56,7 +58,7 @@ def build_argument_parser():
     required_group.add_argument(
         *_OPTIMIZER_ARGUMENT.split("/"),
         required=True,
-        type=valid_input_file,
+        type=valid_input_file if not skip_type else str,
         help="The optimizer file is generated from everest it "
         "contains the well priority values - a float for each well.",
     )
