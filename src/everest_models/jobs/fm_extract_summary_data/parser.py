@@ -8,14 +8,15 @@ from everest_models.jobs.shared.arguments import (
 from everest_models.jobs.shared.validators import valid_iso_date
 
 
-def build_argument_parser():
+def build_argument_parser(skip_type=False):
     description = "Module to extract Eclipse Summary keyword data for single date or date interval"
     parser, requird_group = get_parser(description=description)
 
-    add_summary_argument(requird_group)
+    add_summary_argument(requird_group, skip_type=skip_type)
     add_output_argument(
         requird_group,
         help="Output file",
+        skip_type=skip_type,
     )
     add_lint_argument(parser)
     parser.add_argument(

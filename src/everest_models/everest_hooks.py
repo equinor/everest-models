@@ -8,10 +8,11 @@ to expose its functions
 import logging
 import pathlib
 from importlib import import_module, resources
-from typing import Any, Dict, List, Sequence, Type
+from typing import Any, Dict, List, Sequence, Set, Type
 
 from pydantic import BaseModel
 
+from everest_models.forward_models import get_forward_models
 from everest_models.jobs.shared.io_utils import load_supported_file_encoding
 
 try:
@@ -107,3 +108,21 @@ def get_forward_model_documentations() -> Dict[str, Any]:
             "full_job_name": full_job_name,
         }
     return docs
+
+
+@hookimpl
+def custom_forward_model_outputs(forward_model_steps: List[str]) -> Set[str]:
+    outputs = set()
+    for step in forward_model_steps:
+        step_name, *args = step.split()
+        if step_name in get_forward_models():
+            try:
+                parser = import_module(
+                    f"{JOBS}.fm_{step_name}.parser"
+                ).build_argument_parser(skip_type=True)
+                options = parser.parse_args(args)
+                if options.output:
+                    outputs.add(options.output)
+            except SystemExit:
+                pass
+    return outputs

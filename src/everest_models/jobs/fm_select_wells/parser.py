@@ -17,7 +17,7 @@ def scaled_well_number(value: str) -> float:
 
 
 @bootstrap_parser
-def build_argument_parser():
+def build_argument_parser(skip_type=False):
     SchemaAction.register_models({"file": WellNumber})
     parser, required_named_arguments = get_parser(
         description="Select the first wells from a drill planner output file."
@@ -34,10 +34,12 @@ def build_argument_parser():
     add_wells_input_argument(
         required_named_arguments,
         help="Input file: a drill planner output file.",
+        skip_type=skip_type,
     )
     add_output_argument(
         required_named_arguments,
         help="Output file: updated drill planner output file",
+        skip_type=skip_type,
     )
     parser.add_argument(
         "-m",
@@ -60,7 +62,7 @@ def build_argument_parser():
     )
     well_number_file.add_argument(
         "file_path",
-        type=scaled_well_number,
+        type=scaled_well_number if not skip_type else str,
     )
     sub_required_named_args.add_argument(
         "-r",

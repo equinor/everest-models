@@ -5,7 +5,7 @@ import stea
 from everest_models.jobs.shared.arguments import add_lint_argument, get_parser
 
 
-def build_argument_parser():
+def build_argument_parser(skip_type=False):
     description = (
         "STEA is a powerful economic analysis tool used for complex economic "
         "analysis and portfolio optimization. STEA helps you analyze single "
@@ -19,7 +19,7 @@ def build_argument_parser():
     required_group.add_argument(
         "-c",
         "--config",
-        type=lambda value: stea.SteaInput(Path(value)),
+        type=lambda value: stea.SteaInput(Path(value)) if not skip_type else str,
         help="STEA (yaml) config file",
         required=True,
     )

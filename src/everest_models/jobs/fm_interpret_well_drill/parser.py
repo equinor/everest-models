@@ -6,7 +6,7 @@ from everest_models.jobs.shared.arguments import (
 )
 
 
-def build_argument_parser():
+def build_argument_parser(skip_type=False):
     description = (
         "This module transforms dakota well_drill output to a json object."
         "This object contains a list of well names to keep."
@@ -19,11 +19,13 @@ def build_argument_parser():
             "Yaml file that contains optimizer output, this should consist "
             "of a list of well names, with their associated value between 0 and 1"
         ),
+        skip_type=skip_type,
     )
     add_lint_argument(parser)
     add_output_argument(
         required_group,
         help="File path to write the resulting json file to.",
+        skip_type=skip_type,
     )
 
     return parser

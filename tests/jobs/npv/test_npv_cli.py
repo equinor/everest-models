@@ -157,7 +157,7 @@ def test_npv_main_entry_point_warning_for_default_output(
     monkeypatch.setattr(
         parser,
         "add_summary_argument",
-        lambda p: p.add_argument("--summary", default=ecl_summary_npv()),
+        lambda p, **_: p.add_argument("--summary", default=ecl_summary_npv()),
     )
     args = ["-i", "wells.json", "-c", _CONFIG_FILE]
     cli.main_entry_point(args)
@@ -176,7 +176,7 @@ def test_npv_main_entry_point_no_warning_for_non_default_output(
     monkeypatch.setattr(
         parser,
         "add_summary_argument",
-        lambda p: p.add_argument("--summary", default=ecl_summary_npv()),
+        lambda p, **_: p.add_argument("--summary", default=ecl_summary_npv()),
     )
     args = ["-i", "wells.json", "-c", _CONFIG_FILE, output_arg, "npv_test"]
     cli.main_entry_point(args)

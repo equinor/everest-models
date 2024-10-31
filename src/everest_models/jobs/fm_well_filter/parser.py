@@ -8,7 +8,7 @@ from everest_models.jobs.shared.validators import valid_input_file
 
 
 @bootstrap_parser
-def build_argument_parser():
+def build_argument_parser(skip_type=False):
     parser, required_group = get_parser(
         description="This module filters out wells using a json string."
         "Either the --keep or the --remove flag needs to be set to a json file name"
@@ -21,22 +21,24 @@ def build_argument_parser():
         help=(
             "Json file that contains a list of dictionaries containing well information."
         ),
+        skip_type=skip_type,
     )
     add_output_argument(
         required_group,
         help="File path to write the resulting wells file to.",
+        skip_type=skip_type,
     )
     group = required_group.add_mutually_exclusive_group(required=True)
     group.add_argument(
         "-k",
         "--keep",
-        type=valid_input_file,
+        type=valid_input_file if not skip_type else str,
         help="JSON/Y(A)ML file that contains a list of well names to keep.",
     )
     group.add_argument(
         "-r",
         "--remove",
-        type=valid_input_file,
+        type=valid_input_file if not skip_type else str,
         help="JSON/Y(A)ML file that contains a list of well names to remove.",
     )
     return parser
