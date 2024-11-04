@@ -64,6 +64,9 @@ docs = [
 [project.entry-points."everest"]
 everest-models = "everest_models.everest_hooks"
 
+[project.entry-points."ert"]
+everest_models_forward_models = "everest_models.forward_models"
+
 [project.scripts]
 fm_add_templates = "everest_models.jobs.fm_add_templates.cli:main_entry_point"
 fm_drill_date_planner = "everest_models.jobs.fm_drill_date_planner.cli:main_entry_point"
