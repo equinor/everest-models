@@ -7,7 +7,6 @@ to expose its functions
 
 import logging
 import pathlib
-import sys
 from importlib import import_module, resources
 from typing import Any, Dict, List, Sequence, Type
 
@@ -24,9 +23,7 @@ except ModuleNotFoundError:
 
 logger = logging.getLogger(__name__)
 
-FORWARD_MODEL_DIR = "forward_models"
-PACKAGE = "everest_models"
-JOBS = f"{PACKAGE}.jobs"
+JOBS = "everest_models.jobs"
 
 
 def _get_jobs():
@@ -34,24 +31,13 @@ def _get_jobs():
 
 
 @hookimpl
-def get_forward_models() -> List[Dict[str, str]]:
-    """Accumulate all maintained forward model jobs by name and path.
+def get_forward_models() -> List[str]:
+    """Return a list of forward model names.
 
     Returns:
-        (List[Dict[str, str]]): list of forward models and corrolated path
-        - {name: forward_model, path: /path/to/forward_model}
-        - ...
+        List[str]: list of forward models
     """
-    if sys.version_info.minor >= 9:
-        jobs = resources.files(PACKAGE) / FORWARD_MODEL_DIR  # type: ignore
-    else:
-        with resources.path(PACKAGE, FORWARD_MODEL_DIR) as fd:
-            jobs = fd
-
-    return [
-        {"name": (job_name := job.lstrip("fm_")), "path": str(jobs / job_name)}
-        for job in _get_jobs()
-    ]
+    return [job[3:] if job.startswith("fm_") else job for job in _get_jobs()]
 
 
 @hookimpl
@@ -75,7 +61,9 @@ def get_forward_models_schemas() -> Dict[str, Dict[str, Type[BaseModel]]]:
     for job in _get_jobs():
         schema = getattr(import_module(f"{JOBS}.{job}.parser"), "SCHEMAS", None)
         if schema:
-            res[job.lstrip("fm_")] = schema.get("-c/--config") or schema.get("config")
+            res[job[3:] if job.startswith("fm_") else job] = schema.get(
+                "-c/--config"
+            ) or schema.get("config")
     return res
 
 
@@ -123,7 +111,7 @@ def get_forward_model_documentations() -> Dict[str, Any]:
             import_module(f"{JOBS}.{job}.cli"), "FULL_JOB_NAME", cmd_name
         )
         examples = getattr(import_module(f"{JOBS}.{job}.cli"), "EXAMPLES", None)
-        docs[job.lstrip("fm_")] = {
+        docs[job[3:] if job.startswith("fm_") else job] = {
             "cmd_name": cmd_name,
             "examples": examples,
             "full_job_name": full_job_name,

@@ -1,4 +1,0 @@
-EXECUTABLE      fm_stea
-ARGLIST        <CONFIG>
-
-ARG_TYPE 0 STRING
