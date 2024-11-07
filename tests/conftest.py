@@ -67,9 +67,6 @@ class TestSpec:
     hookspec = pluggy.HookspecMarker("test")
 
     @hookspec
-    def get_forward_models(self): ...
-
-    @hookspec
     def get_forward_models_schemas(self): ...
 
     @hookspec

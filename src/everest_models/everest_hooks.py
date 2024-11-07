@@ -31,16 +31,6 @@ def _get_jobs():
 
 
 @hookimpl
-def get_forward_models() -> List[str]:
-    """Return a list of forward model names.
-
-    Returns:
-        List[str]: list of forward models
-    """
-    return [job[3:] if job.startswith("fm_") else job for job in _get_jobs()]
-
-
-@hookimpl
 def get_forward_models_schemas() -> Dict[str, Dict[str, Type[BaseModel]]]:
     """Accumulate all forward model jobs and schemas.
 

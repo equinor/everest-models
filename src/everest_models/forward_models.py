@@ -1,8 +1,18 @@
 from importlib import resources
 from importlib.util import find_spec
-from typing import Final, Type
+from typing import Final, List, Type
 
 _HAVE_ERT: Final = find_spec("ert") is not None
+
+
+def get_forward_models() -> List[str]:
+    """Return the list of forward model names."""
+    return [
+        job[3:]
+        for job in resources.contents("everest_models.jobs")
+        if job.startswith("fm_")
+    ]
+
 
 if _HAVE_ERT:  # The everest-models package should remain installable without ERT.
     import ert
