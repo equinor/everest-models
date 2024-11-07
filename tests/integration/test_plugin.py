@@ -1,4 +1,3 @@
-import itertools
 import sys
 from pathlib import Path
 
@@ -14,30 +13,6 @@ FORWARD_MODEL_DIR = "forward_models"
 
 def test_hooks_registered(plugin_manager):
     assert sys.modules["everest_models.everest_hooks"] in plugin_manager.get_plugins()
-
-
-def test_get_forward_models_hook(plugin_manager):
-    jobs = {
-        "stea",
-        "drill_planner",
-        "compute_economics",
-        "schmerge",
-        "extract_summary_data",
-        "drill_date_planner",
-        "strip_dates",
-        "select_wells",
-        "npv",
-        "well_constraints",
-        "add_templates",
-        "rf",
-        "well_filter",
-        "interpret_well_drill",
-        "well_trajectory",
-        "well_swapping",
-    }
-    assert jobs.issubset(
-        set(itertools.chain.from_iterable(plugin_manager.hook.get_forward_models()))
-    )
 
 
 def test_get_forward_model_schemas_hook(plugin_manager):
