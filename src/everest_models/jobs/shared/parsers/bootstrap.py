@@ -128,12 +128,17 @@ def bootstrap_parser(
 
     def decorator(func: ParserBuilder) -> Callable[[], ArgumentParser]:
         @wraps(func)
-        def wrapper() -> ArgumentParser:
+        def wrapper(**kwargs) -> ArgumentParser:
             if schemas:
                 SchemaAction.register_models(schemas)
 
             argument_parser_params.setdefault("formatter_class", CustomFormatter)
             main = ArgumentParser(**argument_parser_params)
+
+            if kwargs.get("skip_type", False):
+                func(main, False, **kwargs)
+                return main
+
             if deprication:
                 func(
                     main.add_argument_group(
@@ -156,8 +161,12 @@ def bootstrap_parser(
                     help="Schematic description of input data files",
                 )
             )
-            func(sub_parser.add_parser("run", help="Forward model execution"))
-            func(sub_parser.add_parser("lint", help="Static files analysis"), lint=True)
+            func(sub_parser.add_parser("run", help="Forward model execution"), **kwargs)
+            func(
+                sub_parser.add_parser("lint", help="Static files analysis"),
+                lint=True,
+                **kwargs,
+            )
             return main
 
         return wrapper
