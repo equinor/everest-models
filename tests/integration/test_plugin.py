@@ -48,6 +48,7 @@ def test_get_forward_model_schemas_hook(plugin_manager):
             ],
             {"out1", "out3", "out4"},
         ),
+        (["well_trajectory -c config -E eclipse/config/path"], set()),
         ([], set()),
     ],
 )
