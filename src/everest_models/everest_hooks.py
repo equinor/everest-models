@@ -121,8 +121,8 @@ def custom_forward_model_outputs(forward_model_steps: List[str]) -> Set[str]:
                     f"{JOBS}.fm_{step_name}.parser"
                 ).build_argument_parser(skip_type=True)
                 options = parser.parse_args(args)
-                if options.output:
+                if "output" in options and options.output:
                     outputs.add(options.output)
-            except SystemExit:
+            except (SystemExit, AttributeError):
                 pass
     return outputs
