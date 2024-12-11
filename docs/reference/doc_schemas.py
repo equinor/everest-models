@@ -49,7 +49,9 @@ def forward_models(models: Optional[List[str]]) -> Tuple[str, ...]:
     otherwise return models if its a subset of installed forward models.
     """
     jobs = (
-        job for job in resources.contents(JOBS_MODULE) if job.startswith(JOB_PREFIX)
+        job.name
+        for job in resources.files(JOBS_MODULE).iterdir()
+        if job.name.startswith(JOB_PREFIX)
     )
     if not models:
         return tuple(jobs)

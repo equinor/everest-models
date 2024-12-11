@@ -8,9 +8,9 @@ _HAVE_ERT: Final = find_spec("ert") is not None
 def get_forward_models() -> List[str]:
     """Return the list of forward model names."""
     return [
-        job[3:]
-        for job in resources.contents("everest_models.jobs")
-        if job.startswith("fm_")
+        job.name[3:]
+        for job in resources.files("everest_models.jobs").iterdir()
+        if job.name.startswith("fm_")
     ]
 
 
@@ -48,7 +48,6 @@ if _HAVE_ERT:  # The everest-models package should remain installable without ER
     @ert.plugin(name="everest_models")
     def installable_forward_model_steps():
         return [
-            build_forward_model_step_plugin(job)
-            for job in resources.contents("everest_models.jobs")
-            if job.startswith("fm_")
+            build_forward_model_step_plugin(job_name)
+            for job_name in get_forward_models()
         ]
