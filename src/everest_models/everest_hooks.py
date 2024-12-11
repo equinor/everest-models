@@ -7,7 +7,8 @@ to expose its functions
 
 import logging
 import pathlib
-from importlib import import_module, resources
+from importlib import import_module
+from importlib.resources import files
 from typing import Any, Dict, List, Sequence, Set, Type
 
 from pydantic import BaseModel
@@ -28,7 +29,7 @@ JOBS = "everest_models.jobs"
 
 
 def _get_jobs():
-    return (job for job in resources.contents(JOBS) if job.startswith("fm_"))
+    return (job.name for job in files(JOBS).iterdir() if job.name.startswith("fm_"))
 
 
 @hookimpl
