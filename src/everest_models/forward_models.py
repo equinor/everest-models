@@ -18,29 +18,20 @@ if _HAVE_ERT:  # The everest-models package should remain installable without ER
     import ert
     from ert import ForwardModelStepDocumentation, ForwardModelStepPlugin
 
-    def build_forward_model_step_plugin(
-        executable_name: str,
-    ) -> Type[ForwardModelStepPlugin]:
-        forward_model_name = (
-            executable_name[3:]
-            if executable_name.startswith("fm_")
-            else executable_name
-        )
-        class_name = "".join(
-            x.capitalize() for x in forward_model_name.lower().split("_")
-        )
+    def build_forward_model_step_plugin(fm_name: str) -> Type[ForwardModelStepPlugin]:
+        class_name = "".join(x.capitalize() for x in fm_name.lower().split("_"))
         return type(
             class_name,
             (ForwardModelStepPlugin,),
             {
                 "__init__": lambda x: ForwardModelStepPlugin.__init__(
-                    x, name=forward_model_name, command=[executable_name]
+                    x, name=fm_name, command=[f"fm_{fm_name}"]
                 ),
                 "documentation": lambda: ForwardModelStepDocumentation(
                     category="everest.everest_models",
                     source_package="everest_models",
                     source_function_name=class_name,
-                    description=f"The {forward_model_name} forward model.",
+                    description=f"The {fm_name} forward model.",
                 ),
             },
         )
@@ -48,6 +39,5 @@ if _HAVE_ERT:  # The everest-models package should remain installable without ER
     @ert.plugin(name="everest_models")
     def installable_forward_model_steps():
         return [
-            build_forward_model_step_plugin(job_name)
-            for job_name in get_forward_models()
+            build_forward_model_step_plugin(fm_name) for fm_name in get_forward_models()
         ]
