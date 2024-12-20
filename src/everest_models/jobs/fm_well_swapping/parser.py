@@ -1,13 +1,16 @@
 from functools import partial
 from typing import Dict, Tuple
 
+from everest_models.jobs.shared.parsers.action import SchemaAction
+
 from ..shared.arguments import (
     Parser,
     add_output_argument,
     add_wells_input_argument,
+    bootstrap_parser,
+    get_parser,
 )
 from ..shared.io_utils import load_json
-from ..shared.parsers import bootstrap_parser
 from ..shared.validators import (
     is_gt_zero,
     parse_file,
@@ -27,16 +30,16 @@ def _clean_constraint(value: str) -> Dict[str, Tuple[float, ...]]:
     return {key: tuple(value.values()) for key, value in load_json(value).items()}
 
 
-# TODO: Change program name to state adjuster or something more related to what it does
-# omit anything to do with well
-@bootstrap_parser(
-    schemas=SCHEMAS,  # type: ignore
-    prog="Well Swapping",
-    description="Swap well operation status over multiple time intervals.",
-)
-def build_argument_parser(parser: Parser, lint: bool = False, **kwargs) -> Parser:
+@bootstrap_parser
+def build_argument_parser(lint: bool = False, **kwargs) -> Parser:
     skip_type = kwargs.pop("skip_type", False)
-    parser.add_argument(
+    SchemaAction.register_models(SCHEMAS)
+
+    parser, required_group = get_parser(
+        description="Swap well operation status over multiple time intervals."
+    )
+
+    required_group.add_argument(
         *_CONFIG_ARGUMENT.split("/"),
         required=True,
         type=partial(parse_file, schema=ConfigSchema) if not skip_type else str,

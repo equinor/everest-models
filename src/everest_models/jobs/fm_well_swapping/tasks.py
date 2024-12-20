@@ -78,10 +78,9 @@ def clean_data(options: Namespace) -> Data:
         cleaned_data = clean_data(options)
     """
     errors: List[str] = []
-    lint_only = options.command == "lint"
 
     def validate_exist(value: Any, argument: str):
-        if not (value or lint_only) and hasattr(options, argument):
+        if not (value or options.lint) and hasattr(options, argument):
             errors.append(f"no {' '.join(argument.split('_'))}")
         return value
 
@@ -103,13 +102,13 @@ def clean_data(options: Namespace) -> Data:
     )
 
     return Data(
-        lint_only,
+        options.lint,
         start_date=options.config.start_date,
         iterations=iteration_limit,
         priorities=priorities,
         state=options.config.state,
         cases=validate_exist(options.cases or options.config.cases(), "cases"),
-        output=None if lint_only else validate_exist(options.output, "output"),
+        output=None if options.lint else validate_exist(options.output, "output"),
         state_duration=validate_exist(
             options.config.constraints.rescale(
                 options.constraints["state_duration"]
@@ -137,7 +136,7 @@ def clean_parsed_data(
         logger.error(erros)
         parser.error(erros)
 
-    if data.lint_only:
+    if options.lint:
         parser.exit()
     return data
 
