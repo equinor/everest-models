@@ -89,7 +89,7 @@ def lint_forward_model(job: str, args: Sequence[str]) -> List[str]:
     """
     return (
         import_module(f"{JOBS}.fm_{job}.tasks")
-        .clean_parsed_data(("lint", *args), hook_call=True)
+        .clean_parsed_data(("--lint", *args), hook_call=True)
         .errors
     )
 

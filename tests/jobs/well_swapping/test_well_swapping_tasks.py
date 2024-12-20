@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Literal, NamedTuple, Optional, Tuple, TypedDict
+from typing import Any, Dict, List, NamedTuple, Optional, Tuple, TypedDict
 
 import pytest
 
@@ -24,7 +24,7 @@ class Options(NamedTuple):
     priorities: Optional[List[Dict[str, float]]] = None
     constraints: Optional[Constraints] = None
     output: Optional[Path] = None
-    command: Literal["lint", "run"] = "lint"
+    lint: bool = False
     iteration_limit: int = 0
 
 
@@ -58,7 +58,7 @@ def result(data: Dict[str, Any]) -> Data:
     "options, expected",
     [
         pytest.param(
-            Options(config=ConfigSchema.model_validate(minimum_data)),
+            Options(config=ConfigSchema.model_validate(minimum_data), lint=True),
             Data(
                 lint_only=True,
                 start_date=date(2024, 6, 3),
@@ -74,7 +74,6 @@ def result(data: Dict[str, Any]) -> Data:
         ),
         pytest.param(
             Options(
-                command="run",
                 config=ConfigSchema.model_validate(minimum_data),
                 cases=cases,
                 priorities=[
@@ -88,7 +87,6 @@ def result(data: Dict[str, Any]) -> Data:
         ),
         pytest.param(
             Options(
-                command="run",
                 config=ConfigSchema.model_validate(
                     {
                         **minimum_data,
@@ -131,7 +129,6 @@ def result(data: Dict[str, Any]) -> Data:
         ),
         pytest.param(
             Options(
-                command="run",
                 config=ConfigSchema.model_validate(
                     {
                         **minimum_data,

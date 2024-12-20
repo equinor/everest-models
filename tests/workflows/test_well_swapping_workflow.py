@@ -10,7 +10,6 @@ def test_well_swapping_workflow(copy_testdata_tmpdir) -> None:
 
     well_swapping(
         [
-            "run",
             "--config",
             "well_swap_config.yml",
             "--priorities",
