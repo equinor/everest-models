@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 from sub_testdata import WELL_SWAPPING as TEST_DATA
 
+from everest_models.everest_hooks import custom_forward_model_outputs
 from everest_models.jobs.fm_well_swapping.cli import main_entry_point
 from everest_models.jobs.shared.io_utils import load_json
 
@@ -13,7 +14,6 @@ def test_well_swapping_main_entrypoint_run(copy_testdata_tmpdir) -> None:
     output = "well_swap_output.json"
     main_entry_point(
         (
-            "run",
             "--config",
             "well_swap_config.yml",
             "--priorities",
@@ -34,7 +34,7 @@ def test_well_swapping_main_entrypoint_parse(copy_testdata_tmpdir) -> None:
     files = tuple(Path().glob("*.*"))
     with pytest.raises(SystemExit, match="0"):
         main_entry_point(
-            ("lint", "--cases", "wells.json", "--config", "well_swap_config.yml")
+            ("--cases", "wells.json", "--config", "well_swap_config.yml", "--lint")
         )
     assert files == tuple(Path().glob("*.*"))
 
@@ -51,12 +51,21 @@ def test_well_swapping_main_entrypoint_parse_fault(
     files = tuple(Path().glob("*.*"))
     with pytest.raises(SystemExit, match="2"):
         main_entry_point(
-            ("lint", "-p", "priorities.json", "-c", "well_swap_config.yml")
+            ("--lint", "-p", "priorities.json", "-c", "well_swap_config.yml")
         )
 
     assert files == tuple(Path().glob("*.*"))
     _, err = capsys.readouterr()
     assert (
-        "lint: error: argument -p/--priorities: All entries must contain the same amount of elements/indexes"
+        "error: argument -p/--priorities: All entries must contain the same amount of elements/indexes"
         in err
     )
+
+
+def test_custom_forward_model_outputs_hook(capsys):
+    custom_forward_model_outputs(
+        ["well_swapping  -c c.yml -p p.json -cr cr.json -cs cs.json -o o.json"]
+    )
+    out, err = capsys.readouterr()
+    assert out == ""
+    assert err == ""
