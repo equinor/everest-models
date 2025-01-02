@@ -25,7 +25,7 @@ dependencies = [
     "Jinja2>=3.1.2",
     "numpy>=1.23.2",
     "ruamel.yaml>=0.17.21",
-    "fmu-steaclient @ git+https://github.com/equinor/fmu-steaclient",
+    "fmu-steaclient @ git+https://github.com/equinor/fmu-steaclient@0.8.0",
     "pydantic",
     "ortools>=9.3",
     "rips>=2024.9.1.3",
