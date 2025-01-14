@@ -38,6 +38,7 @@ dynamic = [
 
 [project.optional-dependencies]
 test = [
+    "ert @ git+https://github.com/equinor/ert",
     "decorator",
     "hypothesis",
     "mock",

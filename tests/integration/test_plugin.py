@@ -6,6 +6,10 @@ from pydantic import BaseModel, ConfigDict
 from ruamel.yaml import YAML
 from sub_testdata import ADD_TEMPLATE as TEST_DATA
 
+from everest_models.forward_models import (
+    build_forward_model_step_plugin,
+    get_forward_models,
+)
 from everest_models.jobs.fm_add_templates.config_model import TemplateConfig
 
 FORWARD_MODEL_DIR = "forward_models"
@@ -134,3 +138,18 @@ def test_multi_hook_calls(copy_testdata_tmpdir, plugin_manager):
         ).pop(),
         schema,
     )
+
+
+def test_build_forward_model_step_plugin():
+    expected_names = get_forward_models()
+    expected_fm_names = [f"fm_{name}" for name in expected_names]
+
+    fm_steps_instances = [
+        build_forward_model_step_plugin(fm_name)() for fm_name in get_forward_models()
+    ]
+
+    executables = [instance.executable for instance in fm_steps_instances]
+    names = [instance.name for instance in fm_steps_instances]
+
+    assert executables == expected_fm_names
+    assert names == expected_names
