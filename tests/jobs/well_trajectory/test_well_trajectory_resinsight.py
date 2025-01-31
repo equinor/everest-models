@@ -1,6 +1,7 @@
 import filecmp
 import json
 import logging
+import os
 from pathlib import Path
 
 import pytest
@@ -141,3 +142,23 @@ def test_well_trajectory_resinsight_main_entry_point_no_mlt_missing_date(
         match="Connections error: date not found in restart file: 2015-01-03",
     ):
         main_entry_point("-c config_missing_date.yml -E SPE1CASE1".split())
+
+
+def test_validate_files_required_for_model(copy_testdata_tmpdir, capsys):
+    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight")
+    os.remove("SPE1CASE1.INIT")
+    with pytest.raises(SystemExit) as excinfo:
+        main_entry_point("-c config.yml -E SPE1CASE1".split())
+    assert excinfo.value.code == 2
+    captured = capsys.readouterr()
+    assert "Missing SPE1CASE1.INIT file" in captured.err
+
+
+def test_validate_files_required_for_dynamic_perforation(copy_testdata_tmpdir, capsys):
+    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight")
+    os.remove("SPE1CASE1.UNRST")
+    with pytest.raises(SystemExit) as excinfo:
+        main_entry_point("-c config_dynamic_perforation.yml -E SPE1CASE1".split())
+    assert excinfo.value.code == 2
+    captured = capsys.readouterr()
+    assert "Missing SPE1CASE1.UNRST file" in captured.err
