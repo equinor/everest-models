@@ -36,11 +36,23 @@ def main_entry_point(args=None):
             guide_points,
         )
 
+    # resinsight
     if options.config.connections:
         if (
             eclipse_model := options.eclipse_model or options.config.eclipse_model
         ) is None:
-            args_parser.error("missing eclipse model")
+            args_parser.error("Missing eclipse model")
+
+        for e in options.config.connections.perforations:
+            if bool(e.dynamic) and not Path(f"{eclipse_model}.UNRST").exists():
+                args_parser.error(f"Missing {eclipse_model}.UNRST file")
+
+        if (
+            Path(f"{eclipse_model}.EGRID").exists()
+            and not Path(f"{eclipse_model}.INIT").exists()
+        ):
+            args_parser.error(f"Missing {eclipse_model}.INIT file")
+
         mlt_guide_points = well_trajectory_resinsight(
             options.config, eclipse_model, guide_points
         )
