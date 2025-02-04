@@ -101,9 +101,9 @@ from everest_models.jobs.fm_well_swapping.state_machine import State, StateMachi
 def test_state_machine_from_config(data: Dict[str, Any], expected: str) -> None:
     data["hierarchy"] = tuple({"label": state} for state in data["hierarchy"])
     state_machine = StateMachine.from_config(StateConfig.model_validate(data))
-    assert isinstance(
-        state_machine, StateMachine
-    ), "Should correctly build a StateMachine instance."
+    assert isinstance(state_machine, StateMachine), (
+        "Should correctly build a StateMachine instance."
+    )
     assert str(state_machine) == expected, "State machines matrix should match"
 
 
@@ -122,9 +122,9 @@ def test_is_possible_action(
     target: State,
     expected: Optional[State],
 ) -> None:
-    assert (
-        well_swapping_state_machine.is_possible_action(source, target) == expected
-    ), "Should be able to check state matrix for executable action"
+    assert well_swapping_state_machine.is_possible_action(source, target) == expected, (
+        "Should be able to check state matrix for executable action"
+    )
 
 
 def test_empty_state_map() -> None:

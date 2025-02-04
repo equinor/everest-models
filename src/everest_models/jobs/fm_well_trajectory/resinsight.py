@@ -330,8 +330,7 @@ def make_perforations(
             )
 
         logger.info(
-            f"Exporting well completion data to: {export_filename}"
-            f"\ncwd = {Path.cwd()}"
+            f"Exporting well completion data to: {export_filename}\ncwd = {Path.cwd()}"
         )
         project.cases()[0].export_well_path_completions(
             time_step=0,
@@ -361,7 +360,7 @@ def _generate_welspecs(
     #### edit well group name in WELSPECS in the exported schedule file
     #### this currently is not available in ResInsight Python API
 
-    logger.info(f"Exporting well specs to: {export_filename}" f"\ncwd = {Path.cwd()}")
+    logger.info(f"Exporting well specs to: {export_filename}\ncwd = {Path.cwd()}")
 
     if export_filename.is_file():
         with open(export_filename, "r") as file_obj:

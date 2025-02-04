@@ -56,7 +56,7 @@ def _save_project(project_path: str, project: rips.Project):
 def _save_paths(project_path: str, project: rips.Project, mds: float):
     _save_project(project_path, project)
     logger.info(
-        f"Calling 'export_well_paths' on the resinsight project" f"\ncwd = {Path.cwd()}"
+        f"Calling 'export_well_paths' on the resinsight project\ncwd = {Path.cwd()}"
     )
     project.export_well_paths(well_paths=None, md_step_size=mds)
 
