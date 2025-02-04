@@ -14,10 +14,7 @@ def main_entry_point(args=None):
     unique_dates = set(options.dates)
     if missing_dates := unique_dates - {datetime.date() for datetime in summary.dates}:
         missing_dates_str = ", ".join(date.isoformat() for date in missing_dates)
-        msg = (
-            f"Missing date(s) in eclipse file {summary_path}:"
-            f"\n\t{missing_dates_str}"
-        )
+        msg = f"Missing date(s) in eclipse file {summary_path}:\n\t{missing_dates_str}"
         if options.allow_missing_dates:
             logger.warning(msg)
             options.dates = list(unique_dates - missing_dates)

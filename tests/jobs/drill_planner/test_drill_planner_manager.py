@@ -338,7 +338,7 @@ def test_drill_planner_manager_rig_slot_include_delay(advanced_config):
             ((15, 18),),
         )
     ):
-        config["slots"][f"S{index+1}"]["day_ranges"] = value
+        config["slots"][f"S{index + 1}"]["day_ranges"] = value
 
     well_order = [
         ("W1", 0, 10),

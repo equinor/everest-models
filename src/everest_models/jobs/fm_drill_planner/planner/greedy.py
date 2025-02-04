@@ -82,7 +82,7 @@ def _get_next_event(wells, slots, rigs, horizon, **kwargs):
         )
     ):
         logger.info(
-            f'wells {", ".join(wells.keys())} were unable to be drilled due to constraints'
+            f"wells {', '.join(wells.keys())} were unable to be drilled due to constraints"
         )
 
     return next_event

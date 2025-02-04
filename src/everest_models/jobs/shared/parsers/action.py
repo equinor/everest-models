@@ -20,7 +20,7 @@ from ..models.base_config.introspective import PLACEHOLDER
 
 
 def _get_filepath(base_name: str, no_overwrite: bool, minimal: bool) -> Path:
-    base_name = f"{'minimal_'if minimal else ''}{base_name}"
+    base_name = f"{'minimal_' if minimal else ''}{base_name}"
     return (
         config.with_name(f"{base_name}_{datetime.now().strftime('%Y-%m-%dT%H%M')}.yml")
         if (config := (Path.cwd() / base_name).with_suffix(".yml")).exists()

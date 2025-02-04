@@ -28,7 +28,7 @@ def _no_template_msg(wells: Iterable[Well]) -> str:
     string = []
     for well in wells:
         if sub_str := "\n".join(
-            "\t" f"operation: {name}" "\t" f"date: {date}"
+            f"\toperation: {name}\tdate: {date}"
             for name, date in well.missing_templates
         ):
             string.append(f"Well: {well.name}\n{sub_str}")
