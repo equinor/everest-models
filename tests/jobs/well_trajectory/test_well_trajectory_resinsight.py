@@ -144,14 +144,17 @@ def test_well_trajectory_resinsight_main_entry_point_no_mlt_missing_date(
         main_entry_point("-c config_missing_date.yml -E SPE1CASE1".split())
 
 
-def test_validate_files_required_for_model(copy_testdata_tmpdir, capsys):
+@pytest.mark.parametrize("remove_file", ["SPE1CASE1.EGRID", "SPE1CASE1.INIT"])
+def test_checking_for_files_required_for_model(
+    remove_file, copy_testdata_tmpdir, capsys
+):
     copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight")
-    os.remove("SPE1CASE1.INIT")
+    os.remove(remove_file)
     with pytest.raises(SystemExit) as excinfo:
         main_entry_point("-c config.yml -E SPE1CASE1".split())
     assert excinfo.value.code == 2
     captured = capsys.readouterr()
-    assert "Missing SPE1CASE1.INIT file" in captured.err
+    assert f"Missing {remove_file} file" in captured.err
 
 
 def test_validate_files_required_for_dynamic_perforation(copy_testdata_tmpdir, capsys):
