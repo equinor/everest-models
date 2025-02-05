@@ -47,10 +47,10 @@ def main_entry_point(args=None):
             if bool(e.dynamic) and not Path(f"{eclipse_model}.UNRST").exists():
                 args_parser.error(f"Missing {eclipse_model}.UNRST file")
 
-        if (
-            Path(f"{eclipse_model}.EGRID").exists()
-            and not Path(f"{eclipse_model}.INIT").exists()
-        ):
+        if not Path(f"{eclipse_model}.EGRID").exists():
+            args_parser.error(f"Missing {eclipse_model}.EGRID file")
+
+        if not Path(f"{eclipse_model}.INIT").exists():
             args_parser.error(f"Missing {eclipse_model}.INIT file")
 
         mlt_guide_points = well_trajectory_resinsight(
