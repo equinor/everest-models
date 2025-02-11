@@ -36,24 +36,31 @@ def build_argument_parser(lint: bool = False, **kwargs) -> Parser:
     SchemaAction.register_models(SCHEMAS)
 
     parser, required_group = get_parser(
-        description="Swap well operation status over multiple time intervals."
+        description=(
+            "Swaps well operation state over multiple time intervals according "
+            "to multiple sets of priority values, state quota constraints and "
+            "allowed state changing actions."
+        )
     )
 
     required_group.add_argument(
         *_CONFIG_ARGUMENT.split("/"),
         required=True,
         type=partial(parse_file, schema=ConfigSchema) if not skip_type else str,
-        help="well swapping configuration file",
+        help=(
+            "Configuration file containing additional information defining allowed swapping "
+            "actions, quotas and starting time to determine the swapping schedule."
+        ),
     )
     parser.add_argument(
         *_CONSTRAINTS_ARGUMENT.split("/"),
         type=_clean_constraint if not skip_type else str,
-        help="Everest generated optimized constraints",
+        help="EVEREST-generated JSON file containing the values defining each swapping time interval to be optimized",
     )
     parser.add_argument(
         *_PRIORITIES_ARGUMENT.split("/"),
         type=valid_optimizer if not skip_type else str,
-        help="Everest generated optimized priorities",
+        help="EVEREST-generated JSON file containing the sets of priority values to be optimized",
     )
     parser.add_argument(
         *_LIMIT_ARGUMENT.split("/"),
@@ -67,14 +74,14 @@ def build_argument_parser(lint: bool = False, **kwargs) -> Parser:
         parser,
         required=False,
         arg=("-cs", "--cases"),
-        help="Everest generated wells.json file",
+        help="EVEREST-generated wells.json file",
         skip_type=skip_type,
     )
     if not lint:
         add_output_argument(
             parser,
             required=False,
-            help="Where to write output file to",
+            help="Path to generated output JSON file",
             skip_type=skip_type,
         )
     return parser
