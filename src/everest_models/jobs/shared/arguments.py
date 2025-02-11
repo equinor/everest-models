@@ -59,7 +59,11 @@ def add_lint_argument(parser: Parser) -> None:
     parser.add_argument(
         "--lint",
         action="store_true",
-        help="Lints all given input (file) arguments with no data transformation.",
+        help=(
+            "Optional argument to activate verification of validity of all "
+            "given input (file) arguments without actually executing the "
+            "forward model (i.e., no data transformation, no output calculation)."
+        ),
     )
 
 
@@ -75,7 +79,10 @@ def add_file_schemas(parser: Parser) -> None:
         "--schema",
         nargs=0,
         action=SchemaAction,
-        help="Output schema(s) for file parameter(s)",
+        help=(
+            "Optional argument to generate schemas of the configuration "
+            "file with its expected structure to facilitate its setting up by the user. "
+        ),
     )
 
 
