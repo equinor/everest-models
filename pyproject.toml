@@ -38,7 +38,7 @@ dynamic = [
 
 [project.optional-dependencies]
 test = [
-    "ert @ git+https://github.com/equinor/ert",
+    "ert",  # Specifying git as source breaks the komodo testing
     "decorator",
     "hypothesis",
     "mock",
