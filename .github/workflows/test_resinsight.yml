@@ -80,9 +80,12 @@ jobs:
           cd ResInsight
           git submodule update --init
           # Following is a patch for fixing build issues
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git fetch origin dev
+          git checkout -b temp-branch
+          git cherry-pick ba1224c --strategy-option theirs
           git -C ThirdParty/openzgy checkout 504732e284a276f20dbdf77557e2da37596d638e
-          sed -i 's/3\.4\.4/3.4.5/g' CMakeLists.txt
-          sed -i 's/db55b03b/85fcb584/g' CMakeLists.txt
           ThirdParty/vcpkg/bootstrap-vcpkg.sh
       - name: Build ResInsight
         if: steps.cache-package.outputs.cache-hit != 'true'
