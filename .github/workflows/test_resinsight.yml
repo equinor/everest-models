@@ -11,8 +11,8 @@ on:
 
 env:
   ERT_SHOW_BACKTRACE: 1
-  RESINSIGHT_VERSION: "2024.09.1"
-  RIPS_VERSION: "2024.9.1.3"
+  RESINSIGHT_VERSION: "2024.12.2"
+  RIPS_VERSION: "2024.12.2.3"
   INSTALL_DIR: resinsight_bin
 
 jobs:
@@ -43,7 +43,7 @@ jobs:
           haskell: true
           large-packages: false
           docker-images: true
-          vswap-storage: true
+          swap-storage: true
       - name: Install dependencies
         if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
@@ -54,10 +54,10 @@ jobs:
         if: steps.cache-package.outputs.cache-hit != 'true'
         uses: jurplel/install-qt-action@v4
         with:
-          version: 5.12.12
+          version: 6.7.0
           dir: "${{ github.workspace }}/Qt/"
           cache: true
-          modules: "qtnetworkauth"
+          modules: "qtnetworkauth qtcharts"
       - name: Switch cpp compiler
         if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
@@ -65,15 +65,27 @@ jobs:
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 10
           sudo update-alternatives --auto g++
           sudo update-alternatives --auto gcc
+      - name: Use CMake
+        if: steps.cache-package.outputs.cache-hit != 'true'
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: "~3.26.0"
       - name: Clone ResInsight
         if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
-          git clone -b v${{ env.RESINSIGHT_VERSION }} https://github.com/OPM/ResInsight.git
+          git clone -b v"${{ env.RESINSIGHT_VERSION }}" https://github.com/OPM/ResInsight.git
       - name: Build ResInsight dependencies
         if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
           cd ResInsight
           git submodule update --init
+          # Following is a patch for fixing build issues
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git fetch origin dev
+          git checkout -b temp-branch
+          git cherry-pick ba1224c --strategy-option theirs
+          git -C ThirdParty/openzgy checkout 504732e284a276f20dbdf77557e2da37596d638e
           ThirdParty/vcpkg/bootstrap-vcpkg.sh
       - name: Build ResInsight
         if: steps.cache-package.outputs.cache-hit != 'true'
@@ -90,8 +102,11 @@ jobs:
               -DRESINSIGHT_GRPC_DOWNLOAD_PYTHON_MODULE=OFF \
               -DRESINSIGHT_GRPC_BUNDLE_PYTHON_MODULE=OFF \
               -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/${{ env.INSTALL_DIR }} \
-              -DRESINSIGHT_ENABLE_HDF5=OFF
-          make -j$( nproc ) install
+              -DRESINSIGHT_ENABLE_HDF5=OFF \
+              -DRESINSIGHT_BUILD_LIBS_FROM_SOURCE=false \
+              -DRESINSIGHT_ENABLE_PRECOMPILED_HEADERS=false \
+              -G Ninja
+          cmake --build . --target install
       - name: Package ResInsight
         if: steps.cache-package.outputs.cache-hit != 'true'
         run: |
@@ -114,9 +129,6 @@ jobs:
         os: [ubuntu-24.04]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: "actions/setup-python@v5"
-        with:
-          python-version: "${{ matrix.python-version }}"
       - uses: "actions/checkout@v4"
         with:
           fetch-depth: 0
@@ -128,22 +140,30 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 5.12.12
+          version: 6.7.0
           dir: "${{ github.workspace }}/Qt/"
           cache: true
-          modules: "qtnetworkauth"
+          modules: "qtnetworkauth qtcharts"
       - name: Install ResInsight
         run: |
           sudo apt-get update
           sudo apt-get install libxkbcommon-x11-0 libgl1-mesa-dev mesa-common-dev libglfw3-dev libglu1-mesa-dev
           # Unpack after checking out, otherwise the checkout action would delete it:
           tar zxf resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "${{ matrix.python-version }}"
+          cache: "pip"
+          cache-dependency-path: |
+            pyproject.toml
       - name: "Install the package"
         run: |
           pip install --upgrade pip
           # Make sure we use a compatible rips:
-          pip install rips==${{ env.RIPS_VERSION }}
           pip install .[test]
+          pip install rips==${{ env.RIPS_VERSION }}
+          pip install ert@git+https://github.com/equinor/ert
       - name: Run tests using resinsight
         run: |
-          RESINSIGHT_EXECUTABLE="${{ github.workspace }}/${{ env.INSTALL_DIR }}/ResInsight" pytest -sv --test-resinsight -m resinsight
+          ${{ github.workspace }}/${{ env.INSTALL_DIR }}/bin/ResInsight --console --version
+          RESINSIGHT_EXECUTABLE="${{ github.workspace }}/${{ env.INSTALL_DIR }}/bin/ResInsight" pytest -sv --test-resinsight -m resinsight
