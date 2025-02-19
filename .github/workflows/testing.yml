@@ -36,14 +36,10 @@ jobs:
           cache-dependency-path: |
             pyproject.toml
 
-      - name: "Install dependencies"
-        run: |
-          pip install --upgrade pip
-
       - name: "Install package"
         run: |
+          pip install --upgrade pip
           pip install .[test]
-          pip install ert@git+https://github.com/equinor/ert
 
       - name: "Test package everest-models"
         run: |

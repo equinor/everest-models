@@ -162,7 +162,6 @@ jobs:
           # Make sure we use a compatible rips:
           pip install .[test]
           pip install rips==${{ env.RIPS_VERSION }}
-          pip install ert@git+https://github.com/equinor/ert
       - name: Run tests using resinsight
         run: |
           ${{ github.workspace }}/${{ env.INSTALL_DIR }}/bin/ResInsight --console --version
