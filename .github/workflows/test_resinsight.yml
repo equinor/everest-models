@@ -153,16 +153,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "${{ matrix.python-version }}"
-          cache: "pip"
-          cache-dependency-path: |
-            pyproject.toml
       - name: "Install the package"
         run: |
           pip install --upgrade pip
           # Make sure we use a compatible rips:
           pip install .[test]
           pip install rips==${{ env.RIPS_VERSION }}
-          pip install ert@git+https://github.com/equinor/ert
       - name: Run tests using resinsight
         run: |
           ${{ github.workspace }}/${{ env.INSTALL_DIR }}/bin/ResInsight --console --version
