@@ -18,7 +18,7 @@ def pairwise(iterable):
     # pairwise('ABCDEFG') --> AB BC CD DE EF FG
     a, b = itertools.tee(iterable)
     next(b, None)
-    return zip(a, b)
+    return zip(a, b, strict=False)
 
 
 class ScheduleError(Exception): ...
@@ -102,6 +102,7 @@ class FieldManager:
                 for optimized_event, greedy_event in zip(
                     sorted_events(self._optimize_schedule),
                     sorted_events(self._greedy_schedule),
+                    strict=False,
                 )
             ),
             self._optimize_schedule,

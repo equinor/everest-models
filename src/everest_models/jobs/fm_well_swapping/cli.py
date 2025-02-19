@@ -17,6 +17,7 @@ def main_entry_point(args: Optional[Sequence[str]] = None):
         zip(
             duration_to_dates(data.state_duration, data.start_date),
             determine_index_states(data.state, data.iterations, data.priorities),
+            strict=False,
         ),
     )
     data.cases.json_dump(data.output)

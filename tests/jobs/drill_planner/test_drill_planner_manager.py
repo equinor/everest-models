@@ -271,7 +271,7 @@ def test_drill_planner_manager_resolve_priorities(input, expected):
     )
     assert (
         event.end == end and event.completion == completion
-        for event, (end, completion) in zip(schedule, expected)
+        for event, (end, completion) in zip(schedule, expected, strict=False)
     )
 
 

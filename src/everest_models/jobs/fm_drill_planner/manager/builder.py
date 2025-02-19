@@ -90,7 +90,9 @@ class FieldManagerBuilder:
                 iteration += 1
 
         def unique_slots(rig_name, rig):
-            for well_name, slot_name in zip(rig.wells, unique_slot_name(rig_name)):
+            for well_name, slot_name in zip(
+                rig.wells, unique_slot_name(rig_name), strict=False
+            ):
                 rig.slots.append(slot_name)
                 yield slot_name, Slot(wells=(well_name,))
 

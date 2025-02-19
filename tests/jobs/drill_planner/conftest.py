@@ -185,7 +185,7 @@ def large_config():
     slots = [f"S{i}" for i in range(1, 30)]
     rigs = ["A", "B", "C"]
     drill_times = [30, 20, 40, 25, 35, 75, 33, 90, 23, 32, 10, 42, 38, 47, 53]
-    wells_priority = dict(zip(wells, range(len(wells), 0, -1)))
+    wells_priority = dict(zip(wells, range(len(wells), 0, -1), strict=False))
     return {
         "start_date": START_DATE,
         "end_date": end_date,

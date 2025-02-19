@@ -195,6 +195,7 @@ class _DrillConstraints(cp_model.CpModel):
             for well_name, drill_time in zip(
                 wells,
                 itertools.accumulate(self.wells[well].drill_time + 1 for well in wells),
+                strict=False,
             )
         )
 
