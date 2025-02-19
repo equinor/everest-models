@@ -209,6 +209,7 @@ def determine_index_states(
             priorities,
             state.get_targets(limit),
             state.get_quotas(limit, len(case_names)),
+            strict=False,
         )
     ):
         if not processor.is_locked:

@@ -265,9 +265,10 @@ class StateConfig(ModelConfig):
 
     def get_quotas(self, iterations: int, cases: int) -> Iterator[Dict[State, Quota]]:
         return (
-            dict(zip((item.label for item in self.hierarchy), value))
+            dict(zip((item.label for item in self.hierarchy), value, strict=False))
             for value in zip(
-                *[item.get_quotas(iterations, cases) for item in self.hierarchy]
+                *[item.get_quotas(iterations, cases) for item in self.hierarchy],
+                strict=False,
             )
         )
 

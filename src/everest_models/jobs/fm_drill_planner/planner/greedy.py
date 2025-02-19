@@ -50,6 +50,7 @@ def _combine_slot_rig_unavailability(unavailability):
         np.append(end_days, unavailability.shape[0])
         if unavailability[-1]
         else end_days,
+        strict=False,
     )
 
 

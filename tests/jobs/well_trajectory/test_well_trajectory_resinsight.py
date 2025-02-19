@@ -20,10 +20,13 @@ def well_trajectory_arguments():
 @pytest.mark.resinsight
 def test_failing_start_resinsight(caplog):
     caplog.set_level(logging.INFO)
-    with pytest.raises(
-        ConnectionError,
-        match="Failed to launch ResInsight executable: _non_existing_binary_",
-    ), ResInsight("_non_existing_binary_"):
+    with (
+        pytest.raises(
+            ConnectionError,
+            match="Failed to launch ResInsight executable: _non_existing_binary_",
+        ),
+        ResInsight("_non_existing_binary_"),
+    ):
         pass
     assert "Launching ResInsight..." in caplog.text
 

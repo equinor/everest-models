@@ -85,7 +85,9 @@ def create_well(
     geometry.update()
 
     intersection_points = []
-    for point in zip(guide_points.x[1:], guide_points.y[1:], guide_points.z[1:]):
+    for point in zip(
+        guide_points.x[1:], guide_points.y[1:], guide_points.z[1:], strict=False
+    ):
         coord = [str(item) for item in point]
         target = geometry.append_well_target(coordinate=coord, absolute=True)
         target.dogleg1 = well_config.dogleg
@@ -125,7 +127,9 @@ def create_branches(
         geometry = lateral.well_path_geometry()
 
         intersection_points = []
-        for point in zip(guide_points.x[1:], guide_points.y[1:], guide_points.z[1:]):
+        for point in zip(
+            guide_points.x[1:], guide_points.y[1:], guide_points.z[1:], strict=False
+        ):
             coord = [str(item) for item in point]
             target = geometry.append_well_target(coordinate=coord, absolute=True)
             target.dogleg1 = well_config.dogleg
@@ -312,7 +316,9 @@ def make_perforations(
         well_path = project.well_path_by_name(well_name)
         total_perf_length = 0
         if perf_depths.size > 0:
-            for start, end in zip(perf_depths.iloc[::2], perf_depths.iloc[1::2]):
+            for start, end in zip(
+                perf_depths.iloc[::2], perf_depths.iloc[1::2], strict=False
+            ):
                 well_path.append_perforation_interval(
                     start_md=start,
                     end_md=end,
