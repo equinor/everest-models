@@ -9,7 +9,8 @@ from sub_testdata import WELL_CONSTRAINTS as TEST_DATA
 
 from everest_models.jobs.fm_well_constraints import cli, parser
 from everest_models.jobs.fm_well_constraints.models import (
-    Constraint,
+    Control,
+    PhaseControl,
     WellConstraintConfig,
 )
 
@@ -34,7 +35,10 @@ def _get_modified_constraints(path: pathlib.Path, key: str):
     with path.open(mode="r") as fp:
         data = json.load(fp)
     data[key] = data.pop("INJECT2")
-    return Constraint.model_validate(data)
+    if key == "RATE":
+        return Control.model_validate(data)
+    elif key == "PHASE":
+        return PhaseControl.model_validate(data)
 
 
 @pytest.fixture(scope="module")
