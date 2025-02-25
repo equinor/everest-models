@@ -45,40 +45,29 @@ class Phase(ModelConfig):
 
 
 class Tolerance(ModelConfig):
-    min: Annotated[float, Field(default=None, description="")]
-    max: Annotated[float, Field(default=None, description="")]
-    value: Annotated[float, Field(default=None, description="")]
+    min: Annotated[float | None, Field(default=None, description="")]
+    max: Annotated[float | None, Field(default=None, description="")]
+    value: Annotated[float | None, Field(default=None, description="")]
 
     @model_validator(mode="after")
-    def is_correct_tolerance_field(self):
+    def deprecated_min_max_values(self):
         has_min = self.min is not None
         has_max = self.max is not None
-        has_value = self.value is not None
-
-        errors = []
-        if all([has_value, has_min or has_max]):
-            errors.append("Either ['max', 'min'] PAIR or 'value' key, but not both.")
-        if has_min ^ has_max:
-            errors.append("'max' and 'min' must be in a pair")
-        if (has_min and has_max) and self.max <= self.min:
-            errors.append("'max' cannot be less or equal to 'min' value.")
-        assert not errors, "\n".join(errors)
-
+        if has_min or has_max:
+            raise ValueError(
+                "The well_constrains job no longer supports min max bounds for rate and duration controls "
+                "Remove min or max keys from the config file."
+            )
         return self
 
     def optimum_value(self, optimizer_value: Optional[float]) -> float:
-        """Min/max scaling of input (optimizer) value"""
-        return (
-            self.value
-            if optimizer_value is None
-            else optimizer_value * (self.max - self.min) + self.min
-        )
+        return optimizer_value or self.value
 
 
 class Constraints(ModelConfig):
     phase: Annotated[Phase, Field(description="")]
-    rate: Annotated[Tolerance, Field(description="")]
-    duration: Annotated[Tolerance, Field(description="")]
+    rate: Annotated[Tolerance, Field(description="", default=Tolerance(value=None))]
+    duration: Annotated[Tolerance, Field(description="", default=Tolerance(value=None))]
 
 
 # WellConstraintConfig = RootModel[Dict[str, Dict[int, Constraints]]]
