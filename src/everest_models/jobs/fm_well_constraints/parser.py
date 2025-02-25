@@ -2,7 +2,8 @@ import argparse
 from functools import partial
 
 from everest_models.jobs.fm_well_constraints.models import (
-    Constraint,
+    Control,
+    PhaseControl,
     WellConstraintConfig,
 )
 from everest_models.jobs.shared.arguments import (
@@ -23,9 +24,9 @@ DURATION_CONSTRAINTS_ARG_KEY = "-dc/--duration-constraints"
 
 SCHEMAS = {
     CONFIG_ARG_KEY: WellConstraintConfig,
-    RATE_CONSTRAINTS_ARG_KEY: Constraint,
-    PHASE_CONSTRAINTS_ARG_KEY: Constraint,
-    DURATION_CONSTRAINTS_ARG_KEY: Constraint,
+    RATE_CONSTRAINTS_ARG_KEY: Control,
+    PHASE_CONSTRAINTS_ARG_KEY: PhaseControl,
+    DURATION_CONSTRAINTS_ARG_KEY: Control,
 }
 
 
@@ -61,12 +62,9 @@ def build_argument_parser(skip_type=False) -> argparse.ArgumentParser:
     parser.add_argument(
         *RATE_CONSTRAINTS_ARG_KEY.split("/"),
         help="Rate constraints file in json format, from controls section of Everest config, "
-        "must be indexed format. Values must be in the interval [0, 1], "
-        "where 0 corresponds to the minimum possible rate value of the well "
-        "the given index and 1 corresponds to the maximum possible value "
-        "of the well at the given index.",
+        "must be indexed format.",
         default=None,
-        type=partial(parse_file, schema=Constraint) if not skip_type else str,
+        type=partial(parse_file, schema=Control) if not skip_type else str,
     )
     parser.add_argument(
         *PHASE_CONSTRAINTS_ARG_KEY.split("/"),
@@ -76,15 +74,13 @@ def build_argument_parser(skip_type=False) -> argparse.ArgumentParser:
         'interval [0, 0.5] will be attributed to "water" and any control '
         'value in the interval (0.5, 1] will be attributed to "gas".',
         default=None,
-        type=partial(parse_file, schema=Constraint) if not skip_type else str,
+        type=partial(parse_file, schema=PhaseControl) if not skip_type else str,
     )
     parser.add_argument(
         *DURATION_CONSTRAINTS_ARG_KEY.split("/"),
         help="Duration constraints file in json format, from controls section of Everest "
-        "config, must be indexed format. Values must be in the interval [0, 1], "
-        "where 0 corresponds to the minimum possible drill time for well, "
-        "if given, 1 corresponds to the maximum drill time of the well if given.",
+        "config, must be indexed format.",
         default=None,
-        type=partial(parse_file, schema=Constraint) if not skip_type else str,
+        type=partial(parse_file, schema=Control) if not skip_type else str,
     )
     return parser
