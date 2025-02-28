@@ -6,7 +6,7 @@ from typing import Any, Dict, Final, Iterable, NamedTuple, Optional, Tuple
 import numpy as np
 
 from ..shared.io_utils import load_json
-from .models.config import PlatformConfig, ReferencesConfig, ScalesConfig, WellConfig
+from .models.config import PlatformConfig, WellConfig
 from .models.data_structs import Trajectory
 
 logger = logging.getLogger("well_trajectory")
@@ -26,10 +26,6 @@ class _Point(NamedTuple):
     z: float
 
 
-def _rescale(point: float, scale: float, reference: float):
-    return scale * point + reference
-
-
 def _read_files(*args: str) -> Dict[str, Any]:
     return {
         filename: (load_json(Path(filename).with_suffix(".json")))
@@ -40,8 +36,6 @@ def _read_files(*args: str) -> Dict[str, Any]:
 
 def _read_platform_and_kickoff(
     input_files: Dict[str, Any],
-    scales: ScalesConfig,
-    references: ReferencesConfig,
     platform_config: PlatformConfig,
 ) -> Tuple[_Point, Optional[float]]:
     def _get_from_platform_file(platform_file: str, attr: str) -> Optional[float]:
@@ -51,13 +45,6 @@ def _read_platform_and_kickoff(
                 f"File: {platform_file}.json found, overriding '{attr}' "
                 f"for '{platform_config.name}' in configuration."
             )
-            scale = getattr(scales, attr)
-            ref = getattr(references, attr)
-            if scale is None or ref is None:
-                raise ValueError(
-                    f"Either 'references.{attr}' or 'scales.{attr}' missing in configuration"
-                )
-            value = _rescale(value, scale, ref)
         else:
             # If necessary, get the value from the platform configuration:
             value = getattr(platform_config, attr)
@@ -75,18 +62,16 @@ def _read_platform_and_kickoff(
     return _Point(x=px, y=py, z=0.0), pk
 
 
-def _get_rescaled_point(
+def _get_point_for_well(
     point_files: Iterable[str],
     input_files: Dict[str, Any],
     well_name: str,
-    scales: ScalesConfig,
-    references: ReferencesConfig,
 ) -> _Point:
     px, py, pz = (input_files[item][well_name] for item in point_files)
     return _Point(
-        x=_rescale(px, scales.x, references.x),
-        y=_rescale(py, scales.y, references.y),
-        z=_rescale(pz, scales.z, references.z),
+        x=px,
+        y=py,
+        z=pz,
     )
 
 
@@ -101,15 +86,13 @@ def _construct_midpoint(
 
 
 def _read_trajectory(
-    scales: ScalesConfig,
-    references: ReferencesConfig,
     well_name: str,
     platform_config: Optional[PlatformConfig],
     point_files: Dict[str, Any],
     platform_files: Dict[str, Any],
 ) -> Trajectory:
-    p1 = _get_rescaled_point(P1, point_files, well_name, scales, references)
-    p3 = _get_rescaled_point(P3, point_files, well_name, scales, references)
+    p1 = _get_point_for_well(P1, point_files, well_name)
+    p3 = _get_point_for_well(P3, point_files, well_name)
     a, b, c = [point_files[key][well_name] for key in P2]
     p2 = _construct_midpoint(a, b, c, p1, p3)
 
@@ -118,7 +101,7 @@ def _read_trajectory(
         x, y, z = [p1.x], [p1.y], [p1.z]
     else:
         platform_point, platform_k = _read_platform_and_kickoff(
-            platform_files, scales, references, platform_config
+            platform_files, platform_config
         )
         # The platform must be at z=0:
         x, y, z = [platform_point.x], [platform_point.y], [0.0]
@@ -136,8 +119,6 @@ def _read_trajectory(
 
 
 def read_trajectories(
-    scales: ScalesConfig,
-    references: ReferencesConfig,
     wells: Iterable[WellConfig],
     platforms: Iterable[PlatformConfig],
 ) -> Dict[str, Trajectory]:
@@ -162,8 +143,6 @@ def read_trajectories(
 
     return {
         well.name: _read_trajectory(
-            scales=scales,
-            references=references,
             well_name=well.name,
             platform_config=next(
                 (item for item in platforms if item.name == well.platform), None
@@ -219,14 +198,12 @@ def _read_lateral_files(wells: Iterable[WellConfig]) -> Dict[str, Any]:
 
 
 def _find_mlt_p1(
-    scales: ScalesConfig,
-    references: ReferencesConfig,
     well_name: str,
     branch: str,
     lateral_files: Dict[str, Any],
 ) -> Tuple[float, _Point]:
     # Get the true depth:
-    z = _rescale(lateral_files[M1][well_name][branch], scales.z, references.z)
+    z = lateral_files[M1][well_name][branch]
 
     # Read the trajectory of the well, which must be available:
     dev = np.genfromtxt(
@@ -251,20 +228,18 @@ def _find_mlt_p1(
 
 
 def _read_lateral(
-    scales: ScalesConfig,
-    references: ReferencesConfig,
     well_name: str,
     branch: str,
     lateral_files: Dict[str, Any],
 ) -> Tuple[float, Trajectory]:
     # Find the first point of the branch:
-    md, mlt_p1 = _find_mlt_p1(scales, references, well_name, branch, lateral_files)
+    md, mlt_p1 = _find_mlt_p1(well_name, branch, lateral_files)
 
     # Find the end-point of the branch:
     mlt_p3 = _Point(
-        x=_rescale(lateral_files[M3[0]][well_name][branch], scales.x, references.x),
-        y=_rescale(lateral_files[M3[1]][well_name][branch], scales.y, references.y),
-        z=_rescale(lateral_files[M3[2]][well_name][branch], scales.z, references.z),
+        x=lateral_files[M3[0]][well_name][branch],
+        y=lateral_files[M3[1]][well_name][branch],
+        z=lateral_files[M3[2]][well_name][branch],
     )
 
     # Find the midpoint between the beginning and end of the branch:
@@ -279,15 +254,13 @@ def _read_lateral(
 
 
 def read_laterals(
-    scales: ScalesConfig,
-    references: ReferencesConfig,
     wells: Iterable[WellConfig],
 ) -> Dict[str, Dict[str, Tuple[float, Trajectory]]]:
     lateral_files = _read_lateral_files(wells)
     return (
         {
             well: {
-                branch: _read_lateral(scales, references, well, branch, lateral_files)
+                branch: _read_lateral(well, branch, lateral_files)
                 for branch in lateral_files[M1][well]
             }
             for well in lateral_files[M1]
