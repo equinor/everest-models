@@ -134,8 +134,6 @@ def main_entry_point(args=None):
         args_parser.exit()
 
     guide_points = read_trajectories(
-        options.config.scales,
-        options.config.references,
         options.config.wells,
         options.config.platforms,
     )

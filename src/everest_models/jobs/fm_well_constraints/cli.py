@@ -200,5 +200,4 @@ def main_entry_point(args=None):
                 _well_constraints(well_name=well.name),
             ),
         )
-
     options.input.json_dump(options.output)

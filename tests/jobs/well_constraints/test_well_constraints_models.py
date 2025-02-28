@@ -1,12 +1,9 @@
 import copy
 
 import pytest
-from hypothesis import given
-from hypothesis import strategies as st
 from pydantic import ValidationError
 
 from everest_models.jobs.fm_well_constraints.models import (
-    Constraint,
     WellConstraintConfig,
 )
 from everest_models.jobs.fm_well_constraints.models.config import Phase, Tolerance
@@ -15,8 +12,7 @@ _WELL_CONSTRAINTS_CONFIG = {
     "INJECT1": {
         1: {
             "rate": {
-                "min": 0,
-                "max": 1000,
+                "value": 500,
             },
             "phase": {
                 "options": [
@@ -42,132 +38,64 @@ def assert_error_messages(info: pytest.ExceptionInfo, *msgs):
     errors = info.value.errors()
 
     assert len(errors) == len(msgs)
-    assert all(
-        error["msg"].replace("Assertion failed, ", "") in msgs for error in errors
-    )
+    assert all(error["msg"].replace("Value error, ", "") in msgs for error in errors)
 
 
-def get_config_constraint(key: str, pop: bool, retain: bool = True) -> dict:
-    config = copy.deepcopy(_WELL_CONSTRAINTS_CONFIG)
-    rate = config["INJECT1"][1]["rate"]
-    if retain:
-        rate["value"] = rate.pop(key) if pop else rate.get(key)
-    else:
-        rate.pop(key)
-    return config
-
-
-@given(st.floats(max_value=1, min_value=0))
-def test_constraint_model_fields(value):
-    assert Constraint.model_validate({"Li": {1: value}, "Vi": {2: 0.35}})
-
-
-@given(st.floats(min_value=1.0000000001))
-def test_constraint_model_fields_over_zero_error(value):
-    with pytest.raises(ValidationError) as e:
-        Constraint.model_validate({"Li": {1: value}, "Vi": {2: 0.35}})
-    assert_error_messages(
-        e, f"Value(s) are not within bounds [0, 1]:\n\tLi -> 1 -> {value}"
-    )
-
-
-@given(st.floats(max_value=-0.0000000001))
-def test_constraint_model_fields_under_zero_error(value):
-    with pytest.raises(ValidationError) as e:
-        Constraint.model_validate({"Li": {1: value}, "Vi": {2: 0.35}})
-    assert_error_messages(
-        e, f"Value(s) are not within bounds [0, 1]:\n\tLi -> 1 -> {value}"
-    )
-
-
-def test_constraint_model_fields_multi_error_one_message():
-    with pytest.raises(ValidationError) as e:
-        Constraint.model_validate({"Li": {1: -0.3}, "Vi": {2: 1.35}})
-    assert_error_messages(
-        e, "Value(s) are not within bounds [0, 1]:\n\tLi -> 1 -> -0.3\tVi -> 2 -> 1.35"
-    )
+def copy_config_constraint() -> dict:
+    return copy.deepcopy(_WELL_CONSTRAINTS_CONFIG)
 
 
 def test_constraints_config_model_fields():
     assert WellConstraintConfig.model_validate(_WELL_CONSTRAINTS_CONFIG)
 
 
-@pytest.mark.parametrize(
-    "config",
-    (
-        pytest.param(get_config_constraint("min", pop=True, retain=False), id="max"),
-        pytest.param(get_config_constraint("max", pop=True, retain=False), id="min"),
-    ),
-)
-def test_constraints_config_model_fields_min_or_max_error(config):
-    with pytest.raises(ValidationError) as e:
+def test_constraints_config_model_fields_min_error():
+    config = copy.deepcopy(_WELL_CONSTRAINTS_CONFIG)
+    config["INJECT1"][1]["rate"]["min"] = 0
+    with pytest.raises(
+        ValidationError,
+        match="Well constrains job no longer supports scaled optimizer values",
+    ):
         WellConstraintConfig.model_validate(config)
-    assert_error_messages(e, _WELL_CONSTRAINTS_CONFIG_ERRORS[1])
 
 
-@pytest.mark.parametrize(
-    "config, error_message",
-    (
-        pytest.param(
-            get_config_constraint("min", pop=True),
-            "\n".join(_WELL_CONSTRAINTS_CONFIG_ERRORS[:-1]),
-            id="max_value",
-        ),
-        pytest.param(
-            get_config_constraint("max", pop=True),
-            "\n".join(_WELL_CONSTRAINTS_CONFIG_ERRORS[:-1]),
-            id="min_value",
-        ),
-        pytest.param(
-            get_config_constraint("min", pop=False),
-            _WELL_CONSTRAINTS_CONFIG_ERRORS[0],
-            id="max_min_value",
-        ),
-    ),
-)
-def test_constraints_config_model_fields_min_max_value_error(config, error_message):
-    with pytest.raises(ValidationError) as e:
+def test_constraints_config_model_fields_max_error():
+    config = copy.deepcopy(_WELL_CONSTRAINTS_CONFIG)
+    config["INJECT1"][1]["rate"]["max"] = 100
+    with pytest.raises(
+        ValidationError,
+        match="Well constrains job no longer supports scaled optimizer values",
+    ):
         WellConstraintConfig.model_validate(config)
-    assert_error_messages(e, error_message)
 
 
 def test_constraint_config_model_fields_options_value_error():
     config = copy.deepcopy(_WELL_CONSTRAINTS_CONFIG)
     phase = config["INJECT1"][1]["phase"]
     phase["value"] = phase.get("options")[0]
-    with pytest.raises(ValidationError) as e:
+    with pytest.raises(
+        ValidationError,
+        match="'options' key cannot be used in conjunction with 'value' key",
+    ):
         WellConstraintConfig.model_validate(config)
-    assert_error_messages(
-        e, "'options' key cannot be used in conjunction with 'value' key."
-    )
-
-
-def test_constraints_config_model_fields_min_gt_max_error():
-    config = copy.deepcopy(_WELL_CONSTRAINTS_CONFIG)
-    rate = config["INJECT1"][1]["rate"]
-    rate["max"] = rate["min"]
-    with pytest.raises(ValidationError) as e:
-        WellConstraintConfig.model_validate(config)
-    assert_error_messages(e, _WELL_CONSTRAINTS_CONFIG_ERRORS[-1])
-
-
-def test_constraints_config_model_fields_multi_error_one_message():
-    config = get_config_constraint("min", pop=False)
-    rate = config["INJECT1"][1]["rate"]
-    rate["max"] = rate["min"]
-    with pytest.raises(ValidationError) as e:
-        WellConstraintConfig.model_validate(config)
-    assert_error_messages(e, "\n".join(_WELL_CONSTRAINTS_CONFIG_ERRORS[::2]))
 
 
 def test_constraints_config_model_fields_multi_error_multi_message():
-    config = get_config_constraint("min", pop=False)
+    config = copy.deepcopy(_WELL_CONSTRAINTS_CONFIG)
+    config["INJECT1"][1]["rate"]["max"] = 100
     phase = config["INJECT1"][1]["phase"]
     phase["value"] = phase["options"][0]
     phase["options"] = []
     with pytest.raises(ValidationError) as e:
         WellConstraintConfig.model_validate(config)
-    assert_error_messages(e, "Empty 'options' list", _WELL_CONSTRAINTS_CONFIG_ERRORS[0])
+    errors = e.value.errors()
+    errors = [error["msg"] for error in errors]
+    assert len(errors) == 2
+    assert any("Empty 'options' list" in msg for msg in errors)
+    assert any(
+        "Remove min or max keys from well constraint config file." in msg
+        for msg in errors
+    )
 
 
 @pytest.mark.parametrize(
@@ -184,12 +112,20 @@ def test_constraint_phase_model_optimum_value_none():
 
 
 @pytest.mark.parametrize(
-    "optimizer_value, expected",
-    ((0, 0), (0.1, 100), (0.2, 200), (0.15684, 156.84), (1, 1000)),
+    "optimizer_value, config_value, expected",
+    ((0, 500, 500), (0.1, None, 0.1)),
 )
-def test_constraint_tolerance_model_optimum_value(optimizer_value, expected):
-    phase = Tolerance.model_validate(_WELL_CONSTRAINTS_CONFIG["INJECT1"][1]["rate"])
-    assert phase.optimum_value(optimizer_value) == expected
+def test_constraint_tolerance_model_optimum_value(
+    optimizer_value, config_value, expected
+):
+    config = copy.deepcopy(_WELL_CONSTRAINTS_CONFIG["INJECT1"][1]["rate"])
+    if config_value is None:
+        config = {}
+    else:
+        config["value"] = config_value
+
+    rate = Tolerance.model_validate(config)
+    assert rate.optimum_value(optimizer_value) == expected
 
 
 def test_invalid_min_max_fields_throws_validation_error():
