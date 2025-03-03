@@ -24,6 +24,11 @@ jobs:
         submodules: true
         lfs: true
 
+    - name: Install Ubuntu dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install libegl1 -y
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
