@@ -21,8 +21,9 @@ SCHEMAS = {CONFIG_ARGUMENT: NPVConfig}
 def build_argument_parser(skip_type=False):
     SchemaAction.register_models(SCHEMAS)
     parser, required_group = get_parser(
+        prog="fm_npv",
         description="Module to calculate the NPV based on an eclipse simulation. "
-        "All optional args, except: lint, schemas, input and output, is also configurable through the config file."
+        "All optional args, except: lint, schemas, input and output, is also configurable through the config file.",
     )
     add_summary_argument(required_group, skip_type=skip_type)
     add_wells_input_argument(

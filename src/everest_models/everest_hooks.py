@@ -117,13 +117,10 @@ def custom_forward_model_outputs(forward_model_steps: List[str]) -> Set[str]:
     for step in forward_model_steps:
         step_name, *args = step.split()
         if step_name in get_forward_models():
-            try:
-                parser = import_module(
-                    f"{JOBS}.fm_{step_name}.parser"
-                ).build_argument_parser(skip_type=True)
-                options = parser.parse_args(args)
-                if "output" in options and options.output:
-                    outputs.add(options.output)
-            except (SystemExit, AttributeError):
-                pass
+            parser = import_module(
+                f"{JOBS}.fm_{step_name}.parser"
+            ).build_argument_parser(skip_type=True)
+            options = parser.parse_args(args)
+            if "output" in options and options.output:
+                outputs.add(options.output)
     return outputs

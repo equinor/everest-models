@@ -12,10 +12,11 @@ from .well_model import Wells
 @bootstrap_parser
 def build_argument_parser(skip_type=False):
     parser, required_group = get_parser(
+        prog="fm_schmerge",
         description="This module works on a schedule file intended for reservoir simulation"
         "(e.g. eclipse or flow), and injects templates at given dates. If the report"
         "date does not exist in advance it will be added as an independent step. "
-        "The templates will further be filled in with the given parameter values."
+        "The templates will further be filled in with the given parameter values.",
     )
     required_group.add_argument(
         "-s",

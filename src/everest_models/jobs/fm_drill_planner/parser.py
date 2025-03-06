@@ -21,13 +21,14 @@ SCHEMAS = {
 def build_argument_parser(skip_type=False):
     SchemaAction.register_models(SCHEMAS)
     parser, required_group = get_parser(
+        prog="fm_drill_planner",
         description="A module that given a well priority list and a set of "
         "constraints, creates a list of dates for each well to be completed. "
         "Any well may have multiple options as to where it can be drilled, "
         "both for different slots and rigs. The module will try to find the "
         "optimum event combinations that allows for the wells to be completed "
         "as quickly as possible, and at the same time make sure that the "
-        "dates that are output will be a valid drill plan."
+        "dates that are output will be a valid drill plan.",
     )
     add_wells_input_argument(
         required_group,

@@ -36,11 +36,12 @@ def build_argument_parser(lint: bool = False, **kwargs) -> Parser:
     SchemaAction.register_models(SCHEMAS)
 
     parser, required_group = get_parser(
+        prog="fm_well_swapping",
         description=(
             "Swaps well operation state over multiple time intervals according "
             "to multiple sets of priority values, state quota constraints and "
             "allowed state changing actions."
-        )
+        ),
     )
 
     required_group.add_argument(

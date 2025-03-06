@@ -12,7 +12,9 @@ def build_argument_parser(skip_type=False):
         "This object contains a list of well names to keep."
     )
 
-    parser, required_group = get_parser(description=description)
+    parser, required_group = get_parser(
+        description=description, prog="fm_interpret_well_drill"
+    )
     add_input_argument(
         required_group,
         help=(

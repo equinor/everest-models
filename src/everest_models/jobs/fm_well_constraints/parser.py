@@ -32,6 +32,7 @@ SCHEMAS = {
 def build_argument_parser(skip_type=False) -> argparse.ArgumentParser:
     SchemaAction.register_models(SCHEMAS)
     parser, required_group = get_parser(
+        prog="fm_well_constraints",
         description="A module that given a list of boundaries and well constraints creates a "
         "list of well events. Varying phase, rate and time of each event is supported. Rate and "
         "duration boundaries are given as min/max, and phase as a list of possibilities "
