@@ -147,7 +147,7 @@ jobs:
       - name: Install ResInsight
         run: |
           sudo apt-get update
-          sudo apt-get install libxkbcommon-x11-0 libgl1-mesa-dev mesa-common-dev libglfw3-dev libglu1-mesa-dev
+          sudo apt-get install  libegl1 libxkbcommon-x11-0 libgl1-mesa-dev mesa-common-dev libglfw3-dev libglu1-mesa-dev
           # Unpack after checking out, otherwise the checkout action would delete it:
           tar zxf resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
       - uses: actions/setup-python@v5
