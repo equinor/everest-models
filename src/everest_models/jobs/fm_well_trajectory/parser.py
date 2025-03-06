@@ -23,13 +23,14 @@ SCHEMAS = {CONFIG_ARG_KEY: ConfigSchema}
 def build_argument_parser(skip_type=False) -> argparse.ArgumentParser:
     SchemaAction.register_models(SCHEMAS)
     parser, required_group = get_parser(
+        prog="fm_well_trajectory",
         description="Design a well trajectory based on provided parametrized guide points."
         "The guide points are interpolated in order to obtain a smooth well trajectory."
         "Then, inputs for the reservoir simulator are created in form of completion "
         "data consisting of grid cells that trajectory interjects, well-to-cell connection "
         "factors, well diameter, skin, etc. Optionally, only perforated intervals are created "
         "for which provided perforation criteria are satisfied based on information, such as "
-        "geological formation or any static or dynamic property in the grid cell of a reservoir simulation model."
+        "geological formation or any static or dynamic property in the grid cell of a reservoir simulation model.",
     )
     required_group.add_argument(
         *CONFIG_ARG_KEY.split("/"),

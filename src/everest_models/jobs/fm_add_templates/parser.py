@@ -19,11 +19,12 @@ SCHEMAS = {_CONFIG_ARGUMENT: TemplateConfig}
 def build_argument_parser(skip_type=False):
     SchemaAction.register_models(SCHEMAS)
     parser, required_group = get_parser(
+        prog="fm_add_templates",
         description="Inserts template file paths for all well operations in the "
         " given input file where the config keys match the operation"
         " information. If key sets associated with multiple template files match"
         " a well operation the template with the most keys matching will be the one"
-        " inserted"
+        " inserted",
     )
     add_wells_input_argument(
         required_group,

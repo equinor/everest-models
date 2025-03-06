@@ -9,8 +9,9 @@ from everest_models.jobs.shared.arguments import (
 @bootstrap_parser
 def build_argument_parser(skip_type=False):
     parser, required_group = get_parser(
+        prog="fm_ops_remover",
         description="Given everest generated wells.json file"
-        "and a list of well names. remove the intersecting names' operations."
+        "and a list of well names. remove the intersecting names' operations.",
     )
     add_wells_input_argument(
         required_group, help="Everest generated wells.json file", skip_type=skip_type

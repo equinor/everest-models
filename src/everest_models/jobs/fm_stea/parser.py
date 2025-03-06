@@ -14,7 +14,7 @@ def build_argument_parser(skip_type=False):
         "yaml config file, STEA will create result files "
         "ex: Res1, Res2, .. Res#"
     )
-    parser, required_group = get_parser(description=description)
+    parser, required_group = get_parser(description=description, prog="fm_stea")
     add_lint_argument(parser)
     required_group.add_argument(
         "-c",
