@@ -5,8 +5,8 @@ from pydantic import field_validator
 from everest_models.jobs.shared.models import RootModelConfig
 
 
-class Control(RootModelConfig):
-    """An 'immutable' well control optimizer value schema.
+class Constraint(RootModelConfig):
+    """An 'immutable' well constraint optimizer value schema.
 
     The schema is a container for a two layers deep dictionary.
     First layer key is a string that represents the well name.
@@ -14,6 +14,19 @@ class Control(RootModelConfig):
     """
 
     root: Dict[str, Dict[int, float]]
+
+    @field_validator("root")
+    @classmethod
+    def is_within_bounds(cls, root):
+        assert not (
+            error := [
+                f"{name} -> {index} -> {value}"
+                for name, constraint in root.items()
+                for index, value in constraint.items()
+                if not 0 <= value <= 1
+            ]
+        ), "Value(s) are not within bounds [0, 1]:\n\t" + "\t".join(error)
+        return root
 
     def __iter__(self) -> Iterator[str]:  # type: ignore
         return iter(self.root)
@@ -32,22 +45,7 @@ class Control(RootModelConfig):
         return self.root.get(__key, __default)
 
 
-class PhaseControl(Control):
-    @field_validator("root")
-    @classmethod
-    def is_within_bounds(cls, root):
-        assert not (
-            error := [
-                f"{name} -> {index} -> {value}"
-                for name, constraint in root.items()
-                for index, value in constraint.items()
-                if not 0 <= value <= 1
-            ]
-        ), "Value(s) are not within bounds [0, 1]:\n\t" + "\t".join(error)
-        return root
-
-
 class WellConstraints(TypedDict):
-    duration: Control
-    rate: Control
-    phase: PhaseControl
+    duration: Constraint
+    rate: Constraint
+    phase: Constraint

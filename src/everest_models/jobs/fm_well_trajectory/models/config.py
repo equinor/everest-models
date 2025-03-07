@@ -19,6 +19,74 @@ from everest_models.jobs.shared.models import ModelConfig, PhaseEnum
 from everest_models.jobs.shared.validators import validate_eclipse_path
 
 
+class ScalesConfig(ModelConfig):
+    x: Annotated[
+        float,
+        Field(
+            description="Scaling length for coordinate x for the guide points.",
+            examples="4000.0",
+            gt=0,
+        ),
+    ]
+    y: Annotated[
+        float,
+        Field(
+            description="Scaling length for coordinate y for the guide points.",
+            examples="4000.0",
+            gt=0,
+        ),
+    ]
+    z: Annotated[
+        float,
+        Field(
+            description="Scaling length for coordinate z (positive depth) for the guide points.",
+            examples="300.0",
+            gt=0,
+        ),
+    ]
+    k: Annotated[
+        float,
+        Field(
+            default=None,
+            description="Scaling length for z (positive depth) for the kick-off point.",
+            examples="50.0",
+            gt=0,
+        ),
+    ]
+
+
+class ReferencesConfig(ModelConfig):
+    x: Annotated[
+        float,
+        Field(
+            description="Coordinate x for reference point used in scaling of guide points.",
+            examples="5000.0",
+        ),
+    ]
+    y: Annotated[
+        float,
+        Field(
+            description="Coordinate y for reference point used in scaling of guide points.",
+            examples="5000.0",
+        ),
+    ]
+    z: Annotated[
+        float,
+        Field(
+            description="Coordinate z for reference point used in scaling of guide points.",
+            examples="8375.0",
+        ),
+    ]
+    k: Annotated[
+        float,
+        Field(
+            default=None,
+            description="Coordinate z for reference point used in scaling of kick-off point.",
+            examples="50.0",
+        ),
+    ]
+
+
 class InterpolationConfig(ModelConfig):
     type: Annotated[
         str,
@@ -266,6 +334,18 @@ class WellConfig(ModelConfig):
 
 
 class ConfigSchema(ModelConfig):
+    scales: Annotated[
+        ScalesConfig,
+        Field(
+            description="Scaling lengths for the guide points.",
+        ),
+    ]
+    references: Annotated[
+        ReferencesConfig,
+        Field(
+            description="Reference points for the guide points.",
+        ),
+    ]
     interpolation: Annotated[
         InterpolationConfig,
         Field(

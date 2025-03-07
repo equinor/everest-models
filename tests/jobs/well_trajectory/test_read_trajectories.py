@@ -16,7 +16,9 @@ def test_read_trajectories(copy_testdata_tmpdir):
     copy_testdata_tmpdir(Path(TEST_DATA) / "simple")
     config = ConfigSchema.model_validate(load_yaml("config.yml"))
 
-    trajectories1 = read_trajectories(config.wells, config.platforms)
+    trajectories1 = read_trajectories(
+        config.scales, config.references, config.wells, config.platforms
+    )
 
     for key in trajectories1:
         for field in ["x", "y", "z"]:
@@ -31,7 +33,9 @@ def test_read_trajectories_missing_file(copy_testdata_tmpdir):
     config = ConfigSchema.model_validate(load_yaml("config.yml"))
 
     with pytest.raises(ValueError, match=r"Missing point files: \['p2_b', 'p3_y'\]"):
-        read_trajectories(config.wells, config.platforms)
+        read_trajectories(
+            config.scales, config.references, config.wells, config.platforms
+        )
 
 
 def test_read_trajectories_missing_well(copy_testdata_tmpdir):
@@ -42,7 +46,9 @@ def test_read_trajectories_missing_well(copy_testdata_tmpdir):
     config = ConfigSchema.model_validate(load_yaml("config.yml"))
 
     with pytest.raises(ValueError, match=r"Missing wells: \['p2_b/OP_4'\]"):
-        read_trajectories(config.wells, config.platforms)
+        read_trajectories(
+            config.scales, config.references, config.wells, config.platforms
+        )
 
 
 def test_read_trajectories_platform_fallback(copy_testdata_tmpdir):
@@ -51,7 +57,9 @@ def test_read_trajectories_platform_fallback(copy_testdata_tmpdir):
 
     Path("platform_k.json").unlink()
 
-    trajectories1 = read_trajectories(config.wells, config.platforms)
+    trajectories1 = read_trajectories(
+        config.scales, config.references, config.wells, config.platforms
+    )
     for key in trajectories1:
         for field in ["x", "y", "z"]:
             assert len(getattr(trajectories1[key], field)) == 5
@@ -67,11 +75,15 @@ def test_read_trajectories_no_platform(copy_testdata_tmpdir):
     copy_testdata_tmpdir(Path(TEST_DATA) / "simple")
     config = ConfigSchema.model_validate(load_yaml("config.yml"))
 
-    trajectories1 = read_trajectories(config.wells, config.platforms)
+    trajectories1 = read_trajectories(
+        config.scales, config.references, config.wells, config.platforms
+    )
 
     Path("platform_k.json").unlink()
 
-    trajectories2 = read_trajectories(config.wells, [])
+    trajectories2 = read_trajectories(
+        config.scales, config.references, config.wells, []
+    )
     for key in trajectories1:
         for field in ["x", "y", "z"]:
             # No platform means no kickoff, so the kickoff point is not there:
@@ -90,7 +102,9 @@ def test_read_trajectories_no_kickoff(copy_testdata_tmpdir):
     copy_testdata_tmpdir(Path(TEST_DATA) / "simple")
     config = ConfigSchema.model_validate(load_yaml("config.yml"))
 
-    trajectories1 = read_trajectories(config.wells, config.platforms)
+    trajectories1 = read_trajectories(
+        config.scales, config.references, config.wells, config.platforms
+    )
 
     for key in trajectories1:
         for field in ["x", "y", "z"]:
@@ -102,7 +116,9 @@ def test_read_trajectories_no_kickoff(copy_testdata_tmpdir):
     del new_config["platforms"][0]["k"]
     del new_config["platforms"][1]["k"]
     config = ConfigSchema.model_validate(new_config)
-    trajectories2 = read_trajectories(config.wells, config.platforms)
+    trajectories2 = read_trajectories(
+        config.scales, config.references, config.wells, config.platforms
+    )
     for key in trajectories1:
         for field in ["x", "y", "z"]:
             # Everything is the same, except the kickoff point is missing:
@@ -123,7 +139,7 @@ def test_read_laterals_orphaned_branches(copy_testdata_tmpdir):
     with pytest.raises(
         ValueError, match=r"Found branches without parent well: \['DUMMY'\]"
     ):
-        read_laterals(config.wells)
+        read_laterals(config.scales, config.references, config.wells)
 
 
 def test_read_laterals_missing_files(copy_testdata_tmpdir):
@@ -135,7 +151,7 @@ def test_read_laterals_missing_files(copy_testdata_tmpdir):
         ValueError,
         match=r"Missing coordinate files: '\['mlt_p2_b', 'mlt_p3_x'\]'",
     ):
-        read_laterals(config.wells)
+        read_laterals(config.scales, config.references, config.wells)
 
 
 def test_read_laterals_missing_wells(copy_testdata_tmpdir):
@@ -151,7 +167,7 @@ def test_read_laterals_missing_wells(copy_testdata_tmpdir):
         ValueError,
         match=r"Missing wells in coordinate files: \['mlt_p2_b/INJ', 'mlt_p3_x/PROD'\]",
     ):
-        read_laterals(config.wells)
+        read_laterals(config.scales, config.references, config.wells)
 
 
 def test_read_laterals_missing_branches(copy_testdata_tmpdir):
@@ -167,23 +183,23 @@ def test_read_laterals_missing_branches(copy_testdata_tmpdir):
         ValueError,
         match=r"Missing branches in coordinate files: \['mlt_p2_b/INJ/1', 'mlt_p3_x/PROD/2'\]",
     ):
-        read_laterals(config.wells)
+        read_laterals(config.scales, config.references, config.wells)
 
 
 def test_read_laterals_branch_not_on_well(copy_testdata_tmpdir):
     copy_testdata_tmpdir(Path(TEST_DATA) / "read_laterals")
     config = ConfigSchema.model_validate(load_yaml("config.yml"))
     mlt_p1_z = load_json("mlt_p1_z.json")
-    mlt_p1_z["INJ"]["1"] = 8475
+    mlt_p1_z["INJ"]["1"] = 1.0
     dump_json(mlt_p1_z, Path("mlt_p1_z.json"))
     with pytest.raises(ValueError, match=r"Branch '1' does not start on well 'INJ'"):
-        read_laterals(config.wells)
+        read_laterals(config.scales, config.references, config.wells)
 
 
 def test_read_laterals(copy_testdata_tmpdir):
     copy_testdata_tmpdir(Path(TEST_DATA) / "read_laterals")
     config = ConfigSchema.model_validate(load_yaml("config.yml"))
-    laterals = read_laterals(config.wells)
+    laterals = read_laterals(config.scales, config.references, config.wells)
 
     assert laterals["INJ"]["1"][0] == pytest.approx(8350)
     assert laterals["INJ"]["2"][0] == pytest.approx(8375)
