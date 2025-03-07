@@ -3,14 +3,16 @@ PROD1:
       phase:
         value: oil
       rate:
-        value: 0.6
+        min: 800
+        max: 1000
       duration:
         value: 100
     2:
       phase:
         value: oil
       rate:
-        value: 900
+        min: 800
+        max: 1000
       duration:
         value: 80
 PROD2:
@@ -18,14 +20,16 @@ PROD2:
       phase:
         value: oil
       rate:
-        value: 900
+        min: 800
+        max: 1000
       duration:
         value: 100
     2:
       phase:
         value: gas
       rate:
-        value: 11000
+        min: 10000
+        max: 12000
       duration:
         value: 80
 PROD3:
@@ -41,44 +45,56 @@ INJ1:
       phase:
         options: [water, gas]
       rate:
-        value: 900
+        min: 500
+        max: 1000
       duration:
-        value: 90
+        min: 20
+        max: 100
     2:
       phase:
         options: [water, gas]
       rate:
-        value: 900
+        min: 500
+        max: 1000
       duration:
-        value: 90
+        min: 20
+        max: 100
     3:
       phase:
         options: [water, gas]
       rate:
-        value: 900
+        min: 500
+        max: 1000
       duration:
-        value: 90
+        min: 20
+        max: 100
     4:
       phase:
         options: [water, gas]
       rate:
-        value: 900
+        min: 500
+        max: 1000
       duration:
-        value: 90
+        min: 20
+        max: 100
     5:
       phase:
         options: [water, gas]
       rate:
-        value: 900
+        min: 500
+        max: 1000
       duration:
-        value: 90
+        min: 20
+        max: 100
     6:
       phase:
         options: [water, gas]
       rate:
-        value: 900
+        min: 500
+        max: 1000
       duration:
-        value: 90
+        min: 20
+        max: 100
 INJ2:
     1:
       rate:
