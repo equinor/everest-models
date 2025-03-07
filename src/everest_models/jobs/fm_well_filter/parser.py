@@ -10,11 +10,12 @@ from everest_models.jobs.shared.validators import valid_input_file
 @bootstrap_parser
 def build_argument_parser(skip_type=False):
     parser, required_group = get_parser(
+        prog="fm_well_filter",
         description="This module filters out wells using a json string."
         "Either the --keep or the --remove flag needs to be set to a json file name"
         "containing a list of well names that are in the keep/remove file, "
         "but not in the input file will be ignored."
-        "If both or none of the flags are set, the job give an error."
+        "If both or none of the flags are set, the job give an error.",
     )
     add_wells_input_argument(
         required_group,
