@@ -93,9 +93,7 @@ def well_trajectory_resinsight(
                 config.interpolation.measured_depth_step,
             )
 
-            mlt_guide_points = read_laterals(
-                config.scales, config.references, config.wells
-            )
+            mlt_guide_points = read_laterals(config.wells)
             if mlt_guide_points:
                 # Create multi-lateral trajectories based on the trajectories we
                 # made before:
