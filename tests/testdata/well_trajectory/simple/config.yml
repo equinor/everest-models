@@ -1,15 +1,3 @@
-scales:
-  x: 10000.0
-  y: 10000.0
-  z: 500.0
-  k: 200.0
-
-references:
-  x: 462018.30
-  y: 5933773.87
-  z: 1750.0
-  k: 200.0
-
 interpolation:
   type: simple
   length: 50
@@ -17,24 +5,24 @@ interpolation:
   trial_step: 0.01
 
 wells:
-  - name: WI_1
-    platform: platform1
-    group: WI
-    phase: WATER
-  - name: OP_4
-    skin: 0.0
-    radius: 0.15
-    dogleg: 4.0
-    platform: platform2
-    group: OP
-    phase: oil
+- name: WI_1
+  platform: platform1
+  group: WI
+  phase: WATER
+- name: OP_4
+  skin: 0.0
+  radius: 0.15
+  dogleg: 4.0
+  platform: platform2
+  group: OP
+  phase: oil
 
 platforms:
-  - name: platform1
-    x: 461350.50
-    y: 5931800.71
-    k: 200.0
-  - name: platform2
-    x: 461335.48
-    y: 5933608.04
-    k: 200.0
+- name: platform1
+  x: 461350.50
+  y: 5931800.71
+  k: 200.0
+- name: platform2
+  x: 461335.48
+  y: 5933608.04
+  k: 200.0

@@ -1,13 +1,3 @@
-scales:
-  x: 4000
-  y: 4000
-  z: 300
-  k: 50
-references:
-  x: 5000
-  y: 5000
-  z: 8375
-  k: 50
 interpolation:
   type: resinsight
   measured_depth_step: 5.0
@@ -16,25 +6,25 @@ connections:
   date: 2015-01-02
   formations_file: ./formations.lyr
   perforations:
-    - well: INJ
-      formations: [0, 1, 2]
-    - well: PROD
-      formations: [0, 1, 2]
+  - well: INJ
+    formations: [0, 1, 2]
+  - well: PROD
+    formations: [0, 1, 2]
 wells:
-  - name: INJ
-    group: G1
-    phase: GAS
-    platform: PLATFORM
-    cost: 0
-    dogleg: 4
-  - name: PROD
-    group: G1
-    phase: OIL
-    platform: PLATFORM
-    cost: 0
-    dogleg: 4
+- name: INJ
+  group: G1
+  phase: GAS
+  platform: PLATFORM
+  cost: 0
+  dogleg: 4
+- name: PROD
+  group: G1
+  phase: OIL
+  platform: PLATFORM
+  cost: 0
+  dogleg: 4
 platforms:
-  - name: PLATFORM
-    x: 5000
-    y: 5000
-    k: 50
+- name: PLATFORM
+  x: 5000
+  y: 5000
+  k: 50
