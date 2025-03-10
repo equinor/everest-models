@@ -12,6 +12,7 @@ from everest_models.jobs.shared.validators import is_gt_zero, valid_input_file
 @bootstrap_parser
 def build_argument_parser(skip_type=False):
     parser, required_group = get_parser(
+        prog="fm_drill_date_planner",
         description="Calculate and write drill times from scaled controls.",
     )
     add_wells_input_argument(

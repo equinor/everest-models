@@ -21,8 +21,9 @@ SCHEMAS = {CONFIG_ARGUMENT: EconomicIndicatorConfig}
 def build_argument_parser(skip_type=False):
     SchemaAction.register_models(SCHEMAS)
     parser, required_group = get_parser(
+        prog="fm_compute_economics",
         description="Module to calculate economical indicators based on an eclipse simulation. "
-        "All optional args, except: lint, schemas, input and output, is also configurable through the config file."
+        "All optional args, except: lint, schemas, input and output, is also configurable through the config file.",
     )
     parser.add_argument(
         "--calculation",
