@@ -31,6 +31,41 @@ def test_get_forward_model_schemas_hook(plugin_manager):
     }
 
 
+@pytest.mark.parametrize(
+    ["fm_steps", "expected_error"],
+    [
+        (
+            [
+                "well_constraints   -c files/wc_config.yml -rc well_rate.json -o out1",
+            ],
+            "fm_well_constraints: error: the following arguments are required: -i/--input",
+        ),
+        (
+            [
+                "not_add_templates     -i wc_wells.json -c files/at_config.yml -o out2",
+                "schmerge           -i at_wells.json -o out3",
+                "rf -s TEST -o out4",
+            ],
+            "fm_schmerge: error: the following arguments are required: -s/--schedule",
+        ),
+        (
+            ["well_trajectory  -E eclipse/config/path"],
+            "fm_well_trajectory: error: the following arguments are required: -c/--config",
+        ),
+        ([], ""),
+    ],
+)
+def test_valid_fm_step_args(fm_steps, expected_error, plugin_manager, capsys):
+    if expected_error:
+        with pytest.raises(SystemExit):
+            plugin_manager.hook.check_forward_model_arguments(
+                forward_model_steps=fm_steps
+            )
+        assert expected_error in capsys.readouterr().err
+    else:
+        plugin_manager.hook.check_forward_model_arguments(forward_model_steps=fm_steps)
+
+
 def test_get_forward_model_schemas_hook_keys_are_options(plugin_manager):
     assert all(
         schema is not None
