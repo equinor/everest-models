@@ -4,7 +4,6 @@ from pathlib import Path
 import pytest
 from sub_testdata import WELL_SWAPPING as TEST_DATA
 
-from everest_models.everest_hooks import custom_forward_model_outputs
 from everest_models.jobs.fm_well_swapping.cli import main_entry_point
 from everest_models.jobs.shared.io_utils import load_json
 
@@ -60,12 +59,3 @@ def test_well_swapping_main_entrypoint_parse_fault(
         "error: argument -p/--priorities: All entries must contain the same amount of elements/indexes"
         in err
     )
-
-
-def test_custom_forward_model_outputs_hook(capsys):
-    custom_forward_model_outputs(
-        ["well_swapping  -c c.yml -p p.json -cr cr.json -cs cs.json -o o.json"]
-    )
-    out, err = capsys.readouterr()
-    assert out == ""
-    assert err == ""
