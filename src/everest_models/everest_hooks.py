@@ -13,6 +13,7 @@ from typing import Any, Dict, List, Sequence, Type
 
 from pydantic import BaseModel
 
+from everest_models.forward_models import get_forward_models
 from everest_models.jobs.shared.io_utils import load_supported_file_encoding
 
 try:
@@ -108,3 +109,15 @@ def get_forward_model_documentations() -> Dict[str, Any]:
             "full_job_name": full_job_name,
         }
     return docs
+
+
+@hookimpl
+def check_forward_model_arguments(forward_model_steps: List[str]) -> None:
+    for step in forward_model_steps:
+        step_name, *args = step.split()
+        if step_name in get_forward_models():
+            parser = import_module(
+                f"{JOBS}.fm_{step_name}.parser"
+            ).build_argument_parser(skip_type=True)
+            parser.prog = f"fm_{step_name}"
+            parser.parse_args(args)
