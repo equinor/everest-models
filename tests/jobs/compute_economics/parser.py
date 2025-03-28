@@ -130,7 +130,9 @@ class Options(NamedTuple):
     multiplier: Optional[float] = 1.0
     schema: Optional[bool] = None
     lint: Optional[bool] = None
-    output: pathlib.Path = pathlib.Path("test")
+    summary_reference: Optional[str] = None
+    input: Optional[str] = None
+    output: pathlib.Path = pathlib.Path("test_0")
     output_currency: Optional[str] = None
 
 
