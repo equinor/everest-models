@@ -9,7 +9,7 @@ from everest_models.jobs.shared.arguments import (
     bootstrap_parser,
     get_parser,
 )
-from everest_models.jobs.shared.validators import is_gt_zero, parse_file
+from everest_models.jobs.shared.validators import is_gtoet_zero, parse_file
 
 
 def scaled_well_number(value: str) -> float:
@@ -50,7 +50,7 @@ def build_argument_parser(skip_type=False):
     value = sub_parser.add_parser("value", help="The number of wells as a value")
     value.add_argument(
         "well_number",
-        type=partial(is_gt_zero, msg="well number must be > 0"),
+        type=partial(is_gtoet_zero, msg="well number must be >= 0"),
         help="A positive integer for the number of wells to be selected.",
     )
     well_number_file = sub_parser.add_parser(
