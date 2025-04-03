@@ -126,7 +126,7 @@ def test_select_wells_main_entry_point_value_not_gt_0(
         main_entry_point([*select_wells_base_args, "value", "-1"])
     assert exc.value.code == 2
     _, err = capsys.readouterr()
-    assert "well number must be > 0" in err
+    assert "well number must be >= 0" in err
 
 
 def test_select_wells_main_entry_point_value_with_scaled_bounds(
@@ -177,3 +177,11 @@ def test_select_wells_lint(select_wells_base_args, copy_testdata_tmpdir):
 
     assert e.value.code == 0
     assert not pathlib.Path("output.json").exists()
+
+
+def test_select_wells_allow_well_number_equal_to_zero(
+    select_wells_base_args, copy_testdata_tmpdir
+):
+    copy_testdata_tmpdir(TEST_DATA)
+    main_entry_point([*select_wells_base_args, "value", "0"])
+    assert pathlib.Path("output.json").read_bytes() == b"[]"

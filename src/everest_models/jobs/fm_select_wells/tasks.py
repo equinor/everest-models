@@ -89,7 +89,7 @@ def select_wells(
     if max_date:
         wells.root = tuple(well for well in wells.root if well.readydate <= max_date)
 
-    if number_of_wells and number_of_wells < len(wells.root):
+    if number_of_wells is not None and number_of_wells < len(wells.root):
         wells.root = tuple(
             sorted(wells.root, key=lambda k: k.readydate)[:number_of_wells]
         )

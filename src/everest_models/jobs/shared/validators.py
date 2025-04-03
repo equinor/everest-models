@@ -192,6 +192,27 @@ def is_gt_zero(value: str, msg: str) -> int:
     return num
 
 
+def is_gtoet_zero(value: str, msg: str) -> int:
+    """Is string value greater than or equal to zero
+
+    Args:
+        value (str): numeric string
+        msg (str): error message if less
+
+    Raises:
+        argparse.ArgumentTypeError: Not a Number
+        argparse.ArgumentTypeError: less than zero
+
+    Returns:
+        int: integer casted value
+    """
+    if not value.lstrip("+-").isnumeric():
+        raise argparse.ArgumentTypeError(f"Value '{value}' is not a number")
+    if (num := int(value)) < 0:
+        raise argparse.ArgumentTypeError(msg)
+    return num
+
+
 def validate_no_extra_fields(*fields, values: Iterable[str]):
     if extra := ", ".join(set(values) - set(fields)):
         raise ValueError(f"Extra field(s) not allowed: {extra}")

@@ -76,8 +76,6 @@ def test_select_wells_no_change(well_list):
     wells = len(well_list.root)
     select_wells(well_list, None, None)
     assert wells == len(well_list.root)
-    select_wells(well_list, None, 0)
-    assert wells == len(well_list.root)
 
 
 @pytest.mark.parametrize(

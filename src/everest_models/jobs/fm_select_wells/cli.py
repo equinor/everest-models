@@ -13,7 +13,7 @@ def main_entry_point(args=None):
     options = args_parser.parse_args(args)
     well_number = tasks.get_well_number(options, error_msgr=args_parser.error)
 
-    if not any((well_number, options.max_date)):
+    if not (well_number is not None or options.max_date):
         args_parser.error(
             "\nBoth `well number` and `-m/--max-date` values are missing.\n"
             "Please provide either/or both values"
