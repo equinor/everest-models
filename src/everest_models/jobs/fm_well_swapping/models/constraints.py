@@ -40,7 +40,7 @@ class _Scaling(ModelConfig):
 
 class _Constraint(ModelConfig):
     fallback_values: Annotated[
-        Union[Tuple[int, ...], int],
+        Union[Tuple[float, ...], float],
         AfterValidator(min_length(1)),
         Field(
             default=None,
@@ -68,9 +68,9 @@ class Constraints(ModelConfig):
         ),
     ]
 
-    def rescale(self, constraints: Union[Sequence[float], int]) -> Tuple[int, ...]:
+    def rescale(self, constraints: Union[Sequence[float], int]) -> Tuple[float, ...]:
         if isinstance(constraints, int):
-            if isinstance(self.state_duration.fallback_values, int):
+            if isinstance(self.state_duration.fallback_values, float):
                 if not constraints:
                     raise ValueError(
                         "Unable to build state duration fallback constraints."

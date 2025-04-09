@@ -19,44 +19,40 @@
       # Default: null
       value: null
 
-    # Required: True
+    # Required: False
+    # Default: min=None max=None value=None
     rate:
 
-      # Datatype: number
-      # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+      # Datatype: number,
       # Required: False
       # Default: null
-      min: null
+      min: <REPLACE>
 
-      # Datatype: number
-      # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+      # Datatype: number,
       # Required: False
       # Default: null
-      max: null
+      max: <REPLACE>
 
-      # Datatype: number
-      # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+      # Datatype: number,
       # Required: False
       # Default: null
-      value: null
+      value: <REPLACE>
 
-    # Required: True
+    # Required: False
+    # Default: min=None max=None value=None
     duration:
 
-      # Datatype: number
-      # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+      # Datatype: number,
       # Required: False
       # Default: null
-      min: null
+      min: <REPLACE>
 
-      # Datatype: number
-      # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+      # Datatype: number,
       # Required: False
       # Default: null
-      max: null
+      max: <REPLACE>
 
-      # Datatype: number
-      # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
+      # Datatype: number,
       # Required: False
       # Default: null
-      value: null
+      value: <REPLACE>
