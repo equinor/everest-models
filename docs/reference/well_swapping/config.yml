@@ -28,7 +28,7 @@ constraints:
 
     # Fallback values for each iteration if constraint JSON file is missing
     # Note: If a single number is given, all swapping intervals will be assigned that time duration
-    # Datatype: [integer] or integer
+    # Datatype: [number] or number
     # Examples: [150.0, 200, 500000.0], 200.0
     # Required: False
     # Default: null
