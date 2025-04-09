@@ -40,16 +40,20 @@ constraints:
     scaling:
 
       # [min, max] values for scaling source
-      # Datatype: ['number', 'number']
+      # Datatype: [number, number]
       # Examples: [0, 1], [0.0, 1.0], [0.5, 2.0]
       # Required: True
-      source: <REPLACE>
+      source:
+        - <REPLACE>
+        - <REPLACE>
 
       # [min, max] values for scaling target (in days)
-      # Datatype: ['number', 'number']
+      # Datatype: [number, number]
       # Examples: [0, 500], [100.0, 400.0], [150.0, 1000.0]
       # Required: True
-      target: <REPLACE>
+      target:
+        - <REPLACE>
+        - <REPLACE>
 
 # Fallback values for item priorities in case priority JSON file is missing (e.g. when priority controls are not defined in Everest configuration file)
 # Required: False

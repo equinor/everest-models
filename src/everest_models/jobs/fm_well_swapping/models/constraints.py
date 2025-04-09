@@ -1,4 +1,4 @@
-from typing import NamedTuple, Sequence, Tuple, Union
+from typing import Sequence, Tuple, Union
 
 from pydantic import AfterValidator, Field, field_validator
 from typing_extensions import Annotated
@@ -8,21 +8,16 @@ from everest_models.jobs.shared.models import ModelConfig
 from everest_models.jobs.shared.validators import min_length
 
 
-class _Bound(NamedTuple):
-    min: float
-    max: float
-
-
 class _Scaling(ModelConfig):
     source: Annotated[
-        _Bound,
+        Tuple[float, float],
         Field(
             description="[min, max] values for scaling source",
             examples=[[0, 1], [0.0, 1.0], [0.5, 2.0]],
         ),
     ]
     target: Annotated[
-        _Bound,
+        Tuple[float, float],
         Field(
             description="[min, max] values for scaling target (in days)",
             examples=[[0, 500], [100.0, 400.0], [1.5e2, 1.0e3]],
@@ -30,7 +25,7 @@ class _Scaling(ModelConfig):
     ]
 
     @field_validator("*", mode="after")
-    def valid_bound(cls, bound: _Bound) -> _Bound:
+    def valid_bound(cls, bound: Tuple[float, float]) -> Tuple[float, float]:
         if bound.min > bound.max:
             raise ValueError(
                 f"[min, max], where min cannot be greater than max: {list(bound)}"
