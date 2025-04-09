@@ -149,11 +149,12 @@ state:
 
   # List of directional (source → target) state update actions.
   # Note: action context is set with the 'forbiden_actions' field
-  # Datatype: [['string', 'string']]
+  # Datatype: [[string, string]]
   # Required: False
   # Default: null
   actions:
-    - <REPLACE>
+    -   - <REPLACE>
+        - <REPLACE>
 
   # Are cases allowed to stay at the same state?
   # False: Enforce cases to change state each iteration, (can cause state lock)

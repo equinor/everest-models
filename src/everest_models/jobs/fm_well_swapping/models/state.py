@@ -179,7 +179,7 @@ class StateConfig(ModelConfig):
         ),
     ]
     actions: Annotated[
-        Tuple[Action, ...],
+        Tuple[Tuple[State, State], ...],
         AfterValidator(unique_values),
         Field(
             default=None,
