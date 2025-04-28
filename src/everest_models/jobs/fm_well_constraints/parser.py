@@ -35,8 +35,8 @@ def build_argument_parser(skip_type=False) -> argparse.ArgumentParser:
     parser, required_group = get_parser(
         description="A module that given a list of boundaries and well constraints creates a "
         "list of well events. Varying phase, rate and time of each event is supported. Rate and "
-        "duration boundaries are given as min/max, and phase as a list of possibilities "
-        "to choose from. Also support constants if boundaries are replaced by value.",
+        "duration can be provided as constant values if the optimizer does not provide them, "
+        "and phase as a list of possibilities to choose from.",
     )
 
     add_wells_input_argument(
@@ -57,7 +57,7 @@ def build_argument_parser(skip_type=False) -> argparse.ArgumentParser:
         *CONFIG_ARG_KEY.split("/"),
         required=True,
         type=partial(parse_file, schema=WellConstraintConfig) if not skip_type else str,
-        help="Configuration file in yaml format with names, events and boundaries for constraints",
+        help="Configuration file in yaml format with names, events and values",
     )
     parser.add_argument(
         *RATE_CONSTRAINTS_ARG_KEY.split("/"),

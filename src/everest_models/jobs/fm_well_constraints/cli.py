@@ -14,72 +14,13 @@ EXAMPLES = """
 Argument examples
 ~~~~~~~~~~~~~~~~~
 
-Please note that the number of entries and the corresponding indexes for the
-configuration file must line up with each of the phase, rate and duration
-constraint inputs respectively.
-
 If there is an entry in e.g. the rate-constraint file for `INJECT1`, `1`, then
-either `options` must be declared, or a `min`/`max` must be entered in the
-configuration file under index `1` for `INJECT1`. For all other entries in the
-configuration file that does not exist in any input file, there must exist a
-`value` entry that contains a single value.
+no rate value needs to be provided in the configuration file under index `1` for `INJECT1`.
+The optimizer values from the rate-constraint and duration-constraint files will overwrite
+any value provided in the configuration file for the same well and index.
+If the optimizer provides no rate or duration input files then any values in the configuration files
+will be considered as constants.
 
-:code:`-config` example
-
-.. code-block:: yaml
-
-    INJECT1:
-        1:
-          phase:
-            options: [water, gas]
-          rate:
-            min: 0
-            max: 1000
-          duration:
-            min: 10
-            max: 40
-        2:
-          phase:
-            options: [water, gas]
-          rate:
-            min: 0
-            max: 1000
-          duration:
-            min: 20
-            max: 30
-        3:
-          phase:
-            options: [water, gas]
-          rate:
-            min: 0
-            max: 1000
-          duration:
-            value: 70
-        4:
-          phase:
-            value: water
-          rate:
-            value: 333
-          duration:
-            value: 100
-
-    INJECT2:
-        1:
-          phase:
-            options: [water, gas]
-          rate:
-            min: 500
-            max: 1000
-          duration:
-            value: 50
-        2:
-          phase:
-            options: [water, gas]
-          rate:
-            min: 500
-            max: 1000
-          duration:
-            value: 60
 
 :code:`-phase-constraint` example
 
@@ -96,20 +37,84 @@ configuration file that does not exist in any input file, there must exist a
       "2": 0.1
     }}
 
+:code:`-config` example
+
+.. code-block:: yaml
+
+    INJECT1:
+        1:
+          phase:
+            options: [water, gas]
+        2:
+          phase:
+            options: [water, gas]
+        3:
+          phase:
+            options: [water, gas]
+
+    INJECT2:
+        1:
+          phase:
+            options: [water, gas]
+        2:
+          phase:
+            options: [water, gas]
+
+
 :code:`-rate-constraint` example
 
 .. code-block:: json
 
     {
     "INJECT1" : {
-      "1": 0.6,
-      "2": 0.4,
-      "3": 0.2
+      "1": 600,
+      "2": 400,
+      "3": 200
     },
     "INJECT2" : {
-      "1": 0.123,
-      "2": 0.465
+      "1": 650,
+      "2": 525
     }}
+
+:code:`-config` example
+
+.. code-block:: yaml
+
+    INJECT1:
+        1:
+          phase:
+            value: WATER
+          duration:
+            value 30
+        2:
+          phase:
+            value: WATER
+          duration:
+            value 40
+        3:
+          phase:
+            value: GAS
+          duration:
+            value: 70
+        4:
+          phase:
+            value: GAS
+          rate:
+            value: 333 # Will be considered a constat rate
+          duration:
+            value: 100
+
+    INJECT2:
+        1:
+          phase:
+            value: WATER
+          duration:
+            value: 50
+        2:
+          phase:
+            value: GAS
+          duration:
+            value: 60
 
 :code:`-duration-constraint` example
 
@@ -117,9 +122,27 @@ configuration file that does not exist in any input file, there must exist a
 
     {
     "INJECT1" : {
-      "1": 0.6,
-      "2": 0.4,
+      "1": 60,
+      "2": 40,
     }}
+
+:code:`-config` example
+
+.. code-block:: yaml
+
+    INJECT1:
+        1:
+          phase:
+            value: WATER
+        2:
+          phase:
+            value: WATER
+        3:
+          phase:
+            value: GAS
+          duration:
+            value: 70
+
 
 :code:`-input` example
 
