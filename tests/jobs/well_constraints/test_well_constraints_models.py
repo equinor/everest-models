@@ -49,26 +49,6 @@ def test_constraints_config_model_fields():
     assert WellConstraintConfig.model_validate(_WELL_CONSTRAINTS_CONFIG)
 
 
-def test_constraints_config_model_fields_min_error():
-    config = copy.deepcopy(_WELL_CONSTRAINTS_CONFIG)
-    config["INJECT1"][1]["rate"]["min"] = 0
-    with pytest.raises(
-        ValidationError,
-        match="The well_constrains job no longer supports min max bounds",
-    ):
-        WellConstraintConfig.model_validate(config)
-
-
-def test_constraints_config_model_fields_max_error():
-    config = copy.deepcopy(_WELL_CONSTRAINTS_CONFIG)
-    config["INJECT1"][1]["rate"]["max"] = 100
-    with pytest.raises(
-        ValidationError,
-        match="The well_constrains job no longer supports min max bounds",
-    ):
-        WellConstraintConfig.model_validate(config)
-
-
 def test_constraint_config_model_fields_options_value_error():
     config = copy.deepcopy(_WELL_CONSTRAINTS_CONFIG)
     phase = config["INJECT1"][1]["phase"]
@@ -82,7 +62,7 @@ def test_constraint_config_model_fields_options_value_error():
 
 def test_constraints_config_model_fields_multi_error_multi_message():
     config = copy.deepcopy(_WELL_CONSTRAINTS_CONFIG)
-    config["INJECT1"][1]["rate"]["max"] = 100
+    config["INJECT1"][1]["rate"]["value"] = "xxx"
     phase = config["INJECT1"][1]["phase"]
     phase["value"] = phase["options"][0]
     phase["options"] = []
@@ -92,7 +72,10 @@ def test_constraints_config_model_fields_multi_error_multi_message():
     errors = [error["msg"] for error in errors]
     assert len(errors) == 2
     assert any("Empty 'options' list" in msg for msg in errors)
-    assert any("Remove min or max keys from the config file" in msg for msg in errors)
+    assert any(
+        "Input should be a valid number, unable to parse string as a number" in msg
+        for msg in errors
+    )
 
 
 @pytest.mark.parametrize(
@@ -123,19 +106,6 @@ def test_constraint_tolerance_model_optimum_value(
 
     rate = Tolerance.model_validate(config)
     assert rate.optimum_value(optimizer_value) == expected
-
-
-def test_invalid_min_max_fields_throws_validation_error():
-    with pytest.raises(ValidationError) as e:
-        Tolerance.model_validate({"min": "314s", "max": 200})
-    assert_error_messages(
-        e, "Input should be a valid number, unable to parse string as a number"
-    )
-    with pytest.raises(ValidationError) as e:
-        Tolerance.model_validate({"min": 314, "max": "200f"})
-    assert_error_messages(
-        e, "Input should be a valid number, unable to parse string as a number"
-    )
 
 
 def test_constraint_tolerance_model_optimum_value_none():

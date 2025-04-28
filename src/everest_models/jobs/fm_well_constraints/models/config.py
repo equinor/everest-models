@@ -45,20 +45,7 @@ class Phase(ModelConfig):
 
 
 class Tolerance(ModelConfig):
-    min: Annotated[float | None, Field(default=None, description="")]
-    max: Annotated[float | None, Field(default=None, description="")]
     value: Annotated[float | None, Field(default=None, description="")]
-
-    @model_validator(mode="after")
-    def deprecated_min_max_values(self):
-        has_min = self.min is not None
-        has_max = self.max is not None
-        if has_min or has_max:
-            raise ValueError(
-                "The well_constrains job no longer supports min max bounds for rate and duration controls "
-                "Remove min or max keys from the config file."
-            )
-        return self
 
     def optimum_value(self, optimizer_value: Optional[float]) -> float:
         return optimizer_value or self.value

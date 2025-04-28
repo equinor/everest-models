@@ -20,18 +20,8 @@
       value: null
 
     # Required: False
-    # Default: min=None max=None value=None
+    # Default: value=None
     rate:
-
-      # Datatype: number,
-      # Required: False
-      # Default: null
-      min: <REPLACE>
-
-      # Datatype: number,
-      # Required: False
-      # Default: null
-      max: <REPLACE>
 
       # Datatype: number,
       # Required: False
@@ -39,18 +29,8 @@
       value: <REPLACE>
 
     # Required: False
-    # Default: min=None max=None value=None
+    # Default: value=None
     duration:
-
-      # Datatype: number,
-      # Required: False
-      # Default: null
-      min: <REPLACE>
-
-      # Datatype: number,
-      # Required: False
-      # Default: null
-      max: <REPLACE>
 
       # Datatype: number,
       # Required: False
