@@ -21,12 +21,6 @@ def select_wells_file_args():
     return (
         "file",
         "well_number.json",
-        "--scaled-bounds",
-        "0.0",
-        "1.0",
-        "--real-bounds",
-        "0",
-        "47",
     )
 
 
@@ -127,47 +121,6 @@ def test_select_wells_main_entry_point_value_not_gt_0(
     assert exc.value.code == 2
     _, err = capsys.readouterr()
     assert "well number must be >= 0" in err
-
-
-def test_select_wells_main_entry_point_value_with_scaled_bounds(
-    copy_testdata_tmpdir, select_wells_base_args, select_wells_file_args, capsys
-):
-    copy_testdata_tmpdir(TEST_DATA)
-    with pytest.raises(SystemExit) as exc:
-        main_entry_point(
-            [*select_wells_base_args, "value", "2", *select_wells_file_args[2:]]
-        )
-    assert exc.value.code == 2
-    _, err = capsys.readouterr()
-    assert "unrecognized arguments: --scaled-bounds 0.0 1.0" in err
-
-
-def test_select_wells_main_entry_point_no_real_bounds(
-    copy_testdata_tmpdir, select_wells_base_args, select_wells_file_args, capsys
-):
-    copy_testdata_tmpdir(TEST_DATA)
-    with pytest.raises(SystemExit) as exc:
-        main_entry_point([*select_wells_base_args, *select_wells_file_args[:-3]])
-    assert exc.value.code == 2
-    _, err = capsys.readouterr()
-    assert "the following arguments are required: -r/--real-bounds" in err
-
-
-def test_select_wells_main_entry_point_no_scaled_bounds(
-    copy_testdata_tmpdir, select_wells_base_args, select_wells_file_args, capsys
-):
-    copy_testdata_tmpdir(TEST_DATA)
-    with pytest.raises(SystemExit) as exc:
-        main_entry_point(
-            [
-                *select_wells_base_args,
-                *select_wells_file_args[:2],
-                *select_wells_file_args[5:],
-            ]
-        )
-    assert exc.value.code == 2
-    _, err = capsys.readouterr()
-    assert "the following arguments are required: -s/--scaled-bounds" in err
 
 
 def test_select_wells_lint(select_wells_base_args, copy_testdata_tmpdir):

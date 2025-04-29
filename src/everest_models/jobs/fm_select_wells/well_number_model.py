@@ -5,4 +5,4 @@ from everest_models.jobs.shared.models import ModelConfig
 
 
 class WellNumber(ModelConfig):
-    scaled_number_of_wells: Annotated[float, Field(None, description="")]
+    number_of_wells: Annotated[float, Field(None, description="")]

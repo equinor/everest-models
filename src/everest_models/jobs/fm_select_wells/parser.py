@@ -12,8 +12,8 @@ from everest_models.jobs.shared.arguments import (
 from everest_models.jobs.shared.validators import is_gtoet_zero, parse_file
 
 
-def scaled_well_number(value: str) -> float:
-    return parse_file(value, WellNumber).scaled_number_of_wells
+def _well_number(value: str) -> float:
+    return parse_file(value, WellNumber).number_of_wells
 
 
 @bootstrap_parser
@@ -57,29 +57,9 @@ def build_argument_parser(skip_type=False):
         "file",
         help="Everest control file containing the number of wells.",
     )
-    sub_required_named_args = well_number_file.add_argument_group(
-        "required named arguments"
-    )
+    well_number_file.add_argument_group("required named arguments")
     well_number_file.add_argument(
         "file_path",
-        type=scaled_well_number if not skip_type else str,
-    )
-    sub_required_named_args.add_argument(
-        "-r",
-        "--real-bounds",
-        metavar=("LOWER", "UPPER"),
-        type=int,
-        help="Lower and upper bounds for the well number.",
-        required=True,
-        nargs=2,
-    )
-    sub_required_named_args.add_argument(
-        "-s",
-        "--scaled-bounds",
-        metavar=("LOWER", "UPPER"),
-        type=float,
-        help="Scaled lower and upper bounds for the well number.",
-        required=True,
-        nargs=2,
+        type=_well_number if not skip_type else str,
     )
     return parser
