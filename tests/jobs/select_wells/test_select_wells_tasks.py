@@ -1,6 +1,6 @@
 import datetime
 from copy import deepcopy
-from typing import NamedTuple, Tuple
+from typing import NamedTuple
 
 import pytest
 
@@ -10,9 +10,7 @@ from everest_models.jobs.shared.validators import parse_file
 
 
 class FileOptions(NamedTuple):
-    file_path: float = 0.05
-    real_bounds: Tuple[int, int] = (0, 47)
-    scaled_bounds: Tuple[float, float] = (0.0, 1.0)
+    file_path: float = 2
     lint: bool = False
 
 
@@ -30,46 +28,32 @@ def test_get_well_number_no_well_number():
     class Options(NamedTuple):
         lint: bool = False
 
-    assert get_well_number(Options(), None) is None  # type: ignore
-    assert get_well_number(Options(lint=True), None) is None  # type: ignore
+    assert get_well_number(Options()) is None  # type: ignore
+    assert get_well_number(Options(lint=True)) is None  # type: ignore
 
 
 def test_get_well_number():
-    value = get_well_number(ValueOptions(), None)  # type: ignore
+    value = get_well_number(ValueOptions())  # type: ignore
     assert isinstance(value, int)
     assert value == 2
 
 
 def test_get_well_number_lint():
-    value = get_well_number(ValueOptions(lint=True), None)  # type: ignore
+    value = get_well_number(ValueOptions(lint=True))  # type: ignore
     assert isinstance(value, float)
     assert value == 2.0
 
 
 def test_get_well_number_file_path():
-    value = get_well_number(FileOptions(), None)  # type: ignore
+    value = get_well_number(FileOptions())  # type: ignore
     assert isinstance(value, int)
     assert value == 2
 
 
 def test_get_well_number_file_path_lint():
-    value = get_well_number(FileOptions(lint=True), None)  # type: ignore
-    assert isinstance(value, float)
-    assert value == 0.05
-
-
-def test_get_well_number_file_path_bad_bounds():
-    def write_error(value):
-        assert "Invalid real_bounds: lower bound greater than upper, (3, 1)" in value
-        assert (
-            "Invalid scaled_bounds: lower bound greater than upper, (3.2, 0.14)"
-            in value
-        )
-
-    get_well_number(
-        FileOptions(real_bounds=(3, 1), scaled_bounds=(3.2, 0.14)),  # type: ignore
-        write_error,
-    )
+    value = get_well_number(FileOptions(lint=True))  # type: ignore
+    assert isinstance(value, int)
+    assert value == 2
 
 
 def test_select_wells_no_change(well_list):
