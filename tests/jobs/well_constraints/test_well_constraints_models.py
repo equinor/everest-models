@@ -93,7 +93,7 @@ def test_constraint_phase_model_optimum_value_none():
 
 @pytest.mark.parametrize(
     "optimizer_value, config_value, expected",
-    ((0, 500, 500), (0.1, None, 0.1)),
+    ((0, 500, 0), (0.1, None, 0.1)),
 )
 def test_constraint_tolerance_model_optimum_value(
     optimizer_value, config_value, expected
@@ -111,3 +111,21 @@ def test_constraint_tolerance_model_optimum_value(
 def test_constraint_tolerance_model_optimum_value_none():
     assert Tolerance.model_validate({"value": 314}).optimum_value(None) == 314
     assert Tolerance().optimum_value(None) is None
+
+
+@pytest.mark.parametrize(
+    "optimizer_value, config_value, expected",
+    (
+        (0.1, None, 0.1),
+        (None, None, None),
+        (0, None, 0),
+        (0, 42, 0),
+        (0.0, None, 0.0),
+        (0.0, 42, 0.0),
+    ),
+)
+def test_constraint_tolerance_model_optimum_value_zero(
+    optimizer_value, config_value, expected
+):
+    tolerance = Tolerance.model_validate({"value": config_value})
+    assert tolerance.optimum_value(optimizer_value) == expected

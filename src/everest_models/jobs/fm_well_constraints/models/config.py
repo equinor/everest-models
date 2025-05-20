@@ -48,7 +48,9 @@ class Tolerance(ModelConfig):
     value: Annotated[float | None, Field(default=None, description="")]
 
     def optimum_value(self, optimizer_value: Optional[float]) -> float:
-        return optimizer_value or self.value
+        if optimizer_value is not None:
+            return optimizer_value
+        return self.value
 
 
 class Constraints(ModelConfig):
