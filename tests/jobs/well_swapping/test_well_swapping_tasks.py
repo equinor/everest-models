@@ -29,9 +29,6 @@ class Options(NamedTuple):
 
 
 minimum_data = {
-    "constraints": {
-        "state_duration": {"scaling": {"source": [0, 1], "target": [0, 500]}}
-    },
     "start_date": "2024-06-03",
     "state": {"hierarchy": [{"label": "open"}, {"label": "shut"}]},
 }
@@ -80,7 +77,7 @@ def result(data: Dict[str, Any]) -> Data:
                     {"W1": 0.51, "W2": 0.40, "W3": 0.55},
                     {"W1": 0.50, "W2": 0.54, "W3": 0.51},
                 ],
-                constraints={"state_duration": (0.5, 0.5)},
+                constraints={"state_duration": (250, 250)},
             ),
             result(minimum_data),
             id="all files present",
@@ -99,8 +96,7 @@ def result(data: Dict[str, Any]) -> Data:
                         },
                         "constraints": {
                             "state_duration": {
-                                "fallback_values": 250,
-                                **minimum_data["constraints"]["state_duration"],
+                                "fallback_values": 250.0,
                             }
                         },
                     }
@@ -120,7 +116,6 @@ def result(data: Dict[str, Any]) -> Data:
                     "constraints": {
                         "state_duration": {
                             "fallback_values": 250,
-                            **minimum_data["constraints"]["state_duration"],
                         }
                     },
                 }
@@ -144,7 +139,6 @@ def result(data: Dict[str, Any]) -> Data:
                             "state_duration": {
                                 # make fallback bigger
                                 "fallback_values": 300,
-                                **minimum_data["constraints"]["state_duration"],
                             }
                         },
                     }
@@ -154,7 +148,7 @@ def result(data: Dict[str, Any]) -> Data:
                     {"W1": 0.51, "W2": 0.40, "W3": 0.55},
                     {"W1": 0.50, "W2": 0.54, "W3": 0.51},
                 ],
-                constraints={"state_duration": (0.5, 0.5)},
+                constraints={"state_duration": (250, 250)},
             ),
             result(
                 {
@@ -171,7 +165,6 @@ def result(data: Dict[str, Any]) -> Data:
                         "state_duration": {
                             # make fallback bigger
                             "fallback_values": 300,
-                            **minimum_data["constraints"]["state_duration"],
                         }
                     },
                 }

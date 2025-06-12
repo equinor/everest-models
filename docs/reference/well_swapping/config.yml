@@ -19,7 +19,7 @@
 #     variables:
 #     - { name: state_duration, initial_guess: [z0, z1, ..., zn] }
 
-# Required: True
+# Required: False
 constraints:
 
   # Constraint information for defining time duration of state swapping intervals
@@ -33,23 +33,6 @@ constraints:
     # Required: False
     # Default: null
     fallback_values: <REPLACE>
-
-    # Scaling factors specified by user to define scaled initial_guess values for state_duration control variable in Everest configuration file.
-    # Given these factors the forward model will rescale the state_duration values into physical values (in days)
-    # Required: True
-    scaling:
-
-      # [min, max] values for scaling source
-      # Datatype: ['number', 'number']
-      # Examples: [0, 1], [0.0, 1.0], [0.5, 2.0]
-      # Required: True
-      source: <REPLACE>
-
-      # [min, max] values for scaling target (in days)
-      # Datatype: ['number', 'number']
-      # Examples: [0, 500], [100.0, 400.0], [150.0, 1000.0]
-      # Required: True
-      target: <REPLACE>
 
 # Fallback values for item priorities in case priority JSON file is missing (e.g. when priority controls are not defined in Everest configuration file)
 # Required: False
