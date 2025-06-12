@@ -43,21 +43,6 @@ constraints:
     # Default: null
     fallback_values: [300, 300, 300, 300]
 
-    # Scaling data used by everest for producing constraint files,
-    # given these values this well swapping forward model will rescale the constraints
-    # Datatype: Scaling map
-    # Required: True
-    scaling:
-      # [min, max] values for scaling source
-      # Datatype: ['number', 'number']
-      # Required: True
-      source: [0.001, 1]
-
-      # [min, max] values for scaling target
-      # Datatype: ['number', 'number']
-      # Required: True
-      target: [0, 500]
-
 # Datatype: date
 # Examples: 2024-01-31, 2024-01-31T11:06
 # Required: True
