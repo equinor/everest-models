@@ -53,7 +53,7 @@ class Data:
     state: StateConfig
     cases: CasesConifg
     output: Optional[Path]
-    state_duration: Tuple[int, ...]
+    state_duration: Tuple[float, ...]
     errors: List[str]
 
 
@@ -102,9 +102,7 @@ def clean_data(options: Namespace) -> Data:
     )
 
     if options.constraints and "state_duration" in options.constraints:
-        state_duration = options.config.constraints.rescale(
-            options.constraints["state_duration"]
-        )
+        state_duration = options.constraints["state_duration"]
     elif isinstance(options.config.constraints.state_duration.fallback_values, float):
         state_duration = (
             options.config.constraints.state_duration.fallback_values,
