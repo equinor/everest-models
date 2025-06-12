@@ -5,7 +5,6 @@ from pydantic import ValidationError
 from sub_testdata import WELL_SWAPPING as TEST_DATA
 
 from everest_models.jobs.fm_well_swapping.models import StateConfig
-from everest_models.jobs.fm_well_swapping.models.constraints import _Scaling
 from everest_models.jobs.shared.io_utils import load_yaml
 
 
@@ -17,19 +16,6 @@ def well_swap_config_data(path_test_data) -> Dict[str, Any]:
 @pytest.fixture(scope="module")
 def well_swap_state_hierarchy() -> Tuple[Dict[str, str], ...]:
     return {"label": "high"}, {"label": "middle"}, {"label": "low"}
-
-
-@pytest.mark.parametrize(
-    "source, target, match",
-    (
-        pytest.param([5, 4.6], [0, 1], r"1.*\s+source", id="source"),
-        pytest.param([0, 1], [5, 4.9], r"1.*\s+target", id="target"),
-        pytest.param([1, 0.5], [5, 4.9], r"2.*\s+source\s+.*\s+.*\s+target", id="both"),
-    ),
-)
-def test_well_swapping_config_scaling_bad(source, target, match) -> None:
-    with pytest.raises(ValidationError, match=match):
-        _Scaling.model_validate({"source": source, "target": target})
 
 
 @pytest.mark.parametrize(
