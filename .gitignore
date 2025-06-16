@@ -64,5 +64,8 @@ venv.bak/
 # vscode
 .vscode
 
+# neovim/ripgrep (reversed rule)
+!.github
+
 # version
 src/everest_models/version.py
