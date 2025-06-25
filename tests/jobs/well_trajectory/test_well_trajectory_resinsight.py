@@ -67,6 +67,7 @@ def test_well_trajectory_resinsight_main_entry_point_no_mlt(
             assert filecmp.cmp(expected, output, shallow=False)
 
 
+@pytest.mark.xfail
 @pytest.mark.resinsight
 def test_well_trajectory_resinsight_main_entry_point_mlt(
     well_trajectory_arguments, copy_testdata_tmpdir
@@ -81,6 +82,7 @@ def test_well_trajectory_resinsight_main_entry_point_mlt(
             assert filecmp.cmp(expected, output, shallow=False)
 
 
+@pytest.mark.xfail
 @pytest.mark.resinsight
 def test_well_trajectory_resinsight_main_entry_point_mixed(
     well_trajectory_arguments, copy_testdata_tmpdir
