@@ -68,25 +68,15 @@ class Constraints(ModelConfig):
         ),
     ]
 
-    def rescale(self, constraints: Union[Sequence[float], int]) -> Tuple[float, ...]:
-        if isinstance(constraints, int):
-            if isinstance(self.state_duration.fallback_values, float):
-                if not constraints:
-                    raise ValueError(
-                        "Unable to build state duration fallback constraints."
-                    )
-                return (self.state_duration.fallback_values,) * constraints
-            return self.state_duration.fallback_values
-
-        scaling = self.state_duration.scaling
+    def rescale(self, constraints: Sequence[float]) -> Tuple[float, ...]:
         return tuple(
             round(
                 rescale_value(
                     value,
-                    scaling.source.min,
-                    scaling.source.max,
-                    scaling.target.min,
-                    scaling.target.max,
+                    self.state_duration.scaling.source.min,
+                    self.state_duration.scaling.source.max,
+                    self.state_duration.scaling.target.min,
+                    self.state_duration.scaling.target.max,
                 )
             )
             for value in constraints
