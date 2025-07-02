@@ -101,6 +101,17 @@ def clean_data(options: Namespace) -> Data:
         else iteration_capacity
     )
 
+    if options.constraints and "state_duration" in options.constraints:
+        state_duration = options.config.constraints.rescale(
+            options.constraints["state_duration"]
+        )
+    elif isinstance(options.config.constraints.state_duration.fallback_values, float):
+        state_duration = (
+            options.config.constraints.state_duration.fallback_values,
+        ) * iteration_capacity
+    else:
+        state_duration = options.config.constraints.state_duration.fallback_values
+
     return Data(
         options.lint,
         start_date=options.config.start_date,
@@ -109,14 +120,7 @@ def clean_data(options: Namespace) -> Data:
         state=options.config.state,
         cases=validate_exist(options.cases or options.config.cases(), "cases"),
         output=None if options.lint else validate_exist(options.output, "output"),
-        state_duration=validate_exist(
-            options.config.constraints.rescale(
-                options.constraints["state_duration"]
-                if options.constraints
-                else iteration_capacity
-            ),
-            "state_duration",
-        ),
+        state_duration=validate_exist(state_duration, "state_duration"),
         errors=errors,
     )
 
