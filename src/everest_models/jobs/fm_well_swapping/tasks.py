@@ -110,13 +110,19 @@ def clean_data(options: Namespace) -> Data:
     else:
         state_duration = options.config.constraints.state_duration.fallback_values
 
+    # Inject readydate into cases (if exists) such that npv forward model can use it for calculating the well-costs:
+    cases = validate_exist(options.cases or options.config.cases(), "cases")
+    if cases is not None:
+        for case in cases:
+            case.readydate = options.config.start_date
+
     return Data(
         options.lint,
         start_date=options.config.start_date,
         iterations=iteration_limit,
         priorities=priorities,
         state=options.config.state,
-        cases=validate_exist(options.cases or options.config.cases(), "cases"),
+        cases=cases,
         output=None if options.lint else validate_exist(options.output, "output"),
         state_duration=validate_exist(state_duration, "state_duration"),
         errors=errors,
