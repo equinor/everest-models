@@ -10,7 +10,7 @@ from everest_models.jobs.shared.models import ModelConfig
 from everest_models.jobs.shared.models import Wells as Cases
 from everest_models.jobs.shared.validators import parse_file
 
-from .constraints import Constraint, Constraints
+from .constraints import Constraints
 from .state import Case, State, StateConfig
 
 
@@ -53,9 +53,6 @@ class ConfigSchema(ModelConfig):
     constraints: Annotated[
         Constraints,
         Field(
-            default_factory=lambda: Constraints(
-                state_duration=Constraint(fallback_values=None)
-            ),
             description=dedent(
                 """\
                 Make sure the following are present in the Everest configuration file:
@@ -75,7 +72,7 @@ class ConfigSchema(ModelConfig):
                     variables:
                     - { name: state_duration, initial_guess: [z0, z1, ..., zn] }
             """
-            ),
+            )
         ),
     ]
     priorities: Annotated[
