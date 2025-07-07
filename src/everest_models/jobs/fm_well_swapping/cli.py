@@ -18,6 +18,11 @@ Example of a well swapping configuration file (:code:`-c, --config`) for a case 
 .. code-block:: yaml
 
     start_date: 2025-01-01
+    constraints:
+        state_duration:
+            scaling:
+            source: [0, 1]
+            target: [0, 500]
 
     state:
         hierarchy:
@@ -51,10 +56,10 @@ Example of swapping constraints controls for a case with 3 time intervals define
             name: swapping_constraints
             type: generic_control
             min: 0.0
-            max: 500.0
-            perturbation_magnitude: 25.0
+            max: 1.0
+            perturbation_magnitude: 0.05
             variables:
-                - { name: state_duration, initial_guess: [250, 250, 250] }
+                - { name: state_duration, initial_guess: [0.5, 0.5, 0.5] }
 
 These controls result in an EVEREST-generated JSON file with the following content (:code:`-cr, --constraints`):
 
@@ -62,9 +67,9 @@ These controls result in an EVEREST-generated JSON file with the following conte
 
     {
         "state_duration": {
-            "1": 250,
-            "2": 250,
-            "3": 250
+            "1": 0.5,
+            "2": 0.5,
+            "3": 0.5
         }
     }
 
