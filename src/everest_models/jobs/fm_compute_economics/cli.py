@@ -32,6 +32,16 @@ def _overwrite_economic_indicator_config(
             setattr(
                 instance, field, value[index] if isinstance(value, tuple) else value
             )
+        elif field == "input":
+            instance = options.config.wells_input = (
+                value[index] if isinstance(value, tuple) else value
+            )
+       
+        elif field == "summary_reference":
+            instance = options.config.summary.reference = (
+                value[index] if isinstance(value, tuple) else value
+            )
+        
         elif field == "output":
             options.config.output.file = (
                 value[index] if isinstance(value, tuple) else value
@@ -53,20 +63,20 @@ def _overwrite_economic_indicator_config(
 
 
 def main_entry_point(args=None):
+    print("### Compute Economics Test Version FFELD ###")
     args_parser = build_argument_parser()
     options = args_parser.parse_args(args=args)
+    print("options1",options.calculation)
 
-    if bool(options.config.well_costs) ^ bool(options.config.wells_input):
-        args_parser.error(
-            "-c/--config argument file keys 'well_costs' and 'wells_input' "
-            "must always be paired; one of the two is missing."
-        )
+    
 
     if options.lint:
         args_parser.exit()
 
     for field in (
+        "summary_reference",
         "multiplier",
+        "input",
         "default_exchange_rate",
         "default_discount_rate",
         "start_date",
@@ -77,18 +87,37 @@ def main_entry_point(args=None):
     ):
         _overwrite_economic_indicator_config(options, field)
 
+    
     logger.info(f"Initializing economic_indicator calculation with options {options}")
-    economic_indicator = create_indicator(
-        options.calculation, config=options.config
-    ).compute(
-        {
-            well.name: well.completion_date or well.readydate
-            for well in (
-                parse_file(options.config.wells_input, Wells)
-                if options.config.wells_input
-                else {}
-            )
-        }
-    )
+    print(f"well_costs: {options.config.well_costs}")
+    print(f"wells_input: {options.config.wells_input}")
+    print("config.bep_consider_opex",options.config.bep_consider_opex)
 
-    options.config.output.file.write_text(f"{economic_indicator:.2f}")
+    if bool(options.config.well_costs) ^ bool(options.config.wells_input):
+        args_parser.error(
+            "-c/--config argument file keys 'well_costs' and 'wells_input' "
+            "must always be paired; one of the two is missing."
+            "check compute_econmics i ROOT.json "
+        )
+  
+
+    for item in options.calculation:
+        print("item",item)
+        economic_indicator = create_indicator(
+            item,  
+            config=options.config
+        ).compute(
+            {
+                well.name: well.completion_date or well.readydate
+                for well in (
+                    parse_file(options.config.wells_input, Wells)
+                    if options.config.wells_input
+                    else {}
+                )
+            }
+        )
+
+        # Save each result to a file or accumulate results
+        # changed this, i think no need for options.config.output.file.name
+        output_file = options.config.output.file.with_name(f"{item}") # _{options.config.output.file.name}")
+        output_file.write_text(f"{economic_indicator:.2f}")
