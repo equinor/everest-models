@@ -15,6 +15,7 @@ jobs:
   tests:
     name: "Python ${{ matrix.python-version }} on ${{ matrix.os }}"
     strategy:
+      fail-fast: false
       matrix:
         python-version: ["3.11", "3.12"]
         os: [ ubuntu-latest]
