@@ -50,4 +50,4 @@ jobs:
 
       - name: "Test package everest-models"
         run: |
-          python -m pytest -sv --hypothesis-profile ci --run-slow
+          python -m pytest -sv --hypothesis-profile ci --run-slow 
