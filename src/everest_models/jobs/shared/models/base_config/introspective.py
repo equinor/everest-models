@@ -1,4 +1,4 @@
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date, datetime
 from enum import Enum
@@ -55,8 +55,8 @@ def builtin_datatypes(value: Any) -> str:
         )
     if origin := get_origin(value):
         if origin is Literal:
-            return ", ".join(item for item in get_args(value))
-        string = ", ".join(
+            return _join_non_empty(get_args(value))
+        string = _join_non_empty(
             builtin_datatypes(arg) for arg in get_args(value) if arg is not Ellipsis
         )
         if origin is Union:
@@ -107,18 +107,20 @@ def _build_comment(info: FieldInfo) -> str:
         example = f"Examples: {example}"
     else:
         example = _example_types(info.annotation)
-    return "\n" + "\n".join(
-        filter(
-            lambda x: x,
-            (  # type: ignore
-                info.description,
-                "" if "__remove__" in typ else f"Datatype: {typ or '_'}",
-                example,
-                f"Required: {info.is_required()}",
-                default if default is None else f"Default: {default}",
-            ),
-        )
+    return "\n" + _join_non_empty(
+        (
+            info.description,
+            "" if "__remove__" in typ else f"Datatype: {typ or '_'}",
+            example,
+            f"Required: {info.is_required()}",
+            default if default is None else f"Default: {default}",
+        ),
+        "\n",
     )
+
+
+def _join_non_empty(strings: Iterable[str | None], separator=", ") -> str:
+    return separator.join(filter(lambda x: x, strings))  # type: ignore
 
 
 def build_yaml_structure(data: Any, level: int = 0):
