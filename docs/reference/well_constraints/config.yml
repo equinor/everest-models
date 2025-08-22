@@ -23,7 +23,7 @@
     # Default: value=None
     rate:
 
-      # Datatype: number,
+      # Datatype: number
       # Required: False
       # Default: null
       value: <REPLACE>
@@ -32,7 +32,7 @@
     # Default: value=None
     duration:
 
-      # Datatype: number,
+      # Datatype: number
       # Required: False
       # Default: null
       value: <REPLACE>
