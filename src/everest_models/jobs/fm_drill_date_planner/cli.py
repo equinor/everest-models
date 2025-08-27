@@ -15,11 +15,6 @@ def main_entry_point(args=None):
     parser_options_conflicts = []
     well_dict = options.input.to_dict()
 
-    if options.bounds[1] < options.bounds[0]:
-        parser_options_conflicts.append(
-            f"Invalid bounds: lower bound greater than upper, {options.bounds}"
-        )
-
     wells, other = itertools.tee(
         (well_dict.pop(name, name), value) for name, value in options.optimizer.items()
     )
@@ -40,11 +35,7 @@ def main_entry_point(args=None):
         args_parser.exit()
 
     for well, value in wells:
-        well.drill_time += int(
-            rescale_value(
-                value, options.bounds[0], options.bounds[1], 0, options.max_days
-            )
-        )
+        well.drill_time += int(value)
 
     logger.info(f"Writing results to {options.output}")
     options.input.json_dump(options.output)

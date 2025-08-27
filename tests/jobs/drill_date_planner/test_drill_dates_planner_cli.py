@@ -14,8 +14,7 @@ from everest_models.jobs.shared.validators import parse_file
 @pytest.fixture(scope="module")
 def drill_date_planner_args():
     return (
-        "--input wells.json -opt controls.json --bounds 0.0 1.0"
-        " --max-days 300 -o output.json"
+        "--input wells.json -opt controls.json -o output.json"
     ).split()
 
 
