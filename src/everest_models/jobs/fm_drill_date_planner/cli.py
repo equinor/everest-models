@@ -2,7 +2,6 @@ import itertools
 import logging
 
 from everest_models.jobs.fm_drill_date_planner.parser import build_argument_parser
-from everest_models.jobs.shared.converters import rescale_value
 
 logger = logging.getLogger(__name__)
 
