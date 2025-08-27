@@ -13,9 +13,7 @@ from everest_models.jobs.shared.validators import parse_file
 
 @pytest.fixture(scope="module")
 def drill_date_planner_args():
-    return (
-        "--input wells.json -opt controls.json -o output.json"
-    ).split()
+    return ("--input wells.json -opt controls.json -o output.json").split()
 
 
 def missing_controls() -> Dict[str, float]:

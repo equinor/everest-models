@@ -1,12 +1,10 @@
-from functools import partial
-
 from everest_models.jobs.shared.arguments import (
     add_output_argument,
     add_wells_input_argument,
     bootstrap_parser,
     get_parser,
 )
-from everest_models.jobs.shared.validators import is_gt_zero, valid_input_file
+from everest_models.jobs.shared.validators import valid_input_file
 
 
 @bootstrap_parser
