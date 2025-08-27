@@ -33,20 +33,4 @@ def build_argument_parser(skip_type=False):
         "consistent with the wells.json file when running everest and can "
         "be used directly.",
     )
-    required_group.add_argument(
-        "-b",
-        "--bounds",
-        required=True,
-        type=float,
-        metavar=("UPPER", "LOWER"),
-        help="Upper and lower bounds of the controls.",
-        nargs=2,
-    )
-    required_group.add_argument(
-        "-m",
-        "--max-days",
-        required=True,
-        type=partial(is_gt_zero, msg="max-days must be > 0"),
-        help="Maximum time interval in days.",
-    )
     return parser
