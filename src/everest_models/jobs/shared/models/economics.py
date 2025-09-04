@@ -44,10 +44,13 @@ class EconomicConfig(ModelConfig):
         Field(default=1, description=""),
     ]
     default_exchange_rate: Annotated[float, Field(default=1, description="")]
-    default_discount_rate: Annotated[float, Field(default=0.08, description="")]
+    default_discount_rate: Annotated[float, Field(default=0.00, description="")]
     dates: Annotated[Dates, Field(default_factory=lambda: Dates(**{}), description="")]
     exchange_rates: Annotated[
         Dict[str, Tuple[CurrencyRate, ...]], Field(default_factory=dict, description="")
+    ]
+    bep_consider_opex: Annotated[
+        bool, Field(default=False, description="Whether to include OPEX in BEP calculation")
     ]
     discount_rates: Annotated[
         Tuple[CurrencyRate, ...], Field(default_factory=tuple, description="")
