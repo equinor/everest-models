@@ -135,7 +135,7 @@ def switch_cwd_tmp_path(tmp_path):
 @pytest.fixture()
 def add_wells_to_config() -> Callable[[Path | str, Path | str], None]:
     def _add_wells_to_config(input_json: Path | str, config_yaml: Path | str) -> None:
-        config_dict = load_yaml(config_yaml)
+        config_dict = load_yaml(config_yaml) if Path(config_yaml).exists() else {}
         config_dict["wells"] = load_json(input_json)
         with open(config_yaml, "w") as fp:
             dump_yaml(config_dict, fp)

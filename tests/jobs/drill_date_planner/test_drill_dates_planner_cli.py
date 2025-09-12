@@ -1,7 +1,7 @@
 import json
-import pathlib
 import sys
-from typing import Dict, NamedTuple, Tuple
+from pathlib import Path
+from typing import Any, Dict, NamedTuple, Tuple
 
 import pytest
 from sub_testdata import DRILL_DATE_PLANNER as TEST_DATA
@@ -13,7 +13,7 @@ from everest_models.jobs.shared.validators import parse_file
 
 @pytest.fixture(scope="module")
 def drill_date_planner_args():
-    return ["--input", "wells.json", "-opt", "controls.json", "-o", "output.json"]
+    return ["-opt", "controls.json", "-o", "output.json"]
 
 
 def missing_controls() -> Dict[str, float]:
@@ -30,25 +30,41 @@ def missing_well() -> Wells:
     return Wells.model_validate([well for well in wells if int(well["name"][-1]) % 2])
 
 
+@pytest.mark.parametrize("wells_input", ["json", "config"])
 def test_drill_date_planner_main_entry_point(
-    drill_date_planner_args, copy_testdata_tmpdir
+    drill_date_planner_args, copy_testdata_tmpdir, wells_input, add_wells_to_config
 ) -> None:
     copy_testdata_tmpdir(TEST_DATA)
-    cli.main_entry_point(drill_date_planner_args)
+    if wells_input == "json":
+        args = (*drill_date_planner_args, "--input", "wells.json")
+    else:
+        args = (*drill_date_planner_args, "--config", "config.yml")
+        add_wells_to_config("wells.json", "config.yml")
+    cli.main_entry_point([*args])
 
-    assert (
-        pathlib.Path("output.json").read_bytes()
-        == pathlib.Path("expected_result.json").read_bytes()
-    )
+    assert Path("output.json").read_bytes() == Path("expected_result.json").read_bytes()
 
 
-def test_drill_date_planner_lint(drill_date_planner_args, copy_testdata_tmpdir) -> None:
+@pytest.mark.parametrize("wells_input", ["json", "config"])
+def test_drill_date_planner_lint(
+    drill_date_planner_args, copy_testdata_tmpdir, wells_input, add_wells_to_config
+) -> None:
     copy_testdata_tmpdir(TEST_DATA)
+    if wells_input == "json":
+        args = (*drill_date_planner_args, "--input", "wells.json")
+    else:
+        args = (*drill_date_planner_args, "--config", "config.yml")
+        add_wells_to_config("wells.json", "config.yml")
+        Path("wells.json").unlink()
     with pytest.raises(SystemExit) as e:
-        cli.main_entry_point([*drill_date_planner_args, "--lint"])
+        cli.main_entry_point([*args, "--lint"])
 
     assert e.value.code == 0
-    assert not pathlib.Path("output.json").exists()
+    assert not Path("output.json").exists()
+
+
+class ConfigMock(NamedTuple):
+    wells: dict[str, Any] = {}
 
 
 class Options(NamedTuple):
@@ -56,8 +72,9 @@ class Options(NamedTuple):
     optimizer: Dict[str, float]
     bounds: Tuple[float, float] = (0.1, 1.0)
     max_days: int = 300
-    output: pathlib.Path = pathlib.Path("output.json")
+    output: Path = Path("output.json")
     lint: bool = False
+    config: ConfigMock = ConfigMock(wells={})
 
 
 class MockParser:
@@ -86,12 +103,12 @@ def test_drill_date_planner_missing_control(
     )
 
     with pytest.raises(SystemExit) as e:
-        cli.main_entry_point(drill_date_planner_args)
+        cli.main_entry_point(["--input", "wells.json", *drill_date_planner_args])
 
     assert e.value.code == 2
     _, err = capsys.readouterr()
     assert "Missing well in controls:\n\tWELL2, WELL4" in err
-    assert not pathlib.Path("output.json").exists()
+    assert not Path("output.json").exists()
 
 
 def test_drill_date_planner_missing_well(
@@ -110,9 +127,42 @@ def test_drill_date_planner_missing_well(
     )
 
     with pytest.raises(SystemExit) as e:
-        cli.main_entry_point(drill_date_planner_args)
+        cli.main_entry_point(["--input", "wells.json", *drill_date_planner_args])
 
     assert e.value.code == 2
     _, err = capsys.readouterr()
     assert "Drill time missing for well(s):\n\tWELL2, WELL4" in err
-    assert not pathlib.Path("output.json").exists()
+    assert not Path("output.json").exists()
+
+
+def test_drill_dates_planner_error_no_wells_in_input_or_config(
+    copy_testdata_tmpdir, drill_date_planner_args, capsys
+):
+    copy_testdata_tmpdir(TEST_DATA)
+    with pytest.raises(SystemExit) as e:
+        cli.main_entry_point([*drill_date_planner_args])
+
+    assert e.value.code == 2
+    _, err = capsys.readouterr()
+    assert "either --input or config.wells must be provided!" in err
+
+
+def test_drill_dates_planner_error_both_wells_in_input_and_config(
+    copy_testdata_tmpdir, drill_date_planner_args, add_wells_to_config, capsys
+):
+    copy_testdata_tmpdir(TEST_DATA)
+    add_wells_to_config("wells.json", "config.yml")
+    with pytest.raises(SystemExit) as e:
+        cli.main_entry_point(
+            [
+                *drill_date_planner_args,
+                "--input",
+                "wells.json",
+                "--config",
+                "config.yml",
+            ]
+        )
+
+    assert e.value.code == 2
+    _, err = capsys.readouterr()
+    assert "--input and config.wells are mutually exclusive!" in err

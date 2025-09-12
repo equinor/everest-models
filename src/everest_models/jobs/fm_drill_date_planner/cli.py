@@ -12,7 +12,15 @@ def main_entry_point(args=None):
     args_parser = build_argument_parser()
     options = args_parser.parse_args(args)
     parser_options_conflicts = []
-    well_dict = options.input.to_dict()
+
+    if options.input and options.config.wells:
+        args_parser.error("--input and config.wells are mutually exclusive!")
+
+    if not options.input and not options.config.wells:
+        args_parser.error("either --input or config.wells must be provided!")
+
+    wells_input = options.input or options.config.wells
+    well_dict = wells_input.to_dict()
 
     wells, other = itertools.tee(
         (well_dict.pop(name, name), value) for name, value in options.optimizer.items()
@@ -37,4 +45,4 @@ def main_entry_point(args=None):
         well.drill_time += int(value)
 
     logger.info(f"Writing results to {options.output}")
-    options.input.json_dump(options.output)
+    wells_input.json_dump(options.output)
