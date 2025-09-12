@@ -16,3 +16,61 @@ templates:
     # Examples: {opname: KBD, phase: WATER, <field>: <value>}
     # Required: False
     keys: {}
+
+# Examples: {name: INJ, <field>: <value>}
+# Required: False
+wells:
+  -
+
+    # Datatype: date
+    # Examples: 2024-01-31, 2024-01-31T11:06
+    # Required: False
+    # Default: null
+    completion_date: null
+
+    # Datatype: integer
+    # Examples: 1, 1.34E5
+    # Required: False
+    # Default: null
+    drill_time: null
+
+    # Well name
+    # Datatype: string
+    # Examples: a string value
+    # Required: True
+    name: <REPLACE>
+
+    # Sequence of operations
+    # Required: False
+    operations:
+      -
+
+        # Datatype: date
+        # Examples: 2024-01-31, 2024-01-31T11:06
+        # Required: True
+        date: <REPLACE>
+
+        # Operation Name
+        # Datatype: string
+        # Examples: a string value
+        # Required: True
+        opname: <REPLACE>
+
+        # File path to jinja template
+        # Datatype: Path
+        # Examples: /path/to/file.ext, /path/to/directory/
+        # Required: False
+        # Default: null
+        template: null
+
+        # A <key:value> mapping, Note! 'phase' and 'rate' keys are preserved.
+        # Datatype: Tokens
+        # Examples: {'phase': 'WATER', 'rate': 0.35, '<token>': '<value>'}
+        # Required: False
+        tokens: {}
+
+    # Datatype: date
+    # Examples: 2024-01-31, 2024-01-31T11:06
+    # Required: False
+    # Default: null
+    readydate: null

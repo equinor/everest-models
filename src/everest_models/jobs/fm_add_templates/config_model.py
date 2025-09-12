@@ -4,7 +4,7 @@ from pydantic import ConfigDict, Field, FilePath, PlainSerializer, model_validat
 from typing_extensions import Annotated, TypedDict
 
 from everest_models.jobs.shared.converters import path_to_str
-from everest_models.jobs.shared.models import ModelConfig, PhaseEnum, Tokens
+from everest_models.jobs.shared.models import ModelConfig, PhaseEnum, Tokens, Wells
 from everest_models.jobs.shared.validators import validate_no_extra_fields
 
 
@@ -52,3 +52,11 @@ class Template(ModelConfig):
 
 class TemplateConfig(ModelConfig):
     templates: Tuple[Template, ...]
+    wells: Annotated[
+        Wells,
+        Field(
+            default_factory=dict,
+            description="",
+            examples=["{name: INJ, <field>: <value>}"],
+        ),
+    ]

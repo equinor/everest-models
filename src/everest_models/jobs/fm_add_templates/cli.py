@@ -41,11 +41,19 @@ def main_entry_point(args=None):
     if msg := _duplicate_template_msg(options.config.templates):
         logger.warning(msg)
 
+    if options.input and options.config.wells:
+        args_parser.error("--input and config.wells are mutually exclusive!")
+
+    if not options.input and not options.config.wells:
+        args_parser.error("either --input or config.wells must be provided!")
+
     if options.lint:
         args_parser.exit()
 
+    wells = options.input or options.config.wells
+
     consumed_templates = insert_template_with_matching_well_operation(
-        options.config.templates, options.input
+        options.config.templates, wells
     )
 
     if unutilized := ", ".join(
@@ -59,7 +67,7 @@ def main_entry_point(args=None):
             f"Template(s) not inserted:\n\t{unutilized}\n\tPlease, check insertion keys!"
         )
 
-    if msg := _no_template_msg(options.input):
+    if msg := _no_template_msg(wells):
         args_parser.error("No template matched:\n" + msg)
 
-    options.input.json_dump(options.output)
+    wells.json_dump(options.output)

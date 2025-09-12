@@ -2,7 +2,8 @@ import os
 import pathlib
 import shutil
 import sys
-from typing import Any, Sequence
+from pathlib import Path
+from typing import Any, Callable, Sequence
 
 import pluggy
 import pytest
@@ -13,6 +14,11 @@ sys.modules["everest.plugins"] = type(sys)("everest.plugins")
 sys.modules["everest.plugins"].hookimpl = pluggy.HookimplMarker("test")
 
 from everest_models import everest_hooks  # noqa: E402
+from everest_models.jobs.shared.io_utils import (  # noqa: E402
+    dump_yaml,
+    load_json,
+    load_yaml,
+)
 
 settings.register_profile(
     "ci",
@@ -124,3 +130,14 @@ def switch_cwd_tmp_path(tmp_path):
     os.chdir(tmp_path)
     yield tmp_path
     os.chdir(cwd)
+
+
+@pytest.fixture()
+def add_wells_to_config() -> Callable[[Path | str, Path | str], None]:
+    def _add_wells_to_config(input_json: Path | str, config_yaml: Path | str) -> None:
+        config_dict = load_yaml(config_yaml)
+        config_dict["wells"] = load_json(input_json)
+        with open(config_yaml, "w") as fp:
+            dump_yaml(config_dict, fp)
+
+    return _add_wells_to_config

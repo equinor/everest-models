@@ -26,10 +26,11 @@ def build_argument_parser(skip_type=False):
         " inserted"
     )
     add_wells_input_argument(
-        required_group,
+        parser,
         schema=Wells,
         help="Input file that requires template paths. Json file expected ex: wells.json",
         skip_type=skip_type,
+        required=False,
     )
     add_output_argument(required_group, help="Output file", skip_type=skip_type)
     required_group.add_argument(
