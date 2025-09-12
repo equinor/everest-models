@@ -9,7 +9,7 @@ from everest_models.jobs.fm_well_trajectory.cli import main_entry_point
 
 @pytest.fixture(scope="module")
 def well_trajectory_arguments():
-    return ("-c config.yml").split()
+    return ["-c", "config.yml"]
 
 
 def test_well_trajectory_simple_main_entry_point(
