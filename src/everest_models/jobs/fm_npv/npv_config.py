@@ -3,11 +3,20 @@ from typing import Any, Dict, Tuple
 from pydantic import Field, model_validator
 from typing_extensions import Annotated
 
+from everest_models.jobs.shared.models import Wells
 from everest_models.jobs.shared.models.economics import EconomicConfig
 
 
 class NPVConfig(EconomicConfig):
     summary_keys: Annotated[Tuple[str, ...], Field(description="")]
+    wells: Annotated[
+        Wells,
+        Field(
+            default_factory=dict,
+            description="",
+            examples=["{name: INJ, <field>: <value>}"],
+        ),
+    ]
 
     @model_validator(mode="before")
     @classmethod

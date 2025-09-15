@@ -103,10 +103,14 @@ def main_entry_point(args=None):
     args_parser = build_argument_parser()
     options = args_parser.parse_args(args=args)
 
-    if bool(options.config.well_costs) ^ bool(options.input):
+    if options.input and options.config.wells:
+        args_parser.error("--input and config.wells are mutually exclusive!")
+    wells_input = options.input or options.config.wells
+
+    if bool(options.config.well_costs) ^ bool(wells_input):
         args_parser.error(
-            "-c/--config argument file key 'well_cost' and -i/--input argument file "
-            "must always be paired; one of the two is missing."
+            "-c/--config argument file key 'well_cost' must be paired with either "
+            "the key 'wells' or the -i/--input argument."
         )
 
     if args and "-o" not in args and "--output" not in args:
@@ -132,7 +136,7 @@ def main_entry_point(args=None):
     npv = NPVCalculator(config=options.config, summary=options.summary).compute(
         {
             well.name: well.completion_date or well.readydate
-            for well in options.input or {}
+            for well in wells_input or {}
         }
     )
 
