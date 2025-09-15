@@ -5,7 +5,7 @@ from typing import ClassVar, Optional, Tuple
 from pydantic import Field, field_validator, model_validator
 from typing_extensions import Annotated
 
-from everest_models.jobs.shared.models import ModelConfig
+from everest_models.jobs.shared.models import ModelConfig, Wells
 
 
 class _Unavailability(ModelConfig):
@@ -44,6 +44,14 @@ class DrillPlanConfig(ModelConfig):
     end_date: Annotated[date, Field(description="")]
     rigs: Annotated[Tuple[Rig, ...], Field(description="")]
     slots: Annotated[Tuple[Slot, ...], Field(default_factory=tuple, description="")]
+    wells: Annotated[
+        Wells,
+        Field(
+            default_factory=dict,
+            description="",
+            examples=["{name: INJ, <field>: <value>}"],
+        ),
+    ]
 
     def __init__(
         self, start_date: date, end_date: Optional[date] = None, **data

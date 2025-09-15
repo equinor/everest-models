@@ -30,12 +30,13 @@ def build_argument_parser(skip_type=False):
         "dates that are output will be a valid drill plan."
     )
     add_wells_input_argument(
-        required_group,
+        parser,
         help="File containing information related to wells. The format is "
         "consistent with the wells.json file when running everest and can "
         "be used directly.",
         schema=Wells,
         skip_type=skip_type,
+        required=False,
     )
     add_output_argument(
         required_group,
