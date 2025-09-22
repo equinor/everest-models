@@ -99,7 +99,7 @@ testpaths = [
     "tests"
 ]
 markers = [
-    "run-slow",
+    "slow",
     "resinsight"
 ]
 
