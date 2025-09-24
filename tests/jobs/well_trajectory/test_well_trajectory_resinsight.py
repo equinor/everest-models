@@ -13,7 +13,7 @@ from everest_models.jobs.fm_well_trajectory.well_trajectory_resinsight import Re
 
 @pytest.fixture(scope="module")
 def well_trajectory_arguments():
-    return ("-c config.yml -E SPE1CASE1").split()
+    return ["-c", "config.yml", "-E", "SPE1CASE1"]
 
 
 @pytest.mark.slow
@@ -110,7 +110,7 @@ def test_well_trajectory_resinsight_main_entry_point_no_mlt_static_perforation(
     copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight")
     for path in Path.cwd().glob("mlt_*.json"):
         path.unlink()
-    main_entry_point("-c config_static_perforation.yml -E SPE1CASE1".split())
+    main_entry_point(["-c", "config_static_perforation.yml", "-E", "SPE1CASE1"])
 
     for expected in Path("expected").glob("**/*"):
         if expected.is_file():
@@ -126,7 +126,7 @@ def test_well_trajectory_resinsight_main_entry_point_no_mlt_dynamic_perforation(
     copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight")
     for path in Path.cwd().glob("mlt_*.json"):
         path.unlink()
-    main_entry_point("-c config_dynamic_perforation.yml -E SPE1CASE1".split())
+    main_entry_point(["-c", "config_dynamic_perforation.yml", "-E", "SPE1CASE1"])
 
     for expected in Path("expected").glob("**/*"):
         if expected.is_file():
@@ -146,7 +146,7 @@ def test_well_trajectory_resinsight_main_entry_point_no_mlt_missing_date(
         RuntimeError,
         match="Connections error: date not found in restart file: 2015-01-03",
     ):
-        main_entry_point("-c config_missing_date.yml -E SPE1CASE1".split())
+        main_entry_point(["-c", "config_missing_date.yml", "-E", "SPE1CASE1"])
 
 
 @pytest.mark.parametrize("remove_file", ["SPE1CASE1.EGRID", "SPE1CASE1.INIT"])
@@ -156,7 +156,7 @@ def test_checking_for_files_required_for_model(
     copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight")
     os.remove(remove_file)
     with pytest.raises(SystemExit) as excinfo:
-        main_entry_point("-c config.yml -E SPE1CASE1".split())
+        main_entry_point(["-c", "config.yml", "-E", "SPE1CASE1"])
     assert excinfo.value.code == 2
     captured = capsys.readouterr()
     assert f"Missing {remove_file} file" in captured.err
@@ -166,7 +166,7 @@ def test_validate_files_required_for_dynamic_perforation(copy_testdata_tmpdir, c
     copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight")
     os.remove("SPE1CASE1.UNRST")
     with pytest.raises(SystemExit) as excinfo:
-        main_entry_point("-c config_dynamic_perforation.yml -E SPE1CASE1".split())
+        main_entry_point(["-c", "config_dynamic_perforation.yml", "-E", "SPE1CASE1"])
     assert excinfo.value.code == 2
     captured = capsys.readouterr()
     assert "Missing SPE1CASE1.UNRST file" in captured.err

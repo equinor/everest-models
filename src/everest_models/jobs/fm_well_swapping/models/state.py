@@ -244,13 +244,13 @@ class StateConfig(ModelConfig):
     def get_initial(self, cases: Iterable[Case]) -> Dict[Case, State]:
         default = self.lowest_priority
         if self.initial is None:
-            return {case: default for case in cases}
+            return dict.fromkeys(cases, default)
         if isinstance(self.initial, str):
-            return {case: self.initial for case in cases}
+            return dict.fromkeys(cases, self.initial)
         if cases == set(self.initial):
             return self.initial
 
-        return {**{case: default for case in cases}, **self.initial}
+        return {**dict.fromkeys(cases, default), **self.initial}
 
     def get_targets(self, iterations: int) -> Tuple[State, ...]:
         default = self.highest_priority
