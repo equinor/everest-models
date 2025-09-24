@@ -2,14 +2,17 @@ import os
 import pathlib
 import shutil
 import sys
-from typing import Any, Sequence
+from pathlib import Path
+from typing import Any, Callable, Iterator, Sequence
 
+import everest.plugins  # noqa: F401
 import pluggy
 import pytest
 import rips
 from hypothesis import HealthCheck, settings
 
-sys.modules["everest.plugins"] = type(sys)("everest.plugins")
+# The order of these imports are important to ensure that the hookimpl marker
+# is mocked before everest_hooks is imported
 sys.modules["everest.plugins"].hookimpl = pluggy.HookimplMarker("test")
 
 from everest_models import everest_hooks  # noqa: E402
@@ -107,20 +110,34 @@ def reference_docs() -> pathlib.Path:
 
 
 @pytest.fixture
-def copy_testdata_tmpdir(path_test_data, tmp_path):
-    def _copy_tree(path=None):
-        path = path_test_data if path is None else path_test_data / path
-        shutil.copytree(path, tmp_path, dirs_exist_ok=True)
-
-    cwd = pathlib.Path.cwd()
-    os.chdir(tmp_path)
-    yield _copy_tree
-    os.chdir(cwd)
-
-
-@pytest.fixture
 def switch_cwd_tmp_path(tmp_path):
     cwd = pathlib.Path.cwd()
     os.chdir(tmp_path)
     yield tmp_path
     os.chdir(cwd)
+
+
+@pytest.fixture
+def copy_testdata_tmpdir(
+    path_test_data: Path, tmp_path: Path
+) -> Iterator[Callable[[str | None], Path]]:
+    def _copy_tree(path: str | None = None):
+        path_ = path_test_data if path is None else path_test_data / path
+        shutil.copytree(path_, tmp_path, dirs_exist_ok=True)
+        return path_
+
+    cwd = Path.cwd()
+    os.chdir(tmp_path)
+    yield _copy_tree
+    os.chdir(cwd)
+
+
+def relpath(*path):
+    return os.path.join(os.path.dirname(os.path.dirname(__file__)), *path)
+
+
+@pytest.fixture
+def copy_eightcells_test_data_to_tmp(tmp_path, monkeypatch):
+    path = relpath("tests", "testdata", "eightcells")
+    shutil.copytree(path, tmp_path, dirs_exist_ok=True)
+    monkeypatch.chdir(tmp_path)

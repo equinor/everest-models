@@ -2,6 +2,8 @@ import sys
 from pathlib import Path
 
 import pytest
+from ert import ForwardModelStepPlugin
+from ert.config import ErtConfig
 from pydantic import BaseModel, ConfigDict
 from ruamel.yaml import YAML
 from sub_testdata import ADD_TEMPLATE as TEST_DATA
@@ -156,3 +158,12 @@ def test_build_forward_model_step_plugin():
 
     assert executables == expected_fm_names
     assert names == expected_names
+
+
+def test_everest_models_jobs():
+    jobs = get_forward_models()
+    assert bool(jobs)
+    for job in jobs:
+        job_class = ErtConfig.with_plugins().PREINSTALLED_FORWARD_MODEL_STEPS.get(job)
+        assert job_class is not None
+        assert isinstance(job_class, ForwardModelStepPlugin)
