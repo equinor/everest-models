@@ -18,7 +18,7 @@ classifiers = [
     "Programming language :: Python :: 3.12",
 ]
 dependencies = [
-    "ert",  # Specifying git as source breaks the komodo testing
+    "ert>=16.0.b0",  # Specifying git as source breaks the komodo testing
     "resdata",
     "Jinja2>=3.1.2",
     "numpy>=1.23.2",

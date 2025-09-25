@@ -7,6 +7,7 @@ from ert.run_models.everest_run_model import EverestRunModel
 from everest.config import EverestConfig
 
 
+@pytest.mark.usefixtures("use_site_configurations_with_no_queue_options")
 @pytest.mark.integration_test
 @pytest.mark.parametrize("config", ("array", "index"))
 def test_state_modifier_workflow_run(
@@ -20,7 +21,7 @@ def test_state_modifier_workflow_run(
     )
     evaluator_server_config = EvaluatorServerConfig()
     run_model.run_experiment(evaluator_server_config)
-    paths = list(Path.cwd().glob("**/simulation_0/RESULT.SCH"))
+    paths = list(Path.cwd().glob("**/evaluation_0/RESULT.SCH"))
     assert paths
     for path in paths:
         assert path.read_bytes() == (cwd / "eclipse/model/EXPECTED.SCH").read_bytes()

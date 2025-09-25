@@ -12,6 +12,7 @@ import pytest
 from ert.config import ErtConfig
 from ert.config.parsing import ConfigKeys as ErtConfigKeys
 from ert.ensemble_evaluator import EvaluatorServerConfig
+from ert.plugins import ErtPluginContext
 from ert.run_models.everest_run_model import EverestRunModel
 from everest.bin.main import start_everest
 from everest.config import EverestConfig
@@ -143,7 +144,7 @@ def _generate_exp_ert_config(config_path, output_dir, config_file):
         ErtConfigKeys.NUM_REALIZATIONS: NUM_REALIZATIONS,
         ErtConfigKeys.RUNPATH: os.path.join(
             output_dir,
-            "eightcells_simulations/batch_<ITER>/geo_realization_<GEO_ID>/simulation_<IENS>",
+            "eightcells_simulations/batch_<ITER>/realization_<GEO_ID>/<SIM_DIR>",
         ),
         ErtConfigKeys.RUNPATH_FILE: os.path.join(
             os.path.realpath("everest/model"),
@@ -238,8 +239,6 @@ def test_conversion_of_eightcells_everestmodel_to_ertmodel(
     exp_ert_config[ErtConfigKeys.SUMMARY][0] = ["*", *SUM_KEYS_NO_OPM]
     sort_res_summary(exp_ert_config)
     sort_res_summary(ert_config)
-    # remove installed jobs
-    ert_config[ErtConfigKeys.INSTALL_JOB] = []
 
     assert exp_ert_config == ert_config
 
@@ -259,8 +258,6 @@ def test_opm_fail_default_summary_keys(copy_eightcells_test_data_to_tmp):
     )
     sort_res_summary(exp_ert_config)
     sort_res_summary(ert_config)
-    # remove installed jobs
-    ert_config[ErtConfigKeys.INSTALL_JOB] = []
 
     assert exp_ert_config == ert_config
 
@@ -299,18 +296,16 @@ def test_opm_fail_explicit_summary_keys(copy_eightcells_test_data_to_tmp):
     ]
     sort_res_summary(exp_ert_config)
     sort_res_summary(ert_config)
-    # remove installed jobs
-    ert_config[ErtConfigKeys.INSTALL_JOB] = []
 
     assert exp_ert_config == ert_config
 
 
 def test_init_eightcells_model(copy_eightcells_test_data_to_tmp):
     config = EverestConfig.load_file(CONFIG_FILE)
-    ert_config = _everest_to_ert_config_dict(
-        config, site_config=ErtConfig.read_site_config()
-    )
-    ErtConfig.with_plugins().from_dict(config_dict=ert_config)
+    ert_config = _everest_to_ert_config_dict(config)
+
+    with ErtPluginContext() as ctx:
+        ErtConfig.with_plugins(ctx).from_dict(config_dict=ert_config)
 
 
 def test_eightcells_model_wells_json_output_no_none(copy_eightcells_test_data_to_tmp):
