@@ -4,11 +4,13 @@ import shutil
 import sys
 from pathlib import Path
 from typing import Any, Callable, Iterator, Sequence
+from unittest.mock import patch
 
 import everest.plugins  # noqa: F401
 import pluggy
 import pytest
 import rips
+from ert.plugins import ErtRuntimePlugins
 from hypothesis import HealthCheck, settings
 
 # The order of these imports are important to ensure that the hookimpl marker
@@ -23,6 +25,18 @@ settings.register_profile(
     deadline=None,
     suppress_health_check=[HealthCheck.too_slow],
 )
+
+
+@pytest.fixture()
+def use_site_configurations_with_no_queue_options():
+    def ErtRuntimePluginsWithNoQueueOptions(**kwargs):
+        return ErtRuntimePlugins(**(kwargs | {"queue_options": None}))
+
+    with patch(
+        "ert.plugins.plugin_manager.ErtRuntimePlugins",
+        ErtRuntimePluginsWithNoQueueOptions,
+    ):
+        yield
 
 
 def pytest_addoption(parser: Any) -> Any:
