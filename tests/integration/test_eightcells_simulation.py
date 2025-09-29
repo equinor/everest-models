@@ -8,7 +8,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-from ert.config import ErtConfig
+from ert.config import ErtConfig, SummaryConfig
 from ert.config.parsing import ConfigKeys as ErtConfigKeys
 from ert.ensemble_evaluator import EvaluatorServerConfig
 from ert.plugins import ErtPluginContext
@@ -129,10 +129,6 @@ SUM_KEYS = [
 ]
 
 
-def sort_res_summary(ert_config):
-    ert_config[ErtConfigKeys.SUMMARY][0] = sorted(ert_config[ErtConfigKeys.SUMMARY][0])
-
-
 def _generate_exp_ert_config(config_path, output_dir, config_file):
     return {
         ErtConfigKeys.DEFINE: [
@@ -216,11 +212,8 @@ def _generate_exp_ert_config(config_path, output_dir, config_file):
             os.path.realpath("everest/model"),
             "everest_output/simulation_results",
         ),
-        ErtConfigKeys.EVEREST_OBJECTIVES: [{"input_file": "rf", "name": "rf"}],
         ErtConfigKeys.ECLBASE: "eclipse/model/EIGHTCELLS",
         ErtConfigKeys.RANDOM_SEED: 123456,
-        ErtConfigKeys.SUMMARY: SUM_KEYS,
-        ErtConfigKeys.GEN_DATA: [],
     }
 
 
@@ -235,14 +228,18 @@ def test_conversion_of_eightcells_everestmodel_to_ertmodel(
     output_dir = config.output_dir
     config_path = os.path.dirname(os.path.abspath(CONFIG_FILE))
     exp_ert_config = _generate_exp_ert_config(config_path, output_dir, CONFIG_FILE)
-    exp_ert_config[ErtConfigKeys.SUMMARY][0] = ["*", *SUM_KEYS_NO_OPM]
-    sort_res_summary(exp_ert_config)
-    sort_res_summary(ert_config)
 
+    runmodel = EverestRunModel.create(config, "exp", "batch")
+    summary_config = next(
+        r for r in runmodel.response_configuration if isinstance(r, SummaryConfig)
+    )
+    assert set(summary_config.keys) == {"*", *SUM_KEYS_NO_OPM}
     assert exp_ert_config == ert_config
 
 
 def test_opm_fail_default_summary_keys(copy_eightcells_test_data_to_tmp):
+    pytest.importorskip("everest_models")
+
     config = EverestConfig.load_file(CONFIG_FILE)
     # The Everest config file will fail to load as an Eclipse data file
     ert_config = _everest_to_ert_config_dict(config)
@@ -252,12 +249,13 @@ def test_opm_fail_default_summary_keys(copy_eightcells_test_data_to_tmp):
     output_dir = config.output_dir
     config_path = os.path.dirname(os.path.abspath(CONFIG_FILE))
     exp_ert_config = _generate_exp_ert_config(config_path, output_dir, CONFIG_FILE)
-    exp_ert_config[ErtConfigKeys.SUMMARY][0] = filter(
-        lambda key: not key.startswith("G"), exp_ert_config[ErtConfigKeys.SUMMARY][0]
-    )
-    sort_res_summary(exp_ert_config)
-    sort_res_summary(ert_config)
 
+    runmodel = EverestRunModel.create(config, "exp", "batch")
+    summary_config = next(
+        r for r in runmodel.response_configuration if isinstance(r, SummaryConfig)
+    )
+
+    assert set(summary_config.keys) == {k for k in SUM_KEYS[0] if not k.startswith("G")}
     assert exp_ert_config == ert_config
 
 
@@ -284,18 +282,14 @@ def test_opm_fail_explicit_summary_keys(copy_eightcells_test_data_to_tmp):
     output_dir = config.output_dir
     config_path = os.path.dirname(os.path.abspath(CONFIG_FILE))
     exp_ert_config = _generate_exp_ert_config(config_path, output_dir, CONFIG_FILE)
-    exp_ert_config[ErtConfigKeys.SUMMARY] = [
-        list(
-            filter(
-                lambda key: not key.startswith("G"),
-                exp_ert_config[ErtConfigKeys.SUMMARY][0],
-            )
-        )
-        + extra_sum_keys
-    ]
-    sort_res_summary(exp_ert_config)
-    sort_res_summary(ert_config)
 
+    runmodel = EverestRunModel.create(config, "exp", "batch")
+    summary_config = next(
+        r for r in runmodel.response_configuration if isinstance(r, SummaryConfig)
+    )
+    assert set(summary_config.keys) == set(
+        [k for k in SUM_KEYS[0] if not k.startswith("G")] + extra_sum_keys
+    )
     assert exp_ert_config == ert_config
 
 
