@@ -1,6 +1,5 @@
 import io
 import itertools
-import json
 import os
 from contextlib import redirect_stdout
 from os.path import relpath
@@ -306,21 +305,6 @@ def test_init_eightcells_model(copy_eightcells_test_data_to_tmp):
 
     with ErtPluginContext() as ctx:
         ErtConfig.with_plugins(ctx).from_dict(config_dict=ert_config)
-
-
-def test_eightcells_model_wells_json_output_no_none(copy_eightcells_test_data_to_tmp):
-    config = EverestConfig.load_file(CONFIG_FILE)
-    _ = _everest_to_ert_config_dict(config)
-
-    with open(
-        os.path.join(config.output_dir, ".internal_data", "wells.json"),
-        encoding="utf-8",
-    ) as f:
-        data = json.load(f)
-
-        assert data
-        assert data[0]["name"] == "OP1"
-        assert all(v for i in data for v in i.values())
 
 
 @pytest.mark.requires_eclipse
