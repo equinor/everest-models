@@ -1,5 +1,4 @@
 import io
-import itertools
 import os
 from contextlib import redirect_stdout
 from os.path import relpath
@@ -8,8 +7,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-from ert.config import ErtConfig, SummaryConfig
-from ert.config.parsing import ConfigKeys as ErtConfigKeys
+from ert.config import ErtConfig
 from ert.ensemble_evaluator import EvaluatorServerConfig
 from ert.plugins import ErtPluginContext
 from ert.run_models.everest_run_model import EverestRunModel
@@ -19,247 +17,41 @@ from everest.simulator.everest_to_ert import _everest_to_ert_config_dict
 from ruamel.yaml import YAML
 
 CONFIG_FILE = "everest/model/config.yml"
-NUM_REALIZATIONS = 3  # tied to the specified config.yml defined in CONFIG_FILE
-SUM_KEYS_NO_OPM = [
-    "YEAR",
-    "YEARS",
-    "TCPU",
-    "TCPUDAY",
-    "MONTH",
-    "DAY",
-    "FOPR",
-    "FOPT",
-    "FOIR",
-    "FOIT",
-    "FWPR",
-    "FWPT",
-    "FWIR",
-    "FWIT",
-    "FGPR",
-    "FGPT",
-    "FGIR",
-    "FGIT",
-    "FVPR",
-    "FVPT",
-    "FVIR",
-    "FVIT",
-    "FWCT",
-    "FGOR",
-    "FOIP",
-    "FOIPL",
-    "FOIPG",
-    "FWIP",
-    "FGIP",
-    "FGIPL",
-    "FGIPG",
-    "FPR",
-    "FAQR",
-    "FAQRG",
-    "FAQT",
-    "FAQTG",
-    "FWGR",
-] + [
-    ":".join(tup)
-    for tup in itertools.product(
-        [
-            "WBHP",
-            "WGIR",
-            "WGIRT",
-            "WGIT",
-            "WGOR",
-            "WGPR",
-            "WGPRT",
-            "WGPT",
-            "WOIR",
-            "WOIRT",
-            "WOIT",
-            "WOPR",
-            "WOPRT",
-            "WOPT",
-            "WPI",
-            "WTHP",
-            "WVIR",
-            "WVIRT",
-            "WVIT",
-            "WVPR",
-            "WVPRT",
-            "WVPT",
-            "WWCT",
-            "WWGR",
-            "WWGRT",
-            "WWIR",
-            "WWIRT",
-            "WWIT",
-            "WWPR",
-            "WWPRT",
-            "WWPT",
-        ],
-        ["OP1", "WI1"],
+
+
+def dump_runmodel_agnostic(runmodel: EverestRunModel) -> str:
+    runmodel.runpath_config.jobname_format_string = "EIGHTCELLS"
+    runmodel.queue_config.queue_options.activate_script = ""
+    job_script = runmodel.queue_config.queue_options.job_script
+    job_script_dir = str(Path(job_script).parent)
+    substitutions = (
+        {
+            e.executable: Path(e.executable).name
+            for e in runmodel.forward_model_steps
+            if Path(e.executable).is_absolute()
+        }
+        | {job_script_dir: "ert/bin"}
+        | {os.getcwd(): "cwd"}
     )
-]
 
-SUM_KEYS = [
-    ["*"]
-    + SUM_KEYS_NO_OPM
-    + [
-        vector + ":" + group
-        for vector in [
-            "GGIR",
-            "GGIT",
-            "GGOR",
-            "GGPR",
-            "GGPT",
-            "GOIR",
-            "GOIT",
-            "GOPR",
-            "GOPT",
-            "GVIR",
-            "GVIT",
-            "GVPR",
-            "GVPT",
-            "GWCT",
-            "GWGR",
-            "GWIR",
-            "GWIT",
-            "GWPR",
-            "GWPT",
-        ]
-        for group in ["FIELD", "INJECT", "PRODUC"]
-    ]
-]
+    json_dump = runmodel.model_dump_json(indent=2)
+    for old_value, new_value in substitutions.items():
+        json_dump = json_dump.replace(old_value, new_value)
+
+    return json_dump + "\n"
 
 
-def _generate_exp_ert_config(config_path, output_dir, config_file):
-    return {
-        ErtConfigKeys.DEFINE: [
-            ("<CONFIG_PATH>", config_path),
-            ("<CONFIG_FILE>", Path(config_file).stem),
-        ],
-        ErtConfigKeys.INSTALL_JOB: [],
-        ErtConfigKeys.NUM_REALIZATIONS: NUM_REALIZATIONS,
-        ErtConfigKeys.RUNPATH: os.path.join(
-            output_dir,
-            "eightcells_simulations/batch_<ITER>/realization_<GEO_ID>/<SIM_DIR>",
-        ),
-        ErtConfigKeys.RUNPATH_FILE: os.path.join(
-            os.path.realpath("everest/model"),
-            "everest_output/.res_runpath_list",
-        ),
-        ErtConfigKeys.MAX_SUBMIT: 2,
-        ErtConfigKeys.FORWARD_MODEL: [
-            [
-                "copy_directory",
-                [
-                    f"{config_path}/../../eclipse/include/realizations/realization-<GEO_ID>/eclipse",
-                    "eclipse",
-                ],
-            ],
-            [
-                "symlink",
-                [f"{config_path}/../input/files", "files"],
-            ],
-            [
-                "copy_file",
-                [
-                    os.path.realpath(
-                        "everest/model/everest_output/.internal_data/wells.json"
-                    ),
-                    "wells.json",
-                ],
-            ],
-            [
-                "well_constraints",
-                [
-                    "-i",
-                    "files/well_readydate.json",
-                    "-c",
-                    "files/wc_config.yml",
-                    "-rc",
-                    "well_rate.json",
-                    "-o",
-                    "wc_wells.json",
-                ],
-            ],
-            [
-                "add_templates",
-                [
-                    "-i",
-                    "wc_wells.json",
-                    "-c",
-                    "files/at_config.yml",
-                    "-o",
-                    "at_wells.json",
-                ],
-            ],
-            [
-                "schmerge",
-                [
-                    "-s",
-                    "eclipse/include/schedule/schedule.tmpl",
-                    "-i",
-                    "at_wells.json",
-                    "-o",
-                    "eclipse/include/schedule/schedule.sch",
-                ],
-            ],
-            [
-                "flow",
-                ["flow", "eclipse/model/EIGHTCELLS", "--enable-tuning=true"],
-            ],
-            ["rf", ["-s", "eclipse/model/EIGHTCELLS", "-o", "rf"]],
-        ],
-        ErtConfigKeys.ENSPATH: os.path.join(
-            os.path.realpath("everest/model"),
-            "everest_output/simulation_results",
-        ),
-        ErtConfigKeys.ECLBASE: "eclipse/model/EIGHTCELLS",
-        ErtConfigKeys.RANDOM_SEED: 123456,
-    }
-
-
-def test_conversion_of_eightcells_everestmodel_to_ertmodel(
-    copy_eightcells_test_data_to_tmp,
+def test_conversion_of_eightcells_everestmodel_to_runmodel(
+    copy_eightcells_test_data_to_tmp, snapshot
 ):
     config = EverestConfig.load_file(CONFIG_FILE)
-    ert_config = _everest_to_ert_config_dict(config)
-
-    # configpath isn't specified in config_file so it should be inferred
-    # to be at the directory of the config file.
-    output_dir = config.output_dir
-    config_path = os.path.dirname(os.path.abspath(CONFIG_FILE))
-    exp_ert_config = _generate_exp_ert_config(config_path, output_dir, CONFIG_FILE)
-
     runmodel = EverestRunModel.create(config, "exp", "batch")
-    summary_config = next(
-        r for r in runmodel.response_configuration if isinstance(r, SummaryConfig)
-    )
-    assert set(summary_config.keys) == {"*", *SUM_KEYS_NO_OPM}
-    assert exp_ert_config == ert_config
+    snapshot.assert_match(dump_runmodel_agnostic(runmodel), "eightcells_runmodel.json")
 
 
-def test_opm_fail_default_summary_keys(copy_eightcells_test_data_to_tmp):
-    pytest.importorskip("everest_models")
-
-    config = EverestConfig.load_file(CONFIG_FILE)
-    # The Everest config file will fail to load as an Eclipse data file
-    ert_config = _everest_to_ert_config_dict(config)
-
-    # configpath isn't specified in config_file so it should be inferred
-    # to be at the directory of the config file.
-    output_dir = config.output_dir
-    config_path = os.path.dirname(os.path.abspath(CONFIG_FILE))
-    exp_ert_config = _generate_exp_ert_config(config_path, output_dir, CONFIG_FILE)
-
-    runmodel = EverestRunModel.create(config, "exp", "batch")
-    summary_config = next(
-        r for r in runmodel.response_configuration if isinstance(r, SummaryConfig)
-    )
-
-    assert set(summary_config.keys) == {k for k in SUM_KEYS[0] if not k.startswith("G")}
-    assert exp_ert_config == ert_config
-
-
-def test_opm_fail_explicit_summary_keys(copy_eightcells_test_data_to_tmp):
+def test_conversion_of_eightcells_everestmodel_to_runmodel_with_extra_summary_keys(
+    copy_eightcells_test_data_to_tmp, snapshot
+):
     extra_sum_keys = [
         "GOIR:PRODUC",
         "GOIT:INJECT",
@@ -275,22 +67,10 @@ def test_opm_fail_explicit_summary_keys(copy_eightcells_test_data_to_tmp):
     # The Everest config file will fail to load as an Eclipse data file
     config.export.keywords = extra_sum_keys
 
-    ert_config = _everest_to_ert_config_dict(config)
-
-    # configpath isn't specified in config_file so it should be inferred
-    # to be at the directory of the config file.
-    output_dir = config.output_dir
-    config_path = os.path.dirname(os.path.abspath(CONFIG_FILE))
-    exp_ert_config = _generate_exp_ert_config(config_path, output_dir, CONFIG_FILE)
-
     runmodel = EverestRunModel.create(config, "exp", "batch")
-    summary_config = next(
-        r for r in runmodel.response_configuration if isinstance(r, SummaryConfig)
+    snapshot.assert_match(
+        dump_runmodel_agnostic(runmodel), "eightcells_runmodel_with_extra_sum_keys.json"
     )
-    assert set(summary_config.keys) == set(
-        [k for k in SUM_KEYS[0] if not k.startswith("G")] + extra_sum_keys
-    )
-    assert exp_ert_config == ert_config
 
 
 def test_init_eightcells_model(copy_eightcells_test_data_to_tmp):
