@@ -1,0 +1,505 @@
+{
+  "storage_path": "cwd/everest/model/everest_output/simulation_results",
+  "runpath_file": "cwd/everest/model/everest_output/.res_runpath_list",
+  "user_config_file": "cwd/everest/model/config.yml",
+  "env_vars": {},
+  "env_pr_fm_step": {},
+  "runpath_config": {
+    "num_realizations": 3,
+    "runpath_format_string": "cwd/everest/model/everest_output/eightcells_simulations/batch_<ITER>/realization_<GEO_ID>/<SIM_DIR>",
+    "jobname_format_string": "EIGHTCELLS",
+    "eclbase_format_string": "eclipse/model/EIGHTCELLS",
+    "gen_kw_export_name": "parameters"
+  },
+  "queue_config": {
+    "max_submit": 2,
+    "queue_system": "local",
+    "queue_options": {
+      "name": "local",
+      "max_running": 8,
+      "submit_sleep": 0.0,
+      "num_cpu": 1,
+      "realization_memory": 0,
+      "job_script": "ert/bin/fm_dispatch.py",
+      "project_code": null,
+      "activate_script": ""
+    },
+    "stop_long_running": false,
+    "max_runtime": null
+  },
+  "forward_model_steps": [
+    {
+      "name": "copy_directory",
+      "executable": "copy_directory.py",
+      "stdin_file": null,
+      "stdout_file": "copy_directory.stdout",
+      "stderr_file": "copy_directory.stderr",
+      "start_file": null,
+      "target_file": null,
+      "error_file": null,
+      "max_running_minutes": null,
+      "min_arg": 0,
+      "max_arg": 0,
+      "arglist": [
+        "cwd/everest/model/../../eclipse/include/realizations/realization-<GEO_ID>/eclipse",
+        "eclipse"
+      ],
+      "required_keywords": [],
+      "arg_types": [],
+      "environment": {
+        "_ERT_ITERATION_NUMBER": "<ITER>",
+        "_ERT_REALIZATION_NUMBER": "<IENS>",
+        "_ERT_RUNPATH": "<RUNPATH>"
+      },
+      "default_mapping": {},
+      "private_args": {}
+    },
+    {
+      "name": "symlink",
+      "executable": "symlink.py",
+      "stdin_file": null,
+      "stdout_file": "symlink.stdout",
+      "stderr_file": "symlink.stderr",
+      "start_file": null,
+      "target_file": null,
+      "error_file": null,
+      "max_running_minutes": null,
+      "min_arg": 0,
+      "max_arg": 0,
+      "arglist": [
+        "cwd/everest/model/../input/files",
+        "files"
+      ],
+      "required_keywords": [],
+      "arg_types": [],
+      "environment": {
+        "_ERT_ITERATION_NUMBER": "<ITER>",
+        "_ERT_REALIZATION_NUMBER": "<IENS>",
+        "_ERT_RUNPATH": "<RUNPATH>"
+      },
+      "default_mapping": {},
+      "private_args": {}
+    },
+    {
+      "name": "copy_file",
+      "executable": "copy_file.py",
+      "stdin_file": null,
+      "stdout_file": "copy_file.stdout",
+      "stderr_file": "copy_file.stderr",
+      "start_file": null,
+      "target_file": null,
+      "error_file": null,
+      "max_running_minutes": null,
+      "min_arg": 0,
+      "max_arg": 0,
+      "arglist": [
+        "cwd/everest/model/everest_output/.internal_data/wells.json",
+        "wells.json"
+      ],
+      "required_keywords": [],
+      "arg_types": [],
+      "environment": {
+        "_ERT_ITERATION_NUMBER": "<ITER>",
+        "_ERT_REALIZATION_NUMBER": "<IENS>",
+        "_ERT_RUNPATH": "<RUNPATH>"
+      },
+      "default_mapping": {},
+      "private_args": {}
+    },
+    {
+      "name": "well_constraints",
+      "executable": "fm_well_constraints",
+      "stdin_file": null,
+      "stdout_file": "well_constraints.stdout",
+      "stderr_file": "well_constraints.stderr",
+      "start_file": null,
+      "target_file": null,
+      "error_file": null,
+      "max_running_minutes": null,
+      "min_arg": 0,
+      "max_arg": 0,
+      "arglist": [
+        "-i",
+        "files/well_readydate.json",
+        "-c",
+        "files/wc_config.yml",
+        "-rc",
+        "well_rate.json",
+        "-o",
+        "wc_wells.json"
+      ],
+      "required_keywords": [],
+      "arg_types": [],
+      "environment": {
+        "_ERT_ITERATION_NUMBER": "<ITER>",
+        "_ERT_REALIZATION_NUMBER": "<IENS>",
+        "_ERT_RUNPATH": "<RUNPATH>"
+      },
+      "default_mapping": {},
+      "private_args": {}
+    },
+    {
+      "name": "add_templates",
+      "executable": "fm_add_templates",
+      "stdin_file": null,
+      "stdout_file": "add_templates.stdout",
+      "stderr_file": "add_templates.stderr",
+      "start_file": null,
+      "target_file": null,
+      "error_file": null,
+      "max_running_minutes": null,
+      "min_arg": 0,
+      "max_arg": 0,
+      "arglist": [
+        "-i",
+        "wc_wells.json",
+        "-c",
+        "files/at_config.yml",
+        "-o",
+        "at_wells.json"
+      ],
+      "required_keywords": [],
+      "arg_types": [],
+      "environment": {
+        "_ERT_ITERATION_NUMBER": "<ITER>",
+        "_ERT_REALIZATION_NUMBER": "<IENS>",
+        "_ERT_RUNPATH": "<RUNPATH>"
+      },
+      "default_mapping": {},
+      "private_args": {}
+    },
+    {
+      "name": "schmerge",
+      "executable": "fm_schmerge",
+      "stdin_file": null,
+      "stdout_file": "schmerge.stdout",
+      "stderr_file": "schmerge.stderr",
+      "start_file": null,
+      "target_file": null,
+      "error_file": null,
+      "max_running_minutes": null,
+      "min_arg": 0,
+      "max_arg": 0,
+      "arglist": [
+        "-s",
+        "eclipse/include/schedule/schedule.tmpl",
+        "-i",
+        "at_wells.json",
+        "-o",
+        "eclipse/include/schedule/schedule.sch"
+      ],
+      "required_keywords": [],
+      "arg_types": [],
+      "environment": {
+        "_ERT_ITERATION_NUMBER": "<ITER>",
+        "_ERT_REALIZATION_NUMBER": "<IENS>",
+        "_ERT_RUNPATH": "<RUNPATH>"
+      },
+      "default_mapping": {},
+      "private_args": {}
+    },
+    {
+      "name": "flow",
+      "executable": "run_reservoirsimulator.py",
+      "stdin_file": null,
+      "stdout_file": "flow.stdout",
+      "stderr_file": "flow.stderr",
+      "start_file": null,
+      "target_file": null,
+      "error_file": null,
+      "max_running_minutes": null,
+      "min_arg": 0,
+      "max_arg": 0,
+      "arglist": [
+        "flow",
+        "eclipse/model/EIGHTCELLS",
+        "--enable-tuning=true"
+      ],
+      "required_keywords": [],
+      "arg_types": [],
+      "environment": {
+        "_ERT_ITERATION_NUMBER": "<ITER>",
+        "_ERT_REALIZATION_NUMBER": "<IENS>",
+        "_ERT_RUNPATH": "<RUNPATH>"
+      },
+      "default_mapping": {},
+      "private_args": {}
+    },
+    {
+      "name": "rf",
+      "executable": "fm_rf",
+      "stdin_file": null,
+      "stdout_file": "rf.stdout",
+      "stderr_file": "rf.stderr",
+      "start_file": null,
+      "target_file": null,
+      "error_file": null,
+      "max_running_minutes": null,
+      "min_arg": 0,
+      "max_arg": 0,
+      "arglist": [
+        "-s",
+        "eclipse/model/EIGHTCELLS",
+        "-o",
+        "rf"
+      ],
+      "required_keywords": [],
+      "arg_types": [],
+      "environment": {
+        "_ERT_ITERATION_NUMBER": "<ITER>",
+        "_ERT_REALIZATION_NUMBER": "<IENS>",
+        "_ERT_RUNPATH": "<RUNPATH>"
+      },
+      "default_mapping": {},
+      "private_args": {}
+    }
+  ],
+  "substitutions": {
+    "<CONFIG_PATH>": "cwd/everest/model",
+    "<CONFIG_FILE>": "config",
+    "<RUNPATH_FILE>": "cwd/everest/model/everest_output/.res_runpath_list",
+    "<RUNPATH>": "cwd/everest/model/everest_output/eightcells_simulations/batch_<ITER>/realization_<GEO_ID>/<SIM_DIR>",
+    "<ECL_BASE>": "eclipse/model/EIGHTCELLS",
+    "<ECLBASE>": "eclipse/model/EIGHTCELLS",
+    "<NUM_CPU>": "1"
+  },
+  "hooked_workflows": {},
+  "active_realizations": [],
+  "log_path": "cwd/everest/model/everest_output/logs",
+  "random_seed": 123456,
+  "start_iteration": 0,
+  "minimum_required_realizations": 0,
+  "optimization_output_dir": "cwd/everest/model/everest_output/optimization_output",
+  "simulation_dir": "cwd/everest/model/everest_output/eightcells_simulations",
+  "parameter_configuration": [
+    {
+      "type": "everest_parameters",
+      "name": "well_rate",
+      "forward_init": false,
+      "update": false
+    }
+  ],
+  "response_configuration": [
+    {
+      "type": "everest_objectives",
+      "name": "everest_objectives",
+      "input_files": [
+        "rf"
+      ],
+      "keys": [
+        "rf"
+      ],
+      "has_finalized_keys": true
+    },
+    {
+      "type": "summary",
+      "name": "summary",
+      "input_files": [
+        "eclipse/model/EIGHTCELLS"
+      ],
+      "keys": [
+        "*",
+        "DAY",
+        "FAQR",
+        "FAQRG",
+        "FAQT",
+        "FAQTG",
+        "FGIP",
+        "FGIPG",
+        "FGIPL",
+        "FGIR",
+        "FGIT",
+        "FGOR",
+        "FGPR",
+        "FGPT",
+        "FOIP",
+        "FOIPG",
+        "FOIPL",
+        "FOIR",
+        "FOIT",
+        "FOPR",
+        "FOPT",
+        "FPR",
+        "FVIR",
+        "FVIT",
+        "FVPR",
+        "FVPT",
+        "FWCT",
+        "FWGR",
+        "FWIP",
+        "FWIR",
+        "FWIT",
+        "FWPR",
+        "FWPT",
+        "GOIR:PRODUC",
+        "GOIT:INJECT",
+        "GOIT:PRODUC",
+        "GWIR:INJECT",
+        "GWPR:INJECT",
+        "GWPR:PRODUC",
+        "GWPT:INJECT",
+        "GWPT:PRODUC",
+        "MONTH",
+        "TCPU",
+        "TCPUDAY",
+        "WBHP:OP1",
+        "WBHP:WI1",
+        "WGIR:OP1",
+        "WGIR:WI1",
+        "WGIRT:OP1",
+        "WGIRT:WI1",
+        "WGIT:OP1",
+        "WGIT:WI1",
+        "WGOR:OP1",
+        "WGOR:WI1",
+        "WGPR:OP1",
+        "WGPR:WI1",
+        "WGPRT:OP1",
+        "WGPRT:WI1",
+        "WGPT:OP1",
+        "WGPT:WI1",
+        "WOIR:OP1",
+        "WOIR:WI1",
+        "WOIRT:OP1",
+        "WOIRT:WI1",
+        "WOIT:OP1",
+        "WOIT:WI1",
+        "WOPR:OP1",
+        "WOPR:WI1",
+        "WOPRT:OP1",
+        "WOPRT:WI1",
+        "WOPT:OP1",
+        "WOPT:WI1",
+        "WPI:OP1",
+        "WPI:WI1",
+        "WTHP:OP1",
+        "WTHP:WI1",
+        "WVIR:OP1",
+        "WVIR:WI1",
+        "WVIRT:OP1",
+        "WVIRT:WI1",
+        "WVIT:OP1",
+        "WVIT:WI1",
+        "WVPR:OP1",
+        "WVPR:WI1",
+        "WVPRT:OP1",
+        "WVPRT:WI1",
+        "WVPT:OP1",
+        "WVPT:WI1",
+        "WWCT:OP1",
+        "WWCT:WI1",
+        "WWGR:OP1",
+        "WWGR:WI1",
+        "WWGRT:OP1",
+        "WWGRT:WI1",
+        "WWIR:OP1",
+        "WWIR:WI1",
+        "WWIRT:OP1",
+        "WWIRT:WI1",
+        "WWIT:OP1",
+        "WWIT:WI1",
+        "WWPR:OP1",
+        "WWPR:WI1",
+        "WWPRT:OP1",
+        "WWPRT:WI1",
+        "WWPT:OP1",
+        "WWPT:WI1",
+        "YEAR",
+        "YEARS"
+      ],
+      "has_finalized_keys": false
+    }
+  ],
+  "ert_templates": [],
+  "controls": [
+    {
+      "name": "well_rate",
+      "type": "generic_control",
+      "variables": [
+        {
+          "name": "OP1",
+          "control_type": null,
+          "enabled": null,
+          "scaled_range": null,
+          "min": 10.0,
+          "max": 500.0,
+          "perturbation_magnitude": null,
+          "sampler": null,
+          "initial_guess": 50.0,
+          "index": 1
+        },
+        {
+          "name": "WI1",
+          "control_type": null,
+          "enabled": null,
+          "scaled_range": null,
+          "min": 10.0,
+          "max": 500.0,
+          "perturbation_magnitude": null,
+          "sampler": null,
+          "initial_guess": 250.0,
+          "index": 1
+        }
+      ],
+      "initial_guess": null,
+      "control_type": "real",
+      "enabled": true,
+      "min": null,
+      "max": null,
+      "perturbation_type": "absolute",
+      "perturbation_magnitude": null,
+      "scaled_range": [
+        0.0,
+        1.0
+      ],
+      "sampler": null
+    }
+  ],
+  "objective_functions": [
+    {
+      "name": "rf",
+      "weight": null,
+      "scale": null,
+      "type": "mean"
+    }
+  ],
+  "objective_names": [
+    "rf"
+  ],
+  "input_constraints": [],
+  "output_constraints": [],
+  "constraint_names": [],
+  "optimization": {
+    "algorithm": "optpp_q_newton",
+    "convergence_tolerance": 0.01,
+    "backend": null,
+    "backend_options": null,
+    "options": null,
+    "constraint_tolerance": null,
+    "cvar": null,
+    "max_batch_num": null,
+    "max_function_evaluations": 3,
+    "max_iterations": 2,
+    "min_pert_success": null,
+    "min_realizations_success": 1,
+    "perturbation_num": 1,
+    "speculative": true,
+    "parallel": true,
+    "auto_scale": false
+  },
+  "model": {
+    "realizations": [
+      0,
+      1,
+      2
+    ],
+    "realizations_weights": [
+      0.3333333333333333,
+      0.3333333333333333,
+      0.3333333333333333
+    ]
+  },
+  "keep_run_path": true,
+  "experiment_name": "exp",
+  "target_ensemble": "batch"
+}
