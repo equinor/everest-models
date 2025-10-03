@@ -3,6 +3,7 @@ from typing import Callable
 
 import pytest
 from ert.ensemble_evaluator.config import EvaluatorServerConfig
+from ert.plugins import ErtPluginContext
 from ert.run_models.everest_run_model import EverestRunModel
 from everest.config import EverestConfig
 
@@ -16,9 +17,11 @@ def test_state_modifier_workflow_run(
 ) -> None:
     cwd = copy_testdata_tmpdir("open_shut_state_modifier")
 
-    run_model = EverestRunModel.create(
-        EverestConfig.load_file(f"everest/model/{config}.yml")
-    )
+    with ErtPluginContext() as runtime_plugins:
+        run_model = EverestRunModel.create(
+            EverestConfig.load_file(f"everest/model/{config}.yml"),
+            runtime_plugins=runtime_plugins,
+        )
     evaluator_server_config = EvaluatorServerConfig()
     run_model.run_experiment(evaluator_server_config)
     paths = list(Path.cwd().glob("**/evaluation_0/RESULT.SCH"))

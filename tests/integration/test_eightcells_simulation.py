@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from ert.ensemble_evaluator import EvaluatorServerConfig
+from ert.plugins import ErtPluginContext
 from ert.run_models.everest_run_model import EverestRunModel
 from everest.bin.main import start_everest
 from everest.config import EverestConfig
@@ -72,7 +73,9 @@ def test_lint_everest_models_jobs():
 def test_init_no_project_res(copy_eightcells_test_data_to_tmp):
     config_file = os.path.join("everest", "model", "config.yml")
     config = EverestConfig.load_file(config_file)
-    EverestRunModel.create(config)
+
+    with ErtPluginContext() as runtime_plugins:
+        EverestRunModel.create(config, runtime_plugins=runtime_plugins)
 
 
 def test_everest_main_configdump_entry(copy_eightcells_test_data_to_tmp):
