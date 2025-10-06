@@ -101,9 +101,6 @@ def test_well_trajectory_resinsight_main_entry_point_no_mlt(
     _assert_deviation_files_nonempty(Path.cwd() / "wellpaths", expected_dev_files)
 
 
-@pytest.mark.xfail(
-    reason="recent breaking change in rips API for multilateral wells -> remove xfail once this is fixed"
-)
 @pytest.mark.resinsight
 def test_well_trajectory_resinsight_main_entry_point_mlt(
     well_trajectory_arguments, copy_testdata_tmpdir
@@ -137,9 +134,6 @@ def test_well_trajectory_resinsight_main_entry_point_mlt(
     _assert_deviation_files_nonempty(Path.cwd() / "wellpaths", expected_dev_files)
 
 
-@pytest.mark.xfail(
-    reason="recent breaking change in rips API for multilateral wells -> remove xfail once this is fixed"
-)
 @pytest.mark.resinsight
 def test_well_trajectory_resinsight_main_entry_point_mixed(
     well_trajectory_arguments, copy_testdata_tmpdir
