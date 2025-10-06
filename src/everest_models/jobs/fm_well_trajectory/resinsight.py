@@ -64,7 +64,7 @@ def create_well(
     well_config: WellConfig,
     guide_points: Trajectory,
     project: rips.Project,
-) -> Any:
+) -> rips.ModeledWellPath:
     _create_perforation_view(
         connection.perforations,
         connection.formations_file,
@@ -118,7 +118,7 @@ def create_well(
 
 def create_branches(
     well_config: WellConfig,
-    well_path: Any,
+    well_path: rips.ModeledWellPath,
     mlt_guide_points: Dict[str, Tuple[float, Trajectory]],
     project: rips.Project,
 ) -> Any:
