@@ -13,13 +13,6 @@ environment:
   output_folder: r{{configpath}}/../output/r{{case_name}}
   random_seed: 32142021
 
-wells:
-  - { name: WELL-1 }
-  - { name: WELL-2 }
-  - { name: WELL-3 }
-  - { name: WELL-4 }
-  - { name: WELL-5 }
-
 controls:
   - name: well_priorities
     type: well_control
