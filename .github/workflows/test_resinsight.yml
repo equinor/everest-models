@@ -8,6 +8,7 @@ on:
       - main
     tags: "*"
   pull_request:
+  workflow_dispatch:
 
 env:
   ERT_SHOW_BACKTRACE: 1
@@ -146,9 +147,9 @@ jobs:
         run: |
           pip install --upgrade pip
           # Make sure we use a compatible rips:
-          pip install .[test]
-          pip install rips==${{ env.RIPS_VERSION }}
+          pip install .[test,rips]
+          pip install -U rips==${{ env.RIPS_VERSION }}
       - name: Run tests using resinsight
         run: |
           ${{ github.workspace }}/${{ env.INSTALL_DIR }}/bin/ResInsight --console --version
-          RESINSIGHT_EXECUTABLE="${{ github.workspace }}/${{ env.INSTALL_DIR }}/bin/ResInsight" pytest -sv --test-resinsight -m resinsight
+          RESINSIGHT_EXECUTABLE="${{ github.workspace }}/${{ env.INSTALL_DIR }}/bin/ResInsight" pytest -sv --test-resinsight -m resinsight --run-slow

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import itertools
 import logging
 import signal
@@ -5,7 +7,12 @@ import sys
 from pathlib import Path
 from typing import Dict, Optional
 
-import rips
+try:
+    import rips  # ResInsight support is optional
+
+    _HAVE_RIPS = True
+except ImportError:
+    _HAVE_RIPS = False
 
 from .models.config import ConfigSchema
 from .outputs import write_well_costs
@@ -30,6 +37,9 @@ class ResInsight:
         signal.signal(signal.SIGINT, lambda *_: sys.exit(0))
 
     def __enter__(self) -> rips.Instance:
+        if not _HAVE_RIPS:
+            msg = "Failed to launch ResInsight: module `rips` not found"
+            raise ImportError(msg)
         logger.info("Launching ResInsight...")
         instance = rips.Instance.launch(self._executable, console=True, launch_port=0)
         if instance is None:

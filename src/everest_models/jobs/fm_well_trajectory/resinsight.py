@@ -1,12 +1,25 @@
+from __future__ import annotations
+
 import datetime
 import logging
 from pathlib import Path
 from textwrap import dedent
 from typing import Any, Dict, Iterable, Optional, Tuple, Union
 
-import lasio
+try:
+    import rips  # ResInsight support is optional
+
+    _HAVE_RIPS = True
+except ImportError:
+    _HAVE_RIPS = False
+try:
+    import lasio  # ResInsight support is optional
+
+    _HAVE_LASIO = True
+except ImportError:
+    _HAVE_LASIO = False
+
 import pandas
-import rips
 
 from everest_models.jobs.shared.models.phase import PhaseEnum
 
@@ -72,6 +85,10 @@ def create_well(
         well_config.name,
     )
 
+    if not _HAVE_RIPS:
+        msg = "Failed to launch ResInsight: module `rips` not found"
+        raise ImportError(msg)
+
     well_path_collection = project.descendants(rips.WellPathCollection)[0]
     well_path = well_path_collection.add_new_object(rips.ModeledWellPath)
     well_path.name = well_config.name
@@ -122,6 +139,10 @@ def create_branches(
     mlt_guide_points: Dict[str, Tuple[float, Trajectory]],
     project: rips.Project,
 ) -> Any:
+    if not _HAVE_RIPS:
+        msg = "Failed to launch ResInsight: module `rips` not found"
+        raise ImportError(msg)
+
     for md, guide_points in mlt_guide_points.values():
         lateral = well_path.append_lateral(md)
         geometry = lateral.well_path_geometry()
@@ -288,6 +309,8 @@ def _filter_perforation_properties(
 
 
 def _read_las_file(las: Path) -> pandas.DataFrame:
+    if not _HAVE_LASIO:
+        raise ImportError("Failed to read LAS file: module `lasio` not found")
     return lasio.read(las).df().reset_index()
 
 

@@ -1,4 +1,4 @@
-name: Test integration with ert
+name: Test integration with flow
 on:
   push:
     branches:
