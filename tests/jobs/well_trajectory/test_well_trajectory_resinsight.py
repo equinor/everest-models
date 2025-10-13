@@ -1,13 +1,21 @@
+import builtins
 import json
 import logging
 import os
+import sys
+from importlib.util import find_spec
 from pathlib import Path
 
 import pytest
 from sub_testdata import WELL_TRAJECTORY as TEST_DATA
 
+if find_spec("rips") is None:
+    pytest.skip("Skipping tests: 'rips' is not installed", allow_module_level=True)
+
 from everest_models.jobs.fm_well_trajectory.cli import main_entry_point
 from everest_models.jobs.fm_well_trajectory.well_trajectory_resinsight import ResInsight
+
+_builtin_import = builtins.__import__
 
 
 @pytest.fixture(scope="module")
@@ -63,6 +71,42 @@ def test_failing_start_resinsight(caplog):
     ):
         pass
     assert "Launching ResInsight..." in caplog.text
+
+
+@pytest.mark.resinsight
+@pytest.mark.parametrize(
+    ["module", "msg"],
+    [
+        ("rips", "Failed to launch ResInsight: module `rips` not found"),
+        ("lasio", "Failed to read LAS file: module `lasio` not found"),
+    ],
+)
+def test_rips_not_installed(
+    well_trajectory_arguments, copy_testdata_tmpdir, monkeypatch, module, msg
+):
+    def _import(name, *args, **kwargs):
+        if name == module:
+            raise ModuleNotFoundError()
+        return _builtin_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", _import)
+    for mod in (
+        module,
+        "everest_models.jobs.fm_well_trajectory.cli",
+        "everest_models.jobs.fm_well_trajectory.well_trajectory_resinsight",
+        "everest_models.jobs.fm_well_trajectory.resinsight",
+    ):
+        monkeypatch.delitem(sys.modules, mod, raising=False)
+    from everest_models.jobs.fm_well_trajectory.cli import (  # noqa: PLC0415
+        main_entry_point,
+    )
+
+    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight")
+    for path in Path.cwd().glob("mlt_*.json"):
+        path.unlink()
+
+    with pytest.raises(ImportError, match=msg):
+        main_entry_point(well_trajectory_arguments)
 
 
 @pytest.mark.resinsight

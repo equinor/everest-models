@@ -8,7 +8,6 @@ from typing import Any, Callable, Final, Iterator, Sequence
 from unittest.mock import patch
 
 import pytest
-import rips
 from hypothesis import HealthCheck, settings
 
 _HAVE_ERT: Final = find_spec("ert") is not None
@@ -22,6 +21,10 @@ if _HAVE_ERT:
     sys.modules["everest.plugins"].hookimpl = pluggy.HookimplMarker("test")
 
     from everest_models import everest_hooks  # noqa: E402
+
+_HAVE_RIPS: Final = find_spec("rips") is not None
+if _HAVE_RIPS:
+    import rips  # noqa: F401
 
 
 settings.register_profile(
@@ -72,14 +75,19 @@ def pytest_collection_modifyitems(config: Any, items: Sequence[Any]) -> None:
             if "slow" in item.keywords:
                 item.add_marker(skip_slow)
     if config.getoption("--test-resinsight"):
-        instance = rips.Instance.launch(console=True)
-        if instance is None:
-            msg = (
-                "Tests marked as `resinsight` require the RESINSIGHT_EXECUTABLE environment variable, "
-                "or that it is configured via the `rips` installation"
-            )
+        msg = ""
+        if _HAVE_RIPS:
+            if (instance := rips.Instance.launch(console=True)) is None:
+                msg = (
+                    "Tests marked as `resinsight` require the RESINSIGHT_EXECUTABLE environment variable, "
+                    "or that it is configured via the `rips` installation"
+                )
+            else:
+                instance.exit()
+        else:
+            msg = "Tests marked as `resinsight` require a rips installation"
+        if msg:
             pytest.exit(msg, returncode=pytest.ExitCode.USAGE_ERROR)
-        instance.exit()
     else:
         skip_resinsight = pytest.mark.skip(
             reason="need --test-resinsight option to run"
