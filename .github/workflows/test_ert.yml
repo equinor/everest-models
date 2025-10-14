@@ -1,0 +1,49 @@
+name: Test integration with ert
+on:
+  push:
+    branches:
+      - main
+    tags: "*"
+  pull_request:
+  workflow_dispatch:
+
+env:
+  ERT_SHOW_BACKTRACE: 1
+
+jobs:
+  tests:
+    name: "Python ${{ matrix.python-version }} on ${{ matrix.os }}"
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+        os: [ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Install Ubuntu dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install libegl1 -y
+
+      - uses: "actions/checkout@v5"
+        with:
+          fetch-depth: 0
+
+      - uses: "actions/setup-python@v5"
+        with:
+          python-version: "${{ matrix.python-version }}"
+          cache: "pip"
+          cache-dependency-path: |
+            pyproject.toml
+
+      - name: "Install package"
+        run: |
+          pip install --upgrade pip
+          pip install .[test,ert]
+          pip install -U git+https://github.com/equinor/ert.git@main
+
+      - name: "Test package everest-models"
+        run: |
+          python -m pytest -sv -m "ert"
