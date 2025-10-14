@@ -22,6 +22,7 @@ CONFIG_FILE = "everest/model/config.yml"
 
 
 @pytest.mark.usefixtures("use_site_configurations_with_no_queue_options")
+@pytest.mark.flow
 @pytest.mark.timeout(0)
 @pytest.mark.xfail(
     reason="output is stochastic and we do not allow the algorithm to converge"

@@ -57,6 +57,12 @@ def pytest_addoption(parser: Any) -> Any:
         default=False,
         help="Run slow tests",
     )
+    parser.addoption(
+        "--test-flow",
+        action="store_true",
+        default=False,
+        help="Run tests requiring flow",
+    )
 
 
 def pytest_collection_modifyitems(config: Any, items: Sequence[Any]) -> None:
@@ -81,6 +87,19 @@ def pytest_collection_modifyitems(config: Any, items: Sequence[Any]) -> None:
         for item in items:
             if "resinsight" in item.keywords:
                 item.add_marker(skip_resinsight)
+    if config.getoption("--test-flow"):
+        msg = ""
+        if not _HAVE_ERT:
+            msg = "Tests marked as `flow` require an ERT installation"
+        if not shutil.which("flow"):
+            msg = "Tests marked as `flow` require the flow binary"
+        if msg:
+            pytest.exit(msg, returncode=pytest.ExitCode.USAGE_ERROR)
+    else:
+        skip_flow = pytest.mark.skip(reason="need flow to run")
+        for item in items:
+            if "flow" in item.keywords:
+                item.add_marker(skip_flow)
 
 
 if _HAVE_ERT:
