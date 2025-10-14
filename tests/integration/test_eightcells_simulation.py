@@ -7,17 +7,21 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-from ert.ensemble_evaluator import EvaluatorServerConfig
-from ert.plugins import ErtPluginContext
-from ert.run_models.everest_run_model import EverestRunModel
-from everest.bin.main import start_everest
-from everest.config import EverestConfig
 from ruamel.yaml import YAML
+
+try:
+    from ert.ensemble_evaluator import EvaluatorServerConfig
+    from ert.plugins import ErtPluginContext
+    from ert.run_models.everest_run_model import EverestRunModel
+    from everest.bin.main import start_everest
+    from everest.config import EverestConfig
+except ImportError:
+    pytest.skip("Skipping tests: 'ert' is not installed", allow_module_level=True)
 
 CONFIG_FILE = "everest/model/config.yml"
 
 
-@pytest.mark.requires_eclipse
+@pytest.mark.usefixtures("use_site_configurations_with_no_queue_options")
 @pytest.mark.timeout(0)
 @pytest.mark.xfail(
     reason="output is stochastic and we do not allow the algorithm to converge"
@@ -25,7 +29,8 @@ CONFIG_FILE = "everest/model/config.yml"
 def test_eightcells_snapshot(snapshot, copy_eightcells_test_data_to_tmp):
     config = EverestConfig.load_file(CONFIG_FILE)
 
-    run_model = EverestRunModel.create(config)
+    with ErtPluginContext() as runtime_plugins:
+        run_model = EverestRunModel.create(config, runtime_plugins=runtime_plugins)
     evaluator_server_config = EvaluatorServerConfig()
     run_model.run_experiment(evaluator_server_config)
 
@@ -63,6 +68,7 @@ def test_eightcells_snapshot(snapshot, copy_eightcells_test_data_to_tmp):
     _is_close(best_objective_gradients_csv, "best_objective_gradients_csv")
 
 
+@pytest.mark.ert
 def test_lint_everest_models_jobs():
     config_file = relpath("tests/testdata/eightcells/everest/model/config.yml")
     config = EverestConfig.load_file(config_file).to_dict()
@@ -70,6 +76,7 @@ def test_lint_everest_models_jobs():
     assert len(EverestConfig.lint_config_dict(config)) == 0
 
 
+@pytest.mark.ert
 def test_init_no_project_res(copy_eightcells_test_data_to_tmp):
     config_file = os.path.join("everest", "model", "config.yml")
     config = EverestConfig.load_file(config_file)
@@ -78,6 +85,7 @@ def test_init_no_project_res(copy_eightcells_test_data_to_tmp):
         EverestRunModel.create(config, runtime_plugins=runtime_plugins)
 
 
+@pytest.mark.ert
 def test_everest_main_configdump_entry(copy_eightcells_test_data_to_tmp):
     out = io.StringIO()
     with redirect_stdout(out):

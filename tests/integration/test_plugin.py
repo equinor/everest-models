@@ -2,18 +2,26 @@ import sys
 from pathlib import Path
 
 import pytest
-from ert import ForwardModelStepPlugin
-from ert.config import ErtConfig
-from ert.plugins import ErtPluginContext
 from pydantic import BaseModel, ConfigDict
 from ruamel.yaml import YAML
 from sub_testdata import ADD_TEMPLATE as TEST_DATA
+
+try:
+    from ert import ForwardModelStepPlugin
+    from ert.config import ErtConfig
+    from ert.plugins import ErtPluginContext
+except ImportError:
+    pytest.skip("Skipping tests: 'ert' is not installed", allow_module_level=True)
+
 
 from everest_models.forward_models import (
     build_forward_model_step_plugin,
     get_forward_models,
 )
 from everest_models.jobs.fm_add_templates.config_model import TemplateConfig
+
+pytestmark = pytest.mark.ert
+
 
 FORWARD_MODEL_DIR = "forward_models"
 

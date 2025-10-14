@@ -2,22 +2,27 @@ import os
 import pathlib
 import shutil
 import sys
+from importlib.util import find_spec
 from pathlib import Path
-from typing import Any, Callable, Iterator, Sequence
+from typing import Any, Callable, Final, Iterator, Sequence
 from unittest.mock import patch
 
-import everest.plugins  # noqa: F401
-import pluggy
 import pytest
 import rips
-from ert.plugins import ErtRuntimePlugins
 from hypothesis import HealthCheck, settings
 
-# The order of these imports are important to ensure that the hookimpl marker
-# is mocked before everest_hooks is imported
-sys.modules["everest.plugins"].hookimpl = pluggy.HookimplMarker("test")
+_HAVE_ERT: Final = find_spec("ert") is not None
+if _HAVE_ERT:
+    # The order of these imports is important to ensure that the hookimpl marker
+    # is mocked before everest_hooks is imported
+    import everest.plugins  # noqa: F401
+    import pluggy
+    from ert.plugins import ErtRuntimePlugins
 
-from everest_models import everest_hooks  # noqa: E402
+    sys.modules["everest.plugins"].hookimpl = pluggy.HookimplMarker("test")
+
+    from everest_models import everest_hooks  # noqa: E402
+
 
 settings.register_profile(
     "ci",
@@ -78,38 +83,38 @@ def pytest_collection_modifyitems(config: Any, items: Sequence[Any]) -> None:
                 item.add_marker(skip_resinsight)
 
 
-class TestSpec:
-    """A hook specification namespace."""
+if _HAVE_ERT:
 
-    hookspec = pluggy.HookspecMarker("test")
+    class TestSpec:
+        """A hook specification namespace."""
 
-    @hookspec
-    def get_forward_models_schemas(self): ...
+        hookspec = pluggy.HookspecMarker("test")
 
-    @hookspec
-    def parse_forward_model_schema(self, path, schema): ...
+        @hookspec
+        def get_forward_models_schemas(self): ...
 
-    @hookspec
-    def lint_forward_model(job, args): ...
+        @hookspec
+        def parse_forward_model_schema(self, path, schema): ...
 
+        @hookspec
+        def lint_forward_model(job, args): ...
 
-class MockPluginManager(pluggy.PluginManager):
-    """A testing plugin manager"""
+    class MockPluginManager(pluggy.PluginManager):
+        """A testing plugin manager"""
 
-    def __init__(self):
-        super().__init__("test")
-        self.add_hookspecs(TestSpec)
+        def __init__(self):
+            super().__init__("test")
+            self.add_hookspecs(TestSpec)
 
-
-@pytest.fixture(scope="package")
-def plugin_manager() -> MockPluginManager:
-    pm = MockPluginManager()
-    try:
-        pm.register(everest_hooks)
-    except ValueError as err:
-        if not str(err).startswith("Plugin already registered"):
-            raise err
-    return pm
+    @pytest.fixture(scope="package")
+    def plugin_manager() -> MockPluginManager:
+        pm = MockPluginManager()
+        try:
+            pm.register(everest_hooks)
+        except ValueError as err:
+            if not str(err).startswith("Plugin already registered"):
+                raise err
+        return pm
 
 
 @pytest.fixture(scope="session")
