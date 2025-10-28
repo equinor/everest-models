@@ -10,11 +10,13 @@ import pytest
 from ruamel.yaml import YAML
 
 try:
+    from ert.base_model_context import use_runtime_plugins
     from ert.ensemble_evaluator import EvaluatorServerConfig
-    from ert.plugins import ErtPluginContext
+    from ert.plugins import get_site_plugins
     from ert.run_models.everest_run_model import EverestRunModel
     from everest.bin.main import start_everest
     from everest.config import EverestConfig
+
 except ImportError:
     pytest.skip("Skipping tests: 'ert' is not installed", allow_module_level=True)
 
@@ -30,8 +32,10 @@ CONFIG_FILE = "everest/model/config.yml"
 def test_eightcells_snapshot(snapshot, copy_eightcells_test_data_to_tmp):
     config = EverestConfig.load_file(CONFIG_FILE)
 
-    with ErtPluginContext() as runtime_plugins:
-        run_model = EverestRunModel.create(config, runtime_plugins=runtime_plugins)
+    site_plugins = get_site_plugins()
+    with use_runtime_plugins(site_plugins):
+        run_model = EverestRunModel.create(config, runtime_plugins=site_plugins)
+
     evaluator_server_config = EvaluatorServerConfig()
     run_model.run_experiment(evaluator_server_config)
 
@@ -82,8 +86,9 @@ def test_init_no_project_res(copy_eightcells_test_data_to_tmp):
     config_file = os.path.join("everest", "model", "config.yml")
     config = EverestConfig.load_file(config_file)
 
-    with ErtPluginContext() as runtime_plugins:
-        EverestRunModel.create(config, runtime_plugins=runtime_plugins)
+    site_plugins = get_site_plugins()
+    with use_runtime_plugins(site_plugins):
+        EverestRunModel.create(config, runtime_plugins=site_plugins)
 
 
 @pytest.mark.ert

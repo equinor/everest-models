@@ -8,8 +8,9 @@ from sub_testdata import ADD_TEMPLATE as TEST_DATA
 
 try:
     from ert import ForwardModelStepPlugin
+    from ert.base_model_context import use_runtime_plugins
     from ert.config import ErtConfig
-    from ert.plugins import ErtPluginContext
+    from ert.plugins import get_site_plugins
 except ImportError:
     pytest.skip("Skipping tests: 'ert' is not installed", allow_module_level=True)
 
@@ -172,10 +173,11 @@ def test_build_forward_model_step_plugin():
 def test_everest_models_jobs():
     jobs = get_forward_models()
     assert bool(jobs)
-    with ErtPluginContext() as ctx:
+    site_plugins = get_site_plugins()
+    with use_runtime_plugins(site_plugins):
         for job in jobs:
             job_class = ErtConfig.with_plugins(
-                ctx
+                site_plugins
             ).PREINSTALLED_FORWARD_MODEL_STEPS.get(job)
             assert job_class is not None
             assert isinstance(job_class, ForwardModelStepPlugin)
