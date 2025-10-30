@@ -78,7 +78,7 @@ def validate_eclipse_path(path: pathlib.Path) -> pathlib.Path:
         raise ValueError(f"Directory {path.parent} not found")
     if not any(path.parent.glob(f"{path.stem}.*")):
         raise ValueError(f"Model '{path.stem}' not present in directory: {path.parent}")
-    return path
+    return path.with_suffix("")
 
 
 def validate_eclipse_path_argparse(path: str) -> pathlib.Path:
