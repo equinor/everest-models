@@ -317,13 +317,3 @@ class ConfigSchema(ModelConfig):
             examples="/path/to/npv_input.yml",
         ),
     ]
-
-    @model_validator(mode="after")
-    def _validate_wells(self) -> ConfigSchema:
-        _platforms = [item.name for item in self.platforms]
-        for well in self.wells:
-            if well.platform is not None and well.platform not in _platforms:
-                raise ValueError(
-                    f"Platform '{well.platform}' for well '{well.name}' not defined"
-                )
-        return self

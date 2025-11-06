@@ -34,34 +34,6 @@ def _read_files(*args: str) -> Dict[str, Any]:
     }
 
 
-def _read_platform_and_kickoff(
-    input_files: Dict[str, Any],
-    platform_config: PlatformConfig,
-) -> Tuple[_Point, Optional[float]]:
-    def _get_from_platform_file(platform_file: str, attr: str) -> Optional[float]:
-        value = input_files.get(platform_file, {}).get(platform_config.name)
-        if value is not None:
-            logger.warning(
-                f"File: {platform_file}.json found, overriding '{attr}' "
-                f"for '{platform_config.name}' in configuration."
-            )
-        else:
-            # If necessary, get the value from the platform configuration:
-            value = getattr(platform_config, attr)
-
-        return value
-
-    px = _get_from_platform_file("platform_x", "x")
-    py = _get_from_platform_file("platform_y", "y")
-    pk = _get_from_platform_file("platform_k", "k")
-
-    # px and py are mandatory, pk may be `None`:
-    assert px is not None
-    assert py is not None
-
-    return _Point(x=px, y=py, z=0.0), pk
-
-
 def _get_point_for_well(
     point_files: Iterable[str],
     input_files: Dict[str, Any],
@@ -86,35 +58,44 @@ def _construct_midpoint(
 
 
 def _read_trajectory(
-    well_name: str,
+    well: WellConfig,
     platform_config: Optional[PlatformConfig],
     point_files: Dict[str, Any],
-    platform_files: Dict[str, Any],
+    optimized_platform_loc: Dict[str, Dict[str, Optional[float]]],
 ) -> Trajectory:
-    p1 = _get_point_for_well(P1, point_files, well_name)
-    p3 = _get_point_for_well(P3, point_files, well_name)
-    a, b, c = [point_files[key][well_name] for key in P2]
+    p1 = _get_point_for_well(P1, point_files, well.name)
+    p3 = _get_point_for_well(P3, point_files, well.name)
+    a, b, c = [point_files[key][well.name] for key in P2]
     p2 = _construct_midpoint(a, b, c, p1, p3)
 
-    if platform_config is None:
-        # Add a platform right above the first guide point:
-        x, y, z = [p1.x], [p1.y], [p1.z]
-    else:
-        platform_point, platform_k = _read_platform_and_kickoff(
-            platform_files, platform_config
-        )
-        # The platform must be at z=0:
-        x, y, z = [platform_point.x], [platform_point.y], [0.0]
-        if platform_k is not None:
-            # Add the kickoff right below the platform:
-            x.append(platform_point.x)
-            y.append(platform_point.y)
-            z.append(platform_k)
+    # Check for each platform attribute if it is optimized or fixed in config,
+    # if not use fallback (well's first guide point for x,y) resulting in
+    # platform directly above the first guide point (note: kickoff has no fallback):
+    px, py, pk = _resolve_platform_coordinates(
+        platform_name=well.platform,
+        platform_config=platform_config,
+        optimized_platform_loc=optimized_platform_loc,
+        fallback_xy=(p1.x, p1.y),
+    )
+
+    # Create full trajectory including platform and kickoff:
+    # - Platform always at z=0 (above last guide point if no platform);
+    # - Optional kickoff directly below (same x,y; z=pk if not None).
+    x, y, z = [px], [py], [0.0]
+    if pk is not None:
+        x.append(px)
+        y.append(py)
+        z.append(pk)
+
+    # Append guide points
+    x += [p1.x, p2.x, p3.x]
+    y += [p1.y, p2.y, p3.y]
+    z += [p1.z, p2.z, p3.z]
 
     return Trajectory(
-        x=np.array(x + [p1.x, p2.x, p3.x]),
-        y=np.array(y + [p1.y, p2.y, p3.y]),
-        z=np.array(z + [p1.z, p2.z, p3.z]),
+        x=np.array(x),
+        y=np.array(y),
+        z=np.array(z),
     )
 
 
@@ -140,15 +121,18 @@ def read_trajectories(
         raise ValueError(f"Missing wells: {missing_wells}")
 
     platform_files = _read_files(*PLATFORMS)
+    optimized_platform_loc = _map_optimized_platform_locations(
+        platforms, platform_files, wells
+    )
 
     return {
         well.name: _read_trajectory(
-            well_name=well.name,
+            well=well,
             platform_config=next(
                 (item for item in platforms if item.name == well.platform), None
             ),
             point_files=point_files,
-            platform_files=platform_files,
+            optimized_platform_loc=optimized_platform_loc,
         )
         for well in wells
     }
@@ -268,3 +252,104 @@ def read_laterals(
         if M1 in lateral_files
         else {}
     )
+
+
+def _map_optimized_platform_locations(
+    platforms: list[PlatformConfig],
+    platform_files: Dict[str, Any],
+    wells: Iterable[WellConfig],
+) -> Dict[str, Dict[str, Optional[float]]]:
+    """
+    Create a mapping of platform names to their optimized attributes (x, y, k).
+      optimized_loc[name] = {"x": float|None, "y": float|None, "k": float|None}
+    Names come from:
+      - platforms list (well-trajectory config)
+      - wells[].platform (well-trajectory config)
+      - keys present in platform_{x,y,k}.json (EVEREST generated optimization files)
+    """
+    # Names from configs and wells:
+    fixed_platform_names = {p.name for p in platforms if platforms is not None}
+    well_platform_names = {w.platform for w in wells if w.platform is not None}
+
+    # Names from optimization files:
+    optimized_platform_names = set().union(
+        *(pf.keys() for pf in platform_files.values())
+    )
+
+    undefined_platforms = (
+        well_platform_names - fixed_platform_names - optimized_platform_names
+    )
+    if undefined_platforms:
+        msg = (
+            f"Some wells refer to undefined platforms: {undefined_platforms}. "
+            "Please define them in the `platforms` section of the forward model "
+            "configuration (fixed) or specify them in the control section "
+            "of the EVEREST config (optimized)."
+        )
+        logger.error(msg)
+        raise SystemExit(msg)
+
+    all_names = fixed_platform_names | well_platform_names | optimized_platform_names
+
+    optimized_loc: Dict[str, Dict[str, Optional[float]]] = {}
+    for name in all_names:
+        optimized_loc[name] = {
+            "x": platform_files.get("platform_x", {}).get(name),
+            "y": platform_files.get("platform_y", {}).get(name),
+            "k": platform_files.get("platform_k", {}).get(name),
+        }
+    return optimized_loc
+
+
+def _resolve_platform_coordinates(
+    platform_name: Optional[str],
+    platform_config: Optional[PlatformConfig],
+    optimized_platform_loc: Dict[str, Dict[str, Optional[float]]],
+    fallback_xy: Tuple[float, float],
+) -> Tuple[Optional[float], Optional[float], Optional[float]]:
+    """
+    Resolve (x, y, k) for a platform with precedence:
+      1) optimized value if present (opt_val)
+      2) fixed value from config if present (cfg_val)
+      3) fallback for x/y only (first guide point)
+    If both optimized and fixed are present for the same attr, raises SystemExit.
+    """
+    opt_map = optimized_platform_loc.get(platform_name or "", {})
+    if platform_config is not None:
+        cfg_x = getattr(platform_config, "x", None)
+        cfg_y = getattr(platform_config, "y", None)
+        cfg_k = getattr(platform_config, "k", None)
+    else:
+        cfg_x, cfg_y, cfg_k = (None, None, None)
+
+    def _resolve_platform_coordinate(
+        attr: str,
+        opt_val: Optional[float],
+        cfg_val: Optional[float],
+        fallback: Optional[float],
+    ) -> Optional[float]:
+        if opt_val is not None and cfg_val is not None:
+            msg = (
+                f"Platform '{platform_name}': attribute '{attr}' is specified both as an "
+                f"optimization variable (platform_{attr}.json) and as a fixed value in the "
+                f"forward model configuration. Please pick one."
+            )
+            logger.error(msg)
+            raise SystemExit(msg)
+        if opt_val is not None:
+            return float(opt_val)
+        if cfg_val is not None:
+            return float(cfg_val)
+        if attr in ("x", "y"):
+            return float(fallback)
+        return None
+
+    px = _resolve_platform_coordinate(
+        "x", opt_map.get("x"), cfg_x, fallback=fallback_xy[0]
+    )
+    py = _resolve_platform_coordinate(
+        "y", opt_map.get("y"), cfg_y, fallback=fallback_xy[1]
+    )
+    pk = _resolve_platform_coordinate("k", opt_map.get("k"), cfg_k, fallback=None)
+
+    return px, py, pk

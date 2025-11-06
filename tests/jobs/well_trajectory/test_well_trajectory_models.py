@@ -8,6 +8,7 @@ from everest_models.jobs.fm_well_trajectory.models.config import (
     ConfigSchema,
     InterpolationConfig,
 )
+from everest_models.jobs.fm_well_trajectory.read_trajectories import read_trajectories
 from everest_models.jobs.shared.io_utils import load_yaml
 
 
@@ -37,10 +38,13 @@ def test_parameters_config_resinsight(copy_testdata_tmpdir):
     ConfigSchema.model_validate(config)
 
 
-def test_parameters_invalid_platform(path_test_data):
-    config = load_yaml(path_test_data / TEST_DATA / "simple" / "config.yml")
+def test_parameters_invalid_platform(copy_testdata_tmpdir):
+    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight")
+    config = load_yaml("config.yml")
     config["wells"][0]["platform"] = "platform0"
+
     with pytest.raises(
-        ValidationError, match="Platform 'platform0' for well 'WI_1' not defined"
+        SystemExit, match="Some wells refer to undefined platforms:.*platform0"
     ):
-        ConfigSchema.model_validate(config)
+        config = ConfigSchema.model_validate(config)
+        read_trajectories(config.wells, config.platforms)
