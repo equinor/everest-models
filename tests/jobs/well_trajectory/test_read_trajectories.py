@@ -45,11 +45,9 @@ def test_read_trajectories_missing_well(copy_testdata_tmpdir):
         read_trajectories(config.wells, config.platforms)
 
 
-def test_read_trajectories_platform_fallback(copy_testdata_tmpdir):
+def test_read_trajectories_platform_and_kickoff_are_optimized(copy_testdata_tmpdir):
     copy_testdata_tmpdir(Path(TEST_DATA) / "simple")
     config = ConfigSchema.model_validate(load_yaml("config.yml"))
-
-    Path("platform_k.json").unlink()
 
     trajectories1 = read_trajectories(config.wells, config.platforms)
     for key in trajectories1:
@@ -65,11 +63,20 @@ def test_read_trajectories_platform_fallback(copy_testdata_tmpdir):
 
 def test_read_trajectories_no_platform(copy_testdata_tmpdir):
     copy_testdata_tmpdir(Path(TEST_DATA) / "simple")
-    config = ConfigSchema.model_validate(load_yaml("config.yml"))
 
+    # Read normal trajectories first to remove platform files later:
+    config = ConfigSchema.model_validate(load_yaml("config.yml"))
     trajectories1 = read_trajectories(config.wells, config.platforms)
 
+    # Second case without platforms (neither config neither opt files):
+    Path("platform_x.json").unlink()
+    Path("platform_y.json").unlink()
     Path("platform_k.json").unlink()
+
+    config_dict = load_yaml("config.yml")
+    del config_dict["wells"][0]["platform"]
+    del config_dict["wells"][1]["platform"]
+    config = ConfigSchema.model_validate(config_dict)
 
     trajectories2 = read_trajectories(config.wells, [])
     for key in trajectories1:
@@ -100,7 +107,6 @@ def test_read_trajectories_no_kickoff(copy_testdata_tmpdir):
 
     new_config = load_yaml("config.yml")
     del new_config["platforms"][0]["k"]
-    del new_config["platforms"][1]["k"]
     config = ConfigSchema.model_validate(new_config)
     trajectories2 = read_trajectories(config.wells, config.platforms)
     for key in trajectories1:

@@ -18,10 +18,6 @@ wells:
   phase: oil
 
 platforms:
-- name: platform1
-  x: 461350.50
-  y: 5931800.71
-  k: 200.0
 - name: platform2
   x: 461335.48
   y: 5933608.04
