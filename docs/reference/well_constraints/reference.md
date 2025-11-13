@@ -8,20 +8,6 @@
 {!> reference/well_constraints/config.yml!}
 ```
 
-### Constraints
-
-```yaml
-{!> reference/well_constraints/duration_constraints.yml!}
-```
-
-```yaml
-{!> reference/well_constraints/phase_constraints.yml!}
-```
-
-```yaml
-{!> reference/well_constraints/rate_constraints.yml!}
-```
-
 ## Tasks
 
 ::: everest_models.jobs.fm_well_constraints.tasks
