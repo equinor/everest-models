@@ -24,9 +24,6 @@ DURATION_CONSTRAINTS_ARG_KEY = "-dc/--duration-constraints"
 
 SCHEMAS = {
     CONFIG_ARG_KEY: WellConstraintConfig,
-    RATE_CONSTRAINTS_ARG_KEY: Control,
-    PHASE_CONSTRAINTS_ARG_KEY: PhaseControl,
-    DURATION_CONSTRAINTS_ARG_KEY: Control,
 }
 
 
