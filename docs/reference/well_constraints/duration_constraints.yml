@@ -1,5 +1,0 @@
-# -dc/--duration-constraints specification:
-# <REPLACE> is a REQUIRED field that needs replacing
-
-<STRING>:
-  <INTEGER>: <REPLACE>
