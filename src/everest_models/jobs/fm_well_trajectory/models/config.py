@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 from pathlib import Path
-from typing import Tuple
+from typing import Optional, Tuple
 
 from pydantic import (
     AfterValidator,
@@ -94,6 +94,13 @@ class DynamicDomainProperty(ModelConfig):
     ]
     min: Annotated[float, Field(description="Minimum value.", examples="0.5")]
     max: Annotated[float, Field(description="Maximum value.", examples="0.3")]
+    date: Annotated[
+        Optional[datetime.date],
+        Field(
+            default=None,
+            description="Simulation date used for grid perforation filtering based on time dynamic grid flow simulation data.",
+        ),
+    ]
 
 
 class StaticDomainProperty(ModelConfig):
@@ -141,12 +148,6 @@ class ConnectionConfig(ModelConfig):
             examples="resinsight",
         ),
     ]
-    date: Annotated[
-        datetime.date,
-        Field(
-            description="Simulation date used for grid perforation filtering based on time dynamic grid flow simulation data."
-        ),
-    ]
     formations_file: Annotated[
         FilePath,
         PlainSerializer(path_to_str, when_used="unless-none"),
@@ -163,6 +164,19 @@ class ConnectionConfig(ModelConfig):
             msg = f"Unknown interpolation type: {self.type}"
             raise ValueError(msg)
         return self
+
+    @model_validator(mode="before")
+    def check_deprecated_field(cls, data):
+        if "date" in data:
+            raise ValueError(
+                (
+                    "The 'date' field is no longer allowed at this level.\n"
+                    "It is only required for dynamic perforations. "
+                    "Move it to each relevant dynamic perforation instead.\n"
+                    "Static perforations do not require a date and are read from the initial state."
+                )
+            )
+        return data
 
 
 class PlatformConfig(ModelConfig):

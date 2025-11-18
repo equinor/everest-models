@@ -53,12 +53,6 @@ connections:
   # Default: resinsight
   type: resinsight
 
-  # Simulation date used for grid perforation filtering based on time dynamic grid flow simulation data.
-  # Datatype: date
-  # Examples: 2024-01-31, 2024-01-31T11:06
-  # Required: True
-  date: <REPLACE>
-
   # File defining list of grid based geological formations used for perforation filtering based on formations.
   # Datatype: Path
   # Examples: /path/to/formations.lyr
@@ -96,6 +90,12 @@ connections:
           # Examples: 0.3
           # Required: True
           max: <REPLACE>
+
+          # Simulation date used for grid perforation filtering based on time dynamic grid flow simulation data.
+          # Datatype: date
+          # Required: False
+          # Default: null
+          date: <REPLACE>
 
       # Required: False
       static:

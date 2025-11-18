@@ -6,6 +6,9 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Any, Dict, Iterable, Optional, Tuple, Union
 
+import numpy as np
+import pandas as pd
+
 try:
     import rips  # ResInsight support is optional
 
@@ -187,9 +190,13 @@ def _create_tracks(
     case: rips.Case,
     well_path: rips.WellPath,
     well_log_plot: rips.WellLogPlot,
-    time_step_num: int,
 ) -> None:
     for property in properties:
+        time_step_num = (
+            _find_time_step(case, property.date)
+            if isinstance(property, DynamicDomainProperty)
+            else 0
+        )
         track = well_log_plot.new_well_log_track(
             f"Track: {property.key}", case, well_path
         )
@@ -203,7 +210,6 @@ def create_well_logs(
     project: rips.Project,
     eclipse_model: Path,
     project_path: Path,
-    date: Optional[datetime.date],
 ) -> None:
     case = project.cases()[0]
 
@@ -234,7 +240,6 @@ def create_well_logs(
                 case,
                 well_path,
                 well_log_plot,
-                _find_time_step(case, date),
             )
         if perforation.static:
             _create_tracks(
@@ -243,7 +248,6 @@ def create_well_logs(
                 case,
                 well_path,
                 well_log_plot,
-                0,
             )
         if perforation.formations:
             property_name = "Active Formation Names"
@@ -329,7 +333,7 @@ def make_perforations(
 
     perf_depths, well_depth = _select_perforations(
         perforation=next(item for item in perforations if item.well == well_name_base),
-        df=_read_las_file(next(path.glob(f"{well_name.replace(' ', '_')}*.las"))),
+        df=_read_and_merge_las(path, well_name),
     )
     well = next(item for item in wells if item.name == well_name_base)
 
@@ -376,6 +380,47 @@ def make_perforations(
 
     project.update()
     return None if well_depth is None else well
+
+
+def _read_and_merge_las(path: Path, well_name: str) -> pd.DataFrame:
+    # LAS files are generated per track (well?) for each date
+    # a property is extracted from ResInsight, in the form:
+    # <well_name>-<case_name>-(<property>)-<date>.las
+    files = list(path.glob(f"{well_name.replace(' ', '_')}*.las"))
+    dfs = [_read_las_file(file) for file in files]
+
+    if not dfs:
+        logger.warning(f"No LAS files found for well `{well_name}` in path `{path}`")
+        return pd.DataFrame()
+
+    # All LAS files should at least contain these key columns, we also
+    # should verify that DEPTH values are the same across all files:
+    key_cols = ["DEPTH", "TVDMSL", "TVDRKB"]
+    first_depth = dfs[0]["DEPTH"].tolist()
+    first_length = len(dfs[0])
+
+    for i, df in enumerate(dfs):
+        missing = [col for col in key_cols if col not in df.columns]
+        if missing:
+            raise ValueError(
+                f"Missing columns (`{','.join(key_cols)}`) for LAS file {files[i].stem}"
+            )
+
+        if len(df) != first_length:
+            raise ValueError(
+                f"LAS file {files[i].stem} has {len(df)} rows, expected {first_length}"
+            )
+
+        if not np.allclose(df["DEPTH"], first_depth, atol=1e-6):
+            raise ValueError(f"DEPTH values do not match for LAS file {files[i].stem}")
+
+    if len(dfs) == 1:
+        return dfs[0]
+
+    # Here we assume all LAS files have the same size
+    base = dfs[0]
+    others = [df.drop(columns=key_cols, errors="ignore") for df in dfs[1:]]
+    return pd.concat([base] + others, axis=1)
 
 
 def _generate_welspecs(

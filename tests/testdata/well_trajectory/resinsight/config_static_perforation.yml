@@ -3,7 +3,6 @@ interpolation:
   measured_depth_step: 5.0
 connections:
   type: resinsight
-  date: 2015-01-02
   formations_file: ./formations.lyr
   perforations:
     - well: INJ
