@@ -2,9 +2,13 @@ from __future__ import annotations
 
 import datetime
 import logging
+from functools import reduce
 from pathlib import Path
 from textwrap import dedent
 from typing import Any, Dict, Iterable, Optional, Tuple, Union
+
+import numpy as np
+import pandas as pd
 
 try:
     import rips  # ResInsight support is optional
@@ -187,9 +191,13 @@ def _create_tracks(
     case: rips.Case,
     well_path: rips.WellPath,
     well_log_plot: rips.WellLogPlot,
-    time_step_num: int,
 ) -> None:
     for property in properties:
+        time_step_num = (
+            _find_time_step(case, property.date)
+            if isinstance(property, DynamicDomainProperty)
+            else 0
+        )
         track = well_log_plot.new_well_log_track(
             f"Track: {property.key}", case, well_path
         )
@@ -203,7 +211,6 @@ def create_well_logs(
     project: rips.Project,
     eclipse_model: Path,
     project_path: Path,
-    date: Optional[datetime.date],
 ) -> None:
     case = project.cases()[0]
 
@@ -234,7 +241,6 @@ def create_well_logs(
                 case,
                 well_path,
                 well_log_plot,
-                _find_time_step(case, date),
             )
         if perforation.static:
             _create_tracks(
@@ -243,7 +249,6 @@ def create_well_logs(
                 case,
                 well_path,
                 well_log_plot,
-                0,
             )
         if perforation.formations:
             property_name = "Active Formation Names"
@@ -329,7 +334,7 @@ def make_perforations(
 
     perf_depths, well_depth = _select_perforations(
         perforation=next(item for item in perforations if item.well == well_name_base),
-        df=_read_las_file(next(path.glob(f"{well_name.replace(' ', '_')}*.las"))),
+        df=_read_and_merge_las(path, well_name),
     )
     well = next(item for item in wells if item.name == well_name_base)
 
@@ -376,6 +381,59 @@ def make_perforations(
 
     project.update()
     return None if well_depth is None else well
+
+
+def _read_and_merge_las(path: Path, well_name: str) -> pd.DataFrame:
+    # LAS files are generated per track (well?) for each date
+    # a property is extracted from ResInsight, in the form:
+    # <well_name>-<case_name>-(<property>)-<date>.las
+    files = list(path.glob(f"{well_name.replace(' ', '_')}*.las"))
+    dfs = [_read_las_file(file) for file in files]
+
+    # All LAS files contain these key columns on which we perform the inner join:
+    key_cols = ["DEPTH", "TVDMSL", "TVDRKB"]
+    for i, df in enumerate(dfs):
+        missing = [col for col in key_cols if col not in df.columns]
+        if missing:
+            raise ValueError(
+                f"Missing columns (`{','.join(key_cols)}`) for LAS file {files[i].stem}"
+            )
+
+    # ResInsight stores start-end of each interval as separate rows, this needs
+    # to be preserved in order to accurately filter out perforation intervals later on
+    # as well as perforate the correct intervals, which are done by creating pairs of start
+    # and end points for each segment (i.e., segment i is row 2*i (start) and row 2*i + 1 (end)).
+    merged_df = reduce(
+        lambda left, right: left.merge(right, on=key_cols, how="inner"), dfs
+    )
+
+    # Option 1: (robust against LAS files having different sizes due to inactive cells at a later sim date)
+    # Remove nonsensical segments of zero length ("repeating" rows due to the cartesian product of the inner join)
+    ahd = merged_df[key_cols[0]].to_numpy()
+    segment_length = np.abs(ahd[::2] - ahd[1::2])
+    keep_segment = ~np.isclose(segment_length, 0.0, atol=1e-6)
+
+    # Repeat since a segment is defined by 2 rows (i.e., start and end)
+    row_mask = np.repeat(keep_segment, 2)
+    correct_df1 = merged_df.iloc[row_mask].reset_index(drop=True)
+
+    # Option 2: (assumes all LAS files have the same size, if not fill with -999.99 based on missing indices)
+    correct_df2 = pd.concat([df.reset_index(drop=True) for df in dfs], axis=1).fillna(
+        -999.99
+    )
+    correct_df2 = correct_df2.loc[:, ~correct_df2.columns.duplicated()]
+
+    # Option 3:
+    # (assumes LAS files are already sorted by DEPTH, TVDMSL, TVDRKB)
+    # doesn't work though, somehow the first value for the next interval of the second dataframe is taken from the previous interval.
+    # Using nearest or backward instead of forward doesn't work either.
+    # correct_df3 = reduce(
+    #     lambda left, right: pd.merge_asof(
+    #         left, right, on=key_cols[0], by=key_cols[1:], direction="forward"
+    #     ),
+    #     dfs,
+    # )
+    return correct_df1
 
 
 def _generate_welspecs(

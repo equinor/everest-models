@@ -133,7 +133,6 @@ def well_trajectory_resinsight(
             resinsight.project,
             eclipse_model,
             project_path,
-            config.connections.date,
         )
         wells = itertools.filterfalse(
             lambda x: x is None,
