@@ -25,21 +25,21 @@ Argument examples
 
     connections:
         type: resinsight
-        date: 2015-01-02
         formations_file: ./formations.lyr
         perforations:
             - well: INJ
               formations: [3, 4]
             - well: PROD
               formations: [1, 2, 3, 4]
-        static:
-            - key: PORO
-              min: 0
-              max: 1
-        dynamic:
-            - key: SWAT
-              min: 0
-              max: 0.5
+              static:
+                - key: PORO
+                  min: 0
+                  max: 1
+              dynamic:
+                - key: SWAT
+                  min: 0
+                  max: 0.5
+                  date: 2015-01-02
 
     wells:
         - name: INJ

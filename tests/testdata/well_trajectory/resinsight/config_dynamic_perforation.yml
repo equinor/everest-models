@@ -3,14 +3,23 @@ interpolation:
   measured_depth_step: 5.0
 connections:
   type: resinsight
-  date: 2015-01-02
   formations_file: ./formations.lyr
   perforations:
     - well: INJ
       formations: [0, 1, 2]
     - well: PROD
+      formations: [0, 2]
       dynamic:
         - key: SOIL
+          min: 0
+          max: 1
+          date: 2015-01-02
+        - key: PRESSURE
+          min: 0
+          max: 100000
+          date: 2015-01-02
+      static:
+        - key: PORO
           min: 0
           max: 1
 wells:
