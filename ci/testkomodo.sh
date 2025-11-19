@@ -4,7 +4,11 @@ copy_test_files () {
 }
 
 install_test_dependencies () {
-    pip install .[test]
+    python -c "import tomllib; \
+deps = tomllib.load(open('pyproject.toml', 'rb'))\
+['project']['optional-dependencies']['test'];\
+print('\n'.join(deps))" > dev_requirements.txt
+    pip install -r dev_requirements.txt
 }
 
 start_tests () {
