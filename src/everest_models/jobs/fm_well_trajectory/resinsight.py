@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import datetime
 import logging
-from functools import reduce
 from pathlib import Path
 from textwrap import dedent
 from typing import Any, Dict, Iterable, Optional, Tuple, Union
@@ -406,20 +405,18 @@ def _read_and_merge_las(path: Path, well_name: str) -> pd.DataFrame:
             raise ValueError(
                 f"Missing columns (`{','.join(key_cols)}`) for LAS file {files[i].stem}"
             )
-        
+
         if len(df) != reference_length:
             raise ValueError(
                 f"LAS file {files[i].stem} has {len(df)} rows, expected {reference_length}"
             )
 
         if not np.allclose(df["DEPTH"], reference_depth, atol=1e-6):
-            raise ValueError(
-                f"DEPTH values do not match for LAS file {files[i].stem}"
-            )
+            raise ValueError(f"DEPTH values do not match for LAS file {files[i].stem}")
 
     if len(dfs) == 1:
         return dfs[0]
-    
+
     # Here we assume all LAS files have the same size
     base = dfs[0]
     others = [df.drop(columns=key_cols, errors="ignore") for df in dfs[1:]]
