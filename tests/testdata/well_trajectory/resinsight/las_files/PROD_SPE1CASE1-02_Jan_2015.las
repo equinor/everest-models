@@ -1,0 +1,29 @@
+#
+~Version information
+VERS . 2.0 :
+WRAP . NO :
+#
+~Well information
+STRT .M 8448.61724 :
+STOP .M 8548.63718 :
+STEP .M 0.00000 :
+NULL . -999.25000 :
+WELL . PROD :
+DATE . 02_Jan_2015 :
+#
+~Parameter information
+#
+~Curve information
+DEPTH .M  : Depth in meters
+TVDMSL .M  : True vertical depth in meters
+TVDRKB .M  : True vertical depth (Rotary Kelly Bushing)
+SOIL .NO_UNIT  :
+PRESSURE .NO_UNIT  :
+#
+~Ascii
+8448.617 8325.000 8325.000 0.879899 4779.543
+8468.633 8345.000 8345.000 0.879899 4779.543
+8468.633 8345.000 8345.000 0.879900 4780.948
+8498.637 8375.000 8375.000 0.879900 4780.948
+8498.637 8375.000 8375.000 0.879901 4783.049
+8548.637 8425.000 8425.000 0.879901 4783.049
