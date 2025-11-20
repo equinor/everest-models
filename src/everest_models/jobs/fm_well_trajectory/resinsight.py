@@ -390,50 +390,40 @@ def _read_and_merge_las(path: Path, well_name: str) -> pd.DataFrame:
     files = list(path.glob(f"{well_name.replace(' ', '_')}*.las"))
     dfs = [_read_las_file(file) for file in files]
 
-    # All LAS files contain these key columns on which we perform the inner join:
+    if not dfs:
+        logger.warning(f"No LAS files found for well `{well_name}` in path `{path}`")
+        return pd.DataFrame()
+
+    # All LAS files should at least contain these key columns, we also
+    # should verify that DEPTH values are the same across all files:
     key_cols = ["DEPTH", "TVDMSL", "TVDRKB"]
+    reference_depth = dfs[0]["DEPTH"].tolist()
+    reference_length = len(dfs[0])
+
     for i, df in enumerate(dfs):
         missing = [col for col in key_cols if col not in df.columns]
         if missing:
             raise ValueError(
                 f"Missing columns (`{','.join(key_cols)}`) for LAS file {files[i].stem}"
             )
+        
+        if len(df) != reference_length:
+            raise ValueError(
+                f"LAS file {files[i].stem} has {len(df)} rows, expected {reference_length}"
+            )
 
-    # ResInsight stores start-end of each interval as separate rows, this needs
-    # to be preserved in order to accurately filter out perforation intervals later on
-    # as well as perforate the correct intervals, which are done by creating pairs of start
-    # and end points for each segment (i.e., segment i is row 2*i (start) and row 2*i + 1 (end)).
-    merged_df = reduce(
-        lambda left, right: left.merge(right, on=key_cols, how="inner"), dfs
-    )
+        if not np.allclose(df["DEPTH"], reference_depth, atol=1e-6):
+            raise ValueError(
+                f"DEPTH values do not match for LAS file {files[i].stem}"
+            )
 
-    # Option 1: (robust against LAS files having different sizes due to inactive cells at a later sim date)
-    # Remove nonsensical segments of zero length ("repeating" rows due to the cartesian product of the inner join)
-    ahd = merged_df[key_cols[0]].to_numpy()
-    segment_length = np.abs(ahd[::2] - ahd[1::2])
-    keep_segment = ~np.isclose(segment_length, 0.0, atol=1e-6)
-
-    # Repeat since a segment is defined by 2 rows (i.e., start and end)
-    row_mask = np.repeat(keep_segment, 2)
-    correct_df1 = merged_df.iloc[row_mask].reset_index(drop=True)
-
-    # Option 2: (assumes all LAS files have the same size, if not fill with -999.99 based on missing indices)
-    correct_df2 = pd.concat([df.reset_index(drop=True) for df in dfs], axis=1).fillna(
-        -999.99
-    )
-    correct_df2 = correct_df2.loc[:, ~correct_df2.columns.duplicated()]
-
-    # Option 3:
-    # (assumes LAS files are already sorted by DEPTH, TVDMSL, TVDRKB)
-    # doesn't work though, somehow the first value for the next interval of the second dataframe is taken from the previous interval.
-    # Using nearest or backward instead of forward doesn't work either.
-    # correct_df3 = reduce(
-    #     lambda left, right: pd.merge_asof(
-    #         left, right, on=key_cols[0], by=key_cols[1:], direction="forward"
-    #     ),
-    #     dfs,
-    # )
-    return correct_df1
+    if len(dfs) == 1:
+        return dfs[0]
+    
+    # Here we assume all LAS files have the same size
+    base = dfs[0]
+    others = [df.drop(columns=key_cols, errors="ignore") for df in dfs[1:]]
+    return pd.concat([base] + others, axis=1)
 
 
 def _generate_welspecs(

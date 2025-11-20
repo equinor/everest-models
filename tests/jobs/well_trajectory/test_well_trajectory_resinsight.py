@@ -299,12 +299,20 @@ def test_reading_several_las_files(copy_testdata_tmpdir):
         }
     )
 
-    # Testing private method is a cardinal sin, but I don't see another way except
-    # creating mock-city here...
-    # Maybe the only other way is to parse the output of the well-trajectory forward model
-    # and really check if the correct perforations and well segments are written to the
-    # schedule (.SCH) files...
+    # Testing private method here to avoid mock-city of ResInsight and avoid
+    # putting back snaphots of files produced by ResInsight...
     combined_well_log = _read_and_merge_las(path=test_dir, well_name=well_name)
     pd.testing.assert_frame_equal(
         combined_well_log, expected_well_log, check_dtype=False, atol=1e-6
     )
+
+
+def test_reading_las_file_different_length(copy_testdata_tmpdir):
+    test_dir = copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight" / "las_files")
+    well_name = "INJ"
+
+    with pytest.raises(
+        ValueError,
+        match="LAS file INJ_SPE1CASE1-01_Jan_2015 has 4 rows, expected 6",
+    ):
+        _read_and_merge_las(path=test_dir, well_name=well_name)
