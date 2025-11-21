@@ -107,7 +107,7 @@ jobs:
           tar zcf resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz ${{ env.INSTALL_DIR }}
       - name: Archive ResInsight
         if: steps.cache-package.outputs.cache-hit != 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: resinsight_${{ env.RESINSIGHT_VERSION }}
           path: ${{ github.workspace }}/resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
