@@ -46,7 +46,7 @@ jobs:
         pytest tests --cov=everest_models --cov-report=xml:cov.xml -sv --run-slow
 
     - name: Upload python coverage to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       id: codecov1
       continue-on-error: true
       with:
@@ -59,7 +59,7 @@ jobs:
       run: |
         sleep 30
     - name: Codecov retry
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       if: steps.codecov1.outcome == 'failure'
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
