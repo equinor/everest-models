@@ -386,7 +386,7 @@ def _read_and_merge_las(path: Path, well_name: str) -> pd.DataFrame:
     # LAS files are generated per track (well?) for each date
     # a property is extracted from ResInsight, in the form:
     # <well_name>-<case_name>-(<property>)-<date>.las
-    files = list(path.glob(f"{well_name.replace(' ', '_')}*.las"))
+    files = sorted(path.glob(f"{well_name.replace(' ', '_')}*.las"))
     dfs = [_read_las_file(file) for file in files]
 
     if not dfs:
