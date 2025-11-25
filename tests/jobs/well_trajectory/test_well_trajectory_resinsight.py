@@ -32,21 +32,29 @@ def _nonempty_file(p: Path) -> bool:
 def _assert_schedule_files_present_with_keywords(
     cwd: Path, expected_schedule_files: set[str]
 ) -> None:
-    wells = {p.stem for p in cwd.glob("*.SCH") if _nonempty_file(p)}
+    schedule_files = {
+        p.stem: p
+        for p in cwd.iterdir()
+        if p.is_file() and p.stem in expected_schedule_files
+    }
+
+    # Assert all expected files exist
     for well in expected_schedule_files:
-        assert well in wells, (
+        assert well in schedule_files, (
             f"Expected schedule file {well}.SCH not found in created SCH files."
         )
-        sch = cwd / f"{well}.SCH"
-        text = sch.read_text(encoding="utf-8", errors="ignore")
+
+        # Read the actual file (with extension)
+        sch_path = schedule_files[well]
+        text = sch_path.read_text(encoding="utf-8", errors="ignore")
         if well.endswith("_MSW"):
             # Multisegmenten schedule file
-            assert "WELSEGS" in text, f"{sch} missing WELSEGS section"
-            assert "COMPSEGS" in text, f"{sch} missing COMPSEGS section"
+            assert "WELSEGS" in text, f"{sch_path} missing WELSEGS section"
+            assert "COMPSEGS" in text, f"{sch_path} missing COMPSEGS section"
         else:
             # Regular schedule file
-            assert "WELSPECS" in text, f"{sch} missing WELSPECS section"
-            assert "COMPDAT" in text, f"{sch} missing COMPDAT section"
+            assert "WELSPECS" in text, f"{sch_path} missing WELSPECS section"
+            assert "COMPDAT" in text, f"{sch_path} missing COMPDAT section"
 
 
 def _assert_deviation_files_nonempty(
