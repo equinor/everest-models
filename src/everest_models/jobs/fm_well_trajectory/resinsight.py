@@ -318,68 +318,95 @@ def _read_las_file(las: Path) -> pandas.DataFrame:
     return lasio.read(las).df().reset_index()
 
 
-def make_perforations(
+def perforate_all_wells(
     project: rips.Project,
-    well_name: str,
     perforations: Iterable[PerforationConfig],
     wells: Iterable[WellConfig],
-    path: Path,
-):
-    # If we created multi-lateral wells, the well path names are stored in the
-    # form "name Y#", e.g., "INJ Y1", where the index Y# indicates the number of
-    # the branch, and Y1 is the main trajectory. We need to split and take the
-    # first part to get the original well name:
-    well_name_base = well_name.partition(" Y")[0].strip()
+    project_path: Path,
+) -> None:
+    for well_path in project.well_paths():
+        # If we created multi-lateral wells, the well path names are stored in the
+        # form "name Y#", e.g., "INJ Y1", where the index Y# indicates the number of
+        # the branch, and Y1 is the main trajectory. We need to split and take the
+        # first part to get the original well name:
+        well_name = well_path.name
+        well_name_base = well_name.partition(" Y")[0].strip()
 
-    perf_depths, well_depth = _select_perforations(
-        perforation=next(item for item in perforations if item.well == well_name_base),
-        df=_read_and_merge_las(path, well_name),
-    )
-    well = next(item for item in wells if item.name == well_name_base)
-
-    export_filename = (path / well_name.replace(" ", "_")).with_suffix(".SCH")
-
-    if well_depth is not None:
-        well_path = project.well_path_by_name(well_name)
-        total_perf_length = 0
-        if perf_depths.size > 0:
-            for start, end in zip(
-                perf_depths.iloc[::2], perf_depths.iloc[1::2], strict=False
-            ):
-                well_path.append_perforation_interval(
-                    start_md=start,
-                    end_md=end,
-                    diameter=2 * well.radius,
-                    skin_factor=well.skin,
-                )
-                total_perf_length = round(total_perf_length + end - start, 2)
-            logger.info(f"Total perforation length is {total_perf_length}")
-        else:  # create one dummy connection and shut it afterwards:
-            well_path.append_perforation_interval(
-                start_md=well_depth - 1,
-                end_md=well_depth,
-                diameter=2 * well.radius,
-                skin_factor=well.skin,
-            )
-
-        logger.info(
-            f"Exporting well completion data to: {export_filename}\ncwd = {Path.cwd()}"
+        perforation_cfg = next(
+            item for item in perforations if item.well == well_name_base
         )
-        project.cases()[0].export_well_path_completions(
-            time_step=0,
-            well_path_names=[well_path.name],
-            file_split="UNIFIED_FILE",
-            include_perforations=True,
-            export_comments=False,
-            custom_file_name=str(export_filename),
-        )
+        df = _read_and_merge_las(project_path, well_name)
+        perf_depths, well_depth = _select_perforations(perforation_cfg, df)
+        well_cfg = next(item for item in wells if item.name == well_name_base)
 
-    _generate_welspecs(
-        well.name, well.phase, well.group, export_filename, perf_depths, path
-    )
+        export_filename = (project_path / well_name.replace(" ", "_")).with_suffix(
+            ".SCH"
+        )
+        _apply_perforations(
+            project,
+            project.well_path_by_name(well_name),
+            perf_depths,
+            well_depth,
+            well_cfg,
+            export_filename,
+        )
+        _generate_welspecs(
+            well_cfg.name,
+            well_cfg.phase,
+            well_cfg.group,
+            export_filename,
+            perf_depths,
+            project_path,
+        )
 
     project.update()
-    return None if well_depth is None else well
+
+
+def _apply_perforations(
+    project: rips.Project,
+    well_path_obj: rips.WellPath,
+    perf_depths: pd.Series,
+    well_depth: Optional[float],
+    well_cfg: WellConfig,
+    export_filename: Path,
+) -> None:
+    if well_depth is None:
+        logger.info(f"Skipping well {well_path_obj.name}: no depth data.")
+        return
+
+    total_perf_length = 0
+    if perf_depths.size > 0:
+        for start, end in zip(
+            perf_depths.iloc[::2], perf_depths.iloc[1::2], strict=False
+        ):
+            well_path_obj.append_perforation_interval(
+                start_md=start,
+                end_md=end,
+                diameter=2 * well_cfg.radius,
+                skin_factor=well_cfg.skin,
+            )
+            total_perf_length = round(total_perf_length + end - start, 2)
+        logger.info(
+            f"Total perforation length for {well_path_obj.name}: {total_perf_length}"
+        )
+    else:
+        # Dummy connection
+        well_path_obj.append_perforation_interval(
+            start_md=well_depth - 1,
+            end_md=well_depth,
+            diameter=2 * well_cfg.radius,
+            skin_factor=well_cfg.skin,
+        )
+
+    logger.info(f"Exporting well completion data to: {export_filename}")
+    project.cases()[0].export_well_path_completions(
+        time_step=0,
+        well_path_names=[well_path_obj.name],
+        file_split="UNIFIED_FILE",
+        include_perforations=True,
+        export_comments=False,
+        custom_file_name=str(export_filename),
+    )
 
 
 def _read_and_merge_las(path: Path, well_name: str) -> pd.DataFrame:
