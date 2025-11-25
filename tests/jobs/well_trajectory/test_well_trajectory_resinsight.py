@@ -292,10 +292,10 @@ def test_reading_several_las_files(copy_testdata_tmpdir):
             "DEPTH": [8448.617, 8468.633, 8468.633, 8498.637, 8498.637, 8548.637],
             "TVDMSL": [8325.0, 8345.0, 8345.0, 8375.0, 8375.0, 8425.0],
             "TVDRKB": [8325.0, 8345.0, 8345.0, 8375.0, 8375.0, 8425.0],
-            "SOIL": [0.879899, 0.879899, 0.879900, 0.879900, 0.879901, 0.879901],
-            "PRESSURE": [4779.543, 4779.543, 4780.948, 4780.948, 4783.049, 4783.049],
             "PORO": [0.3, 0.3, 0.3, 0.3, 0.3, 0.3],
             "ACTIVE_FORMATION_NAMES": [0.0, 0.0, 1.0, 1.0, 2.0, 2.0],
+            "SOIL": [0.879899, 0.879899, 0.879900, 0.879900, 0.879901, 0.879901],
+            "PRESSURE": [4779.543, 4779.543, 4780.948, 4780.948, 4783.049, 4783.049],
         }
     )
 
@@ -313,6 +313,6 @@ def test_reading_las_file_different_length(copy_testdata_tmpdir):
 
     with pytest.raises(
         ValueError,
-        match="LAS file INJ_SPE1CASE1-01_Jan_2015 has 4 rows, expected 6",
+        match="LAS file INJ_SPE1CASE1-02_Jan_2015 has 6 rows, expected 4",
     ):
         _read_and_merge_las(path=test_dir, well_name=well_name)
