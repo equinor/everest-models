@@ -18,13 +18,11 @@ wells:
     group: G1
     phase: GAS
     platform: PLATFORM
-    cost: 0
     dogleg: 4
   - name: PROD
     group: G1
     phase: OIL
     platform: PLATFORM
-    cost: 0
     dogleg: 4
 platforms:
   - name: PLATFORM
