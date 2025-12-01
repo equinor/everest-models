@@ -242,6 +242,24 @@ def test_well_trajectory_resinsight_main_entry_point_no_mlt_dynamic_perforation(
 
 
 @pytest.mark.resinsight
+def test_non_intersecting_well_results_in_empty_log_and_shut_status(
+    copy_testdata_tmpdir,
+):
+    expected_dev_files = ["INACTIVE"]
+    expected_sch_files = ["INACTIVE", "INACTIVE_MSW"]
+
+    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight")
+    for path in Path.cwd().glob("mlt_*.json"):
+        path.unlink()
+    main_entry_point(["-c", "config_inactive_well.yml", "-E", "SPE1CASE1"])
+
+    _assert_schedule_files_present_with_keywords(Path.cwd(), expected_sch_files)
+    _assert_deviation_files_nonempty(Path.cwd() / "wellpaths", expected_dev_files)
+    content = (Path.cwd() / "INACTIVE.SCH").read_text(encoding="utf-8")
+    assert "SHUT" in content, "Inactive well COMPDAT section missing SHUT keyword"
+
+
+@pytest.mark.resinsight
 def test_well_trajectory_resinsight_main_entry_point_no_mlt_missing_date(
     copy_testdata_tmpdir,
 ):
