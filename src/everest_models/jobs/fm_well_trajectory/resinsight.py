@@ -391,7 +391,7 @@ def _read_and_merge_las(path: Path, well_name: str) -> pd.DataFrame:
 
     if not dfs:
         logger.warning(f"No LAS files found for well `{well_name}` in path `{path}`")
-        return pd.DataFrame()
+        return pd.DataFrame(columns=["DEPTH"])
 
     # All LAS files should at least contain these key columns, we also
     # should verify that DEPTH values are the same across all files:
@@ -402,16 +402,21 @@ def _read_and_merge_las(path: Path, well_name: str) -> pd.DataFrame:
     for i, df in enumerate(dfs):
         missing = [col for col in key_cols if col not in df.columns]
         if missing:
-            raise ValueError(
-                f"Missing columns (`{','.join(key_cols)}`) for LAS file {files[i].stem}"
+            logger.warning(
+                f"No non-empty LAS files found for well `{well_name}` in path `{path}`"
             )
+            return pd.DataFrame(columns=["DEPTH"])
 
         if len(df) != first_length:
+            logger.error(
+                f"LAS file {files[i].stem} has {len(df)} rows, expected {first_length}"
+            )
             raise ValueError(
                 f"LAS file {files[i].stem} has {len(df)} rows, expected {first_length}"
             )
 
         if not np.allclose(df["DEPTH"], first_depth, atol=1e-6):
+            logger.error(f"DEPTH values do not match for LAS file {files[i].stem}")
             raise ValueError(f"DEPTH values do not match for LAS file {files[i].stem}")
 
     if len(dfs) == 1:
