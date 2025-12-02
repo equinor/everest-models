@@ -104,5 +104,5 @@ def test_everest_main_configdump_entry(copy_eightcells_test_data_to_tmp):
         Path(render_dict["install_data"][0]["source"])
         == Path(os.getcwd())
         / "everest/model/../../eclipse/include/"
-        "realizations/realization-<GEO_ID>/eclipse"
+        "realizations/realization-<REALIZATION_ID>/eclipse"
     )
