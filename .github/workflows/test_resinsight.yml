@@ -26,7 +26,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: "actions/cache@v4"
+      - uses: "actions/cache@v5"
         id: cache-package
         with:
           key: ${{ matrix.os }}_resinsight_${{ env.RESINSIGHT_VERSION }}
@@ -126,7 +126,7 @@ jobs:
       - uses: "actions/checkout@v6"
         with:
           fetch-depth: 0
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/restore@v5
         id: restore-cached-package
         with:
           key: ${{ matrix.os }}_resinsight_${{ env.RESINSIGHT_VERSION }}
