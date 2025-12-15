@@ -1,7 +1,8 @@
 from datetime import date
 from typing import Dict, Optional, Tuple
 
-from pydantic import AfterValidator, ConfigDict, Field
+from pydantic import AfterValidator, ConfigDict, Field, model_validator
+from pydantic_core import PydanticCustomError
 from typing_extensions import Annotated
 
 from ..currency import currency_exist
@@ -31,8 +32,37 @@ class CurrencyRate(_Capital):
     date: Annotated[date, Field(description="")]
 
 
-class WellCost(_Capital):
-    well: Annotated[str, Field(description="")]
+class WellCost(ModelConfig):
+    well: Annotated[str, Field(description="Well name")]
+    value: Annotated[
+        Optional[float],
+        Field(default=None, description="Total cost per well")
+    ]
+    currency: Annotated[
+        str,
+        AfterValidator(currency_exist),
+        Field(default=None, description=""),
+    ]
+    value_per_km: Annotated[
+        Optional[float],
+        Field(default=None, description="(optional) Well cost per km")
+    ]
+
+    @model_validator(mode="after")
+    def check_mutually_exclusive(self) -> "WellCost":
+        if self.value is not None and self.value_per_km is not None:
+            raise ValueError(
+                "Only one type of well cost can be set for each well."
+                "Set either 'value' or 'value_per_km', not both."
+            )
+    
+    @model_validator(mode="after")
+    def check_at_least_one_well_cost_is_set(self) -> "WellCost":
+        if self.value is None and self.value_per_km is None:
+            raise ValueError(
+                "Exactly one type of well cost must be set for each well."
+                "Set either 'value' or 'value_per_km'."
+            )
 
 
 class EconomicConfig(ModelConfig):
