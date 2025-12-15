@@ -6,6 +6,8 @@ from typing import Callable, Dict, Iterable, Protocol, Tuple
 from resdata.summary import Summary
 from resdata.util.util import TimeVector
 
+from everest_models.jobs.shared.models.economics import WellCost
+
 from .npv_config import NPVConfig
 
 logger = logging.getLogger(__name__)
@@ -83,7 +85,7 @@ class NPVCalculator:
                 (
                     (
                         self._get_exchange_rate(well_dates[entry.well], entry.currency)
-                        * entry.value,
+                        * self._get_well_cost(entry),
                         well_dates[entry.well],
                     )
                     for entry in self.config.well_costs
@@ -137,6 +139,14 @@ class NPVCalculator:
                 or _get_ref_date(self.summary.start_date, self.config.dates.start_date),
             )
         )
+    
+    def _get_well_cost(self, well: WellCost) -> float:
+        if well.value is not None:
+            return well.value
+        elif well.value_per_km is not None:
+            well_length_km = 4.0  # Placeholder; replace with actual well length retrieval from wells.json file
+            return well.value_per_km * well_length_km
+        raise ValueError(f"No cost defined for this well `{well.well}`.")
 
     def compute(self, well_dates: Dict[str, datetime.date]) -> float:
         start_date, end_date, self.ref_date = self._get_dates()

@@ -260,15 +260,6 @@ class WellConfig(ModelConfig):
             gt=0,
         ),
     ]
-    cost: Annotated[
-        float,
-        Field(
-            default=0.0,
-            description="Drilling cost per kilometer. Used to update well costs in the input file for NPV.",
-            examples="4000000",
-            ge=0,
-        ),
-    ]
     platform: Annotated[
         str,
         Field(
