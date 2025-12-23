@@ -13,9 +13,9 @@ __all__ = ["Dates", "CurrencyRate", "WellCost"]
 class Dates(ModelConfig):
     model_config = ConfigDict(frozen=False)
 
-    start_date: Annotated[date, Field(default=None, description="")]
-    end_date: Annotated[date, Field(default=None, description="")]
-    ref_date: Annotated[date, Field(default=None, description="")]
+    start_date: Annotated[date | None, Field(default=None, description="")]
+    end_date: Annotated[date | None, Field(default=None, description="")]
+    ref_date: Annotated[date | None, Field(default=None, description="")]
 
 
 class _Capital(ModelConfig):
@@ -45,7 +45,7 @@ class EconomicConfig(ModelConfig):
     ]
     default_exchange_rate: Annotated[float, Field(default=1, description="")]
     default_discount_rate: Annotated[float, Field(default=0.08, description="")]
-    dates: Annotated[Dates, Field(default_factory=lambda: Dates(**{}), description="")]
+    dates: Annotated[Dates, Field(default_factory=lambda: Dates(), description="")]
     exchange_rates: Annotated[
         Dict[str, Tuple[CurrencyRate, ...]], Field(default_factory=dict, description="")
     ]

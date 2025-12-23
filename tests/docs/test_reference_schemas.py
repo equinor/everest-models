@@ -18,4 +18,6 @@ def test_doc_schemas(reference_docs: Path, tmp_path: Path):
     assert any(tmp_path.iterdir())
     for doc in tmp_path.glob("**/*.yml"):
         relative_path = doc.relative_to(tmp_path)
-        assert filecmp.cmp(reference_docs / relative_path, doc, shallow=False)
+        assert filecmp.cmp(reference_docs / relative_path, doc, shallow=False), (
+            f"Generated doc {doc} was not identical to reference {reference_docs / relative_path}"
+        )

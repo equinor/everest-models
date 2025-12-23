@@ -45,22 +45,19 @@ default_discount_rate: 0.08
 dates:
 
   # Datatype: date
-  # Examples: 2024-01-31, 2024-01-31T11:06
   # Required: False
   # Default: null
-  start_date: null
+  start_date: <REPLACE>
 
   # Datatype: date
-  # Examples: 2024-01-31, 2024-01-31T11:06
   # Required: False
   # Default: null
-  end_date: null
+  end_date: <REPLACE>
 
   # Datatype: date
-  # Examples: 2024-01-31, 2024-01-31T11:06
   # Required: False
   # Default: null
-  ref_date: null
+  ref_date: <REPLACE>
 
 # Required: False
 exchange_rates:
