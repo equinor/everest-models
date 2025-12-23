@@ -126,6 +126,7 @@ select = [
     "I",  # isort
     "INT",
     "ISC",
+    "LOG",
     "NPY",
     "PL",  # pylint
     "PLC",
