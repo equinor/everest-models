@@ -131,6 +131,7 @@ def _first_valid_timebox(drilling_time, drill_delay, horizon, unavailability):
         available_start := get_available_start(*next(unavailability, (None, None)))
     ) + drilling_time <= horizon:
         return available_start, available_start + drilling_time
+    return None
 
 
 def _next_best_event(events, wells, well_slots):

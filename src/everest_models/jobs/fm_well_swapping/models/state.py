@@ -64,7 +64,7 @@ def _field_states_accounted(
 ) -> None:
     if isinstance(value, str) and value not in hierarchy:
         raise ValueError(f"{field} state {value} not in hierarchy")
-    elif type(value) in (dict, Sequence):
+    if type(value) in (dict, Sequence):
         _all_states_accounted(
             set(value.values() if isinstance(value, dict) else value), hierarchy, field
         )
