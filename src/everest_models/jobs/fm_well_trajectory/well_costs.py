@@ -2,7 +2,7 @@ import logging
 import pathlib
 from typing import Dict, Iterable
 
-import pandas
+import pandas as pd
 
 from .models.config import WellConfig
 
@@ -19,7 +19,7 @@ def _read_well_length(well: str) -> float:
         return 0.0
 
     return float(
-        pandas.read_csv(
+        pd.read_csv(
             path,
             skiprows=2,
             skipfooter=2,
