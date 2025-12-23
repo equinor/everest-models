@@ -106,7 +106,7 @@ class ConfigSchema(ModelConfig):
 
     def cases(self) -> Optional[Cases]:
         if not self.case_file:
-            return
+            return None
         return parse_file(str(self.case_file), Cases)
 
     def initial_states(

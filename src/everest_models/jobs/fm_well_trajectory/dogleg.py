@@ -2,7 +2,7 @@ import logging
 import math
 from typing import Optional
 
-import numpy
+import numpy as np
 from numpy.typing import NDArray
 
 from everest_models.jobs.fm_well_trajectory.models.data_structs import Trajectory
@@ -15,10 +15,10 @@ logger = logging.getLogger(__name__)
 def _identify_most_violating_point(
     trajectory: Trajectory,
     s_trajectory: Trajectory,  # Need better name
-    dogleg_severities: NDArray[numpy.float64],
+    dogleg_severities: NDArray[np.float64],
 ) -> int:
-    max_dls_idx = numpy.argmax(dogleg_severities)
-    max_coors = numpy.array(
+    max_dls_idx = np.argmax(dogleg_severities)
+    max_coors = np.array(
         [
             [
                 s_trajectory.x[max_dls_idx],
@@ -27,11 +27,11 @@ def _identify_most_violating_point(
             ]
         ]
     ).T
-    dist = numpy.linalg.norm(
-        numpy.array([trajectory.x[1:], trajectory.y[1:], trajectory.z[1:]]) - max_coors,
+    dist = np.linalg.norm(
+        np.array([trajectory.x[1:], trajectory.y[1:], trajectory.z[1:]]) - max_coors,
         axis=0,
     )
-    return numpy.argmin(dist) + 1
+    return np.argmin(dist) + 1
 
 
 def _move_point_towards_neighbor(
@@ -39,7 +39,7 @@ def _move_point_towards_neighbor(
     idx: int,
     step: float,
 ) -> Trajectory:
-    def _calculate(value: numpy.float64, other: numpy.float64) -> numpy.float64:
+    def _calculate(value: np.float64, other: np.float64) -> np.float64:
         return value + step * (other - value)
 
     x, y, z = trajectory
@@ -68,9 +68,9 @@ def _move_point_towards_neighbor(
 
 
 def _compute_dogleg_severities(
-    dogleg_angles: NDArray[numpy.float64], interval_lengths: NDArray[numpy.float64]
-) -> NDArray[numpy.float64]:
-    severities = numpy.empty(len(dogleg_angles), dtype=numpy.float64)
+    dogleg_angles: NDArray[np.float64], interval_lengths: NDArray[np.float64]
+) -> NDArray[np.float64]:
+    severities = np.empty(len(dogleg_angles), dtype=np.float64)
     severities[0] = 0.0
     severities[1:] = (
         30.48
@@ -81,22 +81,22 @@ def _compute_dogleg_severities(
 
 
 def _compute_dogleg_angles(
-    inclanations: NDArray[numpy.float64], azimuths: NDArray[numpy.float64]
+    inclanations: NDArray[np.float64], azimuths: NDArray[np.float64]
 ):
-    angles = numpy.empty(len(inclanations), dtype=numpy.float64)
+    angles = np.empty(len(inclanations), dtype=np.float64)
     angles[0] = 0.0
-    angles[1:] = 2 * numpy.arcsin(
-        numpy.sqrt(
-            numpy.sin((inclanations[1:] - inclanations[:-1]) / 2) ** 2
-            + numpy.sin(inclanations[:-1])
-            * numpy.sin(inclanations[1:])
-            * (numpy.sin((azimuths[1:] - azimuths[:-1]) / 2) ** 2)
+    angles[1:] = 2 * np.arcsin(
+        np.sqrt(
+            np.sin((inclanations[1:] - inclanations[:-1]) / 2) ** 2
+            + np.sin(inclanations[:-1])
+            * np.sin(inclanations[1:])
+            * (np.sin((azimuths[1:] - azimuths[:-1]) / 2) ** 2)
         )
     )
     return angles
 
 
-def compute_dogleg_severity(trajectory: Trajectory) -> NDArray[numpy.float64]:
+def compute_dogleg_severity(trajectory: Trajectory) -> NDArray[np.float64]:
     inclinations = compute_inclinations(trajectory)
     azimuths = compute_azimuths(trajectory)
     return _compute_dogleg_severities(
@@ -109,7 +109,7 @@ def try_fixing_dog_leg(
     step: float,
     trajectory: Trajectory,
     s_trajectory: Optional[Trajectory],
-    dogleg_severities: NDArray[numpy.float64],
+    dogleg_severities: NDArray[np.float64],
 ) -> Trajectory:
     idx = _identify_most_violating_point(trajectory, s_trajectory, dogleg_severities)
     try:
