@@ -163,7 +163,7 @@ def test_not_valid_iso_date(format):
     date = datetime.datetime.now().strftime(format)
     with pytest.raises(
         argparse.ArgumentTypeError,
-        match=r"Not a valid ISO8601 formatted date \(YYYY-MM-DD\): " f"'{date}'.",
+        match=rf"Not a valid ISO8601 formatted date \(YYYY-MM-DD\): '{date}'.",
     ):
         valid_iso_date(date)
 
