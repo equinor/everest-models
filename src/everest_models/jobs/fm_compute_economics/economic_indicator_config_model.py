@@ -42,8 +42,6 @@ class EconomicIndicatorConfig(EconomicConfig):
 
     @model_validator(mode="before")
     def populate_summary_keys(cls, values: Dict[str, Any]):
-        # values.setdefault("summary", {})
-        # values["summary"].setdefault("keys", tuple(values.get("prices", {})))
         if isinstance(values["summary"], dict):
             if not ("keys" in values["summary"] and values["summary"]["keys"]):
                 values["summary"]["keys"] = tuple(values["prices"])

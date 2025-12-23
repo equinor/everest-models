@@ -59,7 +59,6 @@ class Constraints(ModelConfig):
     duration: Annotated[Tolerance, Field(description="", default=Tolerance(value=None))]
 
 
-# WellConstraintConfig = RootModel[Dict[str, Dict[int, Constraints]]]
 class WellConstraintConfig(RootModelConfig):
     root: Dict[str, Dict[int, Constraints]]
 
