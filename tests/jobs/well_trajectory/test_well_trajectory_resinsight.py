@@ -88,7 +88,7 @@ def test_rips_not_installed(
 ):
     def _import(name, *args, **kwargs):
         if name == module:
-            raise ModuleNotFoundError()
+            raise ModuleNotFoundError
         return _builtin_import(name, *args, **kwargs)
 
     monkeypatch.setattr(builtins, "__import__", _import)
