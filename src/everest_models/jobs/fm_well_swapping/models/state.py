@@ -100,7 +100,7 @@ class StateHierarchy(ModelConfig):
                     "Quotas is greater than the available cases, "
                     f"quatas is set to {cases}, the total amount of cases."
                 )
-            return [self.quotas if self.quotas < cases else cases] * iterations
+            return [min(cases, self.quotas)] * iterations
         quotas = [cases if quota == "_" else quota for quota in self.quotas]
         if len(self.quotas) < iterations:
             quotas += [cases] * (iterations - len(self.quotas))
