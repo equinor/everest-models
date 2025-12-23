@@ -111,14 +111,29 @@ log_cli_level = "INFO"
 
 [tool.ruff.lint]
 select = [
+    "AIR",
+    "ASYNC",
     "B",  # flake8-bugbear
+    "BLE",
     "C",  # flake8-comprehensions
+    "DJ",
     "E",  # pycodestyle errors
     "F",  # pyflakes
+    "FA",
+    "FAST",
+    "FLY",
     "I",  # isort
+    "INT",
+    "NPY",
     "PL",  # pylint
+    "PLC",
+    "PLE",
+    "Q",
+    "RSE",
     "SIM",  # flake-8-simplify
+    "SLOT",
     "W",  # pycodestyle warnings
+    "YTT"
 ]
 ignore = [
     "E501",  # line too long, handled by black
