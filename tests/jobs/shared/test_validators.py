@@ -133,13 +133,6 @@ def test_is_gt_zero_not_a_number(value):
     "path, func, match",
     [
         pytest.param(".", None, "Path '.' is a directory", id="directory"),
-        # need to create a better test to pass on MacOS
-        # pytest.param(
-        #     "/usr/lib/openssh/ssh-keysign",
-        #     None,
-        #     "Can not write to file: /usr/lib/openssh/ssh-keysign",
-        #     id="no file permission",
-        # ),
     ],
 )
 def test_is_writable_path_error(path, func, match, switch_cwd_tmp_path):
