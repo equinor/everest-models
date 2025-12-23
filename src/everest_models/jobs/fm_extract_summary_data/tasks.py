@@ -59,11 +59,12 @@ class CalculationType(Enum):
         key: str,
         start_date: datetime.date,
         end_date: datetime.date,
-    ) -> float:
+    ) -> float | None:
         if self == self.MAX:
             return _extract_max(summary, key, start_date, end_date)
         if self == self.DIFF:
             return _extract_diff(summary, key, start_date, end_date)
+        return None
 
     @classmethod
     def types(cls):

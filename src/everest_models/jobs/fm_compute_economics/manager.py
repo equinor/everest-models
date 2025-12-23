@@ -214,6 +214,7 @@ class NPVCalculator(EconomicIndicatorCalculatorABC):
                 return self._get_exchange_rate(date, tariff.currency) * tariff.value
 
         logger.warning(f"Price information missing at {date} for {keyword}.")
+        return None
 
     def _extract_discounted_prices(self, time_range: TimeVector) -> float:
         blocked_productions = self.summary.get_delta_blocked_productions(time_range)

@@ -137,6 +137,7 @@ select = [
     "PLE",
     "PLW",
     "Q",
+    "RET",
     "RSE",
     "SIM",  # flake-8-simplify
     "SLOT",
