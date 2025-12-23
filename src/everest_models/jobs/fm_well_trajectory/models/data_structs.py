@@ -1,6 +1,6 @@
 from typing import Dict, NamedTuple, Optional, Tuple
 
-import numpy
+import numpy as np
 from numpy.typing import NDArray
 
 
@@ -33,22 +33,22 @@ class Well(NamedTuple):
 
 
 class Geometry(NamedTuple):
-    deviation: Tuple[NDArray[numpy.float64], NDArray[numpy.float64]]
-    inclination: NDArray[numpy.float64]
-    azimuths: NDArray[numpy.float64]
-    lengths: NDArray[numpy.float64]
+    deviation: Tuple[NDArray[np.float64], NDArray[np.float64]]
+    inclination: NDArray[np.float64]
+    azimuths: NDArray[np.float64]
+    lengths: NDArray[np.float64]
 
 
 class Trajectory(NamedTuple):
-    x: NDArray[numpy.float64]
-    y: NDArray[numpy.float64]
-    z: NDArray[numpy.float64]
+    x: NDArray[np.float64]
+    y: NDArray[np.float64]
+    z: NDArray[np.float64]
 
 
 class CalculatedTrajectory(NamedTuple):
     coordinates: Trajectory
-    dogleg: NDArray[numpy.float64]
-    deviation: Tuple[NDArray[numpy.float64], NDArray[numpy.float64]]
-    inclination: NDArray[numpy.float64]
-    azimuth: NDArray[numpy.float64]
-    length: NDArray[numpy.float64]
+    dogleg: NDArray[np.float64]
+    deviation: Tuple[NDArray[np.float64], NDArray[np.float64]]
+    inclination: NDArray[np.float64]
+    azimuth: NDArray[np.float64]
+    length: NDArray[np.float64]

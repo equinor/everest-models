@@ -2,7 +2,7 @@ import logging
 import pathlib
 from typing import Dict, Iterable, Iterator, Optional, Tuple
 
-import numpy
+import numpy as np
 from numpy.typing import NDArray
 
 from .dogleg import compute_dogleg_severity, try_fixing_dog_leg
@@ -37,14 +37,14 @@ def _generate_coordinates_dogleg(
     wells: Iterable[WellConfig],
     interpolation: InterpolationConfig,
     trajectories: Dict[str, Trajectory],
-) -> Iterator[Tuple[str, Trajectory, NDArray[numpy.float64]]]:
+) -> Iterator[Tuple[str, Trajectory, NDArray[np.float64]]]:
     for well in wells:
         trajectory = trajectories[well.name]
         for _ in range(interpolation.trial_number):
             if trajectory.x is not None:
                 coordinates = interpolate_points(trajectory, interpolation.length)
                 dogleg_severities = compute_dogleg_severity(coordinates)
-            if numpy.amax(dogleg_severities) < well.dogleg:
+            if np.amax(dogleg_severities) < well.dogleg:
                 break
             trajectory = try_fixing_dog_leg(
                 interpolation.trial_step, trajectory, coordinates, dogleg_severities

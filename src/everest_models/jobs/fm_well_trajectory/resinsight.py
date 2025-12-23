@@ -22,8 +22,6 @@ try:
 except ImportError:
     _HAVE_LASIO = False
 
-import pandas
-
 from everest_models.jobs.shared.models.phase import PhaseEnum
 
 from .models.config import (
@@ -268,10 +266,10 @@ def create_well_logs(
 
 
 def _filter_properties(
-    conditions: pandas.Series,
-    df: pandas.DataFrame,
+    conditions: pd.Series,
+    df: pd.DataFrame,
     properties: Tuple[Union[DynamicDomainProperty, StaticDomainProperty], ...],
-) -> pandas.Series:
+) -> pd.Series:
     for property in properties:
         if property.min is not None:
             conditions = conditions & (df[property.key] > property.min)
@@ -281,8 +279,8 @@ def _filter_properties(
 
 
 def _select_perforations(
-    perforation: PerforationConfig, df: pandas.DataFrame
-) -> Tuple[pandas.Series, Optional[float]]:
+    perforation: PerforationConfig, df: pd.DataFrame
+) -> Tuple[pd.Series, Optional[float]]:
     well_depth = df["DEPTH"].max()
     logger.info(f"Well total measured depth: {well_depth}")
 
@@ -296,7 +294,7 @@ def _select_perforations(
 
 
 def _filter_perforation_properties(
-    perforation: PerforationConfig, df: pandas.DataFrame, conditions: pandas.Series
+    perforation: PerforationConfig, df: pd.DataFrame, conditions: pd.Series
 ):
     # Filter formations
     if perforation.formations:
@@ -312,7 +310,7 @@ def _filter_perforation_properties(
     return df_selected["DEPTH"]
 
 
-def _read_las_file(las: Path) -> pandas.DataFrame:
+def _read_las_file(las: Path) -> pd.DataFrame:
     if not _HAVE_LASIO:
         raise ImportError("Failed to read LAS file: module `lasio` not found")
     return lasio.read(las).df().reset_index()
@@ -433,7 +431,7 @@ def _generate_welspecs(
     phase: PhaseEnum,
     group: str,
     export_filename: Path,
-    perf_depths: pandas.Series,
+    perf_depths: pd.Series,
     project_path: Path,
 ) -> None:
     #### edit well group name in WELSPECS in the exported schedule file
