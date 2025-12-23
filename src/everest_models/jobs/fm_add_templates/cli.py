@@ -25,14 +25,16 @@ def _duplicate_template_msg(templates: Iterable[Template]) -> str:
 
 
 def _no_template_msg(wells: Iterable[Well]) -> str:
-    string = []
-    for well in wells:
-        if sub_str := "\n".join(
-            f"\toperation: {name}\tdate: {date}"
-            for name, date in well.missing_templates
-        ):
-            string.append(f"Well: {well.name}\n{sub_str}")
-    return "\n".join(string)
+    return "\n".join(
+        f"Well: {well.name}\n{sub_str}"
+        for well in wells
+        if (
+            sub_str := "\n".join(
+                f"\toperation: {name}\tdate: {date}"
+                for name, date in well.missing_templates
+            )
+        )
+    )
 
 
 def main_entry_point(args=None):
