@@ -119,6 +119,7 @@ select = [
     "F",  # pyflakes
     "FA",
     "FAST",
+    "FIX",
     "FLY",
     "I",  # isort
     "INT",
