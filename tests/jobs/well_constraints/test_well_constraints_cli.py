@@ -37,8 +37,9 @@ def _get_modified_constraints(path: pathlib.Path, key: str):
     data[key] = data.pop("INJECT2")
     if key == "RATE":
         return Control.model_validate(data)
-    elif key == "PHASE":
+    if key == "PHASE":
         return PhaseControl.model_validate(data)
+    return None
 
 
 @pytest.fixture(scope="module")
