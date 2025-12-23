@@ -16,7 +16,7 @@ def set_up_logger(name: str) -> logging.Logger:
         type(
             "",
             (logging.Filter,),
-            {"filter": staticmethod(lambda r: r.levelno <= logging.WARN)},
+            {"filter": staticmethod(lambda r: r.levelno <= logging.WARNING)},
         )
     )
 
