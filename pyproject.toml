@@ -124,6 +124,7 @@ select = [
     "FLY",
     "FURB",
     "I",  # isort
+    "ICN",
     "INT",
     "ISC",
     "LOG",
