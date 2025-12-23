@@ -182,7 +182,6 @@ def test_clean_parsed_data(options: Options, expected: Data):
     assert data.priorities == expected.priorities
     assert data.cases == expected.cases
     assert data.output == expected.output
-    # assert data.states == expected.states
     assert data.state_duration == expected.state_duration
     assert data.errors == expected.errors
 
