@@ -15,10 +15,10 @@ def _build_state_matrix(
     size = len(states)
     data = (np.ones if forbiden or not actions else np.zeros)((size, size), dtype=int)
     np.fill_diagonal(data, 1 if inaction else 0)
-    df = pd.DataFrame(data=data, index=states, columns=states)
+    state_matrix = pd.DataFrame(data=data, index=states, columns=states)
     for source, target in actions:
-        df.loc[source, target] = 0 if forbiden else 1
-    return df
+        state_matrix.loc[source, target] = 0 if forbiden else 1
+    return state_matrix
 
 
 class StateMachine:
