@@ -132,6 +132,7 @@ select = [
     "LOG",
     "NPY",
     "PD",
+    "PERF",
     "PL",  # pylint
     "PLC",
     "PLE",
