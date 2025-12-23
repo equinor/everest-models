@@ -53,9 +53,9 @@ def get_forward_models_schemas() -> Dict[str, Dict[str, Type[BaseModel]]]:
     for job in _get_jobs():
         schema = getattr(import_module(f"{JOBS}.{job}.parser"), "SCHEMAS", None)
         if schema:
-            res[job[3:] if job.startswith("fm_") else job] = schema.get(
-                "-c/--config"
-            ) or schema.get("config")
+            res[job.removeprefix("fm_")] = schema.get("-c/--config") or schema.get(
+                "config"
+            )
     return res
 
 
@@ -103,7 +103,7 @@ def get_forward_model_documentations() -> Dict[str, Any]:
             import_module(f"{JOBS}.{job}.cli"), "FULL_JOB_NAME", cmd_name
         )
         examples = getattr(import_module(f"{JOBS}.{job}.cli"), "EXAMPLES", None)
-        docs[job[3:] if job.startswith("fm_") else job] = {
+        docs[job.removeprefix("fm_")] = {
             "cmd_name": cmd_name,
             "examples": examples,
             "full_job_name": full_job_name,

@@ -123,6 +123,7 @@ select = [
     "FAST",
     "FIX",
     "FLY",
+    "FURB",
     "I",  # isort
     "INT",
     "NPY",
