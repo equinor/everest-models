@@ -64,7 +64,7 @@ def _field_states_accounted(
 ) -> None:
     if isinstance(value, str) and value not in hierarchy:
         raise ValueError(f"{field} state {value} not in hierarchy")
-    elif type(value) in (dict, Sequence):
+    if type(value) in (dict, Sequence):
         _all_states_accounted(
             set(value.values() if isinstance(value, dict) else value), hierarchy, field
         )
@@ -100,7 +100,7 @@ class StateHierarchy(ModelConfig):
                     "Quotas is greater than the available cases, "
                     f"quatas is set to {cases}, the total amount of cases."
                 )
-            return [self.quotas if self.quotas < cases else cases] * iterations
+            return [min(cases, self.quotas)] * iterations
         quotas = [cases if quota == "_" else quota for quota in self.quotas]
         if len(self.quotas) < iterations:
             quotas += [cases] * (iterations - len(self.quotas))

@@ -11,3 +11,4 @@ class PhaseEnum(Enum):
         for member in cls:
             if isinstance(value, str) and member.value == value.upper():
                 return member
+        return None
