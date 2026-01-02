@@ -19,6 +19,7 @@ def event_failed_conditions(
     return (
         func.__name__.replace("_", " ")
         for func, parameters in (
+            (enough_slots, (wells, slots)),
             (is_within_horizon, (horizon,)),
             (uses_same_wells, (iter(wells),)),
             (is_rig_subset, (iter(rigs),)),
@@ -51,6 +52,12 @@ def uses_same_wells(schedule: Iterable[Event], wells: Iterable[str]) -> bool:
 
 def is_rig_subset(schedule: Iterable[Event], rigs: Iterable[str]) -> bool:
     return {event.rig for event in schedule}.issubset(rigs)
+
+
+def enough_slots(
+    _: Iterable[Event], wells: Iterable[str], slots: Iterable[str]
+) -> bool:
+    return len(slots) >= len(wells)
 
 
 def is_slot_subset(schedule: Iterable[Event], slots: Iterable[str]) -> bool:
