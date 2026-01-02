@@ -1,6 +1,6 @@
 from everest_models.jobs.fm_drill_planner.manager import get_field_manager
 from everest_models.jobs.fm_drill_planner.parser import build_argument_parser
-from everest_models.jobs.fm_drill_planner.tasks import orcastrate_drill_schedule
+from everest_models.jobs.fm_drill_planner.tasks import orchestrate_drill_schedule
 
 FULL_JOB_NAME = "Drill planner"
 
@@ -114,7 +114,7 @@ def main_entry_point(args=None):
 
     if options.lint:
         args_parser.exit()
-    orcastrate_drill_schedule(
+    orchestrate_drill_schedule(
         manager, options.input.to_dict(), options.config.start_date, options.time_limit
     )
     options.input.json_dump(options.output)

@@ -6,7 +6,7 @@ from everest_models.jobs.fm_drill_planner.models.wells import Well
 from everest_models.jobs.shared.models.wells import Operation
 
 
-def orcastrate_drill_schedule(
+def orchestrate_drill_schedule(
     manager: FieldManager, wells: Dict[str, Well], start_date: date, time_limit: int
 ) -> None:
     def date(days):
