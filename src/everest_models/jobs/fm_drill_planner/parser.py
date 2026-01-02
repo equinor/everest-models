@@ -67,8 +67,8 @@ def build_argument_parser(skip_type=False):
         "--time-limit",
         type=int,
         default=3600,
-        help="Maximum time limit for the solver in seconds."
-        "If a solution has not been reached within this time, a greedy"
+        help="Maximum time limit for the solver in seconds. "
+        "If a solution has not been reached within this time, a greedy "
         "approach will be used instead.",
     )
     parser.add_argument(
