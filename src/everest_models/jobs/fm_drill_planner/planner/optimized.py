@@ -320,7 +320,7 @@ def run_optimization(
     logger.info("Optimization solver starting..")
 
     solution_printer = SolutionCallback()
-    status = solver.Solve(drill_constraint_model, solution_callback=solution_printer)
+    status = solver.solve(drill_constraint_model, solution_printer)
 
     logger.debug("Solver completed with status: %s", solver.StatusName(status))
     logger.debug(

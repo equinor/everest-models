@@ -54,7 +54,7 @@ def satisfies(model, function_name, schedule):
     apply_schedule(model, schedule)
 
     solver = cp_model.CpSolver()
-    status = solver.Solve(model)
+    status = solver.solve(model)
 
     return status in [cp_model.FEASIBLE, cp_model.OPTIMAL]
 
