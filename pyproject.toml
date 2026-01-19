@@ -25,7 +25,7 @@ dependencies = [
     "ruamel.yaml>=0.17.21",
     "fmu-steaclient @ git+https://github.com/equinor/fmu-steaclient",
     "pydantic",
-    "ortools>=9.3",
+    "ortools>=9.14.6206",
     "scipy"
 ]
 dynamic = [
