@@ -27,6 +27,7 @@ if _HAVE_ERT:  # The everest-models package should remain installable without ER
                 "__init__": lambda x: ForwardModelStepPlugin.__init__(
                     x, name=fm_name, command=[f"fm_{fm_name}"]
                 ),
+                "__module__": __name__,
                 "documentation": lambda: ForwardModelStepDocumentation(
                     category="everest.everest_models",
                     source_package="everest_models",
