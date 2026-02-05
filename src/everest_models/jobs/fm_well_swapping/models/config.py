@@ -117,16 +117,16 @@ class ConfigSchema(ModelConfig):
 
         Args:
             cases (Optional[Sequence[str]]): A sequence of case names for which initial
-            states need to be generated.
+                                             states need to be generated.
 
 
         Returns:
             Dict[str, str]: A dictionary mapping case names to their corresponding
-            initial states.
+                            initial states.
 
         Raises:
             ValueError: If there is no initial state given and no cases given to
-            generate one.
+                        generate one.
 
         The function first checks if any cases are provided. If not, it looks for cases
         in the priorities, and if still not found, it uses cases from the state. If no

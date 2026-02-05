@@ -3,7 +3,7 @@
 ## Configuration
 
 ```yaml
-{!> reference/well_swapping/well_swapping_config.yml!}
+{!> reference/well_swapping/config.yml!}
 ```
 
 ## Code

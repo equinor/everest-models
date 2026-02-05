@@ -164,7 +164,7 @@ def inject_case_operations(
     Args:
         cases (Dict[str, CaseConfig]): A dictionary mapping case names to Case objects.
         params (Iterable[Tuple[date, Iterator[Tuple[str, str]]]): A nested Iterable in
-        the form of (date, ((case, state), ...)), ...
+            the form of (date, ((case, state), ...)), ...
 
     Raises:
         KeyError: If a case name provided in the params does not exist in the cases dictionary.

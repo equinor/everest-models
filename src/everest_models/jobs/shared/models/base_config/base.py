@@ -89,9 +89,6 @@ class ModelConfig(BaseModel):
             Dict[str, Any]: A dictionary containing introspective data about the model
             fields. Where Any is a nested CommentedObject
 
-        Raises:
-            None
-
         Example:
             {
                 'field1': CommentedObject(
