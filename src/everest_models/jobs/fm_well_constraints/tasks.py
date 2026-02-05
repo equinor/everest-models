@@ -41,7 +41,6 @@ def create_well_operations(
 
     Args:
         events (Dict[int, ConfigConstraints]): indexed well constraint configuration
-        well_name (str): Well name
         start_date (datetime.date): start date
         constraints (Dict[str, Constraints]): well constraints
 

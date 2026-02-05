@@ -1,0 +1,52 @@
+name: Test reference documentation
+
+on:
+  push:
+    branches:
+      - main
+    tags: "*"
+  pull_request:
+  workflow_dispatch:
+
+env:
+  ERT_SHOW_BACKTRACE: 1
+
+jobs:
+  tests:
+    permissions:
+      contents: read
+
+    name: "Python ${{ matrix.python-version }} on ${{ matrix.os }}"
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+        os: [ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Install Ubuntu dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install libegl1 -y
+
+      - uses: "actions/checkout@v6"
+        with:
+          fetch-depth: 0
+
+      - uses: "actions/setup-python@v6"
+        with:
+          python-version: "${{ matrix.python-version }}"
+          cache: "pip"
+          cache-dependency-path: |
+            pyproject.toml
+
+      - name: "Install package"
+        run: |
+          pip install --upgrade pip
+          pip install .[test,docs]
+
+      - name: "Test reference doc"
+        run: |
+          python -m mkdocs build --strict
