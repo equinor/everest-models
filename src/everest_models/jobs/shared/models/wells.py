@@ -1,8 +1,8 @@
 from datetime import date
 from pathlib import Path
-from typing import Dict, Iterator, Tuple
+from typing import Any, Dict, Iterator, Tuple
 
-from pydantic import ConfigDict, Field
+from pydantic import ConfigDict, Field, model_validator
 from typing_extensions import Annotated
 
 from .base_config import ModelConfig, RootModelConfig
@@ -64,3 +64,10 @@ class Wells(RootModelConfig):
                 by_alias=True,
             )
         )
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_dict_input(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            return [{"name": name} for name in data]  # noqa: B035
+        return data
