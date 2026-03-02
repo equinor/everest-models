@@ -119,3 +119,23 @@ def test_legacy_well_model_missing_templates(well_model):
         ("rate", datetime.date.fromisoformat("2019-08-30")),
         ("rate", datetime.date.fromisoformat("2019-11-08")),
     )
+
+
+@pytest.mark.parametrize(
+    "control_dict",
+    [
+        {
+            "WELL1": 0.0,
+            "WELL2": 0.1,
+        },
+        {
+            "WELL1": {"1": 0.0},
+            "WELL2": {"1": 0.1},
+        },
+    ],
+)
+def test_well_model_from_controls(control_dict):
+    control_model = Wells.model_validate(control_dict)
+    for item in control_model:
+        assert isinstance(item, Well)
+    assert [item.name for item in control_model] == ["WELL1", "WELL2"]
