@@ -2,6 +2,10 @@
 # <REPLACE> is a REQUIRED field that needs replacing
 
 
+# Required: False
+# Default: null
+wells: <REPLACE>
+
 # Datatype: date
 # Examples: 2024-01-31, 2024-01-31T11:06
 # Required: True

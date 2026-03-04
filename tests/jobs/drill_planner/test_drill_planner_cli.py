@@ -10,24 +10,64 @@ from everest_models.jobs.fm_drill_planner.manager import ScheduleError
 
 OUTPUT_FILENAME = "out.json"
 
+ARGS_WITH_WELLS = [
+    "--output",
+    OUTPUT_FILENAME,
+    "--optimizer",
+    "optimizer_values.yml",
+    "--input",
+    "wells.json",
+    "--config",
+    "config.yml",
+]
+ARGS_NO_WELLS = [
+    "--output",
+    OUTPUT_FILENAME,
+    "--optimizer",
+    "optimizer_values.yml",
+    "--config",
+    "config_wells.yml",
+]
+
 
 @pytest.fixture(scope="session")
 def drill_planner_arguments():
-    return [
-        "--output",
-        OUTPUT_FILENAME,
-        "--optimizer",
-        "optimizer_values.yml",
-        "--input",
-        "wells.json",
-        "--config",
-        "config.yml",
-    ]
+    return ARGS_WITH_WELLS
 
 
-def test_drill_planner_main_entry_point(drill_planner_arguments, copy_testdata_tmpdir):
+def test_drill_planner_main_entry_point_no_input_no_config(
+    copy_testdata_tmpdir, capsys
+):
     copy_testdata_tmpdir(TEST_DATA)
-    main_entry_point(drill_planner_arguments)
+    arguments = [
+        "config.yml" if item == "config_wells.yml" else item for item in ARGS_NO_WELLS
+    ]
+    with pytest.raises(SystemExit) as exc:
+        main_entry_point(arguments)
+    assert exc.value.code == 2
+    out = capsys.readouterr()
+    assert "error: -i/--input missing: `wells` is required in the config" in out.err
+
+
+def test_drill_planner_main_entry_point_input_and_config(copy_testdata_tmpdir, capsys):
+    copy_testdata_tmpdir(TEST_DATA)
+    arguments = [
+        "config_wells.yml" if item == "config.yml" else item for item in ARGS_WITH_WELLS
+    ]
+    with pytest.raises(SystemExit) as exc:
+        main_entry_point(arguments)
+    assert exc.value.code == 2
+    out = capsys.readouterr()
+    assert (
+        "error: -i/--input and the `wells` config section are mutually exclusive"
+        in out.err
+    )
+
+
+@pytest.mark.parametrize("arguments", (ARGS_WITH_WELLS, ARGS_NO_WELLS))
+def test_drill_planner_main_entry_point(copy_testdata_tmpdir, arguments):
+    copy_testdata_tmpdir(TEST_DATA)
+    main_entry_point(arguments)
 
     assert (
         pathlib.Path(OUTPUT_FILENAME).read_bytes()
@@ -134,9 +174,8 @@ def test_drill_planner_main_entry_point_ignore_end_date(
         main_entry_point([*drill_planner_arguments[:-1], "config_early_end_date.yml"])
 
 
-def test_drill_planner_main_entry_point_lint(
-    drill_planner_arguments, copy_testdata_tmpdir
-):
+@pytest.mark.parametrize("arguments", (ARGS_WITH_WELLS, ARGS_NO_WELLS))
+def test_drill_planner_main_entry_point_lint(copy_testdata_tmpdir, arguments):
     copy_testdata_tmpdir(TEST_DATA)
     with pytest.raises(SystemExit):
-        main_entry_point([*drill_planner_arguments, "--lint"])
+        main_entry_point([*arguments, "--lint"])
