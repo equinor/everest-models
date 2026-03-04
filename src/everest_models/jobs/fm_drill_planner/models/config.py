@@ -7,6 +7,8 @@ from typing_extensions import Annotated
 
 from everest_models.jobs.shared.models import ModelConfig
 
+from .wells import Wells
+
 
 class _Unavailability(ModelConfig):
     start_date: ClassVar[date]
@@ -40,6 +42,7 @@ class Rig(_DrillSubject):
 
 
 class DrillPlanConfig(ModelConfig):
+    wells: Annotated[Wells | None, Field(default=None, description="")]
     start_date: Annotated[date, Field(description="")]
     end_date: Annotated[date, Field(description="")]
     rigs: Annotated[Tuple[Rig, ...], Field(description="")]

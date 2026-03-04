@@ -104,9 +104,17 @@ def main_entry_point(args=None):
     args_parser = build_argument_parser()
     options = args_parser.parse_args(args)
 
+    if options.input is None and options.config.wells is None:
+        args_parser.error("-i/--input missing: `wells` is required in the config")
+    if options.input is not None and options.config.wells is not None:
+        args_parser.error(
+            "-i/--input and the `wells` config section are mutually exclusive"
+        )
+    wells = options.input if options.input is not None else options.config.wells
+
     manager = get_field_manager(
         options.config,
-        options.input,
+        wells,
         options.optimizer,
         options.ignore_end_date,
         options.lint,
@@ -115,6 +123,6 @@ def main_entry_point(args=None):
     if options.lint:
         args_parser.exit()
     orchestrate_drill_schedule(
-        manager, options.input.to_dict(), options.config.start_date, options.time_limit
+        manager, wells.to_dict(), options.config.start_date, options.time_limit
     )
-    options.input.json_dump(options.output)
+    wells.json_dump(options.output)
