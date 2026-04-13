@@ -26,14 +26,14 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: "actions/cache@v4"
+      - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         id: cache-package
         with:
           key: ${{ matrix.os }}_resinsight_${{ env.RESINSIGHT_VERSION }}
           path: ${{ github.workspace }}/resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
       - name: Free Disk Space (Ubuntu) # To avoid disk space issues on runners
         if: steps.cache-package.outputs.cache-hit != 'true'
-        uses: jlumbroso/free-disk-space@main
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
         with:
           # this might remove tools that are actually needed,
           # if set to "true" but frees about 6 GB
@@ -53,7 +53,7 @@ jobs:
           sudo apt-get install libxkbcommon-x11-0 libgl1-mesa-dev mesa-common-dev libglfw3-dev libglu1-mesa-dev libhdf5-dev
       - name: Install Qt
         if: steps.cache-package.outputs.cache-hit != 'true'
-        uses: jurplel/install-qt-action@v4
+        uses: jurplel/install-qt-action@48d3ad6db93f3627c8ee7a0454bc6f3744f7e730 # v4.3.1
         with:
           version: 6.7.0
           dir: "${{ github.workspace }}/Qt/"
@@ -68,7 +68,7 @@ jobs:
           sudo update-alternatives --auto gcc
       - name: Use CMake
         if: steps.cache-package.outputs.cache-hit != 'true'
-        uses: lukka/get-cmake@latest
+        uses: lukka/get-cmake@ea83089aa35e08e459464341fe24ad024ee2466f # v4.3.1
         with:
           cmakeVersion: "~3.26.0"
       - name: Clone ResInsight
@@ -107,7 +107,7 @@ jobs:
           tar zcf resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz ${{ env.INSTALL_DIR }}
       - name: Archive ResInsight
         if: steps.cache-package.outputs.cache-hit != 'true'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: resinsight_${{ env.RESINSIGHT_VERSION }}
           path: ${{ github.workspace }}/resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
@@ -123,10 +123,10 @@ jobs:
         os: [ubuntu-24.04]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: "actions/checkout@v6"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         id: restore-cached-package
         with:
           key: ${{ matrix.os }}_resinsight_${{ env.RESINSIGHT_VERSION }}
@@ -137,7 +137,7 @@ jobs:
           sudo apt-get install libxkbcommon-x11-0 libegl1 libgl1-mesa-dev mesa-common-dev libglfw3-dev libglu1-mesa-dev
           # Unpack after checking out, otherwise the checkout action would delete it:
           tar zxf resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: "${{ matrix.python-version }}"
           cache: "pip"
