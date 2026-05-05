@@ -1,5 +1,8 @@
 name: Test forward models
 
+permissions:
+  contents: read
+
 on:
  push:
    branches:

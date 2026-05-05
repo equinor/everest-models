@@ -1,5 +1,8 @@
 name: Test reference documentation
 
+permissions:
+  contents: read
+
 on:
   push:
     branches:
@@ -13,9 +16,6 @@ env:
 
 jobs:
   tests:
-    permissions:
-      contents: read
-
     name: "Python ${{ matrix.python-version }} on ${{ matrix.os }}"
     strategy:
       matrix:
