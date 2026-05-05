@@ -1,4 +1,8 @@
 name: Test integration with ert
+
+permissions:
+  contents: read
+
 on:
   push:
     branches:

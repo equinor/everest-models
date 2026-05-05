@@ -1,4 +1,8 @@
 name: Test integration with flow
+
+permissions:
+  contents: read
+
 on:
   push:
     branches:
