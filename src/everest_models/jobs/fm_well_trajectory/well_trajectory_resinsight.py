@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import itertools
 import logging
 import signal
 import sys
@@ -21,7 +20,7 @@ from .resinsight import (
     create_branches,
     create_well,
     create_well_logs,
-    make_perforations,
+    perforate_all_wells,
     read_wells,
 )
 from .well_costs import compute_well_costs
@@ -134,27 +133,17 @@ def well_trajectory_resinsight(
             eclipse_model,
             project_path,
         )
-        wells = itertools.filterfalse(
-            lambda x: x is None,
-            (
-                make_perforations(
-                    resinsight.project,
-                    well_path.name,
-                    config.connections.perforations,
-                    config.wells,
-                    project_path,
-                )
-                for well_path in resinsight.project.well_paths()
-            ),
+        wells = perforate_all_wells(
+            resinsight.project,
+            config.connections.perforations,
+            config.wells,
+            project_path,
         )
         if config.npv_input_file is not None:
             write_well_costs(
                 costs=compute_well_costs(wells),
                 npv_file=config.npv_input_file,
             )
-        else:
-            all(wells)  # consume generator without collecting yields
-
         _save_project(project_path, resinsight.project)
 
     return mlt_guide_points
