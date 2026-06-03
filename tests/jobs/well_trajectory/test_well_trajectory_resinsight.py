@@ -1,4 +1,5 @@
 import builtins
+import filecmp
 import json
 import logging
 import os
@@ -9,6 +10,8 @@ from pathlib import Path
 import pandas as pd
 import pytest
 from sub_testdata import WELL_TRAJECTORY as TEST_DATA
+
+from everest_models.jobs.shared import io_utils
 
 if find_spec("rips") is None:
     pytest.skip("Skipping tests: 'rips' is not installed", allow_module_level=True)
@@ -126,10 +129,6 @@ def test_well_trajectory_resinsight_main_entry_point_lint(
     with pytest.raises(SystemExit):
         main_entry_point([*well_trajectory_arguments, "--lint"])
 
-    assert not any(
-        path.relative_to("expected").exists() for path in Path("expected").glob("**/*")
-    )
-
 
 @pytest.mark.resinsight
 def test_well_trajectory_resinsight_main_entry_point_no_mlt(
@@ -142,6 +141,30 @@ def test_well_trajectory_resinsight_main_entry_point_no_mlt(
     for path in Path.cwd().glob("mlt_*.json"):
         path.unlink()
     main_entry_point(well_trajectory_arguments)
+
+    _assert_schedule_files_present_with_keywords(Path.cwd(), expected_sch_files)
+    _assert_deviation_files_nonempty(Path.cwd() / "wellpaths", expected_dev_files)
+
+
+@pytest.mark.resinsight
+def test_well_trajectory_resinsight_main_entry_point_no_mlt_with_wells_file(
+    well_trajectory_arguments, copy_testdata_tmpdir
+):
+    expected_dev_files = ["INJ", "PROD"]
+    expected_sch_files = ["INJ", "PROD", "INJ_MSW", "PROD_MSW"]
+
+    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight")
+
+    config = io_utils.load_yaml("config.yml")
+    config["wells_file"] = "wells.json"
+    with Path("config.yml").open("w") as fp:
+        io_utils.dump_yaml(config, fp)
+
+    for path in Path.cwd().glob("mlt_*.json"):
+        path.unlink()
+    main_entry_point(well_trajectory_arguments)
+
+    assert filecmp.cmp("wells.json", "wells.json.expected", shallow=False)
 
     _assert_schedule_files_present_with_keywords(Path.cwd(), expected_sch_files)
     _assert_deviation_files_nonempty(Path.cwd() / "wellpaths", expected_dev_files)

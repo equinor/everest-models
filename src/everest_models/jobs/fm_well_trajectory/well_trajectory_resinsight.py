@@ -14,7 +14,7 @@ except ImportError:
     _HAVE_RIPS = False
 
 from .models.config import ConfigSchema
-from .outputs import write_well_costs
+from .outputs import write_well_costs, write_well_lengths
 from .read_trajectories import read_laterals
 from .resinsight import (
     create_branches,
@@ -24,6 +24,7 @@ from .resinsight import (
     read_wells,
 )
 from .well_costs import compute_well_costs
+from .well_lengths import compute_well_lengths
 from .well_trajectory_simple import Trajectory
 
 logger = logging.getLogger(__name__)
@@ -144,6 +145,10 @@ def well_trajectory_resinsight(
                 costs=compute_well_costs(wells),
                 npv_file=config.npv_input_file,
             )
+        if wells and config.wells_file is not None:
+            logger.info("Writing well lengths to wells file")
+            write_well_lengths(compute_well_lengths(wells), config.wells_file)
+
         _save_project(project_path, resinsight.project)
 
     return mlt_guide_points

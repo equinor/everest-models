@@ -133,6 +133,7 @@ def main_entry_point(args=None):
             options.config.wells,
             options.config.interpolation,
             options.config.npv_input_file,
+            options.config.wells_file,
             guide_points,
         )
 

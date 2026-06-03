@@ -10,8 +10,15 @@ from .geometry import compute_geometry
 from .interpolation import interpolate_points
 from .models.config import InterpolationConfig, WellConfig
 from .models.data_structs import CalculatedTrajectory, Trajectory
-from .outputs import write_path_files, write_resinsight, write_well_costs, write_wicalc
+from .outputs import (
+    write_path_files,
+    write_resinsight,
+    write_well_costs,
+    write_well_lengths,
+    write_wicalc,
+)
 from .well_costs import compute_well_costs
+from .well_lengths import compute_well_lengths
 
 logger = logging.getLogger(__name__)
 
@@ -73,6 +80,7 @@ def well_trajectory_simple(
     wells: Iterable[WellConfig],
     interpolation: InterpolationConfig,
     npv_input_file: Optional[Path],
+    wells_file: Optional[Path],
     guide_points: Dict[str, Trajectory],
 ) -> None:
     points = _compute_well_trajectory(wells, interpolation, guide_points)
@@ -88,6 +96,9 @@ def well_trajectory_simple(
         costs = compute_well_costs(wells)
         logger.info("Writing well costs")
         write_well_costs(costs, npv_input_file)
+    if wells_file is not None:
+        logger.info("Writing well lengths to wells file")
+        write_well_lengths(compute_well_lengths(wells), wells_file)
     logger.info("Writing PATH files")
     write_path_files(
         (Path(f"PATH_{well}").with_suffix(".txt"), trajectory)
