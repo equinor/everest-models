@@ -23,6 +23,7 @@ class Well(ModelConfig):
     name: Annotated[str, Field(frozen=True, description="Well name")]
     operations: Annotated[Tuple[Operation, ...], Field(**OPERATIONS_FIELD_ATTRIBUTE)]
     readydate: Annotated[date, Field(None, description="")]
+    length: Annotated[float | None, Field(None, description="Well length in km")]
 
     def __hash__(self):
         return hash(self.name)

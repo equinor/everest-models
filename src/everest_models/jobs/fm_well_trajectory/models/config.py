@@ -331,3 +331,11 @@ class ConfigSchema(ModelConfig):
             examples="/path/to/npv_input.yml",
         ),
     ]
+    wells_file: Annotated[
+        FilePath,
+        Field(
+            default=None,
+            description="Path to JSON file used to update the well lengths.",
+            examples="/path/to/wells.json",
+        ),
+    ]

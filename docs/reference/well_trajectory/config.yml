@@ -233,3 +233,10 @@ resinsight_binary: null
 # Required: False
 # Default: null
 npv_input_file: null
+
+# Path to JSON file used to update the well lengths.
+# Datatype: Path
+# Examples: /path/to/wells.json
+# Required: False
+# Default: null
+wells_file: null

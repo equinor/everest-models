@@ -115,3 +115,11 @@ def write_well_costs(costs: Dict[str, float], npv_file: Path) -> None:
 
     with npv_file.open("w") as fp:
         io.dump_yaml(output, fp, default_flow_style=False)
+
+
+def write_well_lengths(lengths: Dict[str, float], wells_file: Path) -> None:
+    wells = io.load_json(wells_file)
+    for well in wells:
+        if well["name"] in lengths:
+            well["length"] = lengths[well["name"]]
+    io.dump_json(wells, wells_file)
