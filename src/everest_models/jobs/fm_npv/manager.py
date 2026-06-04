@@ -6,6 +6,8 @@ from typing import Callable, Dict, Iterable, Protocol, Tuple
 from resdata.summary import Summary
 from resdata.util.util import TimeVector
 
+from everest_models.jobs.shared.models.economics import WellCost
+
 from .npv_config import NPVConfig
 
 logger = logging.getLogger(__name__)
@@ -70,7 +72,9 @@ class NPVCalculator:
         )
         return npv / (1 + discount_rate) ** ((date - self.ref_date).days / 365.25)
 
-    def _extract_costs(self, well_dates: Dict[str, datetime.date]) -> float:
+    def _extract_costs(
+        self, well_dates: Dict[str, datetime.date], well_lengths: Dict[str, float]
+    ) -> float:
         def get_costs():
             return itertools.chain(
                 (
@@ -83,7 +87,7 @@ class NPVCalculator:
                 (
                     (
                         self._get_exchange_rate(well_dates[entry.well], entry.currency)
-                        * entry.value,
+                        * self._get_well_cost(entry, well_lengths),
                         well_dates[entry.well],
                     )
                     for entry in self.config.well_costs
@@ -138,14 +142,26 @@ class NPVCalculator:
             )
         )
 
-    def compute(self, well_dates: Dict[str, datetime.date]) -> float:
+    def _get_well_cost(self, well: WellCost, well_lengths: Dict[str, float]) -> float:
+        if well.value is not None:
+            return well.value
+        if well.value_per_km is not None:
+            well_length = well_lengths.get(well.well, 0.0)
+            if well_length == 0.0:
+                raise ValueError(f"No well length defined for this well `{well.well}`.")
+            return well.value_per_km * well_length
+        raise ValueError(f"No cost defined for this well `{well.well}`.")
+
+    def compute(
+        self, well_dates: Dict[str, datetime.date], well_lengths: Dict[str, float]
+    ) -> float:
         start_date, end_date, self.ref_date = self._get_dates()
         return round(
             (
                 self._extract_prices(
                     self.summary.time_range(start_date, end_date, interval="1d")
                 )
-                - self._extract_costs(well_dates)
+                - self._extract_costs(well_dates, well_lengths)
             )
             * self.config.multiplier,
             2,

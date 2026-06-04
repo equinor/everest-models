@@ -7,6 +7,11 @@ prices:
   <STRING>:
     -
 
+      # Datatype: date
+      # Examples: 2024-01-31, 2024-01-31T11:06
+      # Required: True
+      date: <REPLACE>
+
       # Datatype: number
       # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
       # Required: True
@@ -17,11 +22,6 @@ prices:
       # Required: False
       # Default: null
       currency: null
-
-      # Datatype: date
-      # Examples: 2024-01-31, 2024-01-31T11:06
-      # Required: True
-      date: <REPLACE>
 
 # Datatype: integer
 # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
@@ -67,6 +67,11 @@ exchange_rates:
   <STRING>:
     -
 
+      # Datatype: date
+      # Examples: 2024-01-31, 2024-01-31T11:06
+      # Required: True
+      date: <REPLACE>
+
       # Datatype: number
       # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
       # Required: True
@@ -78,14 +83,14 @@ exchange_rates:
       # Default: null
       currency: null
 
-      # Datatype: date
-      # Examples: 2024-01-31, 2024-01-31T11:06
-      # Required: True
-      date: <REPLACE>
-
 # Required: False
 discount_rates:
   -
+
+    # Datatype: date
+    # Examples: 2024-01-31, 2024-01-31T11:06
+    # Required: True
+    date: <REPLACE>
 
     # Datatype: number
     # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
@@ -97,36 +102,16 @@ discount_rates:
     # Required: False
     # Default: null
     currency: null
-
-    # Datatype: date
-    # Examples: 2024-01-31, 2024-01-31T11:06
-    # Required: True
-    date: <REPLACE>
 
 # Required: False
 costs:
   -
 
-    # Datatype: number
-    # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
-    # Required: True
-    value: <REPLACE>
-
-    # Datatype: string
-    # Examples: a string value
-    # Required: False
-    # Default: null
-    currency: null
-
     # Datatype: date
     # Examples: 2024-01-31, 2024-01-31T11:06
     # Required: True
     date: <REPLACE>
 
-# Required: False
-well_costs:
-  -
-
     # Datatype: number
     # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
     # Required: True
@@ -138,10 +123,33 @@ well_costs:
     # Default: null
     currency: null
 
+# Required: False
+well_costs:
+  -
+
+    # Well name
     # Datatype: string
     # Examples: a string value
     # Required: True
     well: <REPLACE>
+
+    # Total cost per well (mutually exclusive with value_per_km)
+    # Datatype: number
+    # Required: False
+    # Default: null
+    value: <REPLACE>
+
+    # Datatype: string
+    # Examples: a string value
+    # Required: False
+    # Default: null
+    currency: null
+
+    # Well cost per km (mutually exclusive with value)
+    # Datatype: number
+    # Required: False
+    # Default: null
+    value_per_km: <REPLACE>
 
 # Required: True
 summary:
@@ -187,6 +195,11 @@ output:
   currency_rate:
     -
 
+      # Datatype: date
+      # Examples: 2024-01-31, 2024-01-31T11:06
+      # Required: True
+      date: <REPLACE>
+
       # Datatype: number
       # Examples: .1, 1., 1, 1.0, 1.34E-5, 1.34e-5
       # Required: True
@@ -197,11 +210,6 @@ output:
       # Required: False
       # Default: null
       currency: null
-
-      # Datatype: date
-      # Examples: 2024-01-31, 2024-01-31T11:06
-      # Required: True
-      date: <REPLACE>
 
 # Required: False
 # Default: null
