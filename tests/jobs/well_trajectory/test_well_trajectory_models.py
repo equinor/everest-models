@@ -48,3 +48,13 @@ def test_parameters_invalid_platform(copy_testdata_tmpdir):
     ):
         config = ConfigSchema.model_validate(config)
         read_trajectories(config.wells, config.platforms)
+
+
+def test_parameters_deprecation_warning(copy_testdata_tmpdir, capsys):
+    copy_testdata_tmpdir(Path(TEST_DATA) / "resinsight")
+    config = load_yaml("config.yml")
+    config["npv_input_file"] = "npv_input_file.yaml"
+    Path("npv_input_file.yaml").touch()
+    ConfigSchema.model_validate(config)
+    output = capsys.readouterr().out
+    assert "The `npv_input_file` field in the configuration" in output

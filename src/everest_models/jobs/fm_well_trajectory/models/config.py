@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+import textwrap
 from pathlib import Path
 from typing import Optional, Tuple
 
@@ -339,3 +340,16 @@ class ConfigSchema(ModelConfig):
             examples="/path/to/wells.json",
         ),
     ]
+
+    @model_validator(mode="after")
+    def emit_deprecation_warning(self):
+        if self.npv_input_file is not None:
+            msg = textwrap.dedent("""\
+            The `npv_input_file` field in the configuration of the
+            `well_trajectory` job is deprecated and will be removed in a future
+            version. Please use the `wells_file` field instead to write well
+            lengths to the wells input JSON file (e.g. `wells.json`) used by the
+            `npv` job. In the configuration of the `npv` job, set `value_per_km`
+            in `well_costs` to provide drilling cost per kilometer.""")
+            print("\n" + textwrap.fill(f"DEPRECATION WARNING: {msg}") + "\n")
+        return self
