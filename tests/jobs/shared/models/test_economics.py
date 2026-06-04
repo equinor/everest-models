@@ -1,12 +1,14 @@
 import pytest
 from pydantic import ValidationError
 
-from everest_models.jobs.shared.models.economics import EconomicConfig, _Capital
+from everest_models.jobs.shared.models.economics import CurrencyRate, EconomicConfig
 
 
 def test_economic_currency_bad():
     with pytest.raises(ValidationError, match=r"Currency PIE not in supported \[.*\]"):
-        _Capital.model_validate({"value": 3.14, "currency": "PIE"})
+        CurrencyRate.model_validate(
+            {"date": "1999-01-01", "value": 3.14, "currency": "PIE"}
+        )
 
 
 def test_economic_config_defaults():

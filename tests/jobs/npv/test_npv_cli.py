@@ -13,6 +13,7 @@ from everest_models.jobs.shared.validators import parse_file
 
 _CONFIG_FILE = "input_data.yml"
 _CONFIG_FILE_NO_WELL_COSTS = "input_data_no_well_costs.yml"
+_CONFIG_FILE_COST_PER_KM = "input_data_cost_per_km.yml"
 _WELL_COSTS_N_INPUT_PAIR_ERR_MSG = (
     "-c/--config argument file key 'well_cost' and -i/--input argument file "
     "must always be paired; one of the two is missing."
@@ -31,6 +32,22 @@ def test_npv_main_entry_point(copy_testdata_tmpdir, monkeypatch, input_file):
             options=Options(
                 input=parse_file(input_file, Wells),
                 config=parse_file(_CONFIG_FILE, NPVConfig),
+            )
+        ),
+    )
+    cli.main_entry_point()
+    assert Path("test").read_text() == "691981114.68"
+
+
+def test_npv_main_entry_point_with_lengths(copy_testdata_tmpdir, monkeypatch):
+    copy_testdata_tmpdir(TEST_DATA)
+    monkeypatch.setattr(
+        cli,
+        "build_argument_parser",
+        lambda: MockParser(
+            options=Options(
+                input=parse_file("wells_with_lengths.json", Wells),
+                config=parse_file(_CONFIG_FILE_COST_PER_KM, NPVConfig),
             )
         ),
     )

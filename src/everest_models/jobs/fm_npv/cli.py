@@ -129,11 +129,10 @@ def main_entry_point(args=None):
         _overwrite_npv_config(options, field)
 
     logger.info(f"Initializing npv calculation with options {options}")
+    inputs = options.input or []
     npv = NPVCalculator(config=options.config, summary=options.summary).compute(
-        {
-            well.name: well.completion_date or well.readydate
-            for well in options.input or {}
-        }
+        {well.name: well.completion_date or well.readydate for well in inputs},
+        {well.name: well.length or 0.0 for well in inputs},
     )
 
     options.output.write_text(f"{npv:.2f}")

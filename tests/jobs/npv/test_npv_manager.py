@@ -30,10 +30,27 @@ def npv_well_dates():
     }
 
 
-def calculator_manager(data: Dict[str, Any], summary):
+WELL_LENGTHS = {
+    "OP_1": 1.0,
+    "OP_2": 2.1,
+    "OP_5": 5.2,
+    "WI_1": 6.3,
+    "WI_3": 8.4,
+}
+
+
+def calculator_manager(
+    data: Dict[str, Any], summary, well_lengths: Dict[str, float] | None = None
+):
+    if well_lengths:
+        data = copy.deepcopy(data)
+        for cost in data.get("well_costs", []):
+            if cost["well"] in well_lengths:
+                cost["value_per_km"] = cost.pop("value") / well_lengths[cost["well"]]
     return NPVCalculator(config=NPVConfig.model_validate(data), summary=summary)
 
 
+@pytest.mark.parametrize("well_lengths", [{}, WELL_LENGTHS])
 @pytest.mark.parametrize(
     "dates, expected",
     (
@@ -41,43 +58,61 @@ def calculator_manager(data: Dict[str, Any], summary):
         pytest.param(True, 691981114.68, id="with dates"),
     ),
 )
-def test_npv_base_case_1(dates, expected, npv_config_dict, npv_summary, npv_well_dates):
-    manager = calculator_manager(npv_config_dict, npv_summary)
-    assert manager.compute(npv_well_dates if dates else {}) == expected
+def test_npv_base_case_1(
+    dates,
+    expected,
+    well_lengths,
+    npv_config_dict,
+    npv_summary,
+    npv_well_dates,
+):
+    manager = calculator_manager(
+        npv_config_dict, npv_summary, well_lengths=well_lengths
+    )
+    assert manager.compute(npv_well_dates if dates else {}, well_lengths) == expected
 
 
-def test_npv_base_case(npv_config_dict, npv_summary, npv_well_dates):
-    manager = calculator_manager(npv_config_dict, npv_summary)
-    assert manager.compute(npv_well_dates) == 691981114.68
+@pytest.mark.parametrize("well_lengths", [{}, WELL_LENGTHS])
+def test_npv_base_case(well_lengths, npv_config_dict, npv_summary, npv_well_dates):
+    manager = calculator_manager(npv_config_dict, npv_summary, well_lengths)
+    assert manager.compute(npv_well_dates, well_lengths) == 691981114.68
 
 
-def test_npv_base_case_no_input(npv_config_dict, npv_summary):
-    manager = calculator_manager(npv_config_dict, npv_summary)
-    assert manager.compute({}) == 865092178.9
+@pytest.mark.parametrize("well_lengths", [{}, WELL_LENGTHS])
+def test_npv_base_case_no_input(well_lengths, npv_config_dict, npv_summary):
+    manager = calculator_manager(npv_config_dict, npv_summary, well_lengths)
+    assert manager.compute({}, well_lengths) == 865092178.9
 
 
+@pytest.mark.parametrize("well_lengths", [{}, WELL_LENGTHS])
 def test_npv_base_case_omit_dates_summary_keys(
-    npv_config_dict, npv_summary, npv_well_dates
+    well_lengths, npv_config_dict, npv_summary, npv_well_dates
 ):
     config_dict = copy.deepcopy(npv_config_dict)
     config_dict.pop("dates")
     config_dict.pop("summary_keys")
 
-    manager = calculator_manager(config_dict, npv_summary)
-    assert manager.compute(npv_well_dates) == 1323951495.03
+    manager = calculator_manager(config_dict, npv_summary, well_lengths)
+    assert manager.compute(npv_well_dates, well_lengths) == 1323951495.03
 
 
-def test_npv_base_case_modify_multiplier(npv_config_dict, npv_summary, npv_well_dates):
+@pytest.mark.parametrize("well_lengths", [{}, WELL_LENGTHS])
+def test_npv_base_case_modify_multiplier(
+    well_lengths, npv_config_dict, npv_summary, npv_well_dates
+):
     config_dict = copy.deepcopy(npv_config_dict)
     config_dict.pop("dates")
     config_dict.pop("summary_keys")
     config_dict["multiplier"] = 2
 
-    manager = calculator_manager(config_dict, npv_summary)
-    assert manager.compute(npv_well_dates) == 2647902990.07
+    manager = calculator_manager(config_dict, npv_summary, well_lengths)
+    assert manager.compute(npv_well_dates, well_lengths) == 2647902990.07
 
 
-def test_npv_base_case_modify_ref_date(npv_config_dict, npv_summary, npv_well_dates):
+@pytest.mark.parametrize("well_lengths", [{}, WELL_LENGTHS])
+def test_npv_base_case_modify_ref_date(
+    well_lengths, npv_config_dict, npv_summary, npv_well_dates
+):
     config_dict = copy.deepcopy(npv_config_dict)
     config_dict.pop("summary_keys")
     dates = config_dict["dates"]
@@ -85,10 +120,11 @@ def test_npv_base_case_modify_ref_date(npv_config_dict, npv_summary, npv_well_da
     dates.pop("end_date")
     dates["ref_date"] = datetime.date(2000, 5, 6)
 
-    manager = calculator_manager(config_dict, npv_summary)
-    assert manager.compute(npv_well_dates) == 1344403927.71
+    manager = calculator_manager(config_dict, npv_summary, well_lengths)
+    assert manager.compute(npv_well_dates, well_lengths) == 1344403927.71
 
 
+@pytest.mark.parametrize("well_lengths", [{}, WELL_LENGTHS])
 @pytest.mark.parametrize(
     "dates, pop_keys, expected",
     (
@@ -131,7 +167,13 @@ def test_npv_base_case_modify_ref_date(npv_config_dict, npv_summary, npv_well_da
     ),
 )
 def test_npv_base_case_modify_start_end_dates(
-    dates, pop_keys, expected, npv_config_dict, npv_summary, npv_well_dates
+    well_lengths,
+    dates,
+    pop_keys,
+    expected,
+    npv_config_dict,
+    npv_summary,
+    npv_well_dates,
 ):
     config_dict = copy.deepcopy(npv_config_dict)
     if pop_keys:
@@ -140,8 +182,8 @@ def test_npv_base_case_modify_start_end_dates(
     config_dates.pop("ref_date")
     config_dates.update(dates)
 
-    manager = calculator_manager(config_dict, npv_summary)
-    assert manager.compute(npv_well_dates) == expected
+    manager = calculator_manager(config_dict, npv_summary, well_lengths)
+    assert manager.compute(npv_well_dates, well_lengths) == expected
 
 
 def test_npv_summary_keys_not_available(npv_config_dict, npv_summary):
