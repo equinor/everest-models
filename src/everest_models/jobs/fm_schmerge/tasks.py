@@ -1,8 +1,8 @@
 import bisect
 import datetime
 import logging
-import pathlib
 import re
+from pathlib import Path
 from typing import Any, Dict, List, Union
 
 from jinja2 import Template
@@ -11,7 +11,7 @@ from everest_models.jobs.shared.models import PhaseEnum
 
 logger = logging.getLogger(__name__)
 
-OperationParameter = Dict[str, Union[pathlib.Path, PhaseEnum, float, str]]
+OperationParameter = Dict[str, Union[Path, PhaseEnum, float, str]]
 OperationData = Dict[datetime.datetime, List[OperationParameter]]
 MODIFY_COMMENT = "-- MODIFIED by schmerge forward model\n"
 ECLIPSE_DATE_REGEX = re.compile(
@@ -26,7 +26,7 @@ ECLIPSE_DATE_REGEX = re.compile(
 
 
 def _render_parameter_data(
-    date: datetime.date, template: pathlib.Path, template_map: Dict[str, Any]
+    date: datetime.date, template: Path, template_map: Dict[str, Any]
 ):
     if phase := template_map.pop("phase", None):
         template_map["phase"] = phase.value

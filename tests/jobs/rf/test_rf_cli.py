@@ -1,6 +1,6 @@
 import datetime
 import logging
-import pathlib
+from pathlib import Path
 
 import pytest
 from resdata.summary import Summary
@@ -114,7 +114,7 @@ def mock_rf_parser(ecl_summary_rf, monkeypatch):
 )
 def test_rf_entry_point(more_args, expected, switch_cwd_tmp_path, mock_rf_parser):
     cli.main_entry_point((*ARGUMENTS, *more_args))
-    assert pathlib.Path("rf_result").read_bytes() == expected
+    assert Path("rf_result").read_bytes() == expected
 
 
 @pytest.mark.parametrize(
@@ -142,7 +142,7 @@ def test_rf_entry_point_date_out_of_simulation_bounds(
     with caplog.at_level(logging.WARNING):
         cli.main_entry_point((*ARGUMENTS, *args))
     assert log in caplog.text
-    assert pathlib.Path("rf_result").read_bytes() == expected
+    assert Path("rf_result").read_bytes() == expected
 
 
 def test_rf_lint(
@@ -153,4 +153,4 @@ def test_rf_lint(
         cli.main_entry_point([*ARGUMENTS, "--lint"])
 
     assert e.value.code == 0
-    assert not pathlib.Path("rf_result").exists()
+    assert not Path("rf_result").exists()

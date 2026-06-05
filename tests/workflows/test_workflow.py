@@ -1,4 +1,4 @@
-import pathlib
+from pathlib import Path
 
 from sub_testdata import WORKFLOWS as TEST_DATA
 
@@ -101,6 +101,6 @@ def test_workflow(copy_testdata_tmpdir):
     schmerge_entry(arguments)
 
     assert (
-        pathlib.Path("result_schedule.sch").read_text()
-        == pathlib.Path("expected_schedule.sch").read_text()
+        Path("result_schedule.sch").read_text()
+        == Path("expected_schedule.sch").read_text()
     )

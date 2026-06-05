@@ -54,7 +54,7 @@ class Wells(RootModelConfig):
         """Write instance state to a JSON file.
 
         Args:
-            output (pathlib.Path): file to write to
+            output (Path): file to write to
         """
         output.write_text(
             self.model_dump_json(

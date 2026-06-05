@@ -1,10 +1,10 @@
 import argparse
 import datetime
-import pathlib
 from collections import Counter
 from collections.abc import Sized
 from json import JSONDecodeError
 from os import W_OK, access
+from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Type, TypeVar
 
 from pydantic import BaseModel, ValidationError, ValidationInfo
@@ -16,7 +16,7 @@ from everest_models.jobs.shared.io_utils import load_supported_file_encoding
 T = TypeVar("T", bound=BaseModel)
 
 
-def is_writable_path(value: str) -> pathlib.Path:
+def is_writable_path(value: str) -> Path:
     """Validate if given value is a writable filepath.
 
     Args:
@@ -28,9 +28,9 @@ def is_writable_path(value: str) -> pathlib.Path:
         argparse.ArgumentTypeError: No access to File
 
     Returns:
-        pathlib.Path: valid filepath
+        Path: valid filepath
     """
-    path = pathlib.Path(value)
+    path = Path(value)
     if not (path.exists() or access(parent := path.parent, W_OK)):
         raise argparse.ArgumentTypeError(f"Can not write to directory: {parent}")
 
@@ -71,7 +71,7 @@ def valid_ecl_summary(file_path: str) -> Summary:
         ) from e
 
 
-def validate_eclipse_path(path: pathlib.Path) -> pathlib.Path:
+def validate_eclipse_path(path: Path) -> Path:
     if path is None:
         raise ValueError("No Eclipse model path given")
     if not path.parent.exists():
@@ -81,20 +81,20 @@ def validate_eclipse_path(path: pathlib.Path) -> pathlib.Path:
     return path.with_suffix("")
 
 
-def validate_eclipse_path_argparse(path: str) -> pathlib.Path:
+def validate_eclipse_path_argparse(path: str) -> Path:
     """Validate model filepath is correctly formatted.
 
     Args:
-        path (pathlib.Path): path to eclipse model file path
+        path (Path): path to eclipse model file path
 
     Raises:
         argparse.ArgumentTypeError: fail to meet the filepath constraints
 
     Returns:
-        pathlib.Path: validated eclipse model filepath
+        Path: validated eclipse model filepath
     """
     try:
-        return validate_eclipse_path(pathlib.Path(path))
+        return validate_eclipse_path(Path(path))
     except ValueError as e:
         raise argparse.ArgumentTypeError(str(e)) from e
 
@@ -128,7 +128,7 @@ def valid_schedule_template(value: str) -> str:
     Returns:
         str: eclipse content
     """
-    return pathlib.Path(value).read_text(encoding="utf-8")
+    return Path(value).read_text(encoding="utf-8")
 
 
 def valid_input_file(value: str) -> Any:
@@ -144,7 +144,7 @@ def valid_input_file(value: str) -> Any:
     Returns:
         Dict[str, Any]: Dictionary representation of file content
     """
-    path = pathlib.Path(value)
+    path = Path(value)
     if not path.exists() or path.is_dir():
         raise argparse.ArgumentTypeError(
             f"The path '{path}' is a directory or file not found."

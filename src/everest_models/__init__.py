@@ -1,4 +1,4 @@
-import pathlib
+from pathlib import Path
 
 from everest_models.everest_hooks import (
     get_forward_models_schemas,
@@ -13,7 +13,7 @@ __all__ = [
 
 set_up_logger(__name__)
 
-ROOT_DIR = pathlib.Path(__file__).parent.parent
+ROOT_DIR = Path(__file__).parent.parent
 
 try:
     from everest_models.version import version

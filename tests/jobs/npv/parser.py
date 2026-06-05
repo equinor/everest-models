@@ -1,6 +1,6 @@
 import datetime
-import pathlib
 import sys
+from pathlib import Path
 from typing import NamedTuple, Optional
 
 from resdata.summary import Summary
@@ -54,7 +54,7 @@ class Options(NamedTuple):
     lint: Optional[bool] = None
     multiplier: float = 1.0
     summary: Summary = ecl_summary_npv()
-    output: pathlib.Path = pathlib.Path("test")
+    output: Path = Path("test")
 
 
 class MockParser:

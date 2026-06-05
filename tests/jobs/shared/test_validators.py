@@ -1,6 +1,6 @@
 import argparse
 import datetime
-import pathlib
+from pathlib import Path
 from typing import Dict
 
 import pytest
@@ -32,7 +32,7 @@ def write_file(path, txt):
     [
         pytest.param(
             "empty.json",
-            pathlib.Path("empty.json").touch,
+            Path("empty.json").touch,
             r"\sInvalid file syntax:\s.*empty.json\s",
             id="empty json",
         ),
@@ -47,7 +47,7 @@ def write_file(path, txt):
         ),
         pytest.param(
             "empty.ou",
-            pathlib.Path("empty.ou").touch,
+            Path("empty.ou").touch,
             r"Unsupported file encoding:\s\s.*empty.ou",
             id="unsupported extension",
         ),

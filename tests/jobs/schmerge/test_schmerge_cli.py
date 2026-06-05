@@ -1,4 +1,4 @@
-import pathlib
+from pathlib import Path
 from typing import Tuple
 
 import pytest
@@ -24,9 +24,7 @@ def test_schmerge_main_entry_point(copy_testdata_tmpdir, schmerge_args):
 
     main_entry_point(schmerge_args)
 
-    assert (
-        pathlib.Path("result.sch").read_bytes() == pathlib.Path("out.sch").read_bytes()
-    )
+    assert Path("result.sch").read_bytes() == Path("out.sch").read_bytes()
 
 
 def test_schmerge_main_entry_point_invalid_wells(
@@ -53,4 +51,4 @@ def test_schmerge_entry_lint(copy_testdata_tmpdir, schmerge_args):
         main_entry_point([*schmerge_args, "--lint"])
 
     assert e.value.code == 0
-    assert not pathlib.Path("out.sch").exists()
+    assert not Path("out.sch").exists()

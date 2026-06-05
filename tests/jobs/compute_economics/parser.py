@@ -1,6 +1,6 @@
 import datetime
-import pathlib
 import sys
+from pathlib import Path
 from types import SimpleNamespace
 from typing import NamedTuple, Optional
 
@@ -130,7 +130,7 @@ class Options(NamedTuple):
     multiplier: Optional[float] = 1.0
     schema: Optional[bool] = None
     lint: Optional[bool] = None
-    output: pathlib.Path = pathlib.Path("test")
+    output: Path = Path("test")
     output_currency: Optional[str] = None
 
 

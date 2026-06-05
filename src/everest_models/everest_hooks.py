@@ -6,9 +6,9 @@ to expose its functions
 """
 
 import logging
-import pathlib
 from importlib import import_module
 from importlib.resources import files
+from pathlib import Path
 from typing import Any, Dict, List, Sequence, Type
 
 from pydantic import BaseModel
@@ -70,7 +70,7 @@ def parse_forward_model_schema(path: str, schema: Type[BaseModel]) -> BaseModel:
     Returns:
         T: pydantic.BaseModel subclass instance
     """
-    path_ = pathlib.Path(path)
+    path_ = Path(path)
     if not path_.exists() or path_.is_dir():
         raise ValueError(f"File does not exists or is a directory: {path_}")
 

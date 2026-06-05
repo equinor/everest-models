@@ -1,4 +1,4 @@
-import pathlib
+from pathlib import Path
 
 from everest_models.jobs.fm_compute_economics.economic_indicator_config_model import (
     EconomicIndicatorConfig,
@@ -40,5 +40,5 @@ def test_economic_indicator_config_defaults():
     assert not config.discount_rates and isinstance(config.discount_rates, tuple)
     assert not config.well_costs and isinstance(config.well_costs, tuple)
     assert isinstance(config.output, OutputConfig)
-    assert config.output.file == pathlib.Path("test")
+    assert config.output.file == Path("test")
     assert config.output.currency == "USD"

@@ -1,5 +1,5 @@
 import logging
-import pathlib
+from pathlib import Path
 from typing import Any, Dict, Tuple
 
 from pydantic import ConfigDict, Field, FilePath, NewPath, model_validator
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class EclipseSummaryConfig(ModelConfig):
-    main: Annotated[pathlib.Path, Field(description="")]
+    main: Annotated[Path, Field(description="")]
     reference: Annotated[FilePath, Field(default=None, description="")]
     keys: Annotated[Tuple[str, ...], Field(default_factory=tuple, description="")]
 

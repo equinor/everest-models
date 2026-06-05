@@ -1,5 +1,4 @@
 import os
-import pathlib
 import shutil
 import sys
 from importlib.util import find_spec
@@ -145,19 +144,19 @@ if _HAVE_ERT:
 
 
 @pytest.fixture(scope="session")
-def path_test_data() -> pathlib.Path:
-    return pathlib.Path(__file__).parent / "testdata"
+def path_test_data() -> Path:
+    return Path(__file__).parent / "testdata"
 
 
 @pytest.fixture(scope="session")
-def reference_docs() -> pathlib.Path:
+def reference_docs() -> Path:
     """Path to the reference documentation directory"""
-    return pathlib.Path(__file__).parent.parent / "docs/reference"
+    return Path(__file__).parent.parent / "docs/reference"
 
 
 @pytest.fixture
 def switch_cwd_tmp_path(tmp_path):
-    cwd = pathlib.Path.cwd()
+    cwd = Path.cwd()
     os.chdir(tmp_path)
     yield tmp_path
     os.chdir(cwd)

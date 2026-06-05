@@ -1,5 +1,5 @@
-import pathlib
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
@@ -31,7 +31,7 @@ def test_template_model_fields(add_tmpl_config):
     assert isinstance(add_tmpl_config.templates, tuple)
     template = add_tmpl_config.templates[0]
     assert isinstance(template, Template)
-    assert isinstance(template.file, pathlib.Path)
+    assert isinstance(template.file, Path)
     assert isinstance(template.keys, dict)
     assert isinstance(template.keys["opname"], str)
     assert isinstance(add_tmpl_config.templates[3].keys["phase"], PhaseEnum)

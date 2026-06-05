@@ -1,6 +1,6 @@
 import datetime
 import logging
-import pathlib
+from pathlib import Path
 
 import pytest
 from jobs.npv.parser import MockParser, Options, ecl_summary_npv
@@ -35,7 +35,7 @@ def test_npv_main_entry_point(copy_testdata_tmpdir, monkeypatch, input_file):
         ),
     )
     cli.main_entry_point()
-    assert pathlib.Path("test").read_text() == "691981114.68"
+    assert Path("test").read_text() == "691981114.68"
 
 
 def test_npv_main_entry_point_no_input_error(copy_testdata_tmpdir, monkeypatch, capsys):
@@ -92,7 +92,7 @@ def test_npv_main_entry_point_no_input(copy_testdata_tmpdir, monkeypatch):
         ),
     )
     cli.main_entry_point()
-    assert pathlib.Path("test").read_text() == "865092178.90"
+    assert Path("test").read_text() == "865092178.90"
 
 
 @pytest.mark.parametrize(
@@ -147,7 +147,7 @@ def test_npv_main_entry_lint_ignore_overwrite_config(
         cli.main_entry_point()
     assert e.value.code == 0
     assert "Overwrite config field with 'multiplier' CLI argument" not in caplog.text
-    assert not pathlib.Path("test").exists()
+    assert not Path("test").exists()
 
 
 def test_npv_main_entry_point_warning_for_default_output(
@@ -165,7 +165,7 @@ def test_npv_main_entry_point_warning_for_default_output(
         "Objective names ending in '_0' have been deprecated by everest! "
         "Replace objective `npv_0` with `npv` in the everest config file."
     ) in caplog.text
-    assert pathlib.Path("npv").exists()
+    assert Path("npv").exists()
 
 
 @pytest.mark.parametrize("output_arg", ("-o", "--output"))
@@ -181,4 +181,4 @@ def test_npv_main_entry_point_no_warning_for_non_default_output(
     args = ["-i", "wells.json", "-c", _CONFIG_FILE, output_arg, "npv_test"]
     cli.main_entry_point(args)
     assert "Objective names ending in '_0' have been deprecated" not in caplog.text
-    assert pathlib.Path("npv_test").exists()
+    assert Path("npv_test").exists()

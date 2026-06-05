@@ -1,5 +1,5 @@
 import logging
-import pathlib
+from pathlib import Path
 from typing import Dict, Iterable
 
 import pandas as pd
@@ -14,7 +14,7 @@ MDMSL = -1
 def _read_well_length(well: str) -> float:
     """Read well length from a deviation file"""
 
-    if not (path := pathlib.Path(f"wellpaths/{well}").with_suffix(".dev")).exists():
+    if not (path := Path(f"wellpaths/{well}").with_suffix(".dev")).exists():
         logger.warning(f"File does not exist, {path}")
         return 0.0
 

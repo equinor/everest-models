@@ -1,4 +1,4 @@
-import pathlib
+from pathlib import Path
 from typing import Dict, NamedTuple
 
 import pytest
@@ -22,10 +22,7 @@ def test_interpret_well_drill_entry(copy_testdata_tmpdir, interpret_well_drill_a
     out_file = "test.json"
 
     cli.main_entry_point(interpret_well_drill_args)
-    assert (
-        pathlib.Path(out_file).read_bytes()
-        == pathlib.Path("correct_out.json").read_bytes()
-    )
+    assert Path(out_file).read_bytes() == Path("correct_out.json").read_bytes()
 
 
 def test_interpret_well_drill_lint(copy_testdata_tmpdir, interpret_well_drill_args):
@@ -34,12 +31,12 @@ def test_interpret_well_drill_lint(copy_testdata_tmpdir, interpret_well_drill_ar
         cli.main_entry_point([*interpret_well_drill_args, "--lint"])
 
     assert e.value.code == 0
-    assert not pathlib.Path("test.json").exists()
+    assert not Path("test.json").exists()
 
 
 class Options(NamedTuple):
     input: Dict[str, str]
-    output: pathlib.Path = pathlib.Path("output.json")
+    output: Path = Path("output.json")
 
 
 def test_interpret_well_drill_bad_input_value(

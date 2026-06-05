@@ -1,5 +1,5 @@
 import json
-import pathlib
+from pathlib import Path
 
 import pytest
 import yaml
@@ -69,10 +69,7 @@ def test_drill_planner_main_entry_point(copy_testdata_tmpdir, arguments):
     copy_testdata_tmpdir(TEST_DATA)
     main_entry_point(arguments)
 
-    assert (
-        pathlib.Path(OUTPUT_FILENAME).read_bytes()
-        == pathlib.Path("correct_out.json").read_bytes()
-    )
+    assert Path(OUTPUT_FILENAME).read_bytes() == Path("correct_out.json").read_bytes()
 
 
 def test_drill_planner_main_entry_point_partial_wells(
@@ -87,8 +84,8 @@ def test_drill_planner_main_entry_point_partial_wells(
         ]
     )
     assert (
-        pathlib.Path(OUTPUT_FILENAME).read_bytes()
-        == pathlib.Path("partial_correct_out.json").read_bytes()
+        Path(OUTPUT_FILENAME).read_bytes()
+        == Path("partial_correct_out.json").read_bytes()
     )
 
 
@@ -107,8 +104,7 @@ def test_drill_planner_main_entry_point_no_slots(
     )
 
     assert (
-        pathlib.Path(OUTPUT_FILENAME).read_bytes()
-        == pathlib.Path("out_single_slot.json").read_bytes()
+        Path(OUTPUT_FILENAME).read_bytes() == Path("out_single_slot.json").read_bytes()
     )
 
 
@@ -121,10 +117,7 @@ def test_drill_planner_main_entry_point_ignore_end_date_no_effect(
         [*drill_planner_arguments[:-1], config_argument, "--ignore-end-date"]
     )
 
-    assert (
-        pathlib.Path(OUTPUT_FILENAME).read_bytes()
-        == pathlib.Path("correct_out.json").read_bytes()
-    )
+    assert Path(OUTPUT_FILENAME).read_bytes() == Path("correct_out.json").read_bytes()
 
 
 @pytest.mark.usefixtures("switch_cwd_tmp_path")
@@ -135,14 +128,14 @@ def test_drill_planner_main_entry_point_not_enough_slots():
     are not drilled at least once, and also the more general validator
     that there must be at least as many slots as wells.
     """
-    pathlib.Path("wells.json").write_text(
+    Path("wells.json").write_text(
         json.dumps(
             [{"name": "w1", "drill_time": 1}, {"name": "w2", "drill_time": 1}],
         ),
         encoding="utf-8",
     )
-    pathlib.Path("opt.yml").write_text("w1: 1\nw2: 2", encoding="utf-8")
-    pathlib.Path("config.yml").write_text(
+    Path("opt.yml").write_text("w1: 1\nw2: 2", encoding="utf-8")
+    Path("config.yml").write_text(
         yaml.dump(
             {
                 "start_date": "2000-01-01",

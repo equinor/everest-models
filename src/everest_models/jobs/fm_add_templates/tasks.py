@@ -1,6 +1,6 @@
 import itertools
 import logging
-import pathlib
+from pathlib import Path
 from typing import Iterator, Sequence, Tuple
 
 from everest_models.jobs.shared.converters import path_to_str
@@ -32,9 +32,7 @@ def collect_matching(
             yield well.name, operation, template
 
 
-def add_templates(
-    well_name: str, operation: Operation, template: Template
-) -> pathlib.Path:
+def add_templates(well_name: str, operation: Operation, template: Template) -> Path:
     """Set well operation template variable to template filepath.
 
     Mark template as used.
@@ -54,7 +52,7 @@ def add_templates(
 
 def insert_template_with_matching_well_operation(
     templates: Sequence[Template], wells: Sequence[Well]
-) -> Iterator[pathlib.Path]:
+) -> Iterator[Path]:
     return (
         add_templates(well_name, operation, template)
         for well_name, operation, template in collect_matching(templates, wells)

@@ -1,5 +1,5 @@
 import datetime
-import pathlib
+from pathlib import Path
 from typing import Any, Dict, List
 
 import pytest
@@ -81,7 +81,7 @@ def test_well_model_fields(well_model):
     assert isinstance(operation, Operation)
     assert isinstance(operation.date, datetime.date)
     assert isinstance(operation.opname, str)
-    assert isinstance(operation.template, pathlib.Path)
+    assert isinstance(operation.template, Path)
     operation_2 = well_model[1].operations
     with pytest.raises(ValidationError):
         operation_2[0].template = "does_not_exist.txt"  # file does not exist
