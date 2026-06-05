@@ -1,5 +1,5 @@
 import logging
-import pathlib
+from pathlib import Path
 
 import pytest
 from sub_testdata import WELL_FILTER as TEST_DATA
@@ -28,10 +28,7 @@ def test_well_filter_keep_entry(copy_testdata_tmpdir, well_filter_args):
         ]
     )
 
-    assert (
-        pathlib.Path("test_wells.json").read_bytes()
-        == pathlib.Path("keep_out.json").read_bytes()
-    )
+    assert Path("test_wells.json").read_bytes() == Path("keep_out.json").read_bytes()
 
 
 def test_drill_plan_filter_yaml_entry(copy_testdata_tmpdir, well_filter_args):
@@ -45,10 +42,7 @@ def test_drill_plan_filter_yaml_entry(copy_testdata_tmpdir, well_filter_args):
         ]
     )
 
-    assert (
-        pathlib.Path("test_wells.json").read_bytes()
-        == pathlib.Path("keep_out.json").read_bytes()
-    )
+    assert Path("test_wells.json").read_bytes() == Path("keep_out.json").read_bytes()
 
 
 def test_well_filter_remove_entry(copy_testdata_tmpdir, well_filter_args):
@@ -62,10 +56,7 @@ def test_well_filter_remove_entry(copy_testdata_tmpdir, well_filter_args):
         ]
     )
 
-    assert (
-        pathlib.Path("test_wells.json").read_bytes()
-        == pathlib.Path("remove_out.json").read_bytes()
-    )
+    assert Path("test_wells.json").read_bytes() == Path("remove_out.json").read_bytes()
 
 
 def test_well_filter_both_remove_n_keep(copy_testdata_tmpdir, well_filter_args, capsys):
@@ -110,7 +101,7 @@ def test_add_template_lint(copy_testdata_tmpdir, well_filter_args):
         main_entry_point([*well_filter_args, "--keep", "well_names.json", "--lint"])
 
     assert e.value.code == 0
-    assert not pathlib.Path("test_wells.json").exists()
+    assert not Path("test_wells.json").exists()
 
 
 def test_well_filter_keep_bad_entry(copy_testdata_tmpdir, well_filter_args, caplog):

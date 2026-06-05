@@ -1,16 +1,16 @@
 #! /usr/bin/env python
 import os
-import pathlib
 import re
 import subprocess
 from argparse import ArgumentParser, ArgumentTypeError
 from importlib import resources
+from pathlib import Path
 from typing import List, Optional, Sequence, Tuple
 
 from typing_extensions import Final
 
-_FILEPATH: Final[pathlib.Path] = pathlib.Path(__file__)
-REFERENCE_DIR: Final[pathlib.Path] = _FILEPATH.parent
+_FILEPATH: Final[Path] = Path(__file__)
+REFERENCE_DIR: Final[Path] = _FILEPATH.parent
 CURRENT_FILENAME: Final[str] = _FILEPATH.name
 JOBS_MODULE: Final[str] = "everest_models.jobs"
 JOB_PREFIX: Final[str] = "fm_"
@@ -20,7 +20,7 @@ ARGUMENT_CALL: Final[str] = f"{ARGUMENT} {ARGUMENT_PREFIX}init"
 LAGECY_ARGUMENT_CALL: Final[str] = f"{ARGUMENT_PREFIX}{ARGUMENT}"
 
 
-def write_to_reference_docs(job: str, references_dir: pathlib.Path) -> None:
+def write_to_reference_docs(job: str, references_dir: Path) -> None:
     """Write job schema under the ./docs/references/<job>/schema.yml."""
     job_directory = references_dir / job.lstrip(JOB_PREFIX)
     job_directory.mkdir(exist_ok=True)
@@ -77,7 +77,7 @@ def build_argument_parser() -> ArgumentParser:
     parser.add_argument(
         "-d",
         "--output-directory",
-        type=pathlib.Path,
+        type=Path,
         help="Directory path where to export docs to",
         default=REFERENCE_DIR,
     )

@@ -1,5 +1,5 @@
 import datetime
-import pathlib
+from pathlib import Path
 
 import pytest
 from sub_testdata import SCHMERGE as TEST_DATA
@@ -39,7 +39,7 @@ RPTRST
             {
                 datetime.date(2000, 1, 1): [
                     {
-                        "template": pathlib.Path("wconinje.jinja"),
+                        "template": Path("wconinje.jinja"),
                         "template_map": {
                             "name": "SINGLE",
                             "phase": PhaseEnum.WATER,
@@ -58,7 +58,7 @@ RPTRST
             {
                 datetime.date(2000, 3, 1): [
                     {
-                        "template": pathlib.Path("wconinje.jinja"),
+                        "template": Path("wconinje.jinja"),
                         "template_map": {
                             "name": "SINGLE",
                             "phase": PhaseEnum.WATER,
@@ -78,7 +78,7 @@ RPTRST
             {
                 datetime.date(2000, 3, 1): [
                     {
-                        "template": pathlib.Path("wconinje.jinja"),
+                        "template": Path("wconinje.jinja"),
                         "template_map": {
                             "name": "MULTI1",
                             "phase": PhaseEnum.WATER,
@@ -86,7 +86,7 @@ RPTRST
                         },
                     },
                     {
-                        "template": pathlib.Path("welopen.jinja"),
+                        "template": Path("welopen.jinja"),
                         "template_map": {
                             "name": "MULTI2",
                         },

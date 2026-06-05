@@ -1,4 +1,4 @@
-import pathlib
+from pathlib import Path
 
 import pytest
 from sub_testdata import SELECT_WELLS as TEST_DATA
@@ -37,7 +37,7 @@ def test_select_wells_main_entry_point(
         ]
     )
     assert (
-        pathlib.Path("output.json").read_bytes()
+        Path("output.json").read_bytes()
         == b"""[
   {
     "completion_date": "2022-12-01",
@@ -65,10 +65,7 @@ def test_select_wells_main_entry_point_file_no_max_date(
             *select_wells_file_args,
         ]
     )
-    assert (
-        pathlib.Path("output.json").read_bytes()
-        == pathlib.Path("expected_result.json").read_bytes()
-    )
+    assert Path("output.json").read_bytes() == Path("expected_result.json").read_bytes()
 
 
 def test_select_wells_main_entry_point_no_well_number_nor_max_date(
@@ -95,10 +92,7 @@ def test_select_wells_main_entry_point_with_date(
     main_entry_point(
         [*select_wells_base_args, "--max-date", "2023-03-01", "value", "100"]
     )
-    assert (
-        pathlib.Path("output.json").read_bytes()
-        == pathlib.Path("expected_result.json").read_bytes()
-    )
+    assert Path("output.json").read_bytes() == Path("expected_result.json").read_bytes()
 
 
 def test_select_wells_main_entry_point_well_number_as_value(
@@ -106,10 +100,7 @@ def test_select_wells_main_entry_point_well_number_as_value(
 ):
     copy_testdata_tmpdir(TEST_DATA)
     main_entry_point([*select_wells_base_args, "value", "2"])
-    assert (
-        pathlib.Path("output.json").read_bytes()
-        == pathlib.Path("expected_result.json").read_bytes()
-    )
+    assert Path("output.json").read_bytes() == Path("expected_result.json").read_bytes()
 
 
 def test_select_wells_main_entry_point_value_not_gt_0(
@@ -129,7 +120,7 @@ def test_select_wells_lint(select_wells_base_args, copy_testdata_tmpdir):
         main_entry_point([*select_wells_base_args, "--lint", "value", "2"])
 
     assert e.value.code == 0
-    assert not pathlib.Path("output.json").exists()
+    assert not Path("output.json").exists()
 
 
 def test_select_wells_allow_well_number_equal_to_zero(
@@ -137,4 +128,4 @@ def test_select_wells_allow_well_number_equal_to_zero(
 ):
     copy_testdata_tmpdir(TEST_DATA)
     main_entry_point([*select_wells_base_args, "value", "0"])
-    assert pathlib.Path("output.json").read_bytes() == b"[]"
+    assert Path("output.json").read_bytes() == b"[]"

@@ -1,5 +1,5 @@
 import os
-import pathlib
+from pathlib import Path
 
 import pytest
 from jobs.extract_summary_data.parser import build_argument_parser
@@ -66,7 +66,7 @@ def test_extract_summary_data_lint(
         cli.main_entry_point([*extract_summary_data_args_types, "--lint"])
 
     assert e.value.code == 0
-    assert not pathlib.Path("output.json").exists()
+    assert not Path("output.json").exists()
 
 
 def test_extract_summary_data_entry_point_multiplier(

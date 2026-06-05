@@ -1,5 +1,5 @@
-import pathlib
 import typing
+from pathlib import Path
 
 import pytest
 from sub_testdata import ADD_TEMPLATE as TEST_DATA
@@ -38,10 +38,7 @@ def test_main_entry_point(copy_testdata_tmpdir, add_template_args, caplog):
         in log_messages
     )
 
-    assert (
-        pathlib.Path("out_test.json").read_bytes()
-        == pathlib.Path("expected_out.json").read_bytes()
-    )
+    assert Path("out_test.json").read_bytes() == Path("expected_out.json").read_bytes()
 
 
 def test_config_file_not_found(capsys):
@@ -80,12 +77,12 @@ def test_add_template_lint(add_template_args, copy_testdata_tmpdir):
         main_entry_point([*add_template_args, "wells.json", "--lint"])
 
     assert e.value.code == 0
-    assert not pathlib.Path("out_test.json").exists()
+    assert not Path("out_test.json").exists()
 
 
 def test_add_template_empty_input_file(add_template_args, copy_testdata_tmpdir, capsys):
     copy_testdata_tmpdir(TEST_DATA)
-    path = pathlib.Path("empty.json")
+    path = Path("empty.json")
     path.touch()
     with pytest.raises(SystemExit) as e:
         main_entry_point([*add_template_args, "empty.json"])
@@ -96,4 +93,4 @@ def test_add_template_empty_input_file(add_template_args, copy_testdata_tmpdir, 
         f"\nInvalid file syntax:\n{path.absolute()}\nExpecting value: line 1 column 1 (char 0)\n"
         in err
     )
-    assert not pathlib.Path("out_test.json").exists()
+    assert not Path("out_test.json").exists()

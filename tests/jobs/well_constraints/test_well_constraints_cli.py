@@ -1,7 +1,7 @@
 import json
-import pathlib
 import typing
 from functools import partial
+from pathlib import Path
 
 import pytest
 from ruamel.yaml import YAML
@@ -31,7 +31,7 @@ def well_constraints_args() -> typing.List[str]:
     ]
 
 
-def _get_modified_constraints(path: pathlib.Path, key: str):
+def _get_modified_constraints(path: Path, key: str):
     with path.open(mode="r") as fp:
         data = json.load(fp)
     data[key] = data.pop("INJECT2")
@@ -89,8 +89,8 @@ def test_well_constraints_main_entry_point(copy_testdata_tmpdir, well_constraint
     cli.main_entry_point(well_constraints_args)
 
     assert (
-        pathlib.Path(well_constraints_args[1]).read_bytes()
-        == pathlib.Path("expected_output.json").read_bytes()
+        Path(well_constraints_args[1]).read_bytes()
+        == Path("expected_output.json").read_bytes()
     )
 
 

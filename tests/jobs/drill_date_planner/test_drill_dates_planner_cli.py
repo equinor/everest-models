@@ -1,6 +1,6 @@
 import json
-import pathlib
 import sys
+from pathlib import Path
 from typing import Dict, NamedTuple, Tuple
 
 import pytest
@@ -36,10 +36,7 @@ def test_drill_date_planner_main_entry_point(
     copy_testdata_tmpdir(TEST_DATA)
     cli.main_entry_point(drill_date_planner_args)
 
-    assert (
-        pathlib.Path("output.json").read_bytes()
-        == pathlib.Path("expected_result.json").read_bytes()
-    )
+    assert Path("output.json").read_bytes() == Path("expected_result.json").read_bytes()
 
 
 def test_drill_date_planner_lint(drill_date_planner_args, copy_testdata_tmpdir) -> None:
@@ -48,7 +45,7 @@ def test_drill_date_planner_lint(drill_date_planner_args, copy_testdata_tmpdir) 
         cli.main_entry_point([*drill_date_planner_args, "--lint"])
 
     assert e.value.code == 0
-    assert not pathlib.Path("output.json").exists()
+    assert not Path("output.json").exists()
 
 
 class Options(NamedTuple):
@@ -56,7 +53,7 @@ class Options(NamedTuple):
     optimizer: Dict[str, float]
     bounds: Tuple[float, float] = (0.1, 1.0)
     max_days: int = 300
-    output: pathlib.Path = pathlib.Path("output.json")
+    output: Path = Path("output.json")
     lint: bool = False
 
 
@@ -91,7 +88,7 @@ def test_drill_date_planner_missing_control(
     assert e.value.code == 2
     _, err = capsys.readouterr()
     assert "Missing well in controls:\n\tWELL2, WELL4" in err
-    assert not pathlib.Path("output.json").exists()
+    assert not Path("output.json").exists()
 
 
 def test_drill_date_planner_missing_well(
@@ -115,4 +112,4 @@ def test_drill_date_planner_missing_well(
     assert e.value.code == 2
     _, err = capsys.readouterr()
     assert "Drill time missing for well(s):\n\tWELL2, WELL4" in err
-    assert not pathlib.Path("output.json").exists()
+    assert not Path("output.json").exists()

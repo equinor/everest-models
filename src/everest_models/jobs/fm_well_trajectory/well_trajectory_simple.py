@@ -1,5 +1,5 @@
 import logging
-import pathlib
+from pathlib import Path
 from typing import Dict, Iterable, Iterator, Optional, Tuple
 
 import numpy as np
@@ -72,14 +72,14 @@ def _compute_well_trajectory(
 def well_trajectory_simple(
     wells: Iterable[WellConfig],
     interpolation: InterpolationConfig,
-    npv_input_file: Optional[pathlib.Path],
+    npv_input_file: Optional[Path],
     guide_points: Dict[str, Trajectory],
 ) -> None:
     points = _compute_well_trajectory(wells, interpolation, guide_points)
     logger.info("Writing interpolation results to 'well_geometry.txt;")
     write_wicalc(
         results=points,
-        path=pathlib.Path("well_geometry.txt"),
+        path=Path("well_geometry.txt"),
         wells={well.name: well for well in wells},
     )
     logger.info("Writing ResInsight files")
@@ -90,6 +90,6 @@ def well_trajectory_simple(
         write_well_costs(costs, npv_input_file)
     logger.info("Writing PATH files")
     write_path_files(
-        (pathlib.Path(f"PATH_{well}").with_suffix(".txt"), trajectory)
+        (Path(f"PATH_{well}").with_suffix(".txt"), trajectory)
         for well, trajectory in points.items()
     )

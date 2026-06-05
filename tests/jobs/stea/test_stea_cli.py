@@ -1,6 +1,6 @@
 import importlib
 import os
-import pathlib
+from pathlib import Path
 
 import pytest
 from stea import SteaInput, SteaKeys, SteaResult
@@ -14,7 +14,7 @@ def test_import_stea():
 
 
 def calculate_patch(*args, **kwargs):
-    stea_input = SteaInput(pathlib.Path("stea_input.yml"))
+    stea_input = SteaInput(Path("stea_input.yml"))
     return SteaResult(
         {
             SteaKeys.KEY_VALUES: [
@@ -45,4 +45,4 @@ def test_stea_lint(copy_testdata_tmpdir, stea_args):
         main_entry_point([*stea_args, "--lint"])
 
     assert e.value.code == 0
-    assert not tuple(pathlib.Path().glob("*_0"))
+    assert not tuple(Path().glob("*_0"))
