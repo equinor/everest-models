@@ -71,7 +71,7 @@ jobs:
           sudo update-alternatives --auto gcc
       - name: Use CMake
         if: steps.cache-package.outputs.cache-hit != 'true'
-        uses: lukka/get-cmake@591817e96fcad43505fb4eae36172462abb3a42e # v4.3.3
+        uses: lukka/get-cmake@f5b8fbb4d77cec1acc5a5f9f0df4beffaf5d98d9 # v4.3.4
         with:
           cmakeVersion: "~3.26.0"
       - name: Clone ResInsight
