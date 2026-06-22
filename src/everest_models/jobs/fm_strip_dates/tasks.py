@@ -30,7 +30,7 @@ def strip_dates(
     shutil.copy(f"{base_path}.{SPEC_EXTENSION}", f"{base_path}_BAK.{SPEC_EXTENSION}")
 
     ecl_file = ResdataFile(temp_path)
-    fort_io = FortIO(summary_path, mode=2)
+    fort_io = FortIO(summary_path, mode=FortIO.WRITE_MODE)
 
     valid_date = True
     date_inx = 0
