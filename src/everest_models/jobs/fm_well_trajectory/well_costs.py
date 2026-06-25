@@ -1,6 +1,6 @@
 import logging
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Dict, Iterable
 
 import pandas as pd
 
@@ -29,7 +29,7 @@ def _read_well_length(well: str) -> float:
     )
 
 
-def compute_well_costs(wells: Iterable[WellConfig]) -> Dict[str, float]:
+def compute_well_costs(wells: Iterable[WellConfig]) -> dict[str, float]:
     """Update well costs based on well length"""
 
     return {

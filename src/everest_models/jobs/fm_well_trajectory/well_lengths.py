@@ -1,6 +1,6 @@
 import logging
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Dict, Iterable
 
 import pandas as pd
 
@@ -29,6 +29,6 @@ def _read_well_length(well: str) -> float:
     )
 
 
-def compute_well_lengths(wells: Iterable[WellConfig]) -> Dict[str, float]:
+def compute_well_lengths(wells: Iterable[WellConfig]) -> dict[str, float]:
     """Compute well lengths in km based on deviation files"""
     return {well.name: _read_well_length(well.name) / 1000.0 for well in wells}

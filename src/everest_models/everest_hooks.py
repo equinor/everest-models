@@ -6,10 +6,11 @@ to expose its functions
 """
 
 import logging
+from collections.abc import Sequence
 from importlib import import_module
 from importlib.resources import files
 from pathlib import Path
-from typing import Any, Dict, List, Sequence, Type
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -33,7 +34,7 @@ def _get_jobs():
 
 
 @hookimpl
-def get_forward_models_schemas() -> Dict[str, Dict[str, Type[BaseModel]]]:
+def get_forward_models_schemas() -> dict[str, dict[str, type[BaseModel]]]:
     """Accumulate all forward model jobs and schemas.
 
     group schemas by the name of forward models,
@@ -60,7 +61,7 @@ def get_forward_models_schemas() -> Dict[str, Dict[str, Type[BaseModel]]]:
 
 
 @hookimpl
-def parse_forward_model_schema(path: str, schema: Type[BaseModel]) -> BaseModel:
+def parse_forward_model_schema(path: str, schema: type[BaseModel]) -> BaseModel:
     """Parse given filepath by the provided schema model.
 
     Args:
@@ -78,7 +79,7 @@ def parse_forward_model_schema(path: str, schema: Type[BaseModel]) -> BaseModel:
 
 
 @hookimpl
-def lint_forward_model(job: str, args: Sequence[str]) -> List[str]:
+def lint_forward_model(job: str, args: Sequence[str]) -> list[str]:
     """Execute job in lint mode with the given arguments.
 
     Make sure there is no command in args {run, schema, lint}
@@ -95,8 +96,8 @@ def lint_forward_model(job: str, args: Sequence[str]) -> List[str]:
 
 
 @hookimpl
-def get_forward_model_documentations() -> Dict[str, Any]:
-    docs: Dict[str, Any] = {}
+def get_forward_model_documentations() -> dict[str, Any]:
+    docs: dict[str, Any] = {}
     for job in _get_jobs():
         cmd_name = job
         full_job_name = getattr(
@@ -112,7 +113,7 @@ def get_forward_model_documentations() -> Dict[str, Any]:
 
 
 @hookimpl
-def check_forward_model_arguments(forward_model_steps: List[str]) -> None:
+def check_forward_model_arguments(forward_model_steps: list[str]) -> None:
     for step in forward_model_steps:
         step_name, *args = step.split()
         if step_name in get_forward_models():

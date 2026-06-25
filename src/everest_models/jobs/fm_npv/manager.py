@@ -1,7 +1,8 @@
 import datetime
 import itertools
 import logging
-from typing import Callable, Dict, Iterable, Protocol, Tuple
+from collections.abc import Callable, Iterable
+from typing import Protocol
 
 from resdata.summary import Summary
 from resdata.util.util import TimeVector
@@ -73,7 +74,7 @@ class NPVCalculator:
         return npv / (1 + discount_rate) ** ((date - self.ref_date).days / 365.25)
 
     def _extract_costs(
-        self, well_dates: Dict[str, datetime.date], well_lengths: Dict[str, float]
+        self, well_dates: dict[str, datetime.date], well_lengths: dict[str, float]
     ) -> float:
         def get_costs():
             return itertools.chain(
@@ -130,7 +131,7 @@ class NPVCalculator:
             for index, date in enumerate(time_range[1:])
         )
 
-    def _get_dates(self) -> Tuple[datetime.date, datetime.date, datetime.date]:
+    def _get_dates(self) -> tuple[datetime.date, datetime.date, datetime.date]:
         return (
             (self.summary.start_date, self.summary.end_date, self.summary.start_date)
             if not self.config.dates
@@ -142,7 +143,7 @@ class NPVCalculator:
             )
         )
 
-    def _get_well_cost(self, well: WellCost, well_lengths: Dict[str, float]) -> float:
+    def _get_well_cost(self, well: WellCost, well_lengths: dict[str, float]) -> float:
         if well.value is not None:
             return well.value
         if well.value_per_km is not None:
@@ -153,7 +154,7 @@ class NPVCalculator:
         raise ValueError(f"No cost defined for this well `{well.well}`.")
 
     def compute(
-        self, well_dates: Dict[str, datetime.date], well_lengths: Dict[str, float]
+        self, well_dates: dict[str, datetime.date], well_lengths: dict[str, float]
     ) -> float:
         start_date, end_date, self.ref_date = self._get_dates()
         return round(

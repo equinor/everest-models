@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 import textwrap
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Annotated
 
 from pydantic import (
     AfterValidator,
@@ -13,7 +13,6 @@ from pydantic import (
     StringConstraints,
     model_validator,
 )
-from typing_extensions import Annotated
 
 from everest_models.jobs.shared.converters import path_to_str
 from everest_models.jobs.shared.models import ModelConfig, PhaseEnum
@@ -96,7 +95,7 @@ class DynamicDomainProperty(ModelConfig):
     min: Annotated[float, Field(description="Minimum value.", examples="0.5")]
     max: Annotated[float, Field(description="Maximum value.", examples="0.3")]
     date: Annotated[
-        Optional[datetime.date],
+        datetime.date | None,
         Field(
             default=None,
             description="Simulation date used for grid perforation filtering based on time dynamic grid flow simulation data.",
@@ -124,15 +123,15 @@ class PerforationConfig(ModelConfig):
         Field(description="Well name.", examples="PRD1"),
     ]
     dynamic: Annotated[
-        Tuple[DynamicDomainProperty, ...],
+        tuple[DynamicDomainProperty, ...],
         Field(default_factory=tuple, description=""),
     ]
     static: Annotated[
-        Tuple[StaticDomainProperty, ...],
+        tuple[StaticDomainProperty, ...],
         Field(default_factory=tuple, description=""),
     ]
     formations: Annotated[
-        Tuple[int, ...],
+        tuple[int, ...],
         Field(
             default_factory=tuple,
             description="List of indexes of formations (starting from 0) from formations file which will be accepted in filtering.",
@@ -157,7 +156,7 @@ class ConnectionConfig(ModelConfig):
             examples="/path/to/formations.lyr",
         ),
     ]
-    perforations: Annotated[Tuple[PerforationConfig, ...], Field(description="")]
+    perforations: Annotated[tuple[PerforationConfig, ...], Field(description="")]
 
     @model_validator(mode="after")
     def check_type(self) -> ConnectionConfig:
@@ -170,12 +169,10 @@ class ConnectionConfig(ModelConfig):
     def check_deprecated_field(cls, data):
         if "date" in data:
             raise ValueError(
-                (
-                    "The 'date' field is no longer allowed at this level.\n"
-                    "It is only required for dynamic perforations. "
-                    "Move it to each relevant dynamic perforation instead.\n"
-                    "Static perforations do not require a date and are read from the initial state."
-                )
+                "The 'date' field is no longer allowed at this level.\n"
+                "It is only required for dynamic perforations. "
+                "Move it to each relevant dynamic perforation instead.\n"
+                "Static perforations do not require a date and are read from the initial state."
             )
         return data
 
@@ -295,14 +292,14 @@ class ConfigSchema(ModelConfig):
         ),
     ]
     platforms: Annotated[
-        Tuple[PlatformConfig, ...],
+        tuple[PlatformConfig, ...],
         Field(
             default_factory=tuple,
             description="Configuration of the platforms.",
         ),
     ]
     wells: Annotated[
-        Tuple[WellConfig, ...],
+        tuple[WellConfig, ...],
         Field(
             description="Configuration of the wells.",
         ),

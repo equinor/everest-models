@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import datetime
 import logging
+from collections.abc import Iterable
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Dict, Iterable, Optional, Tuple, Union
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -52,7 +53,7 @@ def read_wells(
     project: rips.Project,
     well_path_folder: Path,
     well_names: Iterable[str],
-    connection: Optional[ConnectionConfig],
+    connection: ConnectionConfig | None,
 ) -> None:
     project.import_well_paths(
         well_path_files=[
@@ -137,7 +138,7 @@ def create_well(
 def create_branches(
     well_config: WellConfig,
     well_path: rips.ModeledWellPath,
-    mlt_guide_points: Dict[str, Tuple[float, Trajectory]],
+    mlt_guide_points: dict[str, tuple[float, Trajectory]],
     project: rips.Project,
 ) -> Any:
     if not _HAVE_RIPS:
@@ -166,9 +167,7 @@ def create_branches(
         intersection.update()
 
 
-def _find_time_step(
-    case: rips.Case, date: Optional[datetime.date] = None
-) -> Optional[int]:
+def _find_time_step(case: rips.Case, date: datetime.date | None = None) -> int | None:
     time_step_num = None
     time_steps = case.time_steps()
     for ts_idx, time_step in enumerate(time_steps):
@@ -183,7 +182,7 @@ def _find_time_step(
 
 
 def _create_tracks(
-    properties: Iterable[Union[DynamicDomainProperty, StaticDomainProperty]],
+    properties: Iterable[DynamicDomainProperty | StaticDomainProperty],
     property_type: str,
     case: rips.Case,
     well_path: rips.WellPath,
@@ -268,7 +267,7 @@ def create_well_logs(
 def _filter_properties(
     conditions: pd.Series,
     df: pd.DataFrame,
-    properties: Tuple[Union[DynamicDomainProperty, StaticDomainProperty], ...],
+    properties: tuple[DynamicDomainProperty | StaticDomainProperty, ...],
 ) -> pd.Series:
     for property in properties:
         if property.min is not None:
@@ -280,7 +279,7 @@ def _filter_properties(
 
 def _select_perforations(
     perforation: PerforationConfig, df: pd.DataFrame
-) -> Tuple[pd.Series, Optional[float]]:
+) -> tuple[pd.Series, float | None]:
     well_depth = df["DEPTH"].max()
     logger.info(f"Well total measured depth: {well_depth}")
 
@@ -369,7 +368,7 @@ def _apply_perforations(
     project: rips.Project,
     well_path_obj: rips.WellPath,
     perf_depths: pd.Series,
-    well_depth: Optional[float],
+    well_depth: float | None,
     well_cfg: WellConfig,
     export_filename: Path,
 ) -> None:
@@ -472,7 +471,7 @@ def _generate_welspecs(
     logger.info(f"Exporting well specs to: {export_filename}\ncwd = {Path.cwd()}")
 
     if export_filename.is_file():
-        with open(export_filename, "r") as file_obj:
+        with open(export_filename) as file_obj:
             lines = file_obj.readlines()
 
         with open(export_filename, "w") as file_obj:

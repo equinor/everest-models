@@ -1,5 +1,4 @@
 from functools import partial
-from typing import Dict, Tuple
 
 from everest_models.jobs.shared.parsers.action import SchemaAction
 
@@ -26,7 +25,7 @@ _LIMIT_ARGUMENT = "-il/--iteration-limit"
 SCHEMAS = {_CONFIG_ARGUMENT: ConfigSchema}
 
 
-def _clean_constraint(value: str) -> Dict[str, Tuple[float, ...]]:
+def _clean_constraint(value: str) -> dict[str, tuple[float, ...]]:
     return {key: tuple(value.values()) for key, value in load_json(value).items()}
 
 

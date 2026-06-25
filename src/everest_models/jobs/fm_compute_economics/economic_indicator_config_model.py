@@ -1,9 +1,8 @@
 import logging
 from pathlib import Path
-from typing import Any, Dict, Tuple
+from typing import Annotated, Any
 
 from pydantic import ConfigDict, Field, FilePath, NewPath, model_validator
-from typing_extensions import Annotated
 
 from everest_models.jobs.shared.currency import CURRENCY_CODES
 from everest_models.jobs.shared.models import ModelConfig
@@ -15,7 +14,7 @@ logger = logging.getLogger(__name__)
 class EclipseSummaryConfig(ModelConfig):
     main: Annotated[Path, Field(description="")]
     reference: Annotated[FilePath, Field(default=None, description="")]
-    keys: Annotated[Tuple[str, ...], Field(default_factory=tuple, description="")]
+    keys: Annotated[tuple[str, ...], Field(default_factory=tuple, description="")]
 
 
 class OutputConfig(ModelConfig):
@@ -23,13 +22,13 @@ class OutputConfig(ModelConfig):
     file: Annotated[NewPath, Field(description="")]
     currency: Annotated[str, Field(default=None, description="")]
     currency_rate: Annotated[
-        Tuple[CurrencyRate, ...], Field(default=None, description="")
+        tuple[CurrencyRate, ...], Field(default=None, description="")
     ]
 
 
 class OilEquivalentConversionConfig(ModelConfig):
-    oil: Annotated[Dict[str, float], Field(description="")]
-    remap: Annotated[Dict[str, Dict[str, float]], Field(default=None, description="")]
+    oil: Annotated[dict[str, float], Field(description="")]
+    remap: Annotated[dict[str, dict[str, float]], Field(default=None, description="")]
 
 
 class EconomicIndicatorConfig(EconomicConfig):
@@ -41,7 +40,7 @@ class EconomicIndicatorConfig(EconomicConfig):
     ]
 
     @model_validator(mode="before")
-    def populate_summary_keys(cls, values: Dict[str, Any]):
+    def populate_summary_keys(cls, values: dict[str, Any]):
         if isinstance(values["summary"], dict):
             if not ("keys" in values["summary"] and values["summary"]["keys"]):
                 values["summary"]["keys"] = tuple(values["prices"])

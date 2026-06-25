@@ -1,9 +1,9 @@
 from datetime import date
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Annotated, Any
 
 from pydantic import ConfigDict, Field, FilePath, PlainSerializer, model_validator
-from typing_extensions import Annotated, TypedDict
+from typing_extensions import TypedDict
 
 from everest_models.jobs.shared.converters import path_to_str
 
@@ -20,7 +20,7 @@ class Tokens(TypedDict, total=False):
 class OperationDict(TypedDict):
     date: date
     name: str
-    template: Optional[Path]
+    template: Path | None
     tokens: Tokens
 
 
@@ -49,7 +49,7 @@ class Operation(ModelConfig):
 
     @model_validator(mode="before")
     @classmethod
-    def no_extra_based_fields(cls, values: Dict[str, Any]) -> OperationDict:
+    def no_extra_based_fields(cls, values: dict[str, Any]) -> OperationDict:
         for key in filter(lambda x: x in values, ("phase", "rate")):
             values.setdefault("tokens", {})[key] = values.pop(key)
 

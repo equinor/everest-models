@@ -4,7 +4,6 @@ import logging
 import signal
 import sys
 from pathlib import Path
-from typing import Dict, Optional
 
 try:
     import rips  # ResInsight support is optional
@@ -74,8 +73,8 @@ def _save_paths(project_path: str, project: rips.Project, mds: float):
 def well_trajectory_resinsight(
     config: ConfigSchema,
     eclipse_model: Path,
-    guide_points: Dict[str, Trajectory],
-    project_path: Optional[Path] = None,
+    guide_points: dict[str, Trajectory],
+    project_path: Path | None = None,
 ) -> None:
     mlt_guide_points = {}
     if project_path is None:

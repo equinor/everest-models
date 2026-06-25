@@ -1,5 +1,6 @@
+from collections.abc import Callable, Iterator
 from copy import deepcopy
-from typing import Any, Callable, Dict, Iterator, Optional
+from typing import Any
 
 import pytest
 from jobs.compute_economics.parser import (
@@ -18,7 +19,7 @@ from everest_models.jobs.shared.validators import valid_input_file
 
 
 @pytest.fixture(scope="package")
-def economic_indicator_config(path_test_data) -> Dict[str, Any]:
+def economic_indicator_config(path_test_data) -> dict[str, Any]:
     return valid_input_file(path_test_data / TEST_DATA / "input_data.yml")
 
 
@@ -42,12 +43,12 @@ def get_summary_patch(monkeypatch):
 @pytest.fixture
 def modify_economic_config(
     economic_indicator_config,
-) -> Iterator[Callable[[Optional[str], Optional[str], bool], Dict[str, Any]]]:
+) -> Iterator[Callable[[str | None, str | None, bool], dict[str, Any]]]:
     def build_config(
-        wells_input: Optional[str] = None,
-        currency: Optional[str] = None,
+        wells_input: str | None = None,
+        currency: str | None = None,
         remove_well_costs: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         config = deepcopy(economic_indicator_config)
         if wells_input:
             config["wells_input"] = wells_input
@@ -63,8 +64,8 @@ def modify_economic_config(
 @pytest.fixture
 def build_economic_parser_patch(
     monkeypatch,
-) -> Iterator[Callable[[Dict[str, Any]], None]]:
-    def patch(config: Dict[str, Any], **kwargs) -> None:
+) -> Iterator[Callable[[dict[str, Any]], None]]:
+    def patch(config: dict[str, Any], **kwargs) -> None:
         monkeypatch.setattr(
             cli,
             "build_argument_parser",

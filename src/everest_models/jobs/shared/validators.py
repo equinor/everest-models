@@ -1,19 +1,17 @@
 import argparse
 import datetime
 from collections import Counter
-from collections.abc import Sized
+from collections.abc import Callable, Iterable, Sized
 from json import JSONDecodeError
 from os import W_OK, access
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, List, Type, TypeVar
+from typing import Any
 
 from pydantic import BaseModel, ValidationError, ValidationInfo
 from resdata.summary import Summary
 from ruamel.yaml.error import YAMLError
 
 from everest_models.jobs.shared.io_utils import load_supported_file_encoding
-
-T = TypeVar("T", bound=BaseModel)
 
 
 def is_writable_path(value: str) -> Path:
@@ -65,7 +63,7 @@ def valid_ecl_summary(file_path: str) -> Summary:
     """
     try:
         return Summary(file_path)
-    except (IOError, OSError) as e:
+    except OSError as e:
         raise argparse.ArgumentTypeError(
             f"Could not load eclipse summary from file: {file_path}"
         ) from e
@@ -159,7 +157,7 @@ def valid_input_file(value: str) -> Any:
         raise argparse.ArgumentTypeError(str(ve)) from ve
 
 
-def valid_optimizer(value: str) -> List[Dict[str, float]]:
+def valid_optimizer(value: str) -> list[dict[str, float]]:
     data = valid_input_file(value)
     index_counts = Counter(key for _value in data.values() for key in _value)
     if not all(count == len(data) for count in index_counts.values()):
@@ -231,7 +229,7 @@ def _prettify_validation_error_message(error: ValidationError) -> str:
     )
 
 
-def parse_file(value: str, schema: Type[T]) -> T:
+def parse_file[T: BaseModel](value: str, schema: type[T]) -> T:
     """Parse filepath content by given schema
 
     Args:

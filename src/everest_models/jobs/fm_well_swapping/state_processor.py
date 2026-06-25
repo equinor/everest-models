@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Iterable, Iterator
 from logging import getLogger
-from typing import Dict, Iterable, Iterator, List, Tuple
 
 from .models import Case, Quota, State, StateConfig
 from .state_machine import StateMachine
@@ -12,7 +12,7 @@ logger = getLogger("Well Swapping")
 class StateProcessor:
     @classmethod
     def from_state_config(
-        cls, state: StateConfig, cases: Tuple[Case, ...]
+        cls, state: StateConfig, cases: tuple[Case, ...]
     ) -> StateProcessor:
         return cls(
             state_machine=StateMachine.from_config(state),
@@ -20,11 +20,11 @@ class StateProcessor:
         )
 
     def __init__(
-        self, state_machine: StateMachine, initial_states: Dict[Case, State]
+        self, state_machine: StateMachine, initial_states: dict[Case, State]
     ) -> None:
         self._locked: bool = False
         self._machine: StateMachine = state_machine
-        self._history: Dict[Case, List[State]] = {
+        self._history: dict[Case, list[State]] = {
             subject: [state] for subject, state in initial_states.items()
         }
 
@@ -32,25 +32,25 @@ class StateProcessor:
     def is_locked(self) -> bool:
         return self._locked
 
-    def _recurse_state_hierarcy(
-        self, quotas: Dict[State, Quota], state: State, target: State
+    def _recurse_state_hierarchy(
+        self, quotas: dict[State, Quota], state: State, target: State
     ) -> State:
         if self._machine.is_possible_action(state, target) and quotas[target] > 0:
             return target
-        return self._recurse_state_hierarcy(
+        return self._recurse_state_hierarchy(
             quotas, *self._machine.next_possible_action(state, target)
         )
 
     def _state_toggler(
-        self, case: Case, target: State, quotas: Dict[State, Quota]
+        self, case: Case, target: State, quotas: dict[State, Quota]
     ) -> None:
         history = self._history[case]
-        state = self._recurse_state_hierarcy(quotas, history[-1], target)
+        state = self._recurse_state_hierarchy(quotas, history[-1], target)
         quotas[state] -= 1
         history.append(state)
 
     def process(
-        self, cases: Iterable[Case], target: State, quotas: Dict[State, Quota]
+        self, cases: Iterable[Case], target: State, quotas: dict[State, Quota]
     ) -> None:
         if not set(cases).issubset(self._history):
             raise ValueError("Case names must be a subset of initial state cases")
@@ -69,7 +69,7 @@ class StateProcessor:
                 self._locked = True
                 break
 
-    def latest_valid_states(self, index: int) -> Iterator[Tuple[Case, State]]:
+    def latest_valid_states(self, index: int) -> Iterator[tuple[Case, State]]:
         if not index and self._locked:
             raise RuntimeError(
                 "A state lock was found on the first iteration.\n"

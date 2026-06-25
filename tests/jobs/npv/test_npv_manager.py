@@ -1,6 +1,6 @@
 import copy
 import datetime
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 from jobs.npv.parser import ecl_summary_npv
@@ -40,7 +40,7 @@ WELL_LENGTHS = {
 
 
 def calculator_manager(
-    data: Dict[str, Any], summary, well_lengths: Dict[str, float] | None = None
+    data: dict[str, Any], summary, well_lengths: dict[str, float] | None = None
 ):
     if well_lengths:
         data = copy.deepcopy(data)

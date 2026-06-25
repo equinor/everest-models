@@ -1,7 +1,7 @@
 import functools
 import itertools
 import logging
-from typing import Dict, Iterable, List
+from collections.abc import Iterable
 
 from everest_models.jobs.fm_drill_planner.data import Event, Rig, Slot, WellPriority
 from everest_models.jobs.fm_drill_planner.data.validators import event_failed_conditions
@@ -27,9 +27,9 @@ class ScheduleError(Exception): ...
 class FieldManager:
     def __init__(
         self,
-        wells: Dict[str, WellPriority],
-        slots: Dict[str, Slot],
-        rigs: Dict[str, Rig],
+        wells: dict[str, WellPriority],
+        slots: dict[str, Slot],
+        rigs: dict[str, Rig],
         horizon: int,
     ) -> None:
         self._wells = wells
@@ -39,7 +39,7 @@ class FieldManager:
         self._greedy_schedule = get_greedy_drill_plan(wells, slots, rigs, horizon)
         self._optimize_schedule = []
 
-    def schedule(self) -> List[Event]:
+    def schedule(self) -> list[Event]:
         schedule = self._schedule()
         if failed_condition := "\t".join(
             event_failed_conditions(
@@ -51,7 +51,7 @@ class FieldManager:
             )
         return self._resolve_schedule_priorities(schedule)
 
-    def _resolve_schedule_priorities(self, schedule: Iterable[Event]) -> List[Event]:
+    def _resolve_schedule_priorities(self, schedule: Iterable[Event]) -> list[Event]:
         """
         The priorities are not hard constraints in the solvers, which they shouldn't be.
         Both implementations should prioritize the higher priority wells first.
@@ -83,7 +83,7 @@ class FieldManager:
             *[priority(prev, curr) for prev, curr in pairwise(sorted_schedule)],
         ]
 
-    def _schedule(self) -> List[Event]:
+    def _schedule(self) -> list[Event]:
         if self._greedy_schedule and self._optimize_schedule:
             return self._compare_schedules()
         return self._greedy_schedule

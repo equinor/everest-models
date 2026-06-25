@@ -1,4 +1,4 @@
-from typing import Any, Dict, Union
+from typing import Any, override
 
 from pydantic import (
     BaseModel,
@@ -7,7 +7,6 @@ from pydantic import (
     model_validator,
 )
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
-from typing_extensions import override
 
 from .introspective import build_yaml_structure, parse_annotation, parse_field_info
 
@@ -74,7 +73,7 @@ class ModelConfig(BaseModel):
     @classmethod
     def introspective_data(
         cls, minimal: bool, no_comment: bool = False
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Returns introspective data about the model fields.
 
@@ -121,7 +120,7 @@ class ModelConfig(BaseModel):
         }
 
     @classmethod
-    def commented_map(cls, minimal: bool) -> Union[CommentedMap, CommentedSeq]:
+    def commented_map(cls, minimal: bool) -> CommentedMap | CommentedSeq:
         """
         Recursively go through model fields and build an comment injected yaml object.
 

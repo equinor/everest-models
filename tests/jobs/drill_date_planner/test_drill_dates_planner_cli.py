@@ -1,7 +1,7 @@
 import json
 import sys
 from pathlib import Path
-from typing import Dict, NamedTuple, Tuple
+from typing import NamedTuple
 
 import pytest
 from sub_testdata import DRILL_DATE_PLANNER as TEST_DATA
@@ -16,7 +16,7 @@ def drill_date_planner_args():
     return ["--input", "wells.json", "-opt", "controls.json", "-o", "output.json"]
 
 
-def missing_controls() -> Dict[str, float]:
+def missing_controls() -> dict[str, float]:
     with open("controls.json") as fp:
         controls = json.load(fp)
     del controls["WELL2"]
@@ -50,8 +50,8 @@ def test_drill_date_planner_lint(drill_date_planner_args, copy_testdata_tmpdir) 
 
 class Options(NamedTuple):
     input: Wells
-    optimizer: Dict[str, float]
-    bounds: Tuple[float, float] = (0.1, 1.0)
+    optimizer: dict[str, float]
+    bounds: tuple[float, float] = (0.1, 1.0)
     max_days: int = 300
     output: Path = Path("output.json")
     lint: bool = False

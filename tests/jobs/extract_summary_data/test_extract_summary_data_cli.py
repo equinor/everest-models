@@ -51,7 +51,7 @@ def test_extract_summary_data_entry_point(
     expected_results = {"max": 10, "diff": 8}
     # check range calculations
     cli.main_entry_point(extract_summary_data_args_types)
-    with open(output_file, "r") as f:
+    with open(output_file) as f:
         result = float(f.readline())
 
     assert result == expected_results[extract_summary_data_args_types[-1]]
@@ -83,7 +83,7 @@ def test_extract_summary_data_entry_point_multiplier(
             "2.6",
         ]
     )
-    with open(output_file, "r") as f:
+    with open(output_file) as f:
         result = float(f.readline())
 
     assert result == 2.6 * expected_results[extract_summary_data_args_types[-1]]
@@ -104,7 +104,7 @@ def test_extract_summary_data_entry_point_default_type(
             "2000-01-26",
         ]
     )
-    with open(output_file, "r") as f:
+    with open(output_file) as f:
         result = float(f.readline())
 
     assert result == 8
@@ -125,7 +125,7 @@ def test_extract_summary_data_entry_point_single_date(
         ]
     )
     assert os.path.exists(output_file)
-    with open(output_file, "r") as f:
+    with open(output_file) as f:
         result = float(f.readline())
     expected_result = 8
     assert result == expected_result

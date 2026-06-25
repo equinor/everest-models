@@ -1,14 +1,13 @@
 import argparse
 import datetime
 import logging
-from typing import Optional
 
 from everest_models.jobs.shared.models import Wells
 
 logger = logging.getLogger(__name__)
 
 
-def get_well_number(options: argparse.Namespace) -> Optional[int]:
+def get_well_number(options: argparse.Namespace) -> int | None:
     """Collect well number from job session context
 
     Args:
@@ -28,8 +27,8 @@ def get_well_number(options: argparse.Namespace) -> Optional[int]:
 
 def select_wells(
     wells: Wells,
-    max_date: Optional[datetime.date],
-    number_of_wells: Optional[int],
+    max_date: datetime.date | None,
+    number_of_wells: int | None,
 ) -> None:
     """Select wells.
 

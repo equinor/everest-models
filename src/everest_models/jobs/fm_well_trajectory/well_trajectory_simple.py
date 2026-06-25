@@ -1,6 +1,6 @@
 import logging
+from collections.abc import Iterable, Iterator
 from pathlib import Path
-from typing import Dict, Iterable, Iterator, Optional, Tuple
 
 import numpy as np
 from numpy.typing import NDArray
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 def _check_kickoff_alignment(
-    wells: Iterable[WellConfig], trajectories: Dict[str, Trajectory]
+    wells: Iterable[WellConfig], trajectories: dict[str, Trajectory]
 ) -> None:
     if bad_alignments := ", ".join(
         well.name
@@ -43,8 +43,8 @@ def _check_kickoff_alignment(
 def _generate_coordinates_dogleg(
     wells: Iterable[WellConfig],
     interpolation: InterpolationConfig,
-    trajectories: Dict[str, Trajectory],
-) -> Iterator[Tuple[str, Trajectory, NDArray[np.float64]]]:
+    trajectories: dict[str, Trajectory],
+) -> Iterator[tuple[str, Trajectory, NDArray[np.float64]]]:
     for well in wells:
         trajectory = trajectories[well.name]
         for _ in range(interpolation.trial_number):
@@ -65,8 +65,8 @@ def _generate_coordinates_dogleg(
 def _compute_well_trajectory(
     wells: Iterable[WellConfig],
     interpolation: InterpolationConfig,
-    trajectories: Dict[str, Trajectory],
-) -> Dict[str, CalculatedTrajectory]:
+    trajectories: dict[str, Trajectory],
+) -> dict[str, CalculatedTrajectory]:
     _check_kickoff_alignment(wells, trajectories)
     return {
         well: CalculatedTrajectory(coordinates, dogleg, *compute_geometry(coordinates))
@@ -79,9 +79,9 @@ def _compute_well_trajectory(
 def well_trajectory_simple(
     wells: Iterable[WellConfig],
     interpolation: InterpolationConfig,
-    npv_input_file: Optional[Path],
-    wells_file: Optional[Path],
-    guide_points: Dict[str, Trajectory],
+    npv_input_file: Path | None,
+    wells_file: Path | None,
+    guide_points: dict[str, Trajectory],
 ) -> None:
     points = _compute_well_trajectory(wells, interpolation, guide_points)
     logger.info("Writing interpolation results to 'well_geometry.txt;")

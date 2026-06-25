@@ -1,7 +1,6 @@
-from typing import Tuple, Union
+from typing import Annotated
 
 from pydantic import AfterValidator, Field
-from typing_extensions import Annotated
 
 from everest_models.jobs.shared.models import ModelConfig
 from everest_models.jobs.shared.validators import min_length
@@ -9,7 +8,7 @@ from everest_models.jobs.shared.validators import min_length
 
 class Constraint(ModelConfig):
     fallback_values: Annotated[
-        Union[Tuple[float, ...], float, None],
+        tuple[float, ...] | float | None,
         AfterValidator(min_length(1)),
         Field(
             default=None,

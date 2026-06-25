@@ -1,6 +1,6 @@
 import datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import pytest
 from pydantic import ValidationError
@@ -9,7 +9,7 @@ from everest_models.jobs.shared.models import Operation, PhaseEnum, Well, Wells
 
 
 @pytest.fixture(scope="module")
-def well_dict(path_test_data) -> List[Dict[str, Any]]:
+def well_dict(path_test_data) -> list[dict[str, Any]]:
     template_file = "add_tmpl/templates/template_{tmpl}.tmpl"
     return [
         {

@@ -1,9 +1,9 @@
 from inspect import isclass
 from pathlib import Path
-from typing import Any, Type
+from typing import Any
 
 
-def is_related(value: Any, typ: Type) -> bool:
+def is_related(value: Any, typ: type) -> bool:
     return issubclass(value, typ) if isclass(value) else isinstance(value, typ)
 
 

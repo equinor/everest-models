@@ -1,4 +1,3 @@
-import typing
 from pathlib import Path
 
 import pytest
@@ -8,7 +7,7 @@ from everest_models.jobs.fm_add_templates.cli import main_entry_point
 
 
 @pytest.fixture(scope="module")
-def add_template_args() -> typing.List[str]:
+def add_template_args() -> list[str]:
     return [
         "--config",
         "config.yml",

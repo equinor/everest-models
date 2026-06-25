@@ -140,6 +140,7 @@ select = [
     "RSE",
     "SIM",  # flake-8-simplify
     "SLOT",
+    "UP",  # pyupgrade
     "W",  # pycodestyle warnings
     "YTT"
 ]

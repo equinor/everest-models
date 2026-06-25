@@ -1,7 +1,7 @@
-from typing import Any, Dict, Protocol, Tuple
+from typing import Annotated, Any, Protocol
 
 from pydantic import ConfigDict, Field, FilePath, PlainSerializer, model_validator
-from typing_extensions import Annotated, TypedDict
+from typing_extensions import TypedDict
 
 from everest_models.jobs.shared.converters import path_to_str
 from everest_models.jobs.shared.models import ModelConfig, PhaseEnum, Tokens
@@ -36,7 +36,7 @@ class Template(ModelConfig):
 
     @model_validator(mode="before")
     @classmethod
-    def no_extra_based_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    def no_extra_based_fields(cls, values: dict[str, Any]) -> dict[str, Any]:
         validate_no_extra_fields("file", "keys", values=iter(values))
         return values
 
@@ -51,4 +51,4 @@ class Template(ModelConfig):
 
 
 class TemplateConfig(ModelConfig):
-    templates: Tuple[Template, ...]
+    templates: tuple[Template, ...]

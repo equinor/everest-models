@@ -1,7 +1,7 @@
 import datetime
 import sys
 from pathlib import Path
-from typing import NamedTuple, Optional
+from typing import NamedTuple
 
 from resdata.summary import Summary
 
@@ -44,14 +44,14 @@ def ecl_summary_npv(*args, **kwargs):
 
 class Options(NamedTuple):
     config: NPVConfig
-    input: Optional[Wells] = None
-    start_date: Optional[datetime.date] = None
-    end_date: Optional[datetime.date] = None
-    ref_date: Optional[datetime.date] = None
-    default_exchange_rate: Optional[float] = None
-    default_discount_rate: Optional[float] = None
-    schema: Optional[bool] = None
-    lint: Optional[bool] = None
+    input: Wells | None = None
+    start_date: datetime.date | None = None
+    end_date: datetime.date | None = None
+    ref_date: datetime.date | None = None
+    default_exchange_rate: float | None = None
+    default_discount_rate: float | None = None
+    schema: bool | None = None
+    lint: bool | None = None
     multiplier: float = 1.0
     summary: Summary = ecl_summary_npv()
     output: Path = Path("test")

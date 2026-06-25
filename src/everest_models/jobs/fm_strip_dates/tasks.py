@@ -2,7 +2,6 @@ import datetime
 import logging
 import os
 import shutil
-from typing import List
 
 from resdata.resfile import FortIO, ResdataFile
 
@@ -12,8 +11,8 @@ SPEC_EXTENSION = "SMSPEC"
 
 
 def strip_dates(
-    summary_dates: List[datetime.datetime],
-    dates: List[datetime.date],
+    summary_dates: list[datetime.datetime],
+    dates: list[datetime.date],
     summary_path: str,
 ):
     """Strip all other dates except the ones given from eclipse summary.

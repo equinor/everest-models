@@ -3,11 +3,10 @@ import os
 import re
 import subprocess
 from argparse import ArgumentParser, ArgumentTypeError
+from collections.abc import Sequence
 from importlib import resources
 from pathlib import Path
-from typing import List, Optional, Sequence, Tuple
-
-from typing_extensions import Final
+from typing import Final
 
 _FILEPATH: Final[Path] = Path(__file__)
 REFERENCE_DIR: Final[Path] = _FILEPATH.parent
@@ -42,7 +41,7 @@ def write_to_reference_docs(job: str, references_dir: Path) -> None:
             ).write_text(match.group("content") + "\n")
 
 
-def forward_models(models: Optional[List[str]]) -> Tuple[str, ...]:
+def forward_models(models: list[str] | None) -> tuple[str, ...]:
     """Get installed forward models from everest-models package resource.
 
     If no models given all installed forward models are return,
@@ -84,7 +83,7 @@ def build_argument_parser() -> ArgumentParser:
     return parser
 
 
-def main(args: Optional[Sequence[str]] = None) -> None:
+def main(args: Sequence[str] | None = None) -> None:
     args_parser = build_argument_parser()
     options = args_parser.parse_args(args)
     for job in forward_models(options.forward_models):

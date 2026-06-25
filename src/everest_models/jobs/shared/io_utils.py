@@ -1,17 +1,17 @@
 import json
 import linecache
 from pathlib import Path
-from typing import Any, Optional, TextIO, Union
+from typing import Any, TextIO
 
 from ruamel.yaml import YAML, YAMLError
 
 
-def load_json(path: Union[Path, str]):
+def load_json(path: Path | str):
     with Path(path).open("r", encoding="utf-8") as fd:
         return json.load(fd)
 
 
-def load_yaml(path: Union[Path, str]):
+def load_yaml(path: Path | str):
     path = Path(path)
     try:
         return YAML(typ="safe", pure=True).load(path.read_bytes())
@@ -46,7 +46,7 @@ def dump_yaml(
     data: dict,
     fp: TextIO,
     explicit: bool = False,
-    default_flow_style: Optional[bool] = None,
+    default_flow_style: bool | None = None,
 ):
     _yaml = YAML()
     _yaml.default_flow_style = default_flow_style

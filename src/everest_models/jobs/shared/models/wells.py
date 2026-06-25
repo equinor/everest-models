@@ -1,9 +1,9 @@
+from collections.abc import Iterator
 from datetime import date
 from pathlib import Path
-from typing import Any, Dict, Iterator, Tuple
+from typing import Annotated, Any
 
 from pydantic import ConfigDict, Field, model_validator
-from typing_extensions import Annotated
 
 from .base_config import ModelConfig, RootModelConfig
 from .operation import Operation
@@ -21,7 +21,7 @@ class Well(ModelConfig):
     completion_date: Annotated[date, Field(None, description="")]
     drill_time: Annotated[int, Field(None, description="")]
     name: Annotated[str, Field(frozen=True, description="Well name")]
-    operations: Annotated[Tuple[Operation, ...], Field(**OPERATIONS_FIELD_ATTRIBUTE)]
+    operations: Annotated[tuple[Operation, ...], Field(**OPERATIONS_FIELD_ATTRIBUTE)]
     readydate: Annotated[date, Field(None, description="")]
     length: Annotated[float | None, Field(None, description="Well length in km")]
 
@@ -29,7 +29,7 @@ class Well(ModelConfig):
         return hash(self.name)
 
     @property
-    def missing_templates(self) -> Iterator[Tuple[str, date]]:
+    def missing_templates(self) -> Iterator[tuple[str, date]]:
         return (
             (operation.opname, operation.date)
             for operation in self.operations
@@ -38,7 +38,7 @@ class Well(ModelConfig):
 
 
 class Wells(RootModelConfig):
-    root: Tuple[Well, ...]
+    root: tuple[Well, ...]
 
     model_config = ConfigDict(frozen=False)
 
@@ -48,7 +48,7 @@ class Wells(RootModelConfig):
     def __getitem__(self, item: int):
         return self.root[item]
 
-    def to_dict(self) -> Dict[str, Well]:
+    def to_dict(self) -> dict[str, Well]:
         return {well.name: well for well in self}
 
     def json_dump(self, output: Path) -> None:

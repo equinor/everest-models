@@ -1,7 +1,8 @@
+from collections.abc import Sequence
 from enum import Enum
 from io import StringIO
 from textwrap import dedent
-from typing import Any, List, Optional, Sequence, Set, Tuple, Type, Union
+from typing import Any
 
 import pytest
 from hypothesis import given
@@ -158,12 +159,12 @@ def test_builtin_datatypes_with_enum():
     "typ, expected",
     (
         pytest.param(Sequence[int], "[integer]", id="sequence"),
-        pytest.param(Union[int, float], "integer or number", id="union"),
-        pytest.param(Optional[int], "integer", id="optional"),
-        pytest.param(Set[int], "unique values [integer]", id="set"),
-        pytest.param(List[str], "[string]", id="list"),
-        pytest.param(Tuple[int, int], "[integer, integer]", id="tuple"),
+        pytest.param(int | float, "integer or number", id="union"),
+        pytest.param(int | None, "integer", id="optional"),
+        pytest.param(set[int], "unique values [integer]", id="set"),
+        pytest.param(list[str], "[string]", id="list"),
+        pytest.param(tuple[int, int], "[integer, integer]", id="tuple"),
     ),
 )
-def test_builtin_datatypes_with_sequence(typ: Type, expected: str):
+def test_builtin_datatypes_with_sequence(typ: type, expected: str):
     assert builtin_datatypes(typ) == expected

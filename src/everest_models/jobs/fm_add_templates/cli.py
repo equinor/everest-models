@@ -1,6 +1,6 @@
 import collections
 import logging
-from typing import Iterable
+from collections.abc import Iterable
 
 from everest_models.jobs.shared.converters import path_to_str
 from everest_models.jobs.shared.models import Well
