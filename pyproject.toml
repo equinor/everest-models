@@ -8,13 +8,12 @@ name = "everest-models"
 description = "Module containing a collection of forward models for everest"
 readme = "README.md"
 license = {text = "GPL-3.0"}
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 authors = [
     {name="Equinor ASA"},
 ]
 classifiers = [
     "Programming language :: Python",
-    "Programming language :: Python :: 3.11",
     "Programming language :: Python :: 3.12",
     "Programming language :: Python :: 3.13",
 ]
