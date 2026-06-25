@@ -1,16 +1,16 @@
-from typing import Iterable, List, Tuple
+from collections.abc import Iterable
+from typing import Self
 
 import numpy as np
 import pandas as pd
-from typing_extensions import Self, TypeAlias
 
 from .models import State, StateConfig
 
-Action: TypeAlias = Tuple[State, State]
+type Action = tuple[State, State]
 
 
 def _build_state_matrix(
-    states: List[State], actions: Iterable[Action], forbiden: bool, inaction: bool
+    states: list[State], actions: Iterable[Action], forbiden: bool, inaction: bool
 ) -> pd.DataFrame:
     size = len(states)
     data = (np.ones if forbiden or not actions else np.zeros)((size, size), dtype=int)
@@ -26,7 +26,7 @@ class StateMachine:
 
     def __init__(
         self,
-        states: List[State],
+        states: list[State],
         actions: Iterable[Action],
         forbiden: bool,
         inaction: bool,

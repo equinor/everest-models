@@ -1,13 +1,13 @@
-from typing import Dict, Iterator, Optional, Tuple, overload
+from collections.abc import Iterator
+from typing import Annotated, overload
 
 from pydantic import Field, field_validator, model_validator
-from typing_extensions import Annotated
 
 from everest_models.jobs.shared.models import ModelConfig, PhaseEnum, RootModelConfig
 
 
 class Phase(ModelConfig):
-    options: Annotated[Tuple[PhaseEnum, ...], Field(default=None, description="")]
+    options: Annotated[tuple[PhaseEnum, ...], Field(default=None, description="")]
     value: Annotated[PhaseEnum, Field(default=None, description="")]
 
     @field_validator("options")
@@ -47,7 +47,7 @@ class Phase(ModelConfig):
 class Tolerance(ModelConfig):
     value: Annotated[float | None, Field(default=None, description="")]
 
-    def optimum_value(self, optimizer_value: Optional[float]) -> float:
+    def optimum_value(self, optimizer_value: float | None) -> float:
         if optimizer_value is not None:
             return optimizer_value
         return self.value
@@ -60,22 +60,22 @@ class Constraints(ModelConfig):
 
 
 class WellConstraintConfig(RootModelConfig):
-    root: Dict[str, Dict[int, Constraints]]
+    root: dict[str, dict[int, Constraints]]
 
     def __iter__(self) -> Iterator[str]:  # type: ignore
         return iter(self.root)
 
     @overload
-    def get(self, __key: str) -> Dict[int, Constraints]: ...
+    def get(self, __key: str) -> dict[int, Constraints]: ...
 
     @overload
     def get(
-        self, __key: str, __default: Dict[int, Constraints]
-    ) -> Dict[int, Constraints]: ...
+        self, __key: str, __default: dict[int, Constraints]
+    ) -> dict[int, Constraints]: ...
 
     def get(
-        self, __key: str, __default: Optional[Dict[int, Constraints]] = None
-    ) -> Optional[Dict[int, Constraints]]:
+        self, __key: str, __default: dict[int, Constraints] | None = None
+    ) -> dict[int, Constraints] | None:
         if __default is None:
             return self.root.get(__key)
         return self.root.get(__key, __default)

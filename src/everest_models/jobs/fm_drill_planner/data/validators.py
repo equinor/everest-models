@@ -1,5 +1,5 @@
 import itertools
-from typing import Dict, Iterable, Tuple
+from collections.abc import Iterable
 
 from everest_models.jobs.fm_drill_planner.data._data import (
     Event,
@@ -11,9 +11,9 @@ from everest_models.jobs.fm_drill_planner.data._data import (
 
 def event_failed_conditions(
     schedule: Iterable[Event],
-    wells: Dict[str, WellPriority],
-    slots: Dict[str, Slot],
-    rigs: Dict[str, Rig],
+    wells: dict[str, WellPriority],
+    slots: dict[str, Slot],
+    rigs: dict[str, Rig],
     horizon: int,
 ) -> bool:
     return (
@@ -37,7 +37,7 @@ def event_failed_conditions(
 
 
 def _is_event_available(
-    begin: int, end: int, unavailable_range: Iterable[Tuple[int, int]]
+    begin: int, end: int, unavailable_range: Iterable[tuple[int, int]]
 ) -> bool:
     return any(range.end >= begin and range.begin <= end for range in unavailable_range)
 
@@ -72,7 +72,7 @@ def is_slots_at_most_once(schedule: Iterable[Event], slots: Iterable[str]) -> bo
     return all(sum(event.slot == slot for event in schedule) <= 1 for slot in slots)
 
 
-def is_rig_available(schedule: Iterable[Event], rigs: Dict[str, Rig]) -> bool:
+def is_rig_available(schedule: Iterable[Event], rigs: dict[str, Rig]) -> bool:
     return not any(
         _is_event_available(event.begin, event.end, rig.day_ranges)
         for event in schedule
@@ -81,7 +81,7 @@ def is_rig_available(schedule: Iterable[Event], rigs: Dict[str, Rig]) -> bool:
     )
 
 
-def is_slot_available(schedule: Iterable[Event], slots: Dict[str, Slot]) -> bool:
+def is_slot_available(schedule: Iterable[Event], slots: dict[str, Slot]) -> bool:
     return not any(
         _is_event_available(event.begin, event.end, slot.day_ranges)
         for event in schedule
@@ -91,13 +91,13 @@ def is_slot_available(schedule: Iterable[Event], slots: Dict[str, Slot]) -> bool
 
 
 def can_be_drilled(
-    well: str, rig: str, slot: str, rigs: Dict[str, Rig], slots: Dict[str, Slot]
+    well: str, rig: str, slot: str, rigs: dict[str, Rig], slots: dict[str, Slot]
 ) -> bool:
     return (slot, well) in rigs[rig].slot_well_product and well in slots[slot].wells
 
 
 def can_event_be_drilled(
-    schedule: Iterable[Event], rigs: Dict[str, Rig], slots: Dict[str, Slot]
+    schedule: Iterable[Event], rigs: dict[str, Rig], slots: dict[str, Slot]
 ) -> bool:
     return all(
         can_be_drilled(event.well, event.rig, event.slot, rigs, slots)
@@ -118,7 +118,7 @@ def no_rig_overlaps(schedule: Iterable[Event], rigs: Iterable[str]) -> bool:
 
 
 def is_drill_time_valid(
-    schedule: Iterable[Event], wells: Dict[str, WellPriority]
+    schedule: Iterable[Event], wells: dict[str, WellPriority]
 ) -> bool:
     def _is_valid_time(event: Event) -> bool:
         return (well := wells.get(event.well)) and event.drill_time == well.drill_time

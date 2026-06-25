@@ -1,11 +1,11 @@
 from importlib import resources
 from importlib.util import find_spec
-from typing import Final, List, Type
+from typing import Final
 
 _HAVE_ERT: Final = find_spec("ert") is not None
 
 
-def get_forward_models() -> List[str]:
+def get_forward_models() -> list[str]:
     """Return the list of forward model names."""
     return [
         job.name[3:]
@@ -18,7 +18,7 @@ if _HAVE_ERT:  # The everest-models package should remain installable without ER
     import ert
     from ert import ForwardModelStepDocumentation, ForwardModelStepPlugin
 
-    def build_forward_model_step_plugin(fm_name: str) -> Type[ForwardModelStepPlugin]:
+    def build_forward_model_step_plugin(fm_name: str) -> type[ForwardModelStepPlugin]:
         class_name = "".join(x.capitalize() for x in fm_name.lower().split("_"))
         return type(
             class_name,

@@ -1,5 +1,4 @@
 from datetime import date, timedelta
-from typing import Dict
 
 from everest_models.jobs.fm_drill_planner.manager.field_manager import FieldManager
 from everest_models.jobs.fm_drill_planner.models.wells import Well
@@ -7,7 +6,7 @@ from everest_models.jobs.shared.models.wells import Operation
 
 
 def orchestrate_drill_schedule(
-    manager: FieldManager, wells: Dict[str, Well], start_date: date, time_limit: int
+    manager: FieldManager, wells: dict[str, Well], start_date: date, time_limit: int
 ) -> None:
     def date(days):
         return start_date + timedelta(days=int(days))

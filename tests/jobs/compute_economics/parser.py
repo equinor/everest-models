@@ -2,7 +2,7 @@ import datetime
 import sys
 from pathlib import Path
 from types import SimpleNamespace
-from typing import NamedTuple, Optional
+from typing import NamedTuple
 
 from resdata.summary import Summary
 
@@ -122,16 +122,16 @@ def oil_equivalent_bep(*args, **kwargs):
 class Options(NamedTuple):
     calculation: str
     config: EconomicIndicatorConfig
-    start_date: Optional[datetime.date] = None
-    end_date: Optional[datetime.date] = None
-    ref_date: Optional[datetime.date] = None
-    default_exchange_rate: Optional[float] = None
-    default_discount_rate: Optional[float] = None
-    multiplier: Optional[float] = 1.0
-    schema: Optional[bool] = None
-    lint: Optional[bool] = None
+    start_date: datetime.date | None = None
+    end_date: datetime.date | None = None
+    ref_date: datetime.date | None = None
+    default_exchange_rate: float | None = None
+    default_discount_rate: float | None = None
+    multiplier: float | None = 1.0
+    schema: bool | None = None
+    lint: bool | None = None
     output: Path = Path("test")
-    output_currency: Optional[str] = None
+    output_currency: str | None = None
 
 
 class MockParser:

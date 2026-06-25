@@ -1,7 +1,7 @@
+from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
-from typing import Dict, Iterator, Optional, Tuple
 
 from .operation import Tokens
 
@@ -10,18 +10,18 @@ from .operation import Tokens
 class Operation:
     date: date
     tokens: Tokens
-    template: Optional[Path] = None
+    template: Path | None = None
 
 
 @dataclass
 class Well:
-    operations: Dict[str, Operation]
-    readydate: Optional[date] = None
-    completion_date: Optional[date] = None
-    drill_time: Optional[int] = None
+    operations: dict[str, Operation]
+    readydate: date | None = None
+    completion_date: date | None = None
+    drill_time: int | None = None
 
     @property
-    def missing_templates(self) -> Iterator[Tuple[str, date]]:
+    def missing_templates(self) -> Iterator[tuple[str, date]]:
         return (
             (operation_name, operation.date)
             for operation_name, operation in self.operations.items()

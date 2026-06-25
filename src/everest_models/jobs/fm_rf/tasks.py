@@ -1,6 +1,5 @@
 import datetime
 import logging
-from typing import Tuple
 
 from resdata.summary import Summary
 
@@ -12,7 +11,7 @@ def _evaluate_dates(
     user_end_date: datetime.date,
     ecl_start_date: datetime.date,
     ecl_end_date: datetime.date,
-) -> Tuple[datetime.date, datetime.date]:
+) -> tuple[datetime.date, datetime.date]:
     start_date = user_start_date or ecl_start_date
     end_date = user_end_date or ecl_end_date
 

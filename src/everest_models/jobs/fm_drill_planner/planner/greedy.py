@@ -2,7 +2,7 @@ import copy
 import itertools
 import logging
 from itertools import product
-from typing import TYPE_CHECKING, Dict, List
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -90,11 +90,11 @@ def _get_next_event(wells, slots, rigs, horizon, **kwargs):
 
 
 def _valid_events(
-    wells: Dict[str, WellPriority],
-    slots: Dict[str, Slot],
-    rigs: Dict[str, Rig],
+    wells: dict[str, WellPriority],
+    slots: dict[str, Slot],
+    rigs: dict[str, Rig],
     horizon: int,
-) -> List[Event]:
+) -> list[Event]:
     """
     Applies various constraints to return only valid events
     """
@@ -158,9 +158,9 @@ def _next_best_event(events, wells, well_slots):
 
 def _remove_event_from_config(
     event,
-    wells: Dict[str, WellPriority],
-    slots: Dict[str, Slot],
-    rigs: Dict[str, Rig],
+    wells: dict[str, WellPriority],
+    slots: dict[str, Slot],
+    rigs: dict[str, Rig],
     **kwargs,
 ):
     wells.pop(event.well)
@@ -168,7 +168,7 @@ def _remove_event_from_config(
     rigs[event.rig].append_day_range(event.begin, event.end)
 
 
-def _get_greedy_drill_plan(schedule, wells, **config) -> List[Event]:
+def _get_greedy_drill_plan(schedule, wells, **config) -> list[Event]:
     if not wells:
         return schedule
 
@@ -182,11 +182,11 @@ def _get_greedy_drill_plan(schedule, wells, **config) -> List[Event]:
 
 
 def get_greedy_drill_plan(
-    wells: Dict[str, WellPriority],
-    slots: Dict[str, Slot],
-    rigs: Dict[str, Rig],
+    wells: dict[str, WellPriority],
+    slots: dict[str, Slot],
+    rigs: dict[str, Rig],
     horizon: int,
-) -> List[Event]:
+) -> list[Event]:
     """Recursively build a well order schedule with parameters' copy.
 
     if wells is empty return schedule

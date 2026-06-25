@@ -1,10 +1,10 @@
+from collections.abc import Iterable
 from datetime import date
 from functools import cached_property
 from textwrap import dedent
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Annotated
 
 from pydantic import Field, FilePath
-from typing_extensions import Annotated
 
 from everest_models.jobs.shared.models import ModelConfig
 from everest_models.jobs.shared.models import Wells as Cases
@@ -16,7 +16,7 @@ from .state import Case, State, StateConfig
 
 class Priorities(ModelConfig):
     fallback_values: Annotated[
-        Dict[Case, List[float]],
+        dict[Case, list[float]],
         Field(
             default=None,
             description=dedent(
@@ -35,11 +35,11 @@ class Priorities(ModelConfig):
     ]
 
     @property
-    def cases(self) -> Tuple[Case, ...]:
+    def cases(self) -> tuple[Case, ...]:
         return tuple(self.fallback_values) if self.fallback_values else ()
 
     @cached_property
-    def inverted(self) -> List[Dict[str, float]]:
+    def inverted(self) -> list[dict[str, float]]:
         if not (priorities := self.fallback_values):
             return []
 
@@ -104,14 +104,14 @@ class ConfigSchema(ModelConfig):
         ),
     ]
 
-    def cases(self) -> Optional[Cases]:
+    def cases(self) -> Cases | None:
         if not self.case_file:
             return None
         return parse_file(str(self.case_file), Cases)
 
     def initial_states(
-        self, cases: Iterable[Case], errors: List[str]
-    ) -> Dict[Case, State]:
+        self, cases: Iterable[Case], errors: list[str]
+    ) -> dict[Case, State]:
         """
         Generate initial states for the given cases.
 

@@ -21,10 +21,10 @@ def test_drill_plan_filter_entry(copy_testdata_tmpdir):
     args = ["--input", wells_file, "--keep", wells_filter_file, "--output", out_file]
     well_filter_entry(args)
 
-    with open(expected_out_file, "r") as f:
+    with open(expected_out_file) as f:
         expected_filter_output = json.load(f)
 
-    with open(out_file, "r") as f:
+    with open(out_file) as f:
         filter_output = json.load(f)
 
     assert expected_filter_output == filter_output

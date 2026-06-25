@@ -1,12 +1,11 @@
 from enum import Enum
 from io import StringIO
 from textwrap import dedent
-from typing import Any, Dict, Tuple
+from typing import Annotated, Any
 
 import pytest
 from pydantic import Field, FilePath, ValidationError
 from ruamel.yaml import YAML
-from typing_extensions import Annotated
 
 from everest_models.jobs.shared.models import ModelConfig, RootModelConfig
 
@@ -25,11 +24,11 @@ class User(ModelConfig):
 
 
 class UserSequence(RootModelConfig):
-    root: Tuple[User, ...]
+    root: tuple[User, ...]
 
 
 class DeepNested(RootModelConfig):
-    root: Dict[str, Dict[int, User]]
+    root: dict[str, dict[int, User]]
 
 
 class Wrapper(ModelConfig):
@@ -190,5 +189,5 @@ def test_base_config_check_for_ellipses() -> None:
         ),
     ),
 )
-def test_base_config_model(model: ModelConfig, expected: Dict[str, Any]) -> None:
+def test_base_config_model(model: ModelConfig, expected: dict[str, Any]) -> None:
     assert model.model_config == expected

@@ -1,9 +1,10 @@
 import os
 import shutil
 import sys
+from collections.abc import Callable, Iterator, Sequence
 from importlib.util import find_spec
 from pathlib import Path
-from typing import Any, Callable, Final, Iterator, Sequence
+from typing import Any, Final
 from unittest.mock import patch
 
 import pytest

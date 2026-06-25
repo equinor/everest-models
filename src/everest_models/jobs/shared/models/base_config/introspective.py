@@ -3,7 +3,8 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Literal, Optional, Union, get_args, get_origin
+from types import UnionType
+from typing import Any, Literal, Union, get_args, get_origin
 
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
@@ -21,8 +22,8 @@ PLACEHOLDER = "<REPLACE>"
 @dataclass
 class CommentedObject:
     value: Any
-    comment: Optional[str] = None
-    inline_comment: Optional[str] = None
+    comment: str | None = None
+    inline_comment: str | None = None
 
 
 def builtin_datatypes(value: Any) -> str:
@@ -59,7 +60,7 @@ def builtin_datatypes(value: Any) -> str:
         string = _join_non_empty(
             builtin_datatypes(arg) for arg in get_args(value) if arg is not Ellipsis
         )
-        if origin is Union:
+        if origin is Union or origin is UnionType:
             return string.rstrip(", ").replace(",", " or")
         if is_related(origin, set):
             return f"unique values [{string}]"

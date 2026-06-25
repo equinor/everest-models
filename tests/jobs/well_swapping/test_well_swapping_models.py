@@ -1,4 +1,4 @@
-from typing import Any, Dict, Tuple
+from typing import Any
 
 import pytest
 from pydantic import ValidationError
@@ -9,12 +9,12 @@ from everest_models.jobs.shared.io_utils import load_yaml
 
 
 @pytest.fixture(scope="module")
-def well_swap_config_data(path_test_data) -> Dict[str, Any]:
+def well_swap_config_data(path_test_data) -> dict[str, Any]:
     return load_yaml(path_test_data / TEST_DATA / "well_swap_config.yml")
 
 
 @pytest.fixture(scope="module")
-def well_swap_state_hierarchy() -> Tuple[Dict[str, str], ...]:
+def well_swap_state_hierarchy() -> tuple[dict[str, str], ...]:
     return {"label": "high"}, {"label": "middle"}, {"label": "low"}
 
 

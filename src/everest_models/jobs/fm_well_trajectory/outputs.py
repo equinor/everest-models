@@ -1,6 +1,6 @@
 import math
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Dict, Iterable, Tuple
 
 from everest_models.jobs.shared import io_utils as io
 
@@ -13,8 +13,8 @@ def join_float_values(*values) -> str:
 
 
 def write_wicalc(
-    wells: Dict[str, WellConfig],
-    results: Dict[str, CalculatedTrajectory],
+    wells: dict[str, WellConfig],
+    results: dict[str, CalculatedTrajectory],
     path: Path,
 ) -> None:
     with path.open("w", encoding="utf-8") as file_obj:
@@ -34,7 +34,7 @@ def write_wicalc(
         )
 
 
-def write_resinsight(results: Dict[str, CalculatedTrajectory]) -> None:
+def write_resinsight(results: dict[str, CalculatedTrajectory]) -> None:
     Path("wellpaths").mkdir(exist_ok=True)
     for well, result in results.items():
         with open(f"wellpaths/{well}.dev", "w", encoding="utf-8") as file_obj:
@@ -48,7 +48,7 @@ def write_resinsight(results: Dict[str, CalculatedTrajectory]) -> None:
             file_obj.write("-999\n")
 
 
-def write_path_files(results: Iterable[Tuple[Path, CalculatedTrajectory]]) -> None:
+def write_path_files(results: Iterable[tuple[Path, CalculatedTrajectory]]) -> None:
     def f180(a: float) -> float:
         return a * 180 / math.pi
 
@@ -68,7 +68,7 @@ def write_path_files(results: Iterable[Tuple[Path, CalculatedTrajectory]]) -> No
             )
 
 
-def write_guide_points(guide_points: Dict[str, Trajectory], filename: Path) -> None:
+def write_guide_points(guide_points: dict[str, Trajectory], filename: Path) -> None:
     io.dump_json(
         {
             well: [data.x.tolist(), data.y.tolist(), data.z.tolist()]
@@ -78,7 +78,7 @@ def write_guide_points(guide_points: Dict[str, Trajectory], filename: Path) -> N
     )
 
 
-def write_mlt_guide_points(guide_points: Dict[str, Trajectory], filename: Path) -> None:
+def write_mlt_guide_points(guide_points: dict[str, Trajectory], filename: Path) -> None:
     io.dump_json(
         {
             well: {
@@ -95,7 +95,7 @@ def write_mlt_guide_points(guide_points: Dict[str, Trajectory], filename: Path) 
     )
 
 
-def write_mlt_guide_md(guide_points: Dict[str, Trajectory], filename: Path) -> None:
+def write_mlt_guide_md(guide_points: dict[str, Trajectory], filename: Path) -> None:
     io.dump_json(
         {
             well: {branch: branch_data[0] for branch, branch_data in well_data.items()}
@@ -105,7 +105,7 @@ def write_mlt_guide_md(guide_points: Dict[str, Trajectory], filename: Path) -> N
     )
 
 
-def write_well_costs(costs: Dict[str, float], npv_file: Path) -> None:
+def write_well_costs(costs: dict[str, float], npv_file: Path) -> None:
     output = io.load_yaml(npv_file)
 
     for well_cost in (
@@ -117,7 +117,7 @@ def write_well_costs(costs: Dict[str, float], npv_file: Path) -> None:
         io.dump_yaml(output, fp, default_flow_style=False)
 
 
-def write_well_lengths(lengths: Dict[str, float], wells_file: Path) -> None:
+def write_well_lengths(lengths: dict[str, float], wells_file: Path) -> None:
     wells = io.load_json(wells_file)
     for well in wells:
         if well["name"] in lengths:

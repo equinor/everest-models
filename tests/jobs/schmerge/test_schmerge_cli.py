@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Tuple
 
 import pytest
 from sub_testdata import SCHMERGE as TEST_DATA
@@ -8,7 +7,7 @@ from everest_models.jobs.fm_schmerge.cli import main_entry_point
 
 
 @pytest.fixture(scope="module")
-def schmerge_args() -> Tuple[str, ...]:
+def schmerge_args() -> tuple[str, ...]:
     return (
         "--output",
         "out.sch",

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, NamedTuple
+from typing import NamedTuple
 
 import pytest
 from sub_testdata import INTERPRET_WELL_DRILL as TEST_DATA
@@ -35,7 +35,7 @@ def test_interpret_well_drill_lint(copy_testdata_tmpdir, interpret_well_drill_ar
 
 
 class Options(NamedTuple):
-    input: Dict[str, str]
+    input: dict[str, str]
     output: Path = Path("output.json")
 
 

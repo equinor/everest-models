@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, NamedTuple, Optional, Tuple, TypedDict
+from typing import Any, NamedTuple, TypedDict
 
 import pytest
 
@@ -15,15 +15,15 @@ from everest_models.jobs.shared.models import Wells
 
 
 class Constraints(TypedDict):
-    state_duration: Tuple[float, ...]
+    state_duration: tuple[float, ...]
 
 
 class Options(NamedTuple):
     config: ConfigSchema
-    cases: Optional[Wells] = None
-    priorities: Optional[List[Dict[str, float]]] = None
-    constraints: Optional[Constraints] = None
-    output: Optional[Path] = None
+    cases: Wells | None = None
+    priorities: list[dict[str, float]] | None = None
+    constraints: Constraints | None = None
+    output: Path | None = None
     lint: bool = False
     iteration_limit: int = 0
 
@@ -35,7 +35,7 @@ minimum_data = {
 cases = Wells.model_validate([{"name": "W1"}, {"name": "W2"}, {"name": "W3"}])
 
 
-def result(data: Dict[str, Any]) -> Data:
+def result(data: dict[str, Any]) -> Data:
     return Data(
         lint_only=False,
         start_date=date(2024, 6, 3),
@@ -217,7 +217,7 @@ def test_duration_to_dates() -> None:
     ),
 )
 def test_sorted_case_priorities(
-    value: List[Dict[str, float]], expected: Tuple[Tuple[str, ...]]
+    value: list[dict[str, float]], expected: tuple[tuple[str, ...]]
 ) -> None:
     assert sorted_case_priorities(value) == expected
 

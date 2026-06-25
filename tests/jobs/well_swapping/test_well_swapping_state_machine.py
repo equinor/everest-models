@@ -1,5 +1,5 @@
 from textwrap import dedent
-from typing import Any, Dict, Optional
+from typing import Any
 
 import pytest
 
@@ -98,7 +98,7 @@ from everest_models.jobs.fm_well_swapping.state_machine import State, StateMachi
         ),
     ),
 )
-def test_state_machine_from_config(data: Dict[str, Any], expected: str) -> None:
+def test_state_machine_from_config(data: dict[str, Any], expected: str) -> None:
     data["hierarchy"] = tuple({"label": state} for state in data["hierarchy"])
     state_machine = StateMachine.from_config(StateConfig.model_validate(data))
     assert isinstance(state_machine, StateMachine), (
@@ -120,7 +120,7 @@ def test_is_possible_action(
     well_swapping_state_machine: StateMachine,
     source: State,
     target: State,
-    expected: Optional[State],
+    expected: State | None,
 ) -> None:
     assert well_swapping_state_machine.is_possible_action(source, target) == expected, (
         "Should be able to check state matrix for executable action"

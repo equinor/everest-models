@@ -1,6 +1,6 @@
 import datetime
 import logging
-from typing import Dict, List, NamedTuple, TypedDict
+from typing import NamedTuple, TypedDict
 
 from everest_models.jobs.shared.models.wells import Operation
 
@@ -11,13 +11,13 @@ logger = logging.getLogger(__name__)
 
 
 class _RatePhase(TypedDict):
-    rate: Dict[int, float]
-    phase: Dict[int, float]
+    rate: dict[int, float]
+    phase: dict[int, float]
 
 
 class _Constraints(NamedTuple):
     rate_phase: _RatePhase
-    duration: Dict[int, float]
+    duration: dict[int, float]
 
 
 def constraint_by_well_name(
@@ -33,10 +33,10 @@ def constraint_by_well_name(
 
 
 def create_well_operations(
-    events: Dict[int, Constraints],
+    events: dict[int, Constraints],
     start_date: datetime.date,
     constraints: _Constraints,
-) -> List[Operation]:
+) -> list[Operation]:
     """Create Well Operation based on the constraints
 
     Args:

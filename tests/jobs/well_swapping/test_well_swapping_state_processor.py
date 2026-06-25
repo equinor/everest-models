@@ -1,6 +1,5 @@
 import logging
 from textwrap import dedent
-from typing import Dict
 
 import pytest
 
@@ -56,7 +55,7 @@ def test_locked_state_with_history(
 
 def test_process_bad_cases(
     well_swapping_state_processor: StateProcessor,
-    well_swapping_quotas: Dict[State, Quota],
+    well_swapping_quotas: dict[State, Quota],
 ) -> None:
     with pytest.raises(
         ValueError, match="Case names must be a subset of initial state cases"

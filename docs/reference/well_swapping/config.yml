@@ -48,11 +48,11 @@ priorities:
   #         .
   #         .
 
-  # Datatype: {string: [number]}
+  # Datatype: {Case: [number]}
   # Required: False
   # Default: null
   fallback_values:
-    <STRING>:
+    <CASE>:
       - <REPLACE>
 
 # First state swapping date, other initial swapping dates are determined by time duration of state swapping intervals through state_duration
@@ -93,7 +93,7 @@ state:
       # Available number of items that can be assigned to the state per swapping intervalTip: '_', (infinity) alias can be used to pad array
       # If you wish all iteration to infinity, then omit this field
       # Note: If a single integer is given, all state swapping intervals will be assigned the same quota
-      # Datatype: integer or [integer or _]
+      # Datatype: Quota or [Quota or _]
       # Examples: [_, 4, _, 2], 2
       # Required: False
       # Default: null
@@ -110,7 +110,7 @@ state:
   #         ITEM2: closed
   #         ITEM3: shut
 
-  # Datatype: {string: string} or string
+  # Datatype: {Case: State} or State
   # Required: False
   # Default: null
   initial: <REPLACE>
@@ -120,7 +120,7 @@ state:
   # this will assign the state with highest priority level in hierarchy as target state for the respective interval.
   # If you wish to initialize all values to default, then omit this optional field.then omit this field
   # Note: If a single string is entered, all intervals will have the target state assigned to the state given by that string.string
-  # Datatype: [string or _] or string
+  # Datatype: [State or _] or State
   # Examples: [_, sitting, _, standing], sitting
   # Required: False
   # Default: null
@@ -128,7 +128,7 @@ state:
 
   # List of directional (source → target) state update actions.
   # Note: action context is set with the 'forbiden_actions' field
-  # Datatype: [['string', 'string']]
+  # Datatype: [['State', 'State']]
   # Required: False
   # Default: null
   actions:

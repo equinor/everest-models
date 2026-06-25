@@ -1,6 +1,6 @@
 import itertools
 from dataclasses import dataclass, field
-from typing import List, NamedTuple, Tuple
+from typing import NamedTuple
 
 
 class WellPriority(NamedTuple):
@@ -20,15 +20,15 @@ class AppendMixin:
 
 @dataclass
 class Slot(AppendMixin):
-    wells: Tuple[str, ...]
-    day_ranges: List[DayRange] = field(default_factory=list)
+    wells: tuple[str, ...]
+    day_ranges: list[DayRange] = field(default_factory=list)
 
 
 @dataclass
 class Rig(AppendMixin):
-    wells: Tuple[str, ...]
-    slots: List[str] = field(default_factory=list)
-    day_ranges: List[DayRange] = field(default_factory=list)
+    wells: tuple[str, ...]
+    slots: list[str] = field(default_factory=list)
+    day_ranges: list[DayRange] = field(default_factory=list)
     delay: int = 0
 
     @property

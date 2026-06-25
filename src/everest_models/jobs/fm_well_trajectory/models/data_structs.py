@@ -1,4 +1,4 @@
-from typing import Dict, NamedTuple, Optional, Tuple
+from typing import NamedTuple
 
 import numpy as np
 from numpy.typing import NDArray
@@ -10,9 +10,9 @@ class Domain(NamedTuple):
 
 
 class Perforation(NamedTuple):
-    dynamic: Dict[str, Domain]
-    static: Dict[str, Domain]
-    formations: Tuple[int, ...]
+    dynamic: dict[str, Domain]
+    static: dict[str, Domain]
+    formations: tuple[int, ...]
 
 
 class Platform(NamedTuple):
@@ -29,11 +29,11 @@ class Well(NamedTuple):
     radius: float
     dogleg: float
     cost: float
-    platform: Optional[str] = None
+    platform: str | None = None
 
 
 class Geometry(NamedTuple):
-    deviation: Tuple[NDArray[np.float64], NDArray[np.float64]]
+    deviation: tuple[NDArray[np.float64], NDArray[np.float64]]
     inclination: NDArray[np.float64]
     azimuths: NDArray[np.float64]
     lengths: NDArray[np.float64]
@@ -48,7 +48,7 @@ class Trajectory(NamedTuple):
 class CalculatedTrajectory(NamedTuple):
     coordinates: Trajectory
     dogleg: NDArray[np.float64]
-    deviation: Tuple[NDArray[np.float64], NDArray[np.float64]]
+    deviation: tuple[NDArray[np.float64], NDArray[np.float64]]
     inclination: NDArray[np.float64]
     azimuth: NDArray[np.float64]
     length: NDArray[np.float64]

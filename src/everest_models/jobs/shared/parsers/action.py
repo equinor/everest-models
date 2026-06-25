@@ -1,15 +1,9 @@
 from argparse import Action, ArgumentParser, Namespace
+from collections.abc import Iterator
 from datetime import datetime
 from pathlib import Path
 from sys import stdout
-from typing import (
-    Any,
-    Dict,
-    Iterator,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import Any
 
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
@@ -31,7 +25,7 @@ def _get_filepath(base_name: str, no_overwrite: bool, minimal: bool) -> Path:
 
 def _model_specificactions(
     argument: str, model: ModelConfig, minimal: bool, no_comment: bool
-) -> Union[Dict[str, Any], CommentedSeq, CommentedMap]:
+) -> dict[str, Any] | CommentedSeq | CommentedMap:
     if no_comment:
         return model.introspective_data(minimal, no_comment)
 
@@ -46,12 +40,12 @@ class SchemaAction(Action):
     _models = {}
 
     @classmethod
-    def register_models(cls, models: Dict[str, Type[Model]]) -> None:
+    def register_models(cls, models: dict[str, type[Model]]) -> None:
         cls._models.update(models)
 
     def _specification_iterator(
         self, minimal: bool, no_comment: bool
-    ) -> Iterator[Tuple[str, ModelConfig, Union[CommentedSeq, CommentedMap]]]:
+    ) -> Iterator[tuple[str, ModelConfig, CommentedSeq | CommentedMap]]:
         return (
             (
                 argument.split("/")[-1].lstrip("-"),

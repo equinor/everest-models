@@ -1,33 +1,22 @@
 from argparse import Namespace
 from collections import defaultdict
+from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import dataclass
 from datetime import date, timedelta
 from itertools import accumulate, chain
 from logging import getLogger
 from pathlib import Path
-from typing import (
-    Any,
-    DefaultDict,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    TypeVar,
-)
+from typing import Any
 
 from everest_models.jobs.fm_well_swapping.models.state import StateConfig
 from everest_models.jobs.fm_well_swapping.parser import build_argument_parser
 from everest_models.jobs.shared.models import Operation
 from everest_models.jobs.shared.models import Well as CaseConfig
-from everest_models.jobs.shared.models import Wells as CasesConifg
+from everest_models.jobs.shared.models import Wells as CasesConfig
 
 from .models import Case, State
 from .state_processor import StateProcessor
 
-T = TypeVar("T", tuple, list)
 logger = getLogger("Well Swapping")
 
 
@@ -49,12 +38,12 @@ class Data:
     lint_only: bool
     start_date: date
     iterations: int
-    priorities: Tuple[Tuple[Case, ...], ...]
+    priorities: tuple[tuple[Case, ...], ...]
     state: StateConfig
-    cases: CasesConifg
-    output: Optional[Path]
-    state_duration: Tuple[float, ...]
-    errors: List[str]
+    cases: CasesConfig
+    output: Path | None
+    state_duration: tuple[float, ...]
+    errors: list[str]
 
 
 def clean_data(options: Namespace) -> Data:
@@ -77,7 +66,7 @@ def clean_data(options: Namespace) -> Data:
         options = parse_command_line_arguments()
         cleaned_data = clean_data(options)
     """
-    errors: List[str] = []
+    errors: list[str] = []
 
     def validate_exist(value: Any, argument: str):
         if not (value or options.lint) and hasattr(options, argument):
@@ -127,7 +116,7 @@ def clean_data(options: Namespace) -> Data:
 
 
 def clean_parsed_data(
-    args: Optional[Sequence[str]] = None, hook_call: bool = False
+    args: Sequence[str] | None = None, hook_call: bool = False
 ) -> Data:
     parser = build_argument_parser()
     options = parser.parse_args(args)
@@ -147,14 +136,14 @@ def clean_parsed_data(
 
 
 def sorted_case_priorities(
-    values: List[Dict[str, float]],
-) -> Tuple[Tuple[str, ...], ...]:
+    values: list[dict[str, float]],
+) -> tuple[tuple[str, ...], ...]:
     return tuple(tuple(sorted(index, key=index.get, reverse=True)) for index in values)  # type: ignore
 
 
 def inject_case_operations(
-    cases: Dict[str, CaseConfig],
-    params: Iterable[Tuple[date, Iterable[Tuple[Case, State]]]],
+    cases: dict[str, CaseConfig],
+    params: Iterable[tuple[date, Iterable[tuple[Case, State]]]],
 ) -> None:
     """Injects case operations into the provided cases based on the given parameters.
 
@@ -171,7 +160,7 @@ def inject_case_operations(
     operations into the respective case. Each operation is validated using the
     Operation model before being added to the case's operations list.
     """
-    cases_: DefaultDict[str, List[Operation]] = defaultdict(list)
+    cases_: defaultdict[str, list[Operation]] = defaultdict(list)
     for _date, states in params:
         for case, state in states:
             if case not in cases:
@@ -205,8 +194,8 @@ def duration_to_dates(durations: Sequence[int], start_date: date) -> Iterator[da
 
 
 def determine_index_states(
-    state: StateConfig, limit: int, priorities: Iterable[Tuple[Case, ...]]
-) -> Iterator[Iterator[Tuple[Case, State]]]:
+    state: StateConfig, limit: int, priorities: Iterable[tuple[Case, ...]]
+) -> Iterator[Iterator[tuple[Case, State]]]:
     case_names = tuple(set(chain.from_iterable(priorities)))
     processor = StateProcessor.from_state_config(state, case_names)
     for index, (cases, target, quotas) in enumerate(

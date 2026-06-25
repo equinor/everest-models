@@ -1,7 +1,8 @@
 import functools
 import itertools
 import logging
-from typing import Dict, Iterable, List, NamedTuple, Tuple
+from collections.abc import Iterable
+from typing import NamedTuple
 
 from ortools.sat.python import cp_model
 
@@ -18,7 +19,7 @@ class TaskType(NamedTuple):
     interval: cp_model.IntervalVar
 
 
-def _well_costs(wells: Iterable[str]) -> Dict[str, int]:
+def _well_costs(wells: Iterable[str]) -> dict[str, int]:
     """The difference between priorities of the wells can be quite small
     (e.g. W1: 0.83, W2: 0.84). We want to make sure that a lower priority
     well is only shifted prior to a higher priority well, if the higher
@@ -31,9 +32,9 @@ def _well_costs(wells: Iterable[str]) -> Dict[str, int]:
 class _DrillConstraints(cp_model.CpModel):
     def __init__(
         self,
-        wells: Dict[str, WellPriority],
-        rigs: Dict[str, Rig],
-        slots: Dict[str, Slot],
+        wells: dict[str, WellPriority],
+        rigs: dict[str, Rig],
+        slots: dict[str, Slot],
         horizon: int,
         best_guess_schedule: Iterable[Event] = None,
         *args,
@@ -60,7 +61,7 @@ class _DrillConstraints(cp_model.CpModel):
         self.objective = new_int_var("total_cost")
         self.single_wells_at_rig = self.create_single_rig_wells()
 
-    def create_single_rig_wells(self) -> Dict[str, Tuple[str, ...]]:
+    def create_single_rig_wells(self) -> dict[str, tuple[str, ...]]:
         """
         Sets up the self.single_rig_tasks property.
         for each rig, self.single_rig_tasks[rig] is the list of
@@ -72,7 +73,7 @@ class _DrillConstraints(cp_model.CpModel):
             for name, rig in self.rigs.items()
         }
 
-    def create_tasks(self) -> Dict[Tuple[str, str, str], TaskType]:
+    def create_tasks(self) -> dict[tuple[str, str, str], TaskType]:
         """
         There is a task associated with each well, rig, slot combination. The tasks
         will furthermore be used when setting constraints.
@@ -302,7 +303,7 @@ def _create_event_schedule(tasks, solution):
 def run_optimization(
     drill_constraint_model,
     max_time_seconds=3600,
-) -> List[Event]:
+) -> list[Event]:
     """Build a optimized list of events.
 
     Args:

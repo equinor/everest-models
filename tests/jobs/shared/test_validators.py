@@ -1,7 +1,6 @@
 import argparse
 import datetime
 from pathlib import Path
-from typing import Dict
 
 import pytest
 from hypothesis import given
@@ -88,7 +87,7 @@ class ModelA(ModelConfig):
 
 
 class ModelC(RootModelConfig):
-    root: Dict[str, ModelA]
+    root: dict[str, ModelA]
 
 
 def test_parse_file_error(switch_cwd_tmp_path):

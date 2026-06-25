@@ -1,7 +1,8 @@
 import itertools
 import logging
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Dict, Final, Iterable, NamedTuple, Optional, Tuple
+from typing import Any, Final, NamedTuple
 
 import numpy as np
 
@@ -26,7 +27,7 @@ class _Point(NamedTuple):
     z: float
 
 
-def _read_files(*args: str) -> Dict[str, Any]:
+def _read_files(*args: str) -> dict[str, Any]:
     return {
         filename: (load_json(Path(filename).with_suffix(".json")))
         for filename in args
@@ -36,7 +37,7 @@ def _read_files(*args: str) -> Dict[str, Any]:
 
 def _get_point_for_well(
     point_files: Iterable[str],
-    input_files: Dict[str, Any],
+    input_files: dict[str, Any],
     well_name: str,
 ) -> _Point:
     px, py, pz = (input_files[item][well_name] for item in point_files)
@@ -49,7 +50,7 @@ def _get_point_for_well(
 
 def _construct_midpoint(
     a: float, b: float, c: float, p1: _Point, p3: _Point
-) -> Tuple[float, float, float]:
+) -> tuple[float, float, float]:
     return _Point(
         x=b * (p3.y - p1.y) + a * (p3.x - p1.x) + p1.x,
         y=b * (p1.x - p3.x) + a * (p3.y - p1.y) + p1.y,
@@ -59,9 +60,9 @@ def _construct_midpoint(
 
 def _read_trajectory(
     well: WellConfig,
-    platform_config: Optional[PlatformConfig],
-    point_files: Dict[str, Any],
-    optimized_platform_loc: Dict[str, Dict[str, Optional[float]]],
+    platform_config: PlatformConfig | None,
+    point_files: dict[str, Any],
+    optimized_platform_loc: dict[str, dict[str, float | None]],
 ) -> Trajectory:
     p1 = _get_point_for_well(P1, point_files, well.name)
     p3 = _get_point_for_well(P3, point_files, well.name)
@@ -102,7 +103,7 @@ def _read_trajectory(
 def read_trajectories(
     wells: Iterable[WellConfig],
     platforms: Iterable[PlatformConfig],
-) -> Dict[str, Trajectory]:
+) -> dict[str, Trajectory]:
     point_files = _read_files(*P1, *P2, *P3)
     missing_files = [
         point_file
@@ -138,7 +139,7 @@ def read_trajectories(
     }
 
 
-def _read_lateral_files(wells: Iterable[WellConfig]) -> Dict[str, Any]:
+def _read_lateral_files(wells: Iterable[WellConfig]) -> dict[str, Any]:
     lateral_files = _read_files(M1, *M2, *M3)
     if M1 not in lateral_files:
         return {}
@@ -184,8 +185,8 @@ def _read_lateral_files(wells: Iterable[WellConfig]) -> Dict[str, Any]:
 def _find_mlt_p1(
     well_name: str,
     branch: str,
-    lateral_files: Dict[str, Any],
-) -> Tuple[float, _Point]:
+    lateral_files: dict[str, Any],
+) -> tuple[float, _Point]:
     # Get the true depth:
     z = lateral_files[M1][well_name][branch]
 
@@ -214,8 +215,8 @@ def _find_mlt_p1(
 def _read_lateral(
     well_name: str,
     branch: str,
-    lateral_files: Dict[str, Any],
-) -> Tuple[float, Trajectory]:
+    lateral_files: dict[str, Any],
+) -> tuple[float, Trajectory]:
     # Find the first point of the branch:
     md, mlt_p1 = _find_mlt_p1(well_name, branch, lateral_files)
 
@@ -239,7 +240,7 @@ def _read_lateral(
 
 def read_laterals(
     wells: Iterable[WellConfig],
-) -> Dict[str, Dict[str, Tuple[float, Trajectory]]]:
+) -> dict[str, dict[str, tuple[float, Trajectory]]]:
     lateral_files = _read_lateral_files(wells)
     return (
         {
@@ -256,9 +257,9 @@ def read_laterals(
 
 def _map_optimized_platform_locations(
     platforms: list[PlatformConfig],
-    platform_files: Dict[str, Any],
+    platform_files: dict[str, Any],
     wells: Iterable[WellConfig],
-) -> Dict[str, Dict[str, Optional[float]]]:
+) -> dict[str, dict[str, float | None]]:
     """
     Create a mapping of platform names to their optimized attributes (x, y, k).
       optimized_loc[name] = {"x": float|None, "y": float|None, "k": float|None}
@@ -291,7 +292,7 @@ def _map_optimized_platform_locations(
 
     all_names = fixed_platform_names | well_platform_names | optimized_platform_names
 
-    optimized_loc: Dict[str, Dict[str, Optional[float]]] = {}
+    optimized_loc: dict[str, dict[str, float | None]] = {}
     for name in all_names:
         optimized_loc[name] = {
             "x": platform_files.get("platform_x", {}).get(name),
@@ -302,11 +303,11 @@ def _map_optimized_platform_locations(
 
 
 def _resolve_platform_coordinates(
-    platform_name: Optional[str],
-    platform_config: Optional[PlatformConfig],
-    optimized_platform_loc: Dict[str, Dict[str, Optional[float]]],
-    fallback_xy: Tuple[float, float],
-) -> Tuple[Optional[float], Optional[float], Optional[float]]:
+    platform_name: str | None,
+    platform_config: PlatformConfig | None,
+    optimized_platform_loc: dict[str, dict[str, float | None]],
+    fallback_xy: tuple[float, float],
+) -> tuple[float | None, float | None, float | None]:
     """
     Resolve (x, y, k) for a platform with precedence:
       1) optimized value if present (opt_val)
@@ -324,10 +325,10 @@ def _resolve_platform_coordinates(
 
     def _resolve_platform_coordinate(
         attr: str,
-        opt_val: Optional[float],
-        cfg_val: Optional[float],
-        fallback: Optional[float],
-    ) -> Optional[float]:
+        opt_val: float | None,
+        cfg_val: float | None,
+        fallback: float | None,
+    ) -> float | None:
         if opt_val is not None and cfg_val is not None:
             msg = (
                 f"Platform '{platform_name}': attribute '{attr}' is specified both as an "

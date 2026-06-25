@@ -1,6 +1,6 @@
 import datetime
 import itertools
-from typing import Any, Dict, List
+from typing import Any
 
 from everest_models.jobs.fm_drill_planner.data import DayRange, Rig, Slot, WellPriority
 from everest_models.jobs.fm_drill_planner.manager.field_manager import FieldManager
@@ -13,8 +13,8 @@ class FieldManagerBuilder:
 
     def _reset(self) -> None:
         self._manager: FieldManager = None
-        self._attributes: Dict[str, Any] = {}
-        self._errors: List[str] = []
+        self._attributes: dict[str, Any] = {}
+        self._errors: list[str] = []
 
     @property
     def manager(self) -> FieldManager:
@@ -27,7 +27,7 @@ class FieldManagerBuilder:
             raise AttributeError(f"Missing FieldManager Attribute(s):\n\t{missing}")
 
     def parse_well_priority(
-        self, wells: Wells, optimizer: Dict[str, int]
+        self, wells: Wells, optimizer: dict[str, int]
     ) -> "FieldManagerBuilder":
         self._attributes.setdefault(
             "wells",
@@ -139,7 +139,7 @@ class FieldManagerBuilder:
 def get_field_manager(
     config: DrillPlanConfig,
     wells: Wells,
-    optimizer: Dict[str, int],
+    optimizer: dict[str, int],
     ignore_end_date: bool,
     skip_creation: bool,
 ) -> FieldManager:

@@ -1,4 +1,5 @@
-from typing import Dict, Iterator, Optional, TypedDict, overload
+from collections.abc import Iterator
+from typing import TypedDict, overload
 
 from pydantic import field_validator
 
@@ -13,20 +14,20 @@ class Control(RootModelConfig):
     Second layer key is an integer that represent the optimizer_value index
     """
 
-    root: Dict[str, Dict[int, float]]
+    root: dict[str, dict[int, float]]
 
     def __iter__(self) -> Iterator[str]:  # type: ignore
         return iter(self.root)
 
     @overload
-    def get(self, __key: str) -> Dict[int, float]: ...
+    def get(self, __key: str) -> dict[int, float]: ...
 
     @overload
-    def get(self, __key: str, __default: Dict[int, float]) -> Dict[int, float]: ...
+    def get(self, __key: str, __default: dict[int, float]) -> dict[int, float]: ...
 
     def get(
-        self, __key: str, __default: Optional[Dict[int, float]] = None
-    ) -> Optional[Dict[int, float]]:
+        self, __key: str, __default: dict[int, float] | None = None
+    ) -> dict[int, float] | None:
         if __default is None:
             return self.root.get(__key)
         return self.root.get(__key, __default)

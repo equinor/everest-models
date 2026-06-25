@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from .tasks import (
     clean_parsed_data,
@@ -133,7 +133,7 @@ These controls result in an EVEREST-generated JSON file with the following conte
 """
 
 
-def main_entry_point(args: Optional[Sequence[str]] = None):
+def main_entry_point(args: Sequence[str] | None = None):
     data = clean_parsed_data(args)
     inject_case_operations(
         data.cases.to_dict(),

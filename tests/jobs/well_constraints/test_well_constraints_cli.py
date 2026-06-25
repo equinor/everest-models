@@ -1,5 +1,4 @@
 import json
-import typing
 from functools import partial
 from pathlib import Path
 
@@ -16,7 +15,7 @@ from everest_models.jobs.fm_well_constraints.models import (
 
 
 @pytest.fixture(scope="module")
-def well_constraints_args() -> typing.List[str]:
+def well_constraints_args() -> list[str]:
     return [
         "--output",
         "well_constraint_output.json",

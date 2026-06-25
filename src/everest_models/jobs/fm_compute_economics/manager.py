@@ -2,8 +2,9 @@ import datetime
 import itertools
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import Callable, Iterable
 from functools import partial
-from typing import Any, Callable, Dict, Iterable, Optional, Protocol, Tuple, Union
+from typing import Any, Protocol
 
 from resdata.summary import Summary
 from resdata.util.util import TimeVector
@@ -49,7 +50,7 @@ def _get_ref_date(summary_start_date: datetime.date, start_date: datetime.date):
 
 def _get_blocked_production(
     ctx: Production, keys: Iterable[str], time_range: TimeVector
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     partial(ctx.blocked_production, timeRange=time_range)
     return {keyword: ctx.blocked_production(keyword, time_range) for keyword in keys}
 
@@ -61,7 +62,7 @@ class EclipseSummary:
         self.keys = self.get_keys(config.summary.keys)
 
     @property
-    def dates(self) -> Tuple[Any, Any, Any]:
+    def dates(self) -> tuple[Any, Any, Any]:
         if self.main is None:
             return (None, None, None)
         return (self.main.start_date, self.main.end_date, self.main.time_range)
@@ -69,17 +70,17 @@ class EclipseSummary:
     @staticmethod
     def _get_keywords(
         summary_keys: Iterable[str], func: Callable[[str], bool]
-    ) -> Tuple[str, ...]:
+    ) -> tuple[str, ...]:
         if all(missing_keys := [func(key) for key in summary_keys]):
             raise AttributeError(
                 f"Missing required data ({list(itertools.compress(summary_keys, missing_keys))}) in summary file."
             )
         return tuple(summary_keys)
 
-    def get_summary(self, filepath: Union[str, None]) -> Union[Summary, None]:
+    def get_summary(self, filepath: str | None) -> Summary | None:
         return Summary(str(filepath)) if filepath else None
 
-    def get_keys(self, config_keys: Tuple[str, ...]) -> Tuple[str, ...]:
+    def get_keys(self, config_keys: tuple[str, ...]) -> tuple[str, ...]:
         main_keywords = self._get_keywords(
             config_keys, lambda key: not self.main.has_key(key)
         )
@@ -128,7 +129,7 @@ class EconomicIndicatorCalculatorABC(ABC):
         )
 
     def _get_exchange_rate(
-        self, date: datetime.date, currency: Optional[str] = None
+        self, date: datetime.date, currency: str | None = None
     ) -> float:
         to_output = self._get_output_exchange_rate(date)
         if currency is None:
@@ -150,7 +151,7 @@ class EconomicIndicatorCalculatorABC(ABC):
             (date - self.ref_date).days / 365.25
         )
 
-    def _get_dates(self) -> Tuple[datetime.date, datetime.date, datetime.date]:
+    def _get_dates(self) -> tuple[datetime.date, datetime.date, datetime.date]:
         start, end, _ = self.summary.dates
         return (
             (start, end, start)
@@ -163,7 +164,7 @@ class EconomicIndicatorCalculatorABC(ABC):
             )
         )
 
-    def _extract_discounted_costs(self, well_dates: Dict[str, datetime.date]) -> float:
+    def _extract_discounted_costs(self, well_dates: dict[str, datetime.date]) -> float:
         def get_costs():
             return itertools.chain(
                 (
@@ -191,19 +192,19 @@ class EconomicIndicatorCalculatorABC(ABC):
     @abstractmethod
     def _compute(
         self,
-        well_dates: Dict[str, datetime.date],
+        well_dates: dict[str, datetime.date],
         start: datetime.date,
         end: datetime.date,
     ) -> float:
         raise NotImplementedError
 
-    def compute(self, well_dates: Dict[str, datetime.date]) -> float:
+    def compute(self, well_dates: dict[str, datetime.date]) -> float:
         start, end, self.ref_date = self._get_dates()
         return round(self._compute(well_dates, start, end) * self.config.multiplier, 2)
 
 
 class NPVCalculator(EconomicIndicatorCalculatorABC):
-    def _get_price(self, date: datetime.date, keyword: str) -> Optional[float]:
+    def _get_price(self, date: datetime.date, keyword: str) -> float | None:
         if keyword not in self.config.prices:
             raise AttributeError(f"Price information missing for {keyword}")
 
@@ -233,7 +234,7 @@ class NPVCalculator(EconomicIndicatorCalculatorABC):
 
     def _compute(
         self,
-        well_dates: Dict[str, datetime.date],
+        well_dates: dict[str, datetime.date],
         start: datetime.date,
         end: datetime.date,
     ) -> float:
@@ -275,7 +276,7 @@ class BEPCalculator(EconomicIndicatorCalculatorABC):
 
     def _compute(
         self,
-        well_dates: Dict[str, datetime.date],
+        well_dates: dict[str, datetime.date],
         start: datetime.date,
         end: datetime.date,
     ) -> float:
@@ -292,7 +293,7 @@ INDICATORS = {"npv": NPVCalculator, "bep": BEPCalculator}
 
 def create_indicator(
     calculation: str, config: EconomicIndicatorConfig
-) -> Union[NPVCalculator, BEPCalculator]:
+) -> NPVCalculator | BEPCalculator:
     if calculation not in INDICATORS:
         raise ValueError(
             f"Invalid indicator: {calculation} ---  Select from {INDICATORS.keys()} "

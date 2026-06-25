@@ -1,7 +1,7 @@
 import itertools
 import logging
+from collections.abc import Iterator, Sequence
 from pathlib import Path
-from typing import Iterator, Sequence, Tuple
 
 from everest_models.jobs.shared.converters import path_to_str
 from everest_models.jobs.shared.models import Operation, Well
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def collect_matching(
     templates: Sequence[Template], wells: Sequence[Well]
-) -> Iterator[Tuple[str, Operation, Template]]:
+) -> Iterator[tuple[str, Operation, Template]]:
     """Collect data from template and well model, where template's keys and well's operation match.
 
     Args:

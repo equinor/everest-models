@@ -1,6 +1,5 @@
 import logging
 import math
-from typing import Optional
 
 import numpy as np
 from numpy.typing import NDArray
@@ -108,7 +107,7 @@ def compute_dogleg_severity(trajectory: Trajectory) -> NDArray[np.float64]:
 def try_fixing_dog_leg(
     step: float,
     trajectory: Trajectory,
-    s_trajectory: Optional[Trajectory],
+    s_trajectory: Trajectory | None,
     dogleg_severities: NDArray[np.float64],
 ) -> Trajectory:
     idx = _identify_most_violating_point(trajectory, s_trajectory, dogleg_severities)

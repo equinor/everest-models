@@ -1,10 +1,9 @@
 import argparse
 import functools
+from collections.abc import Callable
 from functools import partial
-from typing import Callable, Optional, Tuple, Type, TypeVar, Union
 
 from pydantic import BaseModel
-from typing_extensions import TypeAlias
 
 from .models import Wells
 from .parsers import SchemaAction
@@ -15,8 +14,7 @@ from .validators import (
     valid_input_file,
 )
 
-T = TypeVar("T", bound=BaseModel)
-Parser: TypeAlias = Union[argparse.ArgumentParser, argparse._ArgumentGroup]
+type Parser = argparse.ArgumentParser | argparse._ArgumentGroup
 
 
 class ArgumentDefaultsHelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
@@ -87,7 +85,7 @@ def add_file_schemas(parser: Parser) -> None:
 
 
 def add_summary_argument(
-    parser: Parser, *, func: Optional[Callable] = None, **kwargs
+    parser: Parser, *, func: Callable | None = None, **kwargs
 ) -> None:
     """Add summary argument to parser.
 
@@ -108,12 +106,12 @@ def add_summary_argument(
     )
 
 
-def add_wells_input_argument(
+def add_wells_input_argument[T: BaseModel](
     parser: Parser,
     *,
     required: bool = True,
-    schema: Type[T] = Wells,
-    arg: Tuple[str, str] = ("-i", "--input"),
+    schema: type[T] = Wells,
+    arg: tuple[str, str] = ("-i", "--input"),
     **kwargs,
 ) -> None:
     """Add wells argument to parser
@@ -155,7 +153,7 @@ def add_output_argument(parser: Parser, *, required: bool = True, **kwargs) -> N
     )
 
 
-def get_parser(**kwargs) -> Tuple[argparse.ArgumentParser, argparse._ArgumentGroup]:
+def get_parser(**kwargs) -> tuple[argparse.ArgumentParser, argparse._ArgumentGroup]:
     """Create a custom argument parser.
 
     - Add default argument values into help menu

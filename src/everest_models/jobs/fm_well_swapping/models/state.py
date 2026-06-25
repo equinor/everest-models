@@ -1,31 +1,19 @@
-from collections.abc import Collection, Sequence
+from collections.abc import Collection, Iterable, Iterator, Sequence
 from functools import cached_property
 from logging import getLogger
 from textwrap import dedent
-from typing import (
-    Any,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Literal,
-    NamedTuple,
-    Set,
-    Tuple,
-    Union,
-)
+from typing import Annotated, Any, Final, Literal, NamedTuple, Self
 
 from pydantic import AfterValidator, Field, model_validator
-from typing_extensions import Annotated, Final, Self, TypeAlias
 
 from everest_models.jobs.shared.models import ModelConfig
 from everest_models.jobs.shared.validators import min_length
 
 SINGLE_WORD: Final = r"^[a-zA-Z][_\-a-zA-Z0-9]*$"
 FILLER: Final = "_"
-State: TypeAlias = str
-Case: TypeAlias = str
-Quota: TypeAlias = int
+type State = str
+type Case = str
+type Quota = int
 logger = getLogger("Well Swapping")
 
 
@@ -35,7 +23,7 @@ def unique_values(values: Sequence) -> Sequence:
     return values
 
 
-def _states_are_viable(states: Any, hierarchy: Tuple[State, ...]) -> None:
+def _states_are_viable(states: Any, hierarchy: tuple[State, ...]) -> None:
     if isinstance(states, str):
         if states == FILLER:
             return
@@ -51,7 +39,7 @@ def _states_are_viable(states: Any, hierarchy: Tuple[State, ...]) -> None:
 
 
 def _all_states_accounted(
-    values: Set[State], hierarchy: Set[State], field: str
+    values: set[State], hierarchy: set[State], field: str
 ) -> None:
     if difference := ", ".join(values - hierarchy):
         raise ValueError(
@@ -60,7 +48,7 @@ def _all_states_accounted(
 
 
 def _field_states_accounted(
-    value: Collection, hierarchy: Set[State], field: str
+    value: Collection, hierarchy: set[State], field: str
 ) -> None:
     if isinstance(value, str) and value not in hierarchy:
         raise ValueError(f"{field} state {value} not in hierarchy")
@@ -78,7 +66,7 @@ class Action(NamedTuple):
 class StateHierarchy(ModelConfig):
     label: Annotated[str, Field(pattern=SINGLE_WORD, description="State label/name")]
     quotas: Annotated[
-        Union[Quota, Tuple[Union[Quota, Literal["_"]], ...]],
+        Quota | tuple[Quota | Literal["_"], ...],
         Field(
             default=None,
             description=(
@@ -91,7 +79,7 @@ class StateHierarchy(ModelConfig):
         ),
     ]
 
-    def get_quotas(self, iterations: int, cases: int) -> List[Quota]:
+    def get_quotas(self, iterations: int, cases: int) -> list[Quota]:
         if self.quotas is None:
             return [cases] * iterations
         if isinstance(self.quotas, int):
@@ -115,7 +103,7 @@ class StateHierarchy(ModelConfig):
 
 class StateConfig(ModelConfig):
     hierarchy: Annotated[
-        Tuple[StateHierarchy, ...],
+        tuple[StateHierarchy, ...],
         AfterValidator(unique_values),
         Field(
             min_length=2,
@@ -141,7 +129,7 @@ class StateConfig(ModelConfig):
         ),
     ]
     initial: Annotated[
-        Union[Dict[Case, State], State],
+        dict[Case, State] | State,
         AfterValidator(min_length(1)),
         Field(
             default=None,
@@ -162,7 +150,7 @@ class StateConfig(ModelConfig):
         ),
     ]
     targets: Annotated[
-        Union[Tuple[Union[State, Literal["_"]], ...], State],
+        tuple[State | Literal["_"], ...] | State,
         AfterValidator(min_length(1)),
         Field(
             default=None,
@@ -179,7 +167,7 @@ class StateConfig(ModelConfig):
         ),
     ]
     actions: Annotated[
-        Tuple[Action, ...],
+        tuple[Action, ...],
         AfterValidator(unique_values),
         Field(
             default=None,
@@ -214,7 +202,7 @@ class StateConfig(ModelConfig):
     ]
 
     @model_validator(mode="before")  # type: ignore
-    def set_empty_values(self) -> Dict[str, Any]:
+    def set_empty_values(self) -> dict[str, Any]:
         assert isinstance(self, dict)  # this is done for typechecker
         hierarchy = self.get("hierarchy", [{"label": None}])
         if self.get("initial") is None:
@@ -241,7 +229,7 @@ class StateConfig(ModelConfig):
         )
         return self
 
-    def get_initial(self, cases: Iterable[Case]) -> Dict[Case, State]:
+    def get_initial(self, cases: Iterable[Case]) -> dict[Case, State]:
         default = self.lowest_priority
         if self.initial is None:
             return dict.fromkeys(cases, default)
@@ -252,7 +240,7 @@ class StateConfig(ModelConfig):
 
         return {**dict.fromkeys(cases, default), **self.initial}
 
-    def get_targets(self, iterations: int) -> Tuple[State, ...]:
+    def get_targets(self, iterations: int) -> tuple[State, ...]:
         default = self.highest_priority
         if self.targets is None:
             return (default,) * iterations
@@ -263,7 +251,7 @@ class StateConfig(ModelConfig):
             targets += [default] * (iterations - len(self.targets))
         return tuple(targets[:iterations] if iterations < len(targets) else targets)
 
-    def get_quotas(self, iterations: int, cases: int) -> Iterator[Dict[State, Quota]]:
+    def get_quotas(self, iterations: int, cases: int) -> Iterator[dict[State, Quota]]:
         return (
             dict(zip((item.label for item in self.hierarchy), value, strict=False))
             for value in zip(
@@ -273,7 +261,7 @@ class StateConfig(ModelConfig):
         )
 
     @cached_property
-    def state_hierarchy(self) -> Tuple[State, ...]:
+    def state_hierarchy(self) -> tuple[State, ...]:
         return tuple(item.label for item in self.hierarchy)
 
     @property

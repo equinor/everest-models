@@ -1,8 +1,7 @@
 from datetime import date
-from typing import Dict, Optional, Self, Tuple
+from typing import Annotated, Self
 
 from pydantic import AfterValidator, ConfigDict, Field, model_validator
-from typing_extensions import Annotated
 
 from ..currency import currency_exist
 from .base_config import ModelConfig
@@ -64,7 +63,7 @@ class WellCost(ModelConfig):
 class EconomicConfig(ModelConfig):
     model_config = ConfigDict(frozen=False, validate_assignment=True)
 
-    prices: Annotated[Dict[str, Tuple[CurrencyRate, ...]], Field(description="")]
+    prices: Annotated[dict[str, tuple[CurrencyRate, ...]], Field(description="")]
     multiplier: Annotated[
         float,
         Field(default=1, description=""),
@@ -73,26 +72,26 @@ class EconomicConfig(ModelConfig):
     default_discount_rate: Annotated[float, Field(default=0.08, description="")]
     dates: Annotated[Dates, Field(default_factory=lambda: Dates(**{}), description="")]
     exchange_rates: Annotated[
-        Dict[str, Tuple[CurrencyRate, ...]], Field(default_factory=dict, description="")
+        dict[str, tuple[CurrencyRate, ...]], Field(default_factory=dict, description="")
     ]
     discount_rates: Annotated[
-        Tuple[CurrencyRate, ...], Field(default_factory=tuple, description="")
+        tuple[CurrencyRate, ...], Field(default_factory=tuple, description="")
     ]
     costs: Annotated[
-        Tuple[CurrencyRate, ...], Field(default_factory=tuple, description="")
+        tuple[CurrencyRate, ...], Field(default_factory=tuple, description="")
     ]
     well_costs: Annotated[
-        Tuple[WellCost, ...], Field(default_factory=tuple, description="")
+        tuple[WellCost, ...], Field(default_factory=tuple, description="")
     ]
 
     @property
-    def start_date(self) -> Optional[date]:
+    def start_date(self) -> date | None:
         return self.dates.start_date
 
     @property
-    def end_date(self) -> Optional[date]:
+    def end_date(self) -> date | None:
         return self.dates.end_date
 
     @property
-    def ref_date(self) -> Optional[date]:
+    def ref_date(self) -> date | None:
         return self.dates.ref_date

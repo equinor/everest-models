@@ -1,8 +1,7 @@
 from collections import defaultdict
-from typing import Tuple
+from typing import Annotated
 
 from pydantic import ConfigDict, Field, FilePath, PlainSerializer
-from typing_extensions import Annotated
 
 from everest_models.jobs.shared.converters import path_to_str
 from everest_models.jobs.shared.models import (
@@ -29,13 +28,13 @@ class _Well(Well):
     model_config = ConfigDict(title="Well")
 
     operations: Annotated[  # type: ignore
-        Tuple[_Operation, ...],
+        tuple[_Operation, ...],
         Field(**OPERATIONS_FIELD_ATTRIBUTE),
     ]
 
 
 class Wells(_Wells):
-    root: Tuple[_Well, ...]  # type: ignore
+    root: tuple[_Well, ...]  # type: ignore
 
     def dated_operations(self):
         operations_dict = defaultdict(list)
