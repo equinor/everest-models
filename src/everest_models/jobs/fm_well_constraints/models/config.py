@@ -47,7 +47,7 @@ class Phase(ModelConfig):
 class Tolerance(ModelConfig):
     value: Annotated[float | None, Field(default=None, description="")]
 
-    def optimum_value(self, optimizer_value: float | None) -> float:
+    def optimum_value(self, optimizer_value: float | None) -> float | None:
         if optimizer_value is not None:
             return optimizer_value
         return self.value

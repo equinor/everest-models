@@ -48,9 +48,7 @@ def _get_point_for_well(
     )
 
 
-def _construct_midpoint(
-    a: float, b: float, c: float, p1: _Point, p3: _Point
-) -> tuple[float, float, float]:
+def _construct_midpoint(a: float, b: float, c: float, p1: _Point, p3: _Point) -> _Point:
     return _Point(
         x=b * (p3.y - p1.y) + a * (p3.x - p1.x) + p1.x,
         y=b * (p1.x - p3.x) + a * (p3.y - p1.y) + p1.y,
@@ -191,7 +189,7 @@ def _find_mlt_p1(
     z = lateral_files[M1][well_name][branch]
 
     # Read the trajectory of the well, which must be available:
-    dev = np.genfromtxt(
+    dev: Any = np.genfromtxt(
         f"wellpaths/{well_name}.dev",
         dtype=np.float64,
         skip_header=1,
@@ -256,7 +254,7 @@ def read_laterals(
 
 
 def _map_optimized_platform_locations(
-    platforms: list[PlatformConfig],
+    platforms: Iterable[PlatformConfig],
     platform_files: dict[str, Any],
     wells: Iterable[WellConfig],
 ) -> dict[str, dict[str, float | None]]:
@@ -341,7 +339,7 @@ def _resolve_platform_coordinates(
             return float(opt_val)
         if cfg_val is not None:
             return float(cfg_val)
-        if attr in ("x", "y"):
+        if attr in ("x", "y") and fallback is not None:
             return float(fallback)
         return None
 

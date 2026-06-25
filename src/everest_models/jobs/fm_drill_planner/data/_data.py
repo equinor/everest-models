@@ -14,6 +14,8 @@ class DayRange(NamedTuple):
 
 
 class AppendMixin:
+    day_ranges: list[DayRange]
+
     def append_day_range(self, begin: int, end: int) -> None:
         self.day_ranges.append(DayRange(begin, end))
 
@@ -43,7 +45,7 @@ class Event:
     well: str
     begin: int
     end: int
-    completion: int = None
+    completion: int = None  # type: ignore[assignment]
 
     def __post_init__(self) -> None:
         if self.completion is None:

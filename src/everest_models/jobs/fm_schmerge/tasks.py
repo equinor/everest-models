@@ -3,15 +3,18 @@ import datetime
 import logging
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
 
 from jinja2 import Template
 
-from everest_models.jobs.shared.models import PhaseEnum
-
 logger = logging.getLogger(__name__)
 
-OperationParameter = dict[str, Path | PhaseEnum | float | str]
+
+class OperationParameter(TypedDict):
+    template: Path
+    template_map: dict[str, Any]
+
+
 OperationData = dict[datetime.datetime, list[OperationParameter]]
 MODIFY_COMMENT = "-- MODIFIED by schmerge forward model\n"
 ECLIPSE_DATE_REGEX = re.compile(

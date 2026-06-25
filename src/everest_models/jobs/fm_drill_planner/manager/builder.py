@@ -12,12 +12,12 @@ class FieldManagerBuilder:
         self._reset()
 
     def _reset(self) -> None:
-        self._manager: FieldManager = None
+        self._manager: FieldManager | None = None
         self._attributes: dict[str, Any] = {}
         self._errors: list[str] = []
 
     @property
-    def manager(self) -> FieldManager:
+    def manager(self) -> FieldManager | None:
         if manager := self._manager:
             self._reset()
         return manager
@@ -142,7 +142,7 @@ def get_field_manager(
     optimizer: dict[str, int],
     ignore_end_date: bool,
     skip_creation: bool,
-) -> FieldManager:
+) -> FieldManager | None:
     """Construct a parsed and valid FieldManager.
 
     Args:

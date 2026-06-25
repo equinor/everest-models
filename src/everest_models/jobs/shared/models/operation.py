@@ -1,6 +1,6 @@
 from datetime import date
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, cast
 
 from pydantic import ConfigDict, Field, FilePath, PlainSerializer, model_validator
 from typing_extensions import TypedDict
@@ -56,4 +56,4 @@ class Operation(ModelConfig):
         validate_no_extra_fields(
             "date", "opname", "template", "tokens", values=iter(values)
         )
-        return OperationDict(**values)
+        return cast("OperationDict", values)

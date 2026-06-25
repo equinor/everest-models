@@ -1,7 +1,8 @@
 import itertools
-from collections.abc import Iterable
+from collections.abc import Collection, Iterable, Iterator
 
 from everest_models.jobs.fm_drill_planner.data._data import (
+    DayRange,
     Event,
     Rig,
     Slot,
@@ -15,7 +16,7 @@ def event_failed_conditions(
     slots: dict[str, Slot],
     rigs: dict[str, Rig],
     horizon: int,
-) -> bool:
+) -> Iterator[str]:
     return (
         func.__name__.replace("_", " ")
         for func, parameters in (
@@ -37,7 +38,7 @@ def event_failed_conditions(
 
 
 def _is_event_available(
-    begin: int, end: int, unavailable_range: Iterable[tuple[int, int]]
+    begin: int, end: int, unavailable_range: Iterable[DayRange]
 ) -> bool:
     return any(range.end >= begin and range.begin <= end for range in unavailable_range)
 
@@ -55,7 +56,7 @@ def is_rig_subset(schedule: Iterable[Event], rigs: Iterable[str]) -> bool:
 
 
 def enough_slots(
-    _: Iterable[Event], wells: Iterable[str], slots: Iterable[str]
+    _: Iterable[Event], wells: Collection[str], slots: Collection[str]
 ) -> bool:
     return len(slots) >= len(wells)
 
@@ -121,6 +122,8 @@ def is_drill_time_valid(
     schedule: Iterable[Event], wells: dict[str, WellPriority]
 ) -> bool:
     def _is_valid_time(event: Event) -> bool:
-        return (well := wells.get(event.well)) and event.drill_time == well.drill_time
+        return (
+            well := wells.get(event.well)
+        ) is not None and event.drill_time == well.drill_time
 
     return all(_is_valid_time(event) for event in schedule)

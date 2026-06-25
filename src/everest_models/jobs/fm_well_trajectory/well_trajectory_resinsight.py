@@ -66,13 +66,13 @@ class ResInsight:
         self._instance.exit()
 
 
-def _save_project(project_path: str, project: rips.Project):
+def _save_project(project_path: Path, project: rips.Project):
     project_file = str(project_path / ".model.rsp")
     logger.info(f"Saving project to: {project_file}")
     project.save(project_file)
 
 
-def _save_paths(project_path: str, project: rips.Project, mds: float):
+def _save_paths(project_path: Path, project: rips.Project, mds: float):
     _save_project(project_path, project)
     logger.info(
         f"Calling 'export_well_paths' on the resinsight project\ncwd = {Path.cwd()}"
@@ -85,8 +85,8 @@ def well_trajectory_resinsight(
     eclipse_model: Path,
     guide_points: dict[str, Trajectory],
     project_path: Path | None = None,
-) -> None:
-    mlt_guide_points = {}
+) -> dict[str, dict[str, tuple[float, Trajectory]]]:
+    mlt_guide_points: dict[str, dict[str, tuple[float, Trajectory]]] = {}
     if project_path is None:
         project_path = Path.cwd()
     with ResInsight(

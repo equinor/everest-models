@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, TextIO
 
 from ruamel.yaml import YAML, YAMLError
+from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
 
 def load_json(path: Path | str):
@@ -43,7 +44,7 @@ def dump_json(data: dict, path: Path):
 
 
 def dump_yaml(
-    data: dict,
+    data: CommentedMap | CommentedSeq | dict[Any, Any],
     fp: TextIO,
     explicit: bool = False,
     default_flow_style: bool | None = None,

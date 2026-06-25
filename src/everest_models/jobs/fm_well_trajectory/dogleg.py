@@ -30,7 +30,7 @@ def _identify_most_violating_point(
         np.array([trajectory.x[1:], trajectory.y[1:], trajectory.z[1:]]) - max_coors,
         axis=0,
     )
-    return np.argmin(dist) + 1
+    return int(np.argmin(dist) + 1)
 
 
 def _move_point_towards_neighbor(
@@ -107,7 +107,7 @@ def compute_dogleg_severity(trajectory: Trajectory) -> NDArray[np.float64]:
 def try_fixing_dog_leg(
     step: float,
     trajectory: Trajectory,
-    s_trajectory: Trajectory | None,
+    s_trajectory: Trajectory,
     dogleg_severities: NDArray[np.float64],
 ) -> Trajectory:
     idx = _identify_most_violating_point(trajectory, s_trajectory, dogleg_severities)
@@ -115,4 +115,4 @@ def try_fixing_dog_leg(
         return _move_point_towards_neighbor(trajectory, idx, step)
     except IndexError as e:
         logger.warning(e)
-        return Trajectory(None, None, None)
+        return Trajectory(None, None, None)  # type: ignore[arg-type]
