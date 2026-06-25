@@ -3,9 +3,7 @@ import functools
 from collections.abc import Callable
 from functools import partial
 
-from pydantic import BaseModel
-
-from .models import Wells
+from .models import ModelConfig, Wells
 from .parsers import SchemaAction
 from .validators import (
     is_writable_path,
@@ -106,11 +104,11 @@ def add_summary_argument(
     )
 
 
-def add_wells_input_argument[T: BaseModel](
+def add_wells_input_argument(
     parser: Parser,
     *,
     required: bool = True,
-    schema: type[T] = Wells,
+    schema: type[ModelConfig] = Wells,
     arg: tuple[str, str] = ("-i", "--input"),
     **kwargs,
 ) -> None:

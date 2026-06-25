@@ -120,7 +120,7 @@ def main_entry_point(args=None):
         options.lint,
     )
 
-    if options.lint:
+    if options.lint or manager is None:
         args_parser.exit()
     orchestrate_drill_schedule(
         manager, wells.to_dict(), options.config.start_date, options.time_limit

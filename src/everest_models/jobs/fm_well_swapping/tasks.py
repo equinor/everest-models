@@ -173,15 +173,15 @@ def inject_case_operations(
                 ) from e
             cases_[case].append(operation)
 
-    for case, operation in cases_.items():
-        cases[case].operations = (*cases[case].operations, *operation)  # type: ignore
+    for case, operations in cases_.items():
+        cases[case].operations = (*cases[case].operations, *operations)  # type: ignore
 
 
-def duration_to_dates(durations: Sequence[int], start_date: date) -> Iterator[date]:
+def duration_to_dates(durations: Sequence[float], start_date: date) -> Iterator[date]:
     """Calculate a series of dates based on a list of time durations in days and a start date.
 
     Args:
-        durations (Sequence[int]): time durations per index in days.
+        durations (Sequence[float]): time durations per index in days.
         start_date (date): The starting date from which to calculate the subsequent dates.
 
     Returns:

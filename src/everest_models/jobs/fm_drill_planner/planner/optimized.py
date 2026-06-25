@@ -36,7 +36,7 @@ class _DrillConstraints(cp_model.CpModel):
         rigs: dict[str, Rig],
         slots: dict[str, Slot],
         horizon: int,
-        best_guess_schedule: Iterable[Event] = None,
+        best_guess_schedule: Iterable[Event] | None = None,
         *args,
         **kwargs,
     ):

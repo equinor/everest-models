@@ -143,4 +143,5 @@ def main_entry_point(args: Sequence[str] | None = None):
             strict=False,
         ),
     )
-    data.cases.json_dump(data.output)
+    if data.output is not None:
+        data.cases.json_dump(data.output)

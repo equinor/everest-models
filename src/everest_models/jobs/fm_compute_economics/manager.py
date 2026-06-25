@@ -4,7 +4,8 @@ import logging
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
 from functools import partial
-from typing import Any, Protocol
+from pathlib import Path
+from typing import Any, Protocol, overload
 
 from resdata.summary import Summary
 from resdata.util.util import TimeVector
@@ -56,7 +57,7 @@ def _get_blocked_production(
 
 
 class EclipseSummary:
-    def __init__(self, config) -> None:
+    def __init__(self, config: EconomicIndicatorConfig) -> None:
         self.main = self.get_summary(config.summary.main)
         self.reference = self.get_summary(config.summary.reference)
         self.keys = self.get_keys(config.summary.keys)
@@ -77,20 +78,26 @@ class EclipseSummary:
             )
         return tuple(summary_keys)
 
-    def get_summary(self, filepath: str | None) -> Summary | None:
+    @overload
+    def get_summary(self, filepath: Path) -> Summary: ...
+
+    @overload
+    def get_summary(self, filepath: None) -> None: ...
+
+    def get_summary(self, filepath: Path | None) -> Summary | None:
         return Summary(str(filepath)) if filepath else None
 
     def get_keys(self, config_keys: tuple[str, ...]) -> tuple[str, ...]:
         main_keywords = self._get_keywords(
             config_keys, lambda key: not self.main.has_key(key)
         )
-        reference_keywords = (
-            main_keywords
-            if self.reference is None
-            else self._get_keywords(
-                config_keys, lambda key: not self.reference.has_key(key)
+        if self.reference is None:
+            reference_keywords = main_keywords
+        else:
+            reference = self.reference
+            reference_keywords = self._get_keywords(
+                config_keys, lambda key: not reference.has_key(key)
             )
-        )
 
         if set(main_keywords) != set(reference_keywords):
             raise AttributeError("unconsistent keys between main and reference summary")
@@ -288,7 +295,10 @@ class BEPCalculator(EconomicIndicatorCalculatorABC):
 
 
 # The keys of the INDICATORS dictionary should be consistent with the choices given to argparse in parser.py
-INDICATORS = {"npv": NPVCalculator, "bep": BEPCalculator}
+INDICATORS: dict[str, type[NPVCalculator | BEPCalculator]] = {
+    "npv": NPVCalculator,
+    "bep": BEPCalculator,
+}
 
 
 def create_indicator(

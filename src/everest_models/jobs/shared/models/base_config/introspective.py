@@ -1,10 +1,10 @@
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date, datetime
 from enum import Enum
 from pathlib import Path
 from types import UnionType
-from typing import Any, Literal, Union, get_args, get_origin
+from typing import Any, Literal, Union, cast, get_args, get_origin
 
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
@@ -93,7 +93,7 @@ def _example_types(value: Any) -> str:
 
 def _build_comment(info: FieldInfo) -> str:
     if info.default_factory:
-        default = typ = info.default_factory()
+        default = typ = cast("Callable[[], Any]", info.default_factory)()
     if info.default is PydanticUndefined or info.default is None:
         default = "null" if info.default is None else None
         typ = info.annotation
@@ -102,16 +102,18 @@ def _build_comment(info: FieldInfo) -> str:
 
     default = default.value if is_related(default, Enum) else default  # type: ignore
     typ = typ if typ is None else builtin_datatypes(typ)
-    example = info.examples
-    if example:
-        example = example if isinstance(example, str) else ", ".join(map(str, example))
+    examples = info.examples
+    if examples:
+        example = (
+            examples if isinstance(examples, str) else ", ".join(map(str, examples))
+        )
         example = f"Examples: {example}"
     else:
         example = _example_types(info.annotation)
     return "\n" + _join_non_empty(
         (
             info.description,
-            "" if "__remove__" in typ else f"Datatype: {typ or '_'}",
+            "" if typ and "__remove__" in typ else f"Datatype: {typ or '_'}",
             example,
             f"Required: {info.is_required()}",
             default if default is None else f"Default: {default}",
@@ -165,18 +167,18 @@ def build_yaml_structure(data: Any, level: int = 0):
                 result[key] = build_yaml_structure(value, level + 1)
         return result
     if isinstance(data, Sequence) and not isinstance(data, str):
-        result = CommentedSeq()
+        seq = CommentedSeq()
         for item in data:
             if isinstance(item, CommentedObject):
                 # Inline comments for list items are handled differently
                 if item.inline_comment:
-                    result.append(item.value)
-                    result.yaml_add_eol_comment(item.inline_comment, len(result) - 1)
+                    seq.append(item.value)
+                    seq.yaml_add_eol_comment(item.inline_comment, len(seq) - 1)
                 else:
-                    result.append(build_yaml_structure(item.value, level + 1))
+                    seq.append(build_yaml_structure(item.value, level + 1))
             else:
-                result.append(build_yaml_structure(item, level + 1))
-        return result
+                seq.append(build_yaml_structure(item, level + 1))
+        return seq
     if isinstance(data, CommentedObject):
         # For standalone CommentedObject not in a collection
         return build_yaml_structure(data.value, level)

@@ -1,5 +1,5 @@
 from argparse import Action, ArgumentParser, Namespace
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from datetime import datetime
 from pathlib import Path
 from sys import stdout
@@ -9,7 +9,7 @@ from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
 from .. import is_related
 from ..io_utils import dump_yaml
-from ..models import Model, ModelConfig, Wells
+from ..models import ModelConfig, Wells
 from ..models.base_config.introspective import PLACEHOLDER
 
 
@@ -24,7 +24,7 @@ def _get_filepath(base_name: str, no_overwrite: bool, minimal: bool) -> Path:
 
 
 def _model_specificactions(
-    argument: str, model: ModelConfig, minimal: bool, no_comment: bool
+    argument: str, model: type[ModelConfig], minimal: bool, no_comment: bool
 ) -> dict[str, Any] | CommentedSeq | CommentedMap:
     if no_comment:
         return model.introspective_data(minimal, no_comment)
@@ -37,15 +37,17 @@ def _model_specificactions(
 
 
 class SchemaAction(Action):
-    _models = {}
+    _models: dict[str, type[ModelConfig]] = {}
 
     @classmethod
-    def register_models(cls, models: dict[str, type[Model]]) -> None:
+    def register_models(cls, models: Mapping[str, type[ModelConfig]]) -> None:
         cls._models.update(models)
 
     def _specification_iterator(
         self, minimal: bool, no_comment: bool
-    ) -> Iterator[tuple[str, ModelConfig, CommentedSeq | CommentedMap]]:
+    ) -> Iterator[
+        tuple[str, type[ModelConfig], dict[str, Any] | CommentedSeq | CommentedMap]
+    ]:
         return (
             (
                 argument.split("/")[-1].lstrip("-"),

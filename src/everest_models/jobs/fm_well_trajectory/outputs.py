@@ -78,7 +78,9 @@ def write_guide_points(guide_points: dict[str, Trajectory], filename: Path) -> N
     )
 
 
-def write_mlt_guide_points(guide_points: dict[str, Trajectory], filename: Path) -> None:
+def write_mlt_guide_points(
+    guide_points: dict[str, dict[str, tuple[float, Trajectory]]], filename: Path
+) -> None:
     io.dump_json(
         {
             well: {
@@ -95,7 +97,9 @@ def write_mlt_guide_points(guide_points: dict[str, Trajectory], filename: Path) 
     )
 
 
-def write_mlt_guide_md(guide_points: dict[str, Trajectory], filename: Path) -> None:
+def write_mlt_guide_md(
+    guide_points: dict[str, dict[str, tuple[float, Trajectory]]], filename: Path
+) -> None:
     io.dump_json(
         {
             well: {branch: branch_data[0] for branch, branch_data in well_data.items()}

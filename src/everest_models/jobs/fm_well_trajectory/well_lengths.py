@@ -1,6 +1,7 @@
 import logging
 from collections.abc import Iterable
 from pathlib import Path
+from typing import SupportsFloat, cast
 
 import pandas as pd
 
@@ -19,13 +20,16 @@ def _read_well_length(well: str) -> float:
         return 0.0
 
     return float(
-        pd.read_csv(
-            path,
-            skiprows=2,
-            skipfooter=2,
-            engine="python",
-            sep=r"\s+",
-        ).iloc[-1, MDMSL]
+        cast(
+            "SupportsFloat",
+            pd.read_csv(
+                path,
+                skiprows=2,
+                skipfooter=2,
+                engine="python",
+                sep=r"\s+",
+            ).iloc[-1, MDMSL],
+        )
     )
 
 

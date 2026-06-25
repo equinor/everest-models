@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class EclipseSummaryConfig(ModelConfig):
     main: Annotated[Path, Field(description="")]
-    reference: Annotated[FilePath, Field(default=None, description="")]
+    reference: Annotated[FilePath | None, Field(default=None, description="")]
     keys: Annotated[tuple[str, ...], Field(default_factory=tuple, description="")]
 
 
