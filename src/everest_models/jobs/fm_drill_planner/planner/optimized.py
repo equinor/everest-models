@@ -214,7 +214,7 @@ class _DrillConstraints(cp_model.CpModel):
                         set(self.single_wells_at_rig[rig_name]).intersection(
                             self.wells
                         ),
-                        key=lambda x: self.well_cost.get(x),
+                        key=self.well_cost.get,
                         reverse=True,
                     )
                 )
