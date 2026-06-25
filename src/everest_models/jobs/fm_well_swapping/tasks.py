@@ -87,10 +87,7 @@ def clean_data(options: Namespace) -> Data:
     priorities = validate_exist(
         sorted_case_priorities(
             options.priorities
-            if options.priorities
-            else options.config.priorities.inverted
-            if options.config.priorities
-            else []
+            or (options.config.priorities.inverted if options.config.priorities else [])
         ),
         "priorities",
     )
