@@ -9,8 +9,10 @@ try:
     import rips  # ResInsight support is optional
 
     _HAVE_RIPS = True
+    _RIPS_LAUNCH_ERROR = getattr(rips, "RipsError", ())
 except ImportError:
     _HAVE_RIPS = False
+    _RIPS_LAUNCH_ERROR = ()
 
 from .models.config import ConfigSchema
 from .outputs import write_well_costs, write_well_lengths
@@ -40,17 +42,25 @@ class ResInsight:
             msg = "Failed to launch ResInsight: module `rips` not found"
             raise ImportError(msg)
         logger.info("Launching ResInsight...")
-        instance = rips.Instance.launch(self._executable, console=True, launch_port=0)
-        if instance is None:
-            msg = (
-                "Failed to launch ResInsight: no executable found"
-                if self._executable == ""
-                else f"Failed to launch ResInsight executable: {self._executable}"
+        try:
+            instance = rips.Instance.launch(
+                self._executable, console=True, launch_port=0
             )
-            raise ConnectionError(msg)
+        except _RIPS_LAUNCH_ERROR as exc:
+            # Newer rips raises RipsError on launch failure; older rips returned None.
+            raise ConnectionError(self._launch_error_message()) from exc
+        if instance is None:
+            raise ConnectionError(self._launch_error_message())
 
         self._instance = instance
         return instance
+
+    def _launch_error_message(self) -> str:
+        return (
+            "Failed to launch ResInsight: no executable found"
+            if self._executable == ""
+            else f"Failed to launch ResInsight executable: {self._executable}"
+        )
 
     def __exit__(self, *_) -> None:
         self._instance.exit()
