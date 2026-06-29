@@ -140,7 +140,7 @@ jobs:
           sudo apt-get install libxkbcommon-x11-0 libegl1 libgl1-mesa-dev mesa-common-dev libglfw3-dev libglu1-mesa-dev
           # Unpack after checking out, otherwise the checkout action would delete it:
           tar zxf resinsight_${{ env.RESINSIGHT_VERSION }}.tar.gz
-      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "${{ matrix.python-version }}"
           cache: "pip"
