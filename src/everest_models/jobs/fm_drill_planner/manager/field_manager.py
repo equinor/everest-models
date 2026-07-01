@@ -37,7 +37,7 @@ class FieldManager:
         self._rigs = rigs
         self._horizon = horizon
         self._greedy_schedule = get_greedy_drill_plan(wells, slots, rigs, horizon)
-        self._optimize_schedule = []
+        self._optimize_schedule: list[Event] = []
 
     def schedule(self) -> list[Event]:
         schedule = self._schedule()

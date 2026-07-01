@@ -24,6 +24,7 @@ dependencies = [
     "numpy>=1.23.2",
     "ruamel.yaml>=0.17.21",
     "fmu-steaclient @ git+https://github.com/equinor/fmu-steaclient",
+    "pandas",
     "pydantic",
     "ortools>=9.3",
     "scipy"
@@ -49,6 +50,12 @@ test = [
 
 style = [
   "pre-commit",
+]
+
+types = [
+    "mypy",
+    "pandas-stubs",
+    "scipy-stubs",
 ]
 
 docs = [
@@ -92,6 +99,33 @@ write_to = "src/everest_models/version.py"
 [tool.setuptools.dynamic]
 version = {attr = "everest_models.version.__version__"}
 
+[tool.mypy]
+strict_equality = true
+extra_checks = true
+
+[[tool.mypy.overrides]]
+module = [
+    "ert",
+    "ert.*",
+    "everest",
+    "everest.*",
+    "lasio",
+    "resdata",
+    "resdata.*",
+    "stea",
+]
+ignore_missing_imports = true
+
+# rips (ResInsight) ships py.typed, but its API methods are attached dynamically
+# via an `@add_method` decorator, so mypy cannot see them. Treat the module as
+# untyped to avoid false-positive attr-defined/union-attr errors.
+[[tool.mypy.overrides]]
+module = [
+    "rips",
+    "rips.*",
+]
+follow_imports = "skip"
+
 [tool.pytest.ini_options]
 minversion = "6.0"
 required_plugins = "hypothesis"
@@ -100,7 +134,9 @@ testpaths = [
 ]
 markers = [
     "ert",
+    "everest",
     "flow",
+    "resdata",
     "resinsight",
     "slow"
 ]

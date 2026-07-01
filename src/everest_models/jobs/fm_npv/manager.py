@@ -19,6 +19,7 @@ __all__ = ["NPVCalculator"]
 class Rate(Protocol):
     date: datetime.date
     value: float
+    currency: str
 
 
 def _rate_sort_reverse_dates(rates: Iterable[Rate]) -> Iterable[Rate]:
@@ -58,7 +59,9 @@ class NPVCalculator:
             config.summary_keys, lambda key: not summary.has_key(key)
         )
 
-    def _get_exchange_rate(self, date: datetime.date, currency: str = None) -> float:
+    def _get_exchange_rate(
+        self, date: datetime.date, currency: str | None = None
+    ) -> float:
         if currency is None:
             return self.config.default_exchange_rate
         return _get_rate(
@@ -100,7 +103,7 @@ class NPVCalculator:
 
         return sum(self._discount_npv(*cost) for cost in get_costs())
 
-    def _get_price(self, date: datetime.date, keyword: str) -> float:
+    def _get_price(self, date: datetime.date, keyword: str) -> float | None:
         if keyword not in self.config.prices:
             raise AttributeError(f"Price information missing for {keyword}")
 

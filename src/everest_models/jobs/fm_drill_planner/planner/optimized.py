@@ -36,7 +36,7 @@ class _DrillConstraints(cp_model.CpModel):
         rigs: dict[str, Rig],
         slots: dict[str, Slot],
         horizon: int,
-        best_guess_schedule: Iterable[Event] = None,
+        best_guess_schedule: Iterable[Event] | None = None,
         *args,
         **kwargs,
     ):
@@ -337,6 +337,6 @@ def run_optimization(
     )
     return (
         _create_event_schedule(drill_constraint_model.tasks, solver)
-        if status == cp_model.OPTIMAL
+        if solver.StatusName(status) == "OPTIMAL"
         else []
     )
