@@ -24,6 +24,7 @@ dependencies = [
     "numpy>=1.23.2",
     "ruamel.yaml>=0.17.21",
     "fmu-steaclient @ git+https://github.com/equinor/fmu-steaclient",
+    "packaging",
     "pandas",
     "pydantic",
     "ortools>=9.3",

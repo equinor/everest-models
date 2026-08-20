@@ -1,15 +1,25 @@
 import datetime
 import itertools
 import logging
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Sequence
+from importlib.metadata import version
 from typing import Protocol
 
+from packaging.version import Version
 from resdata.summary import Summary
-from resdata.util.util import TimeVector
 
 from everest_models.jobs.shared.models.economics import WellCost
 
 from .npv_config import NPVConfig
+
+# Compatibility workaround for breaking changes in resdata>=7
+resdata_major_version = Version(version("resdata")).major
+if resdata_major_version >= 7:
+    from resdata.util.util import TimeLike
+
+    TimeVector = Sequence[TimeLike]
+else:
+    from resdata.util.util import TimeVector  # type: ignore[no-redef]
 
 logger = logging.getLogger(__name__)
 
