@@ -2,15 +2,25 @@ import datetime
 import itertools
 import logging
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Sequence
 from functools import partial
+from importlib.metadata import version
 from pathlib import Path
 from typing import Any, Protocol, overload
 
+from packaging.version import Version
 from resdata.summary import Summary
-from resdata.util.util import TimeVector
 
 from .economic_indicator_config_model import EconomicIndicatorConfig
+
+# Compatibility workaround for breaking changes in resdata>=7
+resdata_major_version = Version(version("resdata")).major
+if resdata_major_version >= 7:
+    from resdata.util.util import TimeLike
+
+    TimeVector = Sequence[TimeLike]
+else:
+    from resdata.util.util import TimeVector  # type: ignore[no-redef]
 
 logger = logging.getLogger(__name__)
 
