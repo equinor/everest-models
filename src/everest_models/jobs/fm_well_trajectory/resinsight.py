@@ -45,7 +45,7 @@ def _create_perforation_view(
 ) -> None:
     perforation = next((item for item in perforations if item.well == well_name), None)
     if perforation is not None and perforation.formations:
-        case.import_formation_names([bytes(formations_file.resolve())])
+        case.import_formation_names([str(formations_file.resolve())])
     case.create_view().set_time_step(-1)
 
 
