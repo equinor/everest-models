@@ -29,7 +29,6 @@ of the following:
         - [Recovery Factor](reference/rf/reference.md)
         - [Schmerge](reference/schmerge/reference.md)
         - [Select Wells](reference/select_wells/reference.md)
-        - [Stea](reference/stea/reference.md)
         - [Strip Dates](reference/strip_dates/reference.md)
         - [Well Constraints](reference/well_constraints/reference.md)
         - [Well Filter](reference/well_filter/reference.md)

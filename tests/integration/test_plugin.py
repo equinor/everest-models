@@ -118,7 +118,6 @@ def test_lint_forward_model_hook(
 @pytest.mark.parametrize(
     "job",
     (
-        "stea",
         "drill_planner",
         "compute_economics",
         "schmerge",

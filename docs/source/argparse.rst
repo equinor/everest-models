@@ -84,15 +84,6 @@ Select Wells
     :prog: fm_select_wells
 
 
-Stea
-====
-
-.. argparse::
-    :module: everest_models.jobs.fm_stea.parser.py
-    :func: build_argument_parser
-    :prog: fm_stea
-
-
 Strip Dates
 ===========
 
