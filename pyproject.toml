@@ -23,7 +23,6 @@ dependencies = [
     "Jinja2>=3.1.2",
     "numpy>=1.23.2",
     "ruamel.yaml>=0.17.21",
-    "fmu-steaclient @ git+https://github.com/equinor/fmu-steaclient",
     "packaging",
     "pandas",
     "pydantic",
@@ -84,7 +83,6 @@ fm_interpret_well_drill = "everest_models.jobs.fm_interpret_well_drill.cli:main_
 fm_rf = "everest_models.jobs.fm_rf.cli:main_entry_point"
 fm_schmerge = "everest_models.jobs.fm_schmerge.cli:main_entry_point"
 fm_select_wells = "everest_models.jobs.fm_select_wells.cli:main_entry_point"
-fm_stea = "everest_models.jobs.fm_stea.cli:main_entry_point"
 fm_strip_dates = "everest_models.jobs.fm_strip_dates.cli:main_entry_point"
 fm_well_constraints = "everest_models.jobs.fm_well_constraints.cli:main_entry_point"
 fm_well_filter = "everest_models.jobs.fm_well_filter.cli:main_entry_point"
@@ -114,7 +112,6 @@ module = [
     "pluggy",
     "resdata",
     "resdata.*",
-    "stea",
 ]
 ignore_missing_imports = true
 

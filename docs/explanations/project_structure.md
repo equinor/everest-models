@@ -18,7 +18,6 @@ src
         ├── fm_rf
         ├── fm_schmerge
         ├── fm_select_wells
-        ├── fm_stea
         ├── fm_strip_dates
         ├── fm_well_constraints
         │   └── models
