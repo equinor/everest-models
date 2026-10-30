@@ -2,7 +2,6 @@ import json
 from pathlib import Path
 
 import pytest
-import yaml
 from sub_testdata import DRILL_PLANNER as TEST_DATA
 
 from everest_models.jobs.fm_drill_planner.cli import main_entry_point
@@ -136,7 +135,7 @@ def test_drill_planner_main_entry_point_not_enough_slots():
     )
     Path("opt.yml").write_text("w1: 1\nw2: 2", encoding="utf-8")
     Path("config.yml").write_text(
-        yaml.dump(
+        json.dumps(
             {
                 "start_date": "2000-01-01",
                 "rigs": [{"name": "A", "wells": ["w1", "w2"], "slots": ["s1"]}],
