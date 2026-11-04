@@ -1,0 +1,33 @@
+distance-calculations:
+  - type: fault-distance
+    fault-name: F4
+    property: sgas
+    property-threshold: 0.1
+    output-date: 2040-01-01
+    aggregation: min
+    output-name: F4_FAULT_DISTANCE
+    printing-distance-map: true
+
+  - type: well-distance
+    well-name: LEG_1
+    property: sgas
+    property-threshold: 0.1
+    output-date: 2040-01-01
+    aggregation: min
+    unit-conversion: 1000
+    output-name: LEG_1_WELL_DISTANCE_KM
+
+  - type: polygon-distance
+    polygon-input:
+      - 461466, 5937073, 1791
+      - 462065, 5935991, 1732
+      - 462439, 5935150, 1676
+      - 463083, 5934538, 1637
+      - 463987, 5933303, 1688
+      - 464747, 5932890, 1645
+    property: sgas
+    property-threshold: 0.1
+    output-date: 2040-01-01
+    aggregation: min
+    output-name: P1_POLYGON_DISTANCE
+    printing-distance-map: true

@@ -1,0 +1,18 @@
+fip-section:
+  - fip-key: FIPNUM
+    fip-region:
+      - region-number: 1
+        output: roipnum_1
+        aggregation: max
+        key: ROIP
+
+key-section:
+  - key: FOPT
+    output: output/fopt_mean
+    aggregation: mean
+    unit-conversion: 1000
+  - key: FGIT
+    output: fgit_sm3
+  - key: FGIT
+    output: fgit_mt
+    unit-conversion: 535950843.4
