@@ -2,14 +2,25 @@ from __future__ import annotations
 
 import math
 import statistics
-from collections.abc import Iterable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from datetime import date
+from functools import cache, partial
 from pathlib import Path
 from typing import Any
 
 from everest_models.jobs.shared.resinsight import rips
 
 from .config_model import DistanceCalculation, DistanceConfig, Point, PropertyFilter
+
+_GRID_INDEX = 0
+
+type _Dimensions = tuple[int, int, int]
+type _IndexedDistances = Iterable[tuple[int, float]]
+type _DistanceLookup = tuple[
+    Callable[[set[int]], _IndexedDistances], Callable[[], Sequence[float]]
+]
+type _TargetLookup = Callable[[DistanceCalculation], _DistanceLookup]
+type _CellSelector = Callable[[PropertyFilter | None], set[int]]
 
 
 def point_to_segment_distance_3d(
@@ -38,16 +49,17 @@ def point_to_segment_distance_3d(
 
 
 def aggregate_distance(
-    distances: Sequence[float], indices: Iterable[int], aggregation: str
+    selected_distances: _IndexedDistances,
+    aggregation: str,
 ) -> tuple[int | None, float | None]:
     if aggregation not in {"min", "max", "mean", "median"}:
         raise ValueError(
             f"Unsupported aggregation {aggregation!r}; expected min, max, mean, or median."
         )
     candidates = [
-        (index, distances[index])
-        for index in indices
-        if math.isfinite(distances[index]) and distances[index] > 0.0
+        (index, distance)
+        for index, distance in selected_distances
+        if math.isfinite(distance) and distance > 0.0
     ]
     if not candidates:
         return None, None
@@ -88,245 +100,380 @@ def write_scalar(paths: Sequence[Path], value: float) -> None:
         path.write_text(f"{value:.9g}\n", encoding="utf-8")
 
 
-def run(config: DistanceConfig, case: Any) -> int:
-    grid_index = 0
-    output_dir = Path.cwd().resolve()
+def _find_faults(case: Any, fault_names: set[str]) -> tuple[Any, dict[str, list[Any]]]:
+    if not fault_names:
+        return None, {}
 
-    def check_length(values: Sequence[Any], description: str) -> Sequence[Any]:
-        if len(values) != total_cells:
-            raise RuntimeError(
-                f"Expected {total_cells} {description}, got {len(values)}."
-            )
-        return values
+    views = case.views()
+    if not views:
+        created_view = case.create_view()
+        views = [created_view] if created_view is not None else []
+    observed_faults: set[str] = set()
+    for candidate_view in views:
+        if not hasattr(candidate_view, "fault_collection"):
+            continue
+        fault_collection = candidate_view.fault_collection()
+        faults = fault_collection.faults() if fault_collection else []
+        observed_faults.update(fault.fault_name for fault in faults)
+        selected = {
+            name: [fault for fault in faults if fault.fault_name == name]
+            for name in fault_names
+        }
+        if all(selected.values()):
+            return candidate_view, selected
+    raise RuntimeError(
+        f"Faults {sorted(fault_names)} were not found in the loaded case. "
+        f"Available faults: {sorted(observed_faults)}"
+    )
 
-    def find_faults(fault_names: set[str]) -> tuple[Any, dict[str, list[Any]]]:
-        views = case.views()
-        if not views:
-            created_view = case.create_view()
-            views = [created_view] if created_view is not None else []
-        observed_faults: set[str] = set()
-        for candidate_view in views:
-            if not hasattr(candidate_view, "fault_collection"):
-                continue
-            fault_collection = candidate_view.fault_collection()
-            faults = fault_collection.faults() if fault_collection else []
-            observed_faults.update(fault.fault_name for fault in faults)
-            selected = {
-                name: [fault for fault in faults if fault.fault_name == name]
-                for name in fault_names
-            }
-            if all(selected.values()):
-                return candidate_view, selected
+
+def _indexed_distances(
+    distances: Sequence[float], indices: set[int]
+) -> _IndexedDistances:
+    return ((index, distances[index]) for index in indices)
+
+
+def _cache_cell_distances(
+    centers: Sequence[Point], measure: Callable[[Point], float]
+) -> _DistanceLookup:
+    selected: dict[int, float] = {}
+    full_grid: list[float] | None = None
+
+    def full_grid_distances() -> Sequence[float]:
+        nonlocal full_grid
+        if full_grid is None:
+            full_grid = [
+                selected[index] if index in selected else measure(center)
+                for index, center in enumerate(centers)
+            ]
+            selected.clear()
+        return full_grid
+
+    def distances_for(indices: set[int]) -> _IndexedDistances:
+        if full_grid is not None or len(indices) == len(centers):
+            yield from _indexed_distances(full_grid_distances(), indices)
+            return
+        for index in indices:
+            if index not in selected:
+                selected[index] = measure(centers[index])
+            yield index, selected[index]
+
+    return distances_for, full_grid_distances
+
+
+def _check_length[T](
+    values: Sequence[T], expected: int, description: str
+) -> Sequence[T]:
+    if len(values) != expected:
+        raise RuntimeError(f"Expected {expected} {description}, got {len(values)}.")
+    return values
+
+
+def _flat_index(ijk: Any, dimensions: _Dimensions) -> int:
+    nx, ny, _ = dimensions
+    return ijk.i + ijk.j * nx + ijk.k * nx * ny
+
+
+def _one_based_ijk(index: int, dimensions: _Dimensions) -> tuple[int, int, int]:
+    nx, ny, _ = dimensions
+    return index % nx + 1, (index // nx) % ny + 1, index // (nx * ny) + 1
+
+
+def _cell_centers(grid: Any, total_cells: int) -> list[Point]:
+    centers = _check_length(grid.cell_centers(), total_cells, "cell centers")
+    if not centers:
+        raise RuntimeError("The grid contains no cell centers.")
+    return [(center.x, center.y, center.z) for center in centers]
+
+
+def _fault_distances(
+    name: str, *, case: Any, view: Any, faults: dict[str, list[Any]], total_cells: int
+) -> Sequence[float]:
+    # resinsight will create a map of distances towards every cell from a fault
+    # hence we don't require cell indices to based distance calculations on.
+    result = view.add_fault_distance(f"PY_FAULTDIST_{name}", faults[name])
+    return _check_length(
+        case.grid_property(
+            rips.PropertyType.GENERATED, result.result_name, 0, _GRID_INDEX
+        ),
+        total_cells,
+        f"{name} fault distances",
+    )
+
+
+def _well_centers(
+    name: str,
+    *,
+    case: Any,
+    cell_centers: Callable[[], Sequence[Point]],
+    dimensions: _Dimensions,
+    report_count: int,
+) -> list[Point]:
+    wells = case.simulation_wells()
+    well = next((well for well in wells if well.name == name), None)
+    if well is None:
         raise RuntimeError(
-            f"Faults {sorted(fault_names)} were not found in the loaded case. "
-            f"Available faults: {sorted(observed_faults)}"
+            f"Simulation well {name!r} not found. Available: "
+            f"{sorted(well.name for well in wells)}"
+        )
+    connected_indices = {
+        _flat_index(connection.ijk, dimensions)
+        for step in range(report_count)
+        for connection in well.cells(step)
+        if connection.grid_index == _GRID_INDEX
+    }
+    if not connected_indices:
+        raise RuntimeError(
+            f"Simulation well {name!r} has no connections in grid {_GRID_INDEX}."
+        )
+    centers = cell_centers()
+    return [centers[index] for index in sorted(connected_indices)]
+
+
+def _make_target_lookup(
+    case: Any,
+    fault_names: set[str],
+    total_cells: int,
+    cell_centers: Callable[[], Sequence[Point]],
+    well_centers: Callable[[str], Sequence[Point]],
+) -> _TargetLookup:
+    find_faults = cache(partial(_find_faults, case, fault_names))
+
+    @cache
+    def fault_distances(name: str) -> Sequence[float]:
+        view, faults = find_faults()
+        return _fault_distances(
+            name,
+            case=case,
+            view=view,
+            faults=faults,
+            total_cells=total_cells,
         )
 
+    @cache
+    def well_distances(name: str) -> _DistanceLookup:
+        connections = well_centers(name)
+        return _cache_cell_distances(
+            cell_centers(),
+            lambda center: min(math.dist(center, well) for well in connections),
+        )
+
+    @cache
+    def polygon_depth_sign() -> float:
+        return -1.0 if sum(z for _, _, z in cell_centers()) < 0.0 else 1.0
+
+    @cache
+    def polyline_distances(points: tuple[Point, ...]) -> _DistanceLookup:
+        depth_sign = polygon_depth_sign()
+        polyline = [
+            (easting, northing, depth_sign * depth)
+            for easting, northing, depth in points
+        ]
+        segments = list(zip(polyline, polyline[1:], strict=False))
+        return _cache_cell_distances(
+            cell_centers(),
+            lambda center: min(
+                point_to_segment_distance_3d(center, start, end)
+                for start, end in segments
+            ),
+        )
+
+    def target_for(calculation: DistanceCalculation) -> _DistanceLookup:
+        if calculation.type == "fault":
+            distances = fault_distances(calculation.name)
+            return partial(_indexed_distances, distances), lambda: distances
+        if calculation.type == "well":
+            return well_distances(calculation.name)
+        return polyline_distances(calculation.points)
+
+    return target_for
+
+
+def _time_step_indices(
+    step_dates: Sequence[date], report_date: date | None
+) -> Iterable[int]:
+    if report_date is None:
+        if not step_dates:
+            raise RuntimeError(
+                "No report dates are available for dynamic property filtering."
+            )
+        return range(len(step_dates))
+    if report_date not in step_dates:
+        available_dates = [step.isoformat() for step in step_dates]
+        raise RuntimeError(
+            f"Report date {report_date} not found. Available: {available_dates}"
+        )
+    return [step_dates.index(report_date)]
+
+
+def _make_cell_selector(
+    case: Any, active_indices: set[int], step_dates: Sequence[date], total_cells: int
+) -> _CellSelector:
+    @cache
+    def matching_indices(
+        keyword: str, threshold: float, report_date: date | None
+    ) -> set[int]:
+        matches: set[int] = set()
+        for step in _time_step_indices(step_dates, report_date):
+            values = _check_length(
+                case.grid_property(
+                    rips.PropertyType.DYNAMIC_NATIVE, keyword, step, _GRID_INDEX
+                ),
+                total_cells,
+                f"{keyword} values",
+            )
+            matches.update(
+                index
+                for index in active_indices
+                if math.isfinite(values[index]) and values[index] >= threshold
+            )
+        return matches
+
+    def selected_cells(property_filter: PropertyFilter | None) -> set[int]:
+        if property_filter is None:
+            return active_indices
+        return matching_indices(
+            property_filter.name.upper(),
+            property_filter.threshold,
+            property_filter.date,
+        )
+
+    return selected_cells
+
+
+def _filter_label(property_filter: PropertyFilter | None) -> str:
+    if property_filter is None:
+        return "all active cells (no 'property' set)"
+    return (
+        f"{property_filter.name.upper()} >= {property_filter.threshold:g} "
+        f"@ {property_filter.date or 'all timesteps'}"
+    )
+
+
+def _run_calculation(
+    calculation: DistanceCalculation,
+    target_for: _TargetLookup,
+    indices: set[int],
+    scalar_path: Path,
+    map_path: Path | None,
+) -> tuple[float, int | None]:
+    multiplier = calculation.multiplier
+    if not indices:
+        raise _no_distance(calculation)
+    distances_for, full_grid_distances = target_for(calculation)
+    index, distance = aggregate_distance(
+        distances_for(indices), calculation.aggregation
+    )
+    if distance is None:
+        raise _no_distance(calculation)
+
+    if map_path is not None:
+        write_property(
+            [map_path],
+            calculation.output,
+            [distance * multiplier for distance in full_grid_distances()],
+        )
+    converted_distance = distance * multiplier
+    write_scalar([scalar_path], converted_distance)
+    return converted_distance, index
+
+
+def _report_calculation(
+    calculation: DistanceCalculation,
+    cell_count: int,
+    distance_result: tuple[float, int | None],
+    dimensions: _Dimensions,
+    scalar_path: Path,
+    map_path: Path | None,
+    *,
+    well_connection_count: int | None,
+) -> None:
+    distance, index = distance_result
+    multiplier = calculation.multiplier
+    if calculation.type == "polygon":
+        target_label = f"polyline of {len(calculation.points)} points"
+    else:
+        target_label = f"{calculation.type} {calculation.name}"
+    filter_label = _filter_label(calculation.property)
+    print(f"\n{calculation.output}  ->  {target_label}")
+    print(f"  filter: {filter_label} ({cell_count} cells)")
+    if calculation.type == "well" and well_connection_count is not None:
+        print(f"  Unique {calculation.name} connection cells: {well_connection_count}")
+    result = f"  {calculation.aggregation} distance: {distance:.2f}"
+    if multiplier != 1:
+        result += f" (multiplied by {multiplier:g})"
+    if index is not None:
+        result += f" at ijk {_one_based_ijk(index, dimensions)}"
+    print(result)
+    print(f"  wrote scalar: {scalar_path}")
+    if map_path is not None:
+        print(f"  wrote map: {map_path}")
+
+
+def _no_distance(calculation: DistanceCalculation) -> RuntimeError:
+    filter_label = _filter_label(calculation.property)
+    return RuntimeError(
+        f"{calculation.output}: no finite positive distance exists for filter {filter_label!r}."
+    )
+
+
+def run(config: DistanceConfig, case: Any) -> int:
+    output_dir = Path.cwd().resolve()
     fault_names = {
         calculation.name
         for calculation in config.distance_calculations
         if calculation.type == "fault"
     }
-    if fault_names:
-        view, fault_views = find_faults(fault_names)
-    else:
-        view, fault_views = None, {}
-
-    grid = case.grid(grid_index)
-    dimensions = grid.dimensions()
-    nx, ny, nz = dimensions.i, dimensions.j, dimensions.k
-    total_cells = nx * ny * nz
-    cell_centers = check_length(grid.cell_centers(), "cell centers")
-    if not cell_centers:
+    grid = case.grid(_GRID_INDEX)
+    size = grid.dimensions()
+    dimensions: _Dimensions = size.i, size.j, size.k
+    total_cells = math.prod(dimensions)
+    if not total_cells:
         raise RuntimeError("The grid contains no cell centers.")
-
-    active_global_indices = set()
-    for info in case.cell_info_for_active_cells():
-        if info.grid_index != grid_index:
-            continue
-        ijk = info.local_ijk
-        active_global_indices.add(ijk.i + ijk.j * nx + ijk.k * nx * ny)
-
-    time_steps = case.time_steps()
-    step_dates = [date(step.year, step.month, step.day) for step in time_steps]
-    mean_center_z = sum(center.z for center in cell_centers) / len(cell_centers)
-    depth_sign = -1.0 if mean_center_z < 0.0 else 1.0
-
-    fault_distance_cache: dict[str, Sequence[float]] = {}
-    well_distance_cache: dict[str, Sequence[float]] = {}
-    well_connection_counts: dict[str, int] = {}
-    polyline_distance_cache: dict[tuple[Point, ...], Sequence[float]] = {}
-    mask_cache: dict[tuple[str, float, date | None], set[int]] = {}
-
-    def fault_distances_for(fault_name: str) -> Sequence[float]:
-        if fault_name not in fault_distance_cache:
-            fault_distance = view.add_fault_distance(
-                f"PY_FAULTDIST_{fault_name}", fault_views[fault_name]
-            )
-            fault_distance_cache[fault_name] = check_length(
-                case.grid_property(
-                    rips.PropertyType.GENERATED,
-                    fault_distance.result_name,
-                    0,
-                    grid_index,
-                ),
-                f"{fault_name} fault distances",
-            )
-        return fault_distance_cache[fault_name]
-
-    def well_distances_for(well_name: str) -> Sequence[float]:
-        if well_name not in well_distance_cache:
-            simulation_wells = case.simulation_wells()
-            simulation_well = next(
-                (well for well in simulation_wells if well.name == well_name), None
-            )
-            if simulation_well is None:
-                raise RuntimeError(
-                    f"Simulation well {well_name!r} not found. Available: "
-                    f"{sorted(well.name for well in simulation_wells)}"
-                )
-            connected_global_indices = set()
-            for time_step_index in range(len(time_steps)):
-                for connection in simulation_well.cells(time_step_index):
-                    if connection.grid_index != grid_index:
-                        continue
-                    ijk = connection.ijk
-                    connected_global_indices.add(ijk.i + ijk.j * nx + ijk.k * nx * ny)
-            if not connected_global_indices:
-                raise RuntimeError(
-                    f"Simulation well {well_name!r} has no connections in grid {grid_index}."
-                )
-            well_centers = [
-                (cell_centers[index].x, cell_centers[index].y, cell_centers[index].z)
-                for index in sorted(connected_global_indices)
-            ]
-            well_connection_counts[well_name] = len(connected_global_indices)
-            well_distance_cache[well_name] = [
-                min(
-                    math.dist((center.x, center.y, center.z), well_center)
-                    for well_center in well_centers
-                )
-                for center in cell_centers
-            ]
-        return well_distance_cache[well_name]
-
-    def polyline_distances_for(points: tuple[Point, ...]) -> Sequence[float]:
-        if points not in polyline_distance_cache:
-            polyline = [
-                (easting, northing, depth_sign * depth)
-                for easting, northing, depth in points
-            ]
-            segments = list(zip(polyline, polyline[1:], strict=False))
-            polyline_distance_cache[points] = [
-                min(
-                    point_to_segment_distance_3d(
-                        (center.x, center.y, center.z), start, end
-                    )
-                    for start, end in segments
-                )
-                for center in cell_centers
-            ]
-        return polyline_distance_cache[points]
-
-    def selected_cells(property_filter: PropertyFilter | None) -> tuple[set[int], str]:
-        if property_filter is None:
-            return active_global_indices, "all active cells (no 'property' set)"
-
-        keyword = property_filter.name.upper()
-        threshold = property_filter.threshold
-        report_date = property_filter.date
-        key = (keyword, threshold, report_date)
-        if key not in mask_cache:
-            if report_date is None:
-                time_step_indices = list(range(len(step_dates)))
-                if not step_dates:
-                    raise RuntimeError(
-                        "No report dates are available for dynamic property filtering."
-                    )
-            elif report_date not in step_dates:
-                available_dates = [step.isoformat() for step in step_dates]
-                raise RuntimeError(
-                    f"Report date {report_date} not found. Available: {available_dates}"
-                )
-            else:
-                time_step_indices = [step_dates.index(report_date)]
-
-            matching_indices: set[int] = set()
-            for time_step_index in time_step_indices:
-                values = check_length(
-                    case.grid_property(
-                        rips.PropertyType.DYNAMIC_NATIVE,
-                        keyword,
-                        time_step_index,
-                        grid_index,
-                    ),
-                    f"{keyword} values",
-                )
-                matching_indices.update(
-                    index
-                    for index in active_global_indices
-                    if math.isfinite(values[index]) and values[index] >= threshold
-                )
-            mask_cache[key] = matching_indices
-        return (
-            mask_cache[key],
-            f"{keyword} >= {threshold:g} @ {report_date or 'all timesteps'}",
+    active_indices = {
+        _flat_index(info.local_ijk, dimensions)
+        for info in case.cell_info_for_active_cells()
+        if info.grid_index == _GRID_INDEX
+    }
+    step_dates = [date(step.year, step.month, step.day) for step in case.time_steps()]
+    cell_centers = cache(partial(_cell_centers, grid, total_cells))
+    well_centers = cache(
+        partial(
+            _well_centers,
+            case=case,
+            cell_centers=cell_centers,
+            dimensions=dimensions,
+            report_count=len(step_dates),
         )
-
-    def distances_for(calculation: DistanceCalculation) -> tuple[Sequence[float], str]:
-        if calculation.type == "fault":
-            fault_name = calculation.name
-            return fault_distances_for(fault_name), f"fault {fault_name}"
-        if calculation.type == "well":
-            well_name = calculation.name
-            return well_distances_for(well_name), f"well {well_name}"
-        return (
-            polyline_distances_for(calculation.points),
-            f"polyline of {len(calculation.points)} points",
-        )
-
-    print(
-        f"Grid: {nx} x {ny} x {nz} = {total_cells} cells "
-        f"({len(active_global_indices)} active)"
     )
+    target_for = _make_target_lookup(
+        case, fault_names, total_cells, cell_centers, well_centers
+    )
+    filter_cells = _make_cell_selector(case, active_indices, step_dates, total_cells)
+
+    nx, ny, nz = dimensions
+    print(
+        f"Grid: {nx} x {ny} x {nz} = {total_cells} cells ({len(active_indices)} active)"
+    )
+
     for calculation in config.distance_calculations:
-        output_name = calculation.output
-        multiplier = calculation.multiplier
-        aggregation = calculation.aggregation
+        indices = filter_cells(calculation.property)
         verbose = config.verbose if calculation.verbose is None else calculation.verbose
-        distances, target_label = distances_for(calculation)
-        indices, filter_label = selected_cells(calculation.property)
-        index, distance = aggregate_distance(distances, indices, aggregation)
-        if distance is None:
-            raise RuntimeError(
-                f"{output_name}: no finite positive distance exists for filter "
-                f"{filter_label!r}."
-            )
-
-        scalar_path = output_dir / output_name
-        if verbose:
-            converted_distances = [value * multiplier for value in distances]
-            write_property(
-                [output_dir / f"{output_name}_map"], output_name, converted_distances
-            )
-        converted_distance = distance * multiplier
-        write_scalar([scalar_path], converted_distance)
-
-        print(f"\n{output_name}  ->  {target_label}")
-        print(f"  filter: {filter_label} ({len(indices)} cells)")
-        result = f"  {aggregation} distance: {converted_distance:.2f}"
-        if multiplier != 1:
-            result += f" (multiplied by {multiplier:g})"
-        if index is not None:
-            i = index % nx
-            j = (index // nx) % ny
-            k = index // (nx * ny)
-            result += f" at ijk ({i + 1}, {j + 1}, {k + 1})"
-        print(result)
-        print(f"  wrote scalar: {scalar_path}")
-        if verbose:
-            print(f"  wrote map: {output_dir / f'{output_name}_map'}")
-
-    for well_name, count in sorted(well_connection_counts.items()):
-        print(f"\nUnique {well_name} connection cells: {count}")
+        scalar_path = output_dir / calculation.output
+        map_path = output_dir / f"{calculation.output}_map" if verbose else None
+        result = _run_calculation(
+            calculation, target_for, indices, scalar_path, map_path
+        )
+        well_connection_count = (
+            len(well_centers(calculation.name)) if calculation.type == "well" else None
+        )
+        _report_calculation(
+            calculation,
+            len(indices),
+            result,
+            dimensions,
+            scalar_path,
+            map_path,
+            well_connection_count=well_connection_count,
+        )
     return 0

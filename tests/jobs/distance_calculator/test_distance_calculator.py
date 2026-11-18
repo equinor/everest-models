@@ -2,6 +2,7 @@ import math
 from datetime import date
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import Mock
 
 import pytest
 from pydantic import ValidationError
@@ -167,14 +168,14 @@ def test_reference_config_covers_all_distance_types():
 )
 def test_aggregate_distance(aggregation, expected):
     assert (
-        aggregate_distance([5.0, math.inf, 1.0, 3.0], [0, 1, 2, 3], aggregation)
+        aggregate_distance([(0, 5.0), (1, math.inf), (2, 1.0), (3, 3.0)], aggregation)
         == expected
     )
 
 
 def test_aggregate_distance_excludes_exact_zero():
-    assert aggregate_distance([0.0, 2.0], [0, 1], "min") == (1, 2.0)
-    assert aggregate_distance([0.0], [0], "min") == (None, None)
+    assert aggregate_distance([(0, 0.0), (1, 2.0)], "min") == (1, 2.0)
+    assert aggregate_distance([(0, 0.0)], "min") == (None, None)
 
 
 def test_point_to_segment_distance():
@@ -193,14 +194,7 @@ def test_fault_distance_uses_generated_resinsight_property_and_excludes_zero(
         "rips",
         SimpleNamespace(PropertyType=SimpleNamespace(GENERATED="generated")),
     )
-    centers = [
-        SimpleNamespace(x=0.0, y=0.0, z=0.0),
-        SimpleNamespace(x=1.0, y=0.0, z=0.0),
-    ]
-    grid = SimpleNamespace(
-        dimensions=lambda: SimpleNamespace(i=2, j=1, k=1),
-        cell_centers=lambda: centers,
-    )
+    grid = SimpleNamespace(dimensions=lambda: SimpleNamespace(i=2, j=1, k=1))
     fault = SimpleNamespace(fault_name="F4")
     fault_collection = SimpleNamespace(faults=lambda: [fault])
     view = SimpleNamespace(
@@ -238,6 +232,40 @@ def test_fault_distance_uses_generated_resinsight_property_and_excludes_zero(
         == 0
     )
     assert (tmp_path / "F4_DISTANCE").read_text() == "1\n"
+
+
+def test_empty_property_filter_fails_before_fault_lookup(monkeypatch):
+    monkeypatch.setattr(
+        distance_tasks,
+        "rips",
+        SimpleNamespace(PropertyType=SimpleNamespace(DYNAMIC_NATIVE="dynamic")),
+    )
+    grid = SimpleNamespace(dimensions=lambda: SimpleNamespace(i=1, j=1, k=1))
+    case = SimpleNamespace(
+        views=Mock(),
+        grid=lambda _: grid,
+        cell_info_for_active_cells=lambda: [
+            SimpleNamespace(grid_index=0, local_ijk=SimpleNamespace(i=0, j=0, k=0))
+        ],
+        time_steps=lambda: [date(2040, 1, 1)],
+        grid_property=lambda *_args: [0.0],
+    )
+    config = DistanceConfig.model_validate(
+        {
+            "distance-calculations": [
+                {
+                    "type": "fault",
+                    "name": "F4",
+                    "property": {"name": "SGAS", "threshold": 0.1},
+                    "output": "F4_DISTANCE",
+                }
+            ]
+        }
+    )
+
+    with pytest.raises(RuntimeError, match="F4_DISTANCE: no finite positive distance"):
+        run(config, case)
+    case.views.assert_not_called()
 
 
 def test_well_distance_uses_connected_cells_and_excludes_zero(tmp_path, monkeypatch):
@@ -404,3 +432,76 @@ def test_output_date_controls_timestep_filter(
         f"SGAS >= 0.1 @ {expected_scope} ({expected_cell_count} cells)"
         in capsys.readouterr().out
     )
+
+
+@pytest.mark.parametrize(
+    ("target", "measure_owner", "measure_name"),
+    [
+        ({"type": "well", "name": "PROD"}, math, "dist"),
+        (
+            {"type": "polygon", "points": [[0, 0, 0], [0, 1, 0]]},
+            distance_tasks,
+            "point_to_segment_distance_3d",
+        ),
+    ],
+    ids=["well", "polygon"],
+)
+def test_scalar_distances_only_measure_selected_cells(
+    target, measure_owner, measure_name, tmp_path, monkeypatch
+):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(
+        distance_tasks,
+        "rips",
+        SimpleNamespace(PropertyType=SimpleNamespace(DYNAMIC_NATIVE="dynamic")),
+    )
+    measure = Mock(wraps=getattr(measure_owner, measure_name))
+    monkeypatch.setattr(measure_owner, measure_name, measure)
+    cells = [SimpleNamespace(i=i, j=0, k=0) for i in range(4)]
+    cell_centers = Mock(return_value=[SimpleNamespace(x=i, y=0, z=0) for i in range(4)])
+    grid = SimpleNamespace(
+        dimensions=lambda: SimpleNamespace(i=4, j=1, k=1),
+        cell_centers=cell_centers,
+    )
+    well = SimpleNamespace(
+        name="PROD", cells=lambda _: [SimpleNamespace(grid_index=0, ijk=cells[0])]
+    )
+    saturations = [[0.0, 0.0, 0.2, 0.0], [0.0, 0.2, 0.2, 0.0]]
+
+    def grid_property(_kind, _keyword, step, _grid):
+        if step == 0:
+            cell_centers.assert_not_called()
+        return saturations[step]
+
+    case = SimpleNamespace(
+        grid=lambda _: grid,
+        cell_info_for_active_cells=lambda: [
+            SimpleNamespace(grid_index=0, local_ijk=cell) for cell in cells
+        ],
+        simulation_wells=lambda: [well],
+        time_steps=lambda: [date(2040, 1, 1), date(2041, 1, 1)],
+        grid_property=grid_property,
+    )
+    config = DistanceConfig.model_validate(
+        {
+            "distance-calculations": [
+                {
+                    **target,
+                    "property": {"name": "SGAS", "threshold": 0.1, "date": report},
+                    "output": output,
+                }
+                for report, output in [
+                    ("2040-01-01", "early"),
+                    ("2041-01-01", "late"),
+                    ("2040-01-01", "early_again"),
+                ]
+            ]
+        }
+    )
+
+    assert run(config, case) == 0
+    assert (tmp_path / "early").read_text() == "2\n"
+    assert (tmp_path / "late").read_text() == "1\n"
+    assert (tmp_path / "early_again").read_text() == "2\n"
+    cell_centers.assert_called_once_with()
+    assert [call.args[0] for call in measure.call_args_list] == [(2, 0, 0), (1, 0, 0)]

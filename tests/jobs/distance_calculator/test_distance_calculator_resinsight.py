@@ -50,7 +50,9 @@ def test_distance_calculator_cli_all_targets(
     # verify which cell has been selected to have minimum distance
     output = capsys.readouterr().out
     well_result = output.partition("CO2WELL  ->  well PROD\n")[2]
-    assert "at ijk (7, 5, 1)" in well_result.partition("wrote scalar:")[0]
+    well_summary = well_result.partition("wrote scalar:")[0]
+    assert "at ijk (7, 5, 1)" in well_summary
+    assert "Unique PROD connection cells: 3" in well_summary
 
     assert float((tmp_path / "CO2FAULT").read_text()) == pytest.approx(500)
     assert float((tmp_path / "CO2WELL").read_text()) == pytest.approx(2.236067), (
