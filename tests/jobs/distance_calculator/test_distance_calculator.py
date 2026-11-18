@@ -4,15 +4,19 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from pydantic import ValidationError
+from ruamel.yaml import YAML
 
 from everest_models.forward_models import get_forward_models
 from everest_models.jobs.fm_distance_calculator import tasks as distance_tasks
 from everest_models.jobs.fm_distance_calculator.cli import load_config
+from everest_models.jobs.fm_distance_calculator.config_model import (
+    DistanceConfig,
+    PolygonCalculation,
+)
 from everest_models.jobs.fm_distance_calculator.parser import build_argument_parser
 from everest_models.jobs.fm_distance_calculator.tasks import (
-    _resolve_unit_conversion,
     aggregate_distance,
-    parse_polygon_point,
     point_to_segment_distance_3d,
     run,
 )
@@ -37,45 +41,103 @@ def test_load_config_requires_distance_calculations(tmp_path):
     config_path = tmp_path / "config.yml"
     config_path.write_text("distance-calculations: []\n", encoding="utf-8")
 
-    with pytest.raises(ValueError, match="No 'distance_calculations'"):
+    with pytest.raises(ValidationError, match="at least 1 item"):
         load_config(config_path)
 
 
-def test_load_config_normalizes_hyphenated_keys_and_type(tmp_path):
+def test_load_config_validates_nested_property_and_polygon_points(tmp_path):
     config_path = tmp_path / "config.yml"
     config_path.write_text(
         "distance-calculations:\n"
-        "  - type: polygon-distance\n"
-        "    polygon-input: [[0, 0, 0], [1, 0, 0]]\n"
-        "    property-threshold: 0.1\n"
-        "    output-date: 2040-01-01\n"
-        "    unit-conversion: 1000\n"
-        "    output-name: distance\n",
+        "  - type: polygon\n"
+        "    points: [[0, 0, 0], [1, 0, 0]]\n"
+        "    property:\n"
+        "      name: sgas\n"
+        "      threshold: 0.1\n"
+        "      date: 2040-01-01\n"
+        "    multiplier: 0.001\n"
+        "    output: distance\n",
         encoding="utf-8",
     )
 
-    calculation = load_config(config_path)["distance_calculations"][0]
-    assert calculation["type"] == "polygon_distance"
-    assert calculation["polygon_input"] == [[0, 0, 0], [1, 0, 0]]
-    assert calculation["property_threshold"] == 0.1
-    assert calculation["output_date"].isoformat() == "2040-01-01"
-    assert calculation["unit_conversion"] == 1000
-    assert calculation["output_name"] == "distance"
+    calculation = load_config(config_path).distance_calculations[0]
+    assert isinstance(calculation, PolygonCalculation)
+    assert calculation.points == ((0, 0, 0), (1, 0, 0))
+    assert calculation.property is not None
+    assert calculation.property.date == date(2040, 1, 1)
 
 
-def test_load_config_rejects_underscore_keys(tmp_path):
-    config_path = tmp_path / "config.yml"
-    config_path.write_text(
-        "distance-calculations:\n"
-        "  - type: fault-distance\n"
-        "    fault-name: F4\n"
-        "    output_date: 2040-01-01\n"
-        "    output-name: distance\n",
-        encoding="utf-8",
-    )
+@pytest.mark.parametrize(
+    ("fields", "error"),
+    [
+        pytest.param({"type": "well-distance"}, "union_tag_invalid", id="old-type"),
+        pytest.param({"unit-conversion": 1000}, "extra_forbidden", id="old-unit"),
+        pytest.param({"name": ""}, "string_too_short", id="empty-name"),
+        pytest.param({"aggregation": "sum"}, "literal_error", id="aggregation"),
+        pytest.param({"property": "sgas"}, "model_type", id="old-property"),
+        pytest.param(
+            {"property": {"name": ["sgas"]}}, "string_type", id="property-list"
+        ),
+        pytest.param(
+            {"property": {"name": "sgas, swat"}},
+            "string_pattern_mismatch",
+            id="comma-separated-properties",
+        ),
+        pytest.param(
+            {"property": {"name": "sgas", "threshold": [0.1]}},
+            "float_type",
+            id="threshold-list",
+        ),
+        pytest.param(
+            {"property": {"name": "sgas", "date": ["2040-01-01"]}},
+            "value_error",
+            id="date-list",
+        ),
+        pytest.param(
+            {"property": {"name": "sgas", "date": "2040-02-31"}},
+            "date_from_datetime_parsing",
+            id="invalid-date",
+        ),
+        pytest.param({"verbose": "true"}, "bool_type", id="verbose-string"),
+        pytest.param({"multiplier": 0}, "value_error", id="zero-multiplier"),
+        pytest.param(
+            {"multiplier": math.inf}, "finite_number", id="infinite-multiplier"
+        ),
+    ],
+)
+def test_config_rejects_invalid_calculation_fields(fields, error):
+    calculation = {"type": "well", "name": "PROD", "output": "distance", **fields}
 
-    with pytest.raises(ValueError, match="must use hyphens instead of underscores"):
-        load_config(config_path)
+    with pytest.raises(ValidationError) as exc_info:
+        DistanceConfig.model_validate({"distance-calculations": [calculation]})
+
+    assert exc_info.value.errors()[0]["type"] == error
+
+
+@pytest.mark.parametrize("points", [[[0, 0, 0]], [[0, 0], [1, 0, 0]]])
+def test_config_requires_at_least_two_3d_polygon_points(points):
+    calculation = {"type": "polygon", "points": points, "output": "distance"}
+    with pytest.raises(ValidationError, match="points"):
+        DistanceConfig.model_validate({"distance-calculations": [calculation]})
+
+
+def test_model_schema_shows_all_calculation_types():
+    schema = DistanceConfig.commented_map(minimal=False)
+    calculations = schema["distance-calculations"]
+    assert [calculation["type"] for calculation in calculations] == [
+        "fault",
+        "well",
+        "polygon",
+    ]
+    assert calculations[0]["property"]["threshold"] == 0.0
+    assert len(calculations[2]["points"]) == 2
+
+
+def test_reference_schema_matches_model(reference_docs):
+    schema_path = reference_docs / "distance_calculator" / "config.yml"
+    schema = YAML(typ="safe").load(schema_path)
+
+    assert schema == DistanceConfig.commented_map(minimal=False)
 
 
 def test_reference_config_covers_all_distance_types():
@@ -84,21 +146,14 @@ def test_reference_config_covers_all_distance_types():
         / "docs"
         / "reference"
         / "distance_calculator"
-        / "config.yml"
+        / "example.yml"
     )
-    calculations = load_config(config_path)["distance_calculations"]
-    required_target_fields = {
-        "fault_distance": "fault_name",
-        "well_distance": "well_name",
-        "polygon_distance": "polygon_input",
+    calculations = load_config(config_path).distance_calculations
+    assert {calculation.type for calculation in calculations} == {
+        "fault",
+        "well",
+        "polygon",
     }
-
-    assert {calculation["type"] for calculation in calculations} == set(
-        required_target_fields
-    )
-    for calculation in calculations:
-        assert required_target_fields[calculation["type"]] in calculation
-        assert calculation["output_name"]
 
 
 @pytest.mark.parametrize(
@@ -122,34 +177,7 @@ def test_aggregate_distance_excludes_exact_zero():
     assert aggregate_distance([0.0], [0], "min") == (None, None)
 
 
-@pytest.mark.parametrize(
-    ("calculation", "expected"),
-    [
-        ({}, 1.0),
-        ({"unit-conversion": 1000}, 1000.0),
-        ({"u": 1000}, 1000.0),
-        ({"unit-conversion": None}, 1.0),
-    ],
-)
-def test_resolve_unit_conversion(calculation, expected):
-    assert _resolve_unit_conversion(calculation, "distance") == expected
-
-
-@pytest.mark.parametrize(
-    ("calculation", "message"),
-    [
-        ({"unit-conversion": 0}, "must be non-zero"),
-        ({"unit-conversion": "invalid"}, "must be numeric"),
-        ({"unit-conversion": 1, "u": 1}, "use either"),
-    ],
-)
-def test_resolve_unit_conversion_rejects_invalid_values(calculation, message):
-    with pytest.raises(ValueError, match=message):
-        _resolve_unit_conversion(calculation, "distance")
-
-
-def test_polygon_point_and_segment_distance():
-    assert parse_polygon_point("1, 2, 3") == (1.0, 2.0, 3.0)
+def test_point_to_segment_distance():
     assert (
         point_to_segment_distance_3d((1.0, 2.0, 0.0), (0.0, 0.0, 0.0), (3.0, 0.0, 0.0))
         == 2.0
@@ -194,15 +222,17 @@ def test_fault_distance_uses_generated_resinsight_property_and_excludes_zero(
 
     assert (
         run(
-            {
-                "distance_calculations": [
-                    {
-                        "type": "fault_distance",
-                        "fault_name": "F4",
-                        "output_name": "F4_DISTANCE",
-                    }
-                ]
-            },
+            DistanceConfig.model_validate(
+                {
+                    "distance-calculations": [
+                        {
+                            "type": "fault",
+                            "name": "F4",
+                            "output": "F4_DISTANCE",
+                        }
+                    ]
+                }
+            ),
             case,
         )
         == 0
@@ -234,15 +264,17 @@ def test_well_distance_uses_connected_cells_and_excludes_zero(tmp_path, monkeypa
 
     assert (
         run(
-            {
-                "distance_calculations": [
-                    {
-                        "type": "well_distance",
-                        "well_name": "LEG_1",
-                        "output_name": "LEG_1_DISTANCE",
-                    }
-                ]
-            },
+            DistanceConfig.model_validate(
+                {
+                    "distance-calculations": [
+                        {
+                            "type": "well",
+                            "name": "LEG_1",
+                            "output": "LEG_1_DISTANCE",
+                        }
+                    ]
+                }
+            ),
             case,
         )
         == 0
@@ -251,18 +283,23 @@ def test_well_distance_uses_connected_cells_and_excludes_zero(tmp_path, monkeypa
 
 
 @pytest.mark.parametrize(
-    ("printing_distance_map", "unit_conversion", "expected_map", "expected_scalar"),
+    ("default_verbose", "calculation_options", "expected_map", "expected_scalar"),
     [
-        (None, None, False, "1\n"),
-        (True, None, True, "1\n"),
-        (True, 0.5, True, "2\n"),
+        pytest.param({}, {}, False, "1\n", id="default-no-map"),
+        pytest.param(
+            {"verbose": True}, {"multiplier": 2}, True, "2\n", id="inherit-and-multiply"
+        ),
+        pytest.param(
+            {"verbose": True}, {"verbose": False}, False, "1\n", id="disable-map"
+        ),
+        pytest.param({}, {"verbose": True}, True, "1\n", id="enable-map"),
     ],
 )
 def test_run_defaults_aggregation_and_distance_map(
     tmp_path,
     monkeypatch,
-    printing_distance_map,
-    unit_conversion,
+    default_verbose,
+    calculation_options,
     expected_map,
     expected_scalar,
 ):
@@ -284,15 +321,14 @@ def test_run_defaults_aggregation_and_distance_map(
         time_steps=lambda: [date(2040, 1, 1)],
     )
     calculation = {
-        "type": "polygon_distance",
-        "polygon_input": [[0, 0, 0], [3, 0, 0]],
-        "output_name": "P1_POLYGON_DISTANCE",
+        "type": "polygon",
+        "points": [[0, 0, 0], [3, 0, 0]],
+        "output": "P1_POLYGON_DISTANCE",
+        **calculation_options,
     }
-    if printing_distance_map is not None:
-        calculation["printing_distance_map"] = printing_distance_map
-    if unit_conversion is not None:
-        calculation["unit-conversion"] = unit_conversion
-    config = {"distance_calculations": [calculation]}
+    config = DistanceConfig.model_validate(
+        {"distance-calculations": [calculation], **default_verbose}
+    )
 
     assert run(config, case) == 0
     assert (tmp_path / "P1_POLYGON_DISTANCE").read_text() == expected_scalar
@@ -303,8 +339,8 @@ def test_run_defaults_aggregation_and_distance_map(
         assert map_text.startswith("P1_POLYGON_DISTANCE\n")
         assert map_text.endswith("/\n")
         map_values = [float(value) for value in map_text.split()[1:-1]]
-        conversion = unit_conversion or 1.0
-        assert map_values == [2.0 / conversion, 1.0 / conversion]
+        multiplier = calculation_options.get("multiplier", 1.0)
+        assert map_values == [2.0 * multiplier, multiplier]
 
 
 @pytest.mark.parametrize(
@@ -349,21 +385,18 @@ def test_output_date_controls_timestep_filter(
             timestep
         ],
     )
-    config = {
-        "distance_calculations": [
-            {
-                "type": "polygon_distance",
-                "polygon_input": [[0, 0, 0], [3, 0, 0]],
-                "property": "sgas",
-                "property_threshold": 0.1,
-                "aggregation": "min",
-                "output_name": "P1_POLYGON_DISTANCE",
-                "printing_distance_map": False,
-            }
-        ]
-    }
-    if output_date is not None:
-        config["distance_calculations"][0]["output_date"] = output_date
+    config = DistanceConfig.model_validate(
+        {
+            "distance-calculations": [
+                {
+                    "type": "polygon",
+                    "points": [[0, 0, 0], [3, 0, 0]],
+                    "property": {"name": "sgas", "threshold": 0.1, "date": output_date},
+                    "output": "P1_POLYGON_DISTANCE",
+                }
+            ]
+        }
+    )
 
     assert run(config, case) == 0
     assert (tmp_path / "P1_POLYGON_DISTANCE").read_text() == expected_distance

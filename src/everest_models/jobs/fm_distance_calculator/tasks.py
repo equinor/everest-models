@@ -3,62 +3,13 @@ from __future__ import annotations
 import math
 import statistics
 from collections.abc import Iterable, Sequence
+from datetime import date
 from pathlib import Path
 from typing import Any
 
 from everest_models.jobs.shared.resinsight import rips
 
-
-def normalize_config(config: dict[str, Any]) -> dict[str, Any]:
-    def normalize_mapping(mapping: dict[str, Any], context: str) -> dict[str, Any]:
-        normalized = {}
-        original_keys: dict[Any, Any] = {}
-        for key, value in mapping.items():
-            normalized_key = key.replace("-", "_") if isinstance(key, str) else key
-            if normalized_key in normalized:
-                raise ValueError(
-                    f"{context}: conflicting spellings for key "
-                    f"'{normalized_key}': '{original_keys[normalized_key]}' and '{key}'"
-                )
-            normalized[normalized_key] = value
-            original_keys[normalized_key] = key
-        return normalized
-
-    normalized = normalize_mapping(config, "Config")
-    calculations = normalized.get("distance_calculations")
-    if isinstance(calculations, list):
-        normalized_calculations = []
-        for index, calculation in enumerate(calculations, start=1):
-            if isinstance(calculation, dict):
-                calculation = normalize_mapping(
-                    calculation, f"Distance calculation #{index}"
-                )
-                if isinstance(calculation.get("type"), str):
-                    calculation["type"] = calculation["type"].replace("-", "_")
-            normalized_calculations.append(calculation)
-        normalized["distance_calculations"] = normalized_calculations
-    return normalized
-
-
-def config_values(value: Any) -> list[str]:
-    if value is None:
-        return []
-    if isinstance(value, str):
-        return [item.strip() for item in value.split(",") if item.strip()]
-    if isinstance(value, (list, tuple)):
-        return [str(item).strip() for item in value if str(item).strip()]
-    return [str(value).strip()]
-
-
-def parse_polygon_point(point: Any) -> tuple[float, float, float]:
-    values = config_values(point)
-    if len(values) != 3:
-        raise ValueError(
-            "Each polygon_input point must contain easting, northing, and depth: "
-            f"{point!r}"
-        )
-    easting, northing, depth = (float(value) for value in values)
-    return easting, northing, depth
+from .config_model import DistanceCalculation, DistanceConfig, Point, PropertyFilter
 
 
 def point_to_segment_distance_3d(
@@ -137,35 +88,7 @@ def write_scalar(paths: Sequence[Path], value: float) -> None:
         path.write_text(f"{value:.9g}\n", encoding="utf-8")
 
 
-def _resolve_unit_conversion(calculation: dict[str, Any], context: str) -> float:
-    conversion_keys = {"unit-conversion", "unit_conversion"} & calculation.keys()
-    if len(conversion_keys) > 1 or (conversion_keys and "u" in calculation):
-        raise ValueError(f"{context}: use either 'unit-conversion' or 'u', not both")
-    value = calculation.get(
-        "unit-conversion", calculation.get("unit_conversion", calculation.get("u"))
-    )
-    try:
-        conversion = float(1.0 if value is None else value)
-    except (TypeError, ValueError) as error:
-        raise ValueError(f"{context}: unit-conversion must be numeric") from error
-    if conversion == 0:
-        raise ValueError(f"{context}: unit-conversion must be non-zero")
-    return conversion
-
-
-def run(config: dict[str, Any], case: Any) -> int:
-    config = normalize_config(config)
-    calculations = config.get("distance_calculations") or []
-    if not calculations:
-        raise ValueError("No 'distance_calculations' entries found in the YAML config.")
-    if not isinstance(calculations, list) or not all(
-        isinstance(calculation, dict) for calculation in calculations
-    ):
-        raise ValueError("'distance_calculations' must be a list of mappings.")
-    default_printing_distance_map = config.get("printing_distance_map", False)
-    if not isinstance(default_printing_distance_map, bool):
-        raise ValueError("'printing_distance_map' must be a boolean.")
-
+def run(config: DistanceConfig, case: Any) -> int:
     grid_index = 0
     output_dir = Path.cwd().resolve()
 
@@ -200,9 +123,9 @@ def run(config: dict[str, Any], case: Any) -> int:
         )
 
     fault_names = {
-        calculation["fault_name"]
-        for calculation in calculations
-        if calculation.get("type") == "fault_distance"
+        calculation.name
+        for calculation in config.distance_calculations
+        if calculation.type == "fault"
     }
     if fault_names:
         view, fault_views = find_faults(fault_names)
@@ -225,17 +148,15 @@ def run(config: dict[str, Any], case: Any) -> int:
         active_global_indices.add(ijk.i + ijk.j * nx + ijk.k * nx * ny)
 
     time_steps = case.time_steps()
-    step_dates = [
-        f"{step.year:04d}-{step.month:02d}-{step.day:02d}" for step in time_steps
-    ]
+    step_dates = [date(step.year, step.month, step.day) for step in time_steps]
     mean_center_z = sum(center.z for center in cell_centers) / len(cell_centers)
     depth_sign = -1.0 if mean_center_z < 0.0 else 1.0
 
     fault_distance_cache: dict[str, Sequence[float]] = {}
     well_distance_cache: dict[str, Sequence[float]] = {}
     well_connection_counts: dict[str, int] = {}
-    polyline_distance_cache: dict[tuple[Any, ...], Sequence[float]] = {}
-    mask_cache: dict[tuple[str, float, str | None], set[int]] = {}
+    polyline_distance_cache: dict[tuple[Point, ...], Sequence[float]] = {}
+    mask_cache: dict[tuple[str, float, date | None], set[int]] = {}
 
     def fault_distances_for(fault_name: str) -> Sequence[float]:
         if fault_name not in fault_distance_cache:
@@ -289,19 +210,14 @@ def run(config: dict[str, Any], case: Any) -> int:
             ]
         return well_distance_cache[well_name]
 
-    def polyline_distances_for(
-        points: Sequence[tuple[float, float, float]],
-    ) -> Sequence[float]:
-        key = tuple(points)
-        if key not in polyline_distance_cache:
+    def polyline_distances_for(points: tuple[Point, ...]) -> Sequence[float]:
+        if points not in polyline_distance_cache:
             polyline = [
                 (easting, northing, depth_sign * depth)
                 for easting, northing, depth in points
             ]
             segments = list(zip(polyline, polyline[1:], strict=False))
-            if not segments:
-                raise ValueError("polygon_input needs at least two points.")
-            polyline_distance_cache[key] = [
+            polyline_distance_cache[points] = [
                 min(
                     point_to_segment_distance_3d(
                         (center.x, center.y, center.z), start, end
@@ -310,25 +226,30 @@ def run(config: dict[str, Any], case: Any) -> int:
                 )
                 for center in cell_centers
             ]
-        return polyline_distance_cache[key]
+        return polyline_distance_cache[points]
 
-    def indices_for_triplet(
-        keyword: str, property_threshold: float, output_date: str | None
-    ) -> set[int]:
-        key = (keyword, property_threshold, output_date)
+    def selected_cells(property_filter: PropertyFilter | None) -> tuple[set[int], str]:
+        if property_filter is None:
+            return active_global_indices, "all active cells (no 'property' set)"
+
+        keyword = property_filter.name.upper()
+        threshold = property_filter.threshold
+        report_date = property_filter.date
+        key = (keyword, threshold, report_date)
         if key not in mask_cache:
-            if output_date is None:
+            if report_date is None:
                 time_step_indices = list(range(len(step_dates)))
                 if not step_dates:
                     raise RuntimeError(
                         "No report dates are available for dynamic property filtering."
                     )
-            elif output_date not in step_dates:
+            elif report_date not in step_dates:
+                available_dates = [step.isoformat() for step in step_dates]
                 raise RuntimeError(
-                    f"Report date {output_date} not found. Available: {step_dates}"
+                    f"Report date {report_date} not found. Available: {available_dates}"
                 )
             else:
-                time_step_indices = [step_dates.index(output_date)]
+                time_step_indices = [step_dates.index(report_date)]
 
             matching_indices: set[int] = set()
             for time_step_index in time_step_indices:
@@ -344,84 +265,37 @@ def run(config: dict[str, Any], case: Any) -> int:
                 matching_indices.update(
                     index
                     for index in active_global_indices
-                    if math.isfinite(values[index])
-                    and values[index] >= property_threshold
+                    if math.isfinite(values[index]) and values[index] >= threshold
                 )
             mask_cache[key] = matching_indices
-        return mask_cache[key]
-
-    def selected_cells(calculation: dict[str, Any]) -> tuple[set[int], str]:
-        properties = config_values(calculation.get("property"))
-        if not properties:
-            label = "all active cells (no 'property' set)"
-            if config_values(calculation.get("output_date")):
-                label += " - 'output_date' ignored without a 'property'"
-            return active_global_indices, label
-
-        thresholds = [
-            float(value)
-            for value in config_values(calculation.get("property_threshold"))
-        ] or [0.0]
-        output_dates = config_values(calculation.get("output_date"))
-
-        triplets = []
-        for position, keyword in enumerate(properties):
-            triplet = (
-                keyword.upper(),
-                thresholds[min(position, len(thresholds) - 1)],
-                output_dates[min(position, len(output_dates) - 1)]
-                if output_dates
-                else None,
-            )
-            if triplet not in triplets:
-                triplets.append(triplet)
-        indices = None
-        for keyword, threshold, output_date in triplets:
-            matched = indices_for_triplet(keyword, threshold, output_date)
-            indices = matched if indices is None else indices & matched
-        label = " & ".join(
-            f"{keyword} >= {threshold:g} @ {output_date or 'all timesteps'}"
-            for keyword, threshold, output_date in triplets
+        return (
+            mask_cache[key],
+            f"{keyword} >= {threshold:g} @ {report_date or 'all timesteps'}",
         )
-        return indices or set(), label
 
-    def distances_for(calculation: dict[str, Any]) -> tuple[Sequence[float], str]:
-        kind = calculation.get("type")
-        if kind == "fault_distance":
-            fault_name = calculation["fault_name"]
+    def distances_for(calculation: DistanceCalculation) -> tuple[Sequence[float], str]:
+        if calculation.type == "fault":
+            fault_name = calculation.name
             return fault_distances_for(fault_name), f"fault {fault_name}"
-        if kind == "well_distance":
-            well_name = calculation["well_name"]
+        if calculation.type == "well":
+            well_name = calculation.name
             return well_distances_for(well_name), f"well {well_name}"
-        if kind == "polygon_distance":
-            points = [
-                parse_polygon_point(point)
-                for point in calculation.get("polygon_input", [])
-            ]
-            return polyline_distances_for(points), f"polyline of {len(points)} points"
-        raise ValueError(f"Unsupported calculation type: {kind!r}")
+        return (
+            polyline_distances_for(calculation.points),
+            f"polyline of {len(calculation.points)} points",
+        )
 
     print(
         f"Grid: {nx} x {ny} x {nz} = {total_cells} cells "
         f"({len(active_global_indices)} active)"
     )
-    for calculation in calculations:
-        output_name = calculation.get("output_name")
-        if not isinstance(output_name, str) or not output_name.strip():
-            raise ValueError(
-                "Each distance calculation requires a non-empty 'output_name'."
-            )
-        unit_conversion = _resolve_unit_conversion(calculation, output_name)
-        aggregation = str(calculation.get("aggregation", "min")).strip().lower()
-        printing_distance_map = calculation.get(
-            "printing_distance_map", default_printing_distance_map
-        )
-        if not isinstance(printing_distance_map, bool):
-            raise ValueError(
-                f"{output_name}: 'printing_distance_map' must be a boolean."
-            )
+    for calculation in config.distance_calculations:
+        output_name = calculation.output
+        multiplier = calculation.multiplier
+        aggregation = calculation.aggregation
+        verbose = config.verbose if calculation.verbose is None else calculation.verbose
         distances, target_label = distances_for(calculation)
-        indices, filter_label = selected_cells(calculation)
+        indices, filter_label = selected_cells(calculation.property)
         index, distance = aggregate_distance(distances, indices, aggregation)
         if distance is None:
             raise RuntimeError(
@@ -430,19 +304,19 @@ def run(config: dict[str, Any], case: Any) -> int:
             )
 
         scalar_path = output_dir / output_name
-        if printing_distance_map:
-            converted_distances = [value / unit_conversion for value in distances]
+        if verbose:
+            converted_distances = [value * multiplier for value in distances]
             write_property(
                 [output_dir / f"{output_name}_map"], output_name, converted_distances
             )
-        converted_distance = distance / unit_conversion
+        converted_distance = distance * multiplier
         write_scalar([scalar_path], converted_distance)
 
         print(f"\n{output_name}  ->  {target_label}")
         print(f"  filter: {filter_label} ({len(indices)} cells)")
         result = f"  {aggregation} distance: {converted_distance:.2f}"
-        if unit_conversion != 1:
-            result += f" (divided by {unit_conversion:g})"
+        if multiplier != 1:
+            result += f" (multiplied by {multiplier:g})"
         if index is not None:
             i = index % nx
             j = (index // nx) % ny
@@ -450,7 +324,7 @@ def run(config: dict[str, Any], case: Any) -> int:
             result += f" at ijk ({i + 1}, {j + 1}, {k + 1})"
         print(result)
         print(f"  wrote scalar: {scalar_path}")
-        if printing_distance_map:
+        if verbose:
             print(f"  wrote map: {output_dir / f'{output_name}_map'}")
 
     for well_name, count in sorted(well_connection_counts.items()):

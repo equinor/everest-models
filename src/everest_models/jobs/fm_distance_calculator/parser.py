@@ -1,11 +1,20 @@
 import argparse
 from pathlib import Path
 
-from everest_models.jobs.shared.arguments import bootstrap_parser, get_parser
+from everest_models.jobs.shared.arguments import (
+    SchemaAction,
+    bootstrap_parser,
+    get_parser,
+)
+
+from .config_model import DistanceConfig
+
+SCHEMAS = {"-c/--config": DistanceConfig}
 
 
 @bootstrap_parser
 def build_argument_parser(skip_type: bool = False) -> argparse.ArgumentParser:
+    SchemaAction.register_models(SCHEMAS)
     parser, required_group = get_parser(
         description="Calculate distances to faults, wells, or configured polylines."
     )

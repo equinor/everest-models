@@ -1,23 +1,26 @@
-printing-distance-map: true
+verbose: true
 distance-calculations:
-  - type: fault-distance
-    fault-name: F_CO2
-    property: SGAS
-    property-threshold: 0.01
-    output-date: 2024-11-09
-    output-name: CO2FAULT
-  - type: well-distance
-    well-name: PROD
-    property: SGAS
-    property-threshold: 0.01
-    output-date: 2024-11-09
-    output-name: CO2WELL
-    unit-conversion: 1000
-  - type: polygon-distance
-    polygon-input:
+  - type: fault
+    name: F_CO2
+    property:
+      name: SGAS
+      threshold: 0.01
+      date: 2024-11-09
+    output: CO2FAULT
+  - type: well
+    name: PROD
+    property:
+      name: SGAS
+      threshold: 0.01
+      date: 2024-11-09
+    output: CO2WELL
+    multiplier: 0.001
+  - type: polygon
+    points:
       - [500, 500, 8335]
       - [500, 9500, 8335]
-    property: SGAS
-    property-threshold: 0.01
-    output-date: 2024-11-09
-    output-name: CO2POLY
+    property:
+      name: SGAS
+      threshold: 0.01
+      date: 2024-11-09
+    output: CO2POLY

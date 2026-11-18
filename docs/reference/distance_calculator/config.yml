@@ -1,33 +1,197 @@
+# -c/--config specification:
+# <REPLACE> is a REQUIRED field that needs replacing
+
+
+# One or more fault, well, or polygon distance calculations.
+# Datatype: [DistanceCalculation]
+# Required: True
 distance-calculations:
-  - type: fault-distance
-    fault-name: F4
-    property: sgas
-    property-threshold: 0.1
-    output-date: 2040-01-01
-    aggregation: min
-    output-name: F4_FAULT_DISTANCE
-    printing-distance-map: true
+  -
 
-  - type: well-distance
-    well-name: LEG_1
-    property: sgas
-    property-threshold: 0.1
-    output-date: 2040-01-01
-    aggregation: min
-    unit-conversion: 1000
-    output-name: LEG_1_WELL_DISTANCE_KM
+    # Measure distance to a named fault.
+    # Datatype: fault
+    # Required: True
+    type: fault
 
-  - type: polygon-distance
-    polygon-input:
-      - 461466, 5937073, 1791
-      - 462065, 5935991, 1732
-      - 462439, 5935150, 1676
-      - 463083, 5934538, 1637
-      - 463987, 5933303, 1688
-      - 464747, 5932890, 1645
-    property: sgas
-    property-threshold: 0.1
-    output-date: 2040-01-01
+    # Optional property filter. If omitted, use all active cells.
+    # Required: False
+    # Default: null
+    property:
+
+      # Dynamic grid property, for example SGAS.
+      # Datatype: string
+      # Examples: a string value
+      # Required: True
+      name: <REPLACE>
+
+      # Inclusive lower bound for selecting active cells.
+      # Datatype: number
+      # Required: False
+      # Default: 0.0
+      threshold: 0.0
+
+      # Report date (YYYY-MM-DD). If omitted, use cells qualifying at any report.
+      # Datatype: date
+      # Required: False
+      # Default: null
+      date: null
+
+    # Statistic over finite, positive distances: min, max, mean, or median.
+    # Datatype: string
+    # Required: False
+    # Default: min
     aggregation: min
-    output-name: P1_POLYGON_DISTANCE
-    printing-distance-map: true
+
+    # Filename for the scalar result.
+    # Datatype: string
+    # Examples: a string value
+    # Required: True
+    output: <REPLACE>
+
+    # Non-zero factor applied to the scalar and map. Use 0.001 to convert meters to kilometers.
+    # Datatype: number
+    # Required: False
+    # Default: 1.0
+    multiplier: 1.0
+
+    # Write a per-cell distance map; inherits the top-level verbose setting if omitted.
+    # Datatype: boolean
+    # Required: False
+    # Default: null
+    verbose: null
+
+    # Fault name in ResInsight.
+    # Datatype: string
+    # Examples: a string value
+    # Required: True
+    name: <REPLACE>
+  -
+
+    # Measure distance to a simulation well's connected cells.
+    # Datatype: well
+    # Required: True
+    type: well
+
+    # Optional property filter. If omitted, use all active cells.
+    # Required: False
+    # Default: null
+    property:
+
+      # Dynamic grid property, for example SGAS.
+      # Datatype: string
+      # Examples: a string value
+      # Required: True
+      name: <REPLACE>
+
+      # Inclusive lower bound for selecting active cells.
+      # Datatype: number
+      # Required: False
+      # Default: 0.0
+      threshold: 0.0
+
+      # Report date (YYYY-MM-DD). If omitted, use cells qualifying at any report.
+      # Datatype: date
+      # Required: False
+      # Default: null
+      date: null
+
+    # Statistic over finite, positive distances: min, max, mean, or median.
+    # Datatype: string
+    # Required: False
+    # Default: min
+    aggregation: min
+
+    # Filename for the scalar result.
+    # Datatype: string
+    # Examples: a string value
+    # Required: True
+    output: <REPLACE>
+
+    # Non-zero factor applied to the scalar and map. Use 0.001 to convert meters to kilometers.
+    # Datatype: number
+    # Required: False
+    # Default: 1.0
+    multiplier: 1.0
+
+    # Write a per-cell distance map; inherits the top-level verbose setting if omitted.
+    # Datatype: boolean
+    # Required: False
+    # Default: null
+    verbose: null
+
+    # Simulation well name in ResInsight.
+    # Datatype: string
+    # Examples: a string value
+    # Required: True
+    name: <REPLACE>
+  -
+
+    # Measure distance to an open polyline.
+    # Datatype: polygon
+    # Required: True
+    type: polygon
+
+    # Optional property filter. If omitted, use all active cells.
+    # Required: False
+    # Default: null
+    property:
+
+      # Dynamic grid property, for example SGAS.
+      # Datatype: string
+      # Examples: a string value
+      # Required: True
+      name: <REPLACE>
+
+      # Inclusive lower bound for selecting active cells.
+      # Datatype: number
+      # Required: False
+      # Default: 0.0
+      threshold: 0.0
+
+      # Report date (YYYY-MM-DD). If omitted, use cells qualifying at any report.
+      # Datatype: date
+      # Required: False
+      # Default: null
+      date: null
+
+    # Statistic over finite, positive distances: min, max, mean, or median.
+    # Datatype: string
+    # Required: False
+    # Default: min
+    aggregation: min
+
+    # Filename for the scalar result.
+    # Datatype: string
+    # Examples: a string value
+    # Required: True
+    output: <REPLACE>
+
+    # Non-zero factor applied to the scalar and map. Use 0.001 to convert meters to kilometers.
+    # Datatype: number
+    # Required: False
+    # Default: 1.0
+    multiplier: 1.0
+
+    # Write a per-cell distance map; inherits the top-level verbose setting if omitted.
+    # Datatype: boolean
+    # Required: False
+    # Default: null
+    verbose: null
+
+    # At least two [easting, northing, positive-down depth] points in grid units.
+    # Datatype: [[FiniteNumber, FiniteNumber, FiniteNumber]]
+    # Required: True
+    points:
+      -   - <REPLACE>
+          - <REPLACE>
+          - <REPLACE>
+      -   - <REPLACE>
+          - <REPLACE>
+          - <REPLACE>
+
+# Default for writing per-cell maps for calculations.
+# Datatype: boolean
+# Choices: true, false
+# Required: False
+# Default: False
+verbose: false

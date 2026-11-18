@@ -5,6 +5,7 @@ import numpy as np
 import pytest
 
 from everest_models.jobs.fm_distance_calculator.cli import main_entry_point
+from everest_models.jobs.fm_distance_calculator.config_model import DistanceConfig
 from everest_models.jobs.fm_distance_calculator.tasks import run
 from everest_models.jobs.shared.resinsight import ResInsight
 
@@ -80,46 +81,29 @@ def test_distance_calculator_cli_all_targets(
 
 
 @pytest.mark.parametrize(
-    ("selection", "expected_distance_m"),
+    ("report_date", "aggregation", "expected_distance_m"),
     [
-        ({"output-date": EARLY_DATE}, 3000),
-        ({"output-date": FINAL_DATE}, 1000),
-        ({}, 1000),
-        ({"output-date": FINAL_DATE, "aggregation": "max"}, 7000),
-        ({"aggregation": "mean"}, 4000.02332),
-        ({"output-date": FINAL_DATE, "aggregation": "median"}, 4000),
-        (
-            {
-                "property": ["sgas", "swat"],
-                "property-threshold": [0.01, 0.97],
-                "output-date": [EARLY_DATE, FINAL_DATE],
-            },
-            math.hypot(4000, 65),
-        ),
-    ],
-    ids=[
-        "early-plume-min",
-        "final-plume-min",
-        "all-reports-min",
-        "final-plume-max",
-        "all-reports-mean",
-        "final-plume-median",
-        "early-gas-and-final-water",
+        pytest.param(EARLY_DATE, "min", 3000, id="early-plume-min"),
+        pytest.param(FINAL_DATE, "min", 1000, id="final-plume-min"),
+        pytest.param(None, "min", 1000, id="all-reports-min"),
+        pytest.param(FINAL_DATE, "max", 7000, id="final-plume-max"),
+        pytest.param(None, "mean", 4000.02332, id="all-reports-mean"),
+        pytest.param(FINAL_DATE, "median", 4000, id="final-plume-median"),
     ],
 )
 def test_polygon_property_selection_and_aggregation(
-    distance_case, tmp_path, monkeypatch, selection, expected_distance_m
+    distance_case, tmp_path, monkeypatch, report_date, aggregation, expected_distance_m
 ):
     monkeypatch.chdir(tmp_path)
     calculation = {
-        "type": "polygon-distance",
-        "polygon-input": POLYGON,
-        "property": "sgas",
-        "property-threshold": 0.01,
-        "output-name": "DISTANCE",
-        **selection,
+        "type": "polygon",
+        "points": POLYGON,
+        "property": {"name": "sgas", "threshold": 0.01, "date": report_date},
+        "output": "DISTANCE",
+        "aggregation": aggregation,
     }
-    assert run({"distance-calculations": [calculation]}, distance_case) == 0
+    config = DistanceConfig.model_validate({"distance-calculations": [calculation]})
+    assert run(config, distance_case) == 0
     assert float((tmp_path / "DISTANCE").read_text()) == pytest.approx(
         expected_distance_m, abs=1e-5
     )
@@ -127,46 +111,51 @@ def test_polygon_property_selection_and_aggregation(
 
 
 @pytest.mark.parametrize(
-    ("selection", "message"),
+    ("target", "property_filter", "message"),
     [
-        ({"output-date": "2015-01-01"}, "no finite positive distance"),
-        ({"property": "swat", "output-date": "2015-01-03"}, "Report date"),
         (
-            {"type": "fault-distance", "fault-name": "MISSING"},
+            {"type": "polygon", "points": POLYGON},
+            {"name": "sgas", "threshold": 0.01, "date": "2015-01-01"},
+            "no finite positive distance",
+        ),
+        (
+            {"type": "polygon", "points": POLYGON},
+            {"name": "swat", "date": "2015-01-03"},
+            "Report date",
+        ),
+        (
+            {"type": "fault", "name": "MISSING"},
+            None,
             "were not found",
         ),
         (
-            {"type": "well-distance", "well-name": "MISSING"},
+            {"type": "well", "name": "MISSING"},
+            None,
             "Simulation well 'MISSING' not found",
         ),
     ],
     ids=["empty-plume", "unknown-report-date", "unknown-fault", "unknown-well"],
 )
 def test_calculation_without_a_result_fails(
-    distance_case, tmp_path, monkeypatch, selection, message
+    distance_case, tmp_path, monkeypatch, target, property_filter, message
 ):
     monkeypatch.chdir(tmp_path)
-    calculation = {
-        "type": "polygon-distance",
-        "polygon-input": POLYGON,
-        "property": "sgas",
-        "property-threshold": 0.01,
-        "output-name": "DISTANCE",
-        **selection,
-    }
+    calculation = {**target, "property": property_filter, "output": "DISTANCE"}
+    config = DistanceConfig.model_validate({"distance-calculations": [calculation]})
     with pytest.raises(RuntimeError, match=message):
-        run({"distance-calculations": [calculation]}, distance_case)
+        run(config, distance_case)
     assert not (tmp_path / "DISTANCE").exists()
 
 
 def test_well_distance_excludes_connected_cells(distance_case, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     calculation = {
-        "type": "well-distance",
-        "well-name": "PROD",
-        "output-name": "DISTANCE",
+        "type": "well",
+        "name": "PROD",
+        "output": "DISTANCE",
     }
-    assert run({"distance-calculations": [calculation]}, distance_case) == 0
+    config = DistanceConfig.model_validate({"distance-calculations": [calculation]})
+    assert run(config, distance_case) == 0
     assert float((tmp_path / "DISTANCE").read_text()) == pytest.approx(1000), (
         "The closest cell outside PROD's completed column is one grid cell away"
     )
