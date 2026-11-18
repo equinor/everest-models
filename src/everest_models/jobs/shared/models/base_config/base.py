@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from typing import Any, override
 
 from pydantic import (
@@ -64,7 +65,7 @@ class ModelConfig(BaseModel):
                 for value in (data.values() if isinstance(data, dict) else data)
             )
 
-        if any_ellipses(data):
+        if isinstance(data, Iterable) and any_ellipses(data):
             raise ValueError(
                 "Please replace any and/or all `...`, these field are required"
             )

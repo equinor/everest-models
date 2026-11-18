@@ -1,0 +1,26 @@
+verbose: true
+distance-calculations:
+  - type: fault
+    name: F_CO2
+    property:
+      name: SGAS
+      threshold: 0.01
+      date: 2024-11-09
+    output: CO2FAULT
+  - type: well
+    name: PROD
+    property:
+      name: SGAS
+      threshold: 0.01
+      date: 2024-11-09
+    output: CO2WELL
+    multiplier: 0.001
+  - type: polygon
+    points:
+      - [500, 500, 8335]
+      - [500, 9500, 8335]
+    property:
+      name: SGAS
+      threshold: 0.01
+      date: 2024-11-09
+    output: CO2POLY
